@@ -70,10 +70,19 @@ Module.print attribute.
                 console.log("Read file", textFromFileLoaded.length);
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
+                console.time("Refinement Time");
                 Module.ccall('refine',
                     'number', // return type
                 ['number'], // argument types
                 [1]);
+                console.timeEnd("Refinement Time");
+                var pippo=Module.Pointer_stringify (result, 10);
+                console.log(pippo);
+                
+                // Still to do actual write of a file here!
+                // Hints: 
+                // http://eligrey.com/demos/FileSaver.js/
+                
             };
 
             fileReader.readAsText(fileToLoad, "UTF-8");
