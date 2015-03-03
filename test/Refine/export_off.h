@@ -34,6 +34,7 @@
 #include<wrap/io_trimesh/precision.h>
 #include <vcg/complex/algorithms/clean.h>
 #include <vcg/complex/algorithms/polygon_support.h>
+#include <locale.h>
 
 
 namespace vcg {
@@ -54,6 +55,7 @@ public:
 
     static char* SaveStream(SaveMeshType &m,int mask=0)
     {
+        setlocale (LC_ALL,"");
         vcg::face::Pos<FaceType> he;
         vcg::face::Pos<FaceType> hei;
 

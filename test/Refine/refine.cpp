@@ -83,6 +83,5 @@ extern "C"
     printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
     char *bufMeshOut = tri::io::ExporterOFF<MyMesh>::SaveStream(m);
     return bufMeshOut;
-    // return 30394;
   }
 }

@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Emscripten-Generated Code</title>
-
 </head>
 
 <body>
@@ -13,8 +12,8 @@
     <br>
     <output id="list"></output>
     <textarea id="output" rows="8"></textarea>
-    <button id='savemesh' onClick='javascript:saveMesh()' style="display:none;">Save Mesh</button>
-
+    <button id='save_mesh' style="display:none;">Save Mesh</button>
+    <p id="downloadify"></p>
     <script type='text/javascript'>
         /*
 Module is a global JavaScript object with attributes that 
@@ -49,8 +48,11 @@ Module.print attribute.
     </script>
     
     <script type="text/javascript" src="refine.js"></script>
+    <script type="text/javascript" src="downloadify/js/swfobject.js"></script>
+    <script type="text/javascript" src="downloadify/js/downloadify.min.js"></script>
 
     <script type="text/javascript">
+    
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
             console.log("Name: ", files[0].name);
@@ -65,10 +67,9 @@ Module.print attribute.
 
             var fileToLoad = files[0];
             var fileReader = new FileReader();
-
+            
             fileReader.onload = function (fileLoadedEvent) {
                 var textFromFileLoaded = fileLoadedEvent.target.result;
-
                 console.log("Read file", textFromFileLoaded.length);
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
@@ -79,24 +80,77 @@ Module.print attribute.
                 [1]);
                 console.timeEnd("Refinement Time");
                 var mesh_refined=Module.Pointer_stringify (result, result.length);
-                console.log(mesh_refined);
-                document.getElementById("savemesh").style.display= 'block';
-                document.getElementById("savemesh").addEventListener('click', function saveMesh(){
-                var link = document.createElement('a');
-                link.download = 'mesh.off';
-                var blob = new Blob([mesh_refined], {type: 'text/plain'});
-                link.href = window.URL.createObjectURL(blob);
-                link.click();
+                // console.log(mesh_refined);
+                Downloadify.create('downloadify',{
+                    filename: function(){
+                        return "mesh.off";
+                    },
+                    data: function(){ 
+                        return mesh_refined;
+                    },
+                    onComplete: function(){ alert('Your File Has Been Saved!'); },
+                    onCancel: function(){ alert('You have cancelled the saving of this file.'); },
+                    onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+                    swf: 'media/downloadify.swf',
+                    downloadImage: 'images/download.png',
+                    width: 100,
+                    height: 30,
+                    transparent: true,
+                    append: false
                 });
-
-                
             };
-
             fileReader.readAsText(fileToLoad, "UTF-8");
-        }
+            }
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+                // document.getElementById("save_mesh").style.display= 'block';
+                // document.getElementById("save_mesh").addEventListener('click', function saveMesh(){
+                // var link = document.createElement('a');
+                // var name = document.getElementById("nameMesh").value;
+                // if(name== null || name.length == 0) name="mesh";
+                // link.download =  name +'.off';
+                // var blob = new Blob([mesh_refined], {type: 'text/plain'});
 
-        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+                // if(link.download == undefined) alert("booo");
+                // if(navigator.msSaveBlob) { // IE 10+
+                //     alert("");
+                //     link.setAttribute("href", "#");
+                //     link.addEventListener("click", function(event) {
+                //     navigator.msSaveBlob(blob, fileName);
+                //  });
+                // } else {
+
+                // saveAs(blob, name+'.off'); //filesaver
+
+                // link.href = window.URL.createObjectURL(blob); //normal
+
+                // var zip = new JSZip();
+                // zip.file(name+'.off', mesh_refined);
+                // var blobzip = zip.generate({type:"blob"});
+                // saveAs(blobzip, "hello.zip");
+                // location.href="data:application/zip;base64," + zip.generate({type:"base64"});
+
+                // link.click();
+
+                //end savemesh()
+                // }); //end eventlistener
+                //     saveMesh(mesh_refined)
+                // );
+                // function saveMesh(mesh_refined){
+                //                     var link = document.createElement('a');
+                //                     var name = document.getElementById("nameMesh").value;
+                //                     if(name== null || name.length == 0) name="mesh";
+                //                     link.download =  name +'.off';
+                //                     var blob = new Blob([mesh_refined], {type: 'text/plain'});
+                //                     link.href = window.URL.createObjectURL(blob);
+                //                     link.click();
+                //             }
+                // function saveMesh(mesh_refined){
+                //     var name = document.getElementById("nameMesh").value;
+                //     if(name== null || name.length == 0) name="mesh";
+                //     name =  name +'.off';
+                //     var blob = new Blob([mesh_refined], {type: 'text/plain'});
+                //     saveAs(blob, name);
+                // }
     </script>
 </body>
-
 </html>
