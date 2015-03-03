@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Emscripten-Generated Code</title>
+
 </head>
 
 <body>
@@ -12,7 +13,7 @@
     <br>
     <output id="list"></output>
     <textarea id="output" rows="8"></textarea>
-
+    <button id='savemesh' onClick='javascript:saveMesh()' style="display:none;">Save Mesh</button>
 
     <script type='text/javascript'>
         /*
@@ -58,7 +59,8 @@ Module.print attribute.
                 'number', // return type
                 ['number'], // argument types
                 [files[0].size]); // arguments
-
+            var mesh=Module.Pointer_stringify (result, result.length);
+            console.log(mesh);
             console.time("File Reading Time");
 
             var fileToLoad = files[0];
@@ -71,17 +73,22 @@ Module.print attribute.
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
                 console.time("Refinement Time");
-                Module.ccall('refine',
+                result = Module.ccall('refine',
                     'number', // return type
                 ['number'], // argument types
                 [1]);
                 console.timeEnd("Refinement Time");
-                var pippo=Module.Pointer_stringify (result, 10);
-                console.log(pippo);
-                
-                // Still to do actual write of a file here!
-                // Hints: 
-                // http://eligrey.com/demos/FileSaver.js/
+                var mesh_refined=Module.Pointer_stringify (result, result.length);
+                console.log(mesh_refined);
+                document.getElementById("savemesh").style.display= 'block';
+                document.getElementById("savemesh").addEventListener('click', function saveMesh(){
+                var link = document.createElement('a');
+                link.download = 'mesh.off';
+                var blob = new Blob([mesh_refined], {type: 'text/plain'});
+                link.href = window.URL.createObjectURL(blob);
+                link.click();
+                });
+
                 
             };
 

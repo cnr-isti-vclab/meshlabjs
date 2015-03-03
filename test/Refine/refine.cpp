@@ -24,6 +24,8 @@
 #include <emscripten.h>
 #include <vcg/complex/complex.h>
 #include <wrap/io_trimesh/import_off.h>
+#include <wrap/io_trimesh/export_off.h>
+
 #include <vcg/complex/algorithms/refine.h>
 using namespace vcg;
 using namespace std;
@@ -54,7 +56,7 @@ extern "C"
      return buf;
   }
 
-  int refine(int num)
+  char* refine(int num)
   {
     MyMesh m;
     int t0=clock();
@@ -78,8 +80,9 @@ extern "C"
     tri::RefineE(m,midFun,edgePred);
     int t3=clock();
     printf("Refined mesh %i %i\n",m.FN(),m.VN());
-    printf("Openinng time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
-
-    return m.FN();
+    printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
+    char *bufMeshOut = tri::io::ExporterOFF<MyMesh>::SaveStream(m);
+    return bufMeshOut;
+    // return 30394;
   }
 }
