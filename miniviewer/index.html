@@ -11,82 +11,99 @@
 		<script src="../js/three.min.js"></script>
 		<script src="../js/loaders/STLLoader.js"></script>
     <script src="../js/controls/TrackballControls.js"></script>
-		<script>
-    var animat=true;
-		var camera, scene, renderer, controls, cube;
+	<script>
+    	var animat=false;
+		var camera, scene, renderer, controls, time, cube;
 		init();
 		animate();
-		 
+		// render();
+
 		function init() {
 		  // sezione di set-up di progetto, di iniziazione
 		scene = new THREE.Scene();
 		camera = new THREE.PerspectiveCamera(  75, window.innerWidth/window.innerHeight, 0.1, 1000  );
-    //parametri di PerspectiveCamera: FOV, aspectRatio, NEar, Far
-    camera.position.z = 5;
+   		 //parametri di PerspectiveCamera: FOV, aspectRatio, NEar, Far
+    	camera.position.z = 5;
 
-    if(animat==false){
-  		controls = new THREE.TrackballControls( camera );
-  		controls.rotateSpeed = 1.0;
-  		controls.zoomSpeed = 1.2;
-  		controls.panSpeed = 0.8;
-  		controls.noZoom = false;
-  		controls.noPan = false;
-  		controls.staticMoving = true;
-  		controls.dynamicDampingFactor = 0.3;
-  		controls.keys = [ 65, 83, 68 ];
-  		controls.addEventListener( 'change', render );
-    }
+
 
 		renderer = new THREE.WebGLRenderer();
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		document.body.appendChild( renderer.domElement );
 		scene.add( camera );
-    camera.position.z = 5;
+		 if(animat==false){
+	  		controls = new THREE.TrackballControls( camera );
+	  		controls.rotateSpeed = 1.0;
+	  		controls.zoomSpeed = 1.2;
+	  		controls.panSpeed = 0.8;
+	  		controls.noZoom = false;
+	  		controls.noPan = false;
+	  		controls.staticMoving = true;
+	  		controls.dynamicDampingFactor = 0.3;
+	  		controls.keys = [ 65, 83, 68 ];
+	  		controls.addEventListener( 'change', render );
+	    }
+
 		createMesh();
-		}
+
+		} //end init
+
+
 		function animate() {
 		  // sezione per l'aggiornamento e l'animazione
 		  //facoltativo, non necessario per rendering statici
-
-		  requestAnimationFrame( animate ); //crea un loop
-      if(animat==false) controls.update();
-      else rotation();
+		  // requestAnimationFrame( animate ); //crea un loop
+		// if(animat==false) controls.update();
+			requestAnimationFrame( animate );
+			if(animat==false) controls.update();
 		  render();
 		}
 		 
 		function render() {
 		  // sezione di disegno su canvas
-      renderer.render( scene, camera );
+
+
+			if(animat==true){
+	            var now = new Date().getTime(),
+	            dt = now - (time || now);
+	            time = now;
+	            // Drawing code goes here... for example updating an 'x' position:
+	            cube.rotation.x+=0.001 *dt;
+	 			cube.rotation.y += 0.001 * dt;
+	 			cube.rotation.z += 0.001 *dt;
+ 			}
+ 					  
+			renderer.render(scene, camera);
+
 		}
 
 		function createMesh() {
-      var geometry = new THREE.Geometry();
-
-      geometry.vertices.push(
-        new THREE.Vector3( -1,  1, 0 ),
-        new THREE.Vector3( -1, -1, 0 ),
-        new THREE.Vector3(  1, -1, 0 )
-      );
-
-      geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+	      //SIMPLE TRIANGLE
+	      // var geometry = new THREE.Geometry();
+	      // geometry.vertices.push(
+	      //   new THREE.Vector3( -1,  1, 0 ),
+	      //   new THREE.Vector3( -1, -1, 0 ),
+	      //   new THREE.Vector3(  1, -1, 0 )
+	      // );
+	      // geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
 
 			//CUBE
-			// var geometry = new THREE.BoxGeometry( 2, 2, 2 );
+			var geometry = new THREE.BoxGeometry( 2, 2, 2 );
 			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 			cube = new THREE.Mesh( geometry, material );
 			scene.add( cube );
 		}
 
-    function rotation(){
-      var time;
-      var now = new Date().getTime(),
-      dt = now - (time || now);
-      time = now;
-      // Drawing code goes here... for example updating an 'x' position:
-      cube.rotation.x+=0.001 *dt;
-      cube.rotation.y += 0.001 * dt;
-      cube.rotation.z += 0.001 *dt;
-    }
+    // function rotation(){
+    //   var time;
+    //   var now = new Date().getTime(),
+    //   dt = now - (time || now);
+    //   time = now;
+    //   // Drawing code goes here... for example updating an 'x' position:
+    //   cube.rotation.x += 0.001 *dt;
+    //   cube.rotation.y += 0.001 * dt;
+    //   cube.rotation.z += 0.001 *dt;
+    // }
 
 		</script>
 	<!-- </canvas> -->
