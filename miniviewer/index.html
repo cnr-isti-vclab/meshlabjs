@@ -12,7 +12,7 @@
 		<script src="../js/loaders/STLLoader.js"></script>
     <script src="../js/controls/TrackballControls.js"></script>
 	<script>
-    	var animat=false;
+    	var isAnimatedMesh=false;
 		var camera, scene, renderer, controls, time, mesh;
 		init();
 		animate();
@@ -29,7 +29,7 @@
 		renderer.setClearColor(0xffffff, 1); 
 		// document.getElementById('renderingMesh').append( renderer );
 		document.body.appendChild( renderer.domElement );		scene.add( camera );
-		 if(animat==false){
+		 if(isAnimatedMesh==false){
 	  		controls = new THREE.TrackballControls( camera );
 	  		controls.rotateSpeed = 1.0;
 	  		controls.zoomSpeed = 1.2;
@@ -49,13 +49,13 @@
 		  // sezione per l'aggiornamento e l'animazione
 		  //facoltativo, non necessario per rendering statici
 			requestAnimationFrame( animate );//crea un loop
-			if(animat==false) controls.update();
+			if(isAnimatedMesh==false) controls.update();
 		  render();
 		}
 		 
 		function render() {
 		  // sezione di disegno su canvas
-			if(animat==true){
+			if(isAnimatedMesh==true){
 	            var now = new Date().getTime(),
 	            dt = now - (time || now);
 	            time = now;
