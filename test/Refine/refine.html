@@ -61,8 +61,8 @@ Module.print attribute.
                 'number', // return type
                 ['number'], // argument types
                 [files[0].size]); // arguments
-            var mesh=Module.Pointer_stringify (result, result.length);
-            console.log(mesh);
+            var mesh=Module.Pointer_stringify (result, 50);
+            // console.log(mesh);
             console.time("File Reading Time");
 
             var fileToLoad = files[0];
@@ -88,11 +88,11 @@ Module.print attribute.
                     data: function(){ 
                         return mesh_refined;
                     },
-                    onComplete: function(){ alert('Your File Has Been Saved!'); },
-                    onCancel: function(){ alert('You have cancelled the saving of this file.'); },
-                    onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
-                    swf: 'media/downloadify.swf',
-                    downloadImage: 'images/download.png',
+                    // onComplete: function(){ alert('Your File Has Been Saved!'); },
+                    // onCancel: function(){ alert('You have cancelled the saving of this file.'); },
+                    // onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+                    swf: 'downloadify/media/downloadify.swf',
+                    downloadImage: 'downloadify/images/download.png',
                     width: 100,
                     height: 30,
                     transparent: true,
