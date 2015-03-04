@@ -16,7 +16,6 @@
 		var camera, scene, renderer, controls, time, mesh;
 		init();
 		animate();
-		// render();
 
 		function init() {
 		  // sezione di set-up di progetto, di iniziazione
@@ -42,26 +41,20 @@
 	  		controls.keys = [ 65, 83, 68 ];
 	  		controls.addEventListener( 'change', render );
 	    }
-
 		createMesh();
-
 		} //end init
 
 
 		function animate() {
 		  // sezione per l'aggiornamento e l'animazione
 		  //facoltativo, non necessario per rendering statici
-		  // requestAnimationFrame( animate ); //crea un loop
-		// if(animat==false) controls.update();
-			requestAnimationFrame( animate );
+			requestAnimationFrame( animate );//crea un loop
 			if(animat==false) controls.update();
 		  render();
 		}
 		 
 		function render() {
 		  // sezione di disegno su canvas
-
-
 			if(animat==true){
 	            var now = new Date().getTime(),
 	            dt = now - (time || now);
@@ -70,55 +63,60 @@
 	            mesh.rotation.x+=0.001 *dt;
 	 			mesh.rotation.y += 0.001 * dt;
 	 			mesh.rotation.z += 0.001 *dt;
- 			}
- 					  
+ 			}		  
 			renderer.render(scene, camera);
-
 		}
 
 		function createMesh() {
 			var geometry = new THREE.Geometry();
+			createPyramid(geometry);
+	      	createCube(geometry);
+	  		createTetra(geometry);
 
-	      //SIMPLE PIRAMIDE
-	      geometry.vertices.push(
-        new THREE.Vector3( 1, 0, 1 ),    // vertex number 0
-        new THREE.Vector3( 1, 0, -1 ),   // vertex number 1
-        new THREE.Vector3( -1, 0, -1 ),  // vertex number 2
-        new THREE.Vector3( -1, 0, 1 ),   // vertex number 3
-        new THREE.Vector3( 0, 1, 0 )     // vertex number 4
-	      );
-	     geometry.faces.push( 
-        new THREE.Face3( 3, 0, 4),     // remaining faces are triangles
-        new THREE.Face3( 0, 1, 4),
-        new THREE.Face3( 1, 2, 4),
-        new THREE.Face3( 2, 3, 4)
-			);
-
-		//CUBE
-		// var geometry = new THREE.BoxGeometry( 2, 2, 2 );
-
-			//tetrahedon by hand
-			// geometry.vertices.push(
-			//  new THREE:Vector3(1,1,1),
-			// 	new THREE.Vector3(-1,1,-1),
-			// 	new THREE.Vector3(-1,-1,1),
-			// 	new THREE.Vector3(1,-1,-1)
-			// 	);
-
-			// geometry.faces.push( 
-			// 	new THREE.Face3( 0, 1, 2 ),
-			// new THREE.Face3( 0, 2, 3 ),
-			// new THREE.Face3( 0, 3, 1 ),
-			// new THREE.Face3( 3, 2, 1 ) 
-			// 	);
-			// geometry.computeFaceNormals();
-			// geometry.computeBoundingSphere();
-
-			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); //{ color: 0x00ff00 } );
+			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); 
+			//wideframe rende la mesh trasparente, colorando solo gli edge
 			mesh = new THREE.Mesh( geometry, material );
 			scene.add( mesh );
 		}
 
+		function createPyramid(geometry){
+		//SIMPLE PYRAMID
+		    geometry.vertices.push(
+	        new THREE.Vector3( 1, 0, 1 ),    // vertex number 0
+	        new THREE.Vector3( 1, 0, -1 ),   // vertex number 1
+	        new THREE.Vector3( -1, 0, -1 ),  // vertex number 2
+	        new THREE.Vector3( -1, 0, 1 ),   // vertex number 3
+	        new THREE.Vector3( 0, 1, 0 )     // vertex number 4
+		    );
+		    geometry.faces.push( 
+	        new THREE.Face3( 3, 0, 4),     // remaining faces are triangles
+	        new THREE.Face3( 0, 1, 4),
+	        new THREE.Face3( 1, 2, 4),
+	        new THREE.Face3( 2, 3, 4)
+			);
+		}
+
+		function createCube(geometry){
+		//CUBE
+			var geometry = new THREE.BoxGeometry( 2, 2, 2 );
+		}
+
+		function createTetra(geometry) {
+		//tetrahedon by hand
+			geometry.vertices.push(
+			 	new THREE.Vector3(1,1,1),
+				new THREE.Vector3(-1,1,-1),
+				new THREE.Vector3(-1,-1,1),
+				new THREE.Vector3(1,-1,-1)
+				);
+
+			geometry.faces.push( 
+				new THREE.Face3( 0, 1, 2 ),
+				new THREE.Face3( 0, 2, 3 ),
+				new THREE.Face3( 0, 3, 1 ),
+				new THREE.Face3( 3, 2, 1 ) 
+				);
+		}
 
 		</script>
 	</body>
