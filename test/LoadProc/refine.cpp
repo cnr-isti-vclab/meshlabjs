@@ -52,11 +52,11 @@ extern "C"
   {
      size = _size;
      buf = (char *) malloc(size);
-     buf[0]='abcde';
+     buf[0]='Q';
      return buf;
   }
 
-  char* refine(int num)
+  int refine(int num)
   {
     MyMesh m;
     int t0=clock();
@@ -81,7 +81,6 @@ extern "C"
     int t3=clock();
     printf("Refined mesh %i %i\n",m.FN(),m.VN());
     printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
-    char *bufMeshOut = tri::io::ExporterOFF<MyMesh>::SaveStream(m);
-    return bufMeshOut;
+    return 0;
   }
 }

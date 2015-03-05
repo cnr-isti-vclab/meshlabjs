@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>LoadProcSave2</title>
+    <title>LoadProc</title>
 </head>
 
 <body>
@@ -12,8 +12,6 @@
     <br>
     <output id="list"></output>
     <textarea id="output" rows="8"></textarea>
-    <button id='save_mesh' style="display:none;">Save Mesh</button>
-    <p id="downloadify"></p>
     <script type='text/javascript'>
         /*
 Module is a global JavaScript object with attributes that 
@@ -48,8 +46,6 @@ Module.print attribute.
     </script>
     
     <script type="text/javascript" src="refine.js"></script>
-    <script type="text/javascript" src="downloadify/js/swfobject.js"></script>
-    <script type="text/javascript" src="downloadify/js/downloadify.min.js"></script>
 
     <script type="text/javascript">
     
@@ -61,7 +57,6 @@ Module.print attribute.
                 'number', // return type
                 ['number'], // argument types
                 [files[0].size]); // arguments
-            var mesh=Module.Pointer_stringify (result, result.length);
             console.time("File Reading Time");
 
             var fileToLoad = files[0];
@@ -78,29 +73,11 @@ Module.print attribute.
                 ['number'], // argument types
                 [1]);
                 console.timeEnd("Refinement Time");
-                var mesh_refined=Module.Pointer_stringify (result, result.length);
-                //SALVATAGGIO MESH via Downloadify
-                Downloadify.create('downloadify',{
-                    filename: function(){
-                        return "mesh.off";
-                    },
-                    data: function(){ 
-                        return mesh_refined;
-                    },
-                    // onComplete: function(){ alert('Your File Has Been Saved!'); },
-                    // onCancel: function(){ alert('You have cancelled the saving of this file.'); },
-                    // onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
-                    swf: 'downloadify/media/downloadify.swf',
-                    downloadImage: 'downloadify/images/download.png',
-                    width: 100,
-                    height: 30,
-                    transparent: true,
-                    append: false
-                });
             };
             fileReader.readAsText(fileToLoad, "UTF-8");
             }
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
+              
     </script>
 </body>
 </html>

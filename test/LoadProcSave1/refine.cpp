@@ -52,7 +52,6 @@ extern "C"
   {
      size = _size;
      buf = (char *) malloc(size);
-     buf[0]='abcde';
      return buf;
   }
 
