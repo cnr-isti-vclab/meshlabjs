@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>LoadRender1</title>
+    <title>LoadProc</title>
 </head>
 
 <body>
@@ -13,7 +13,6 @@
     <output id="list"></output>
     <textarea id="output" rows="8"></textarea>
     <script type='text/javascript'>
-    var pippo="bla";
         /*
 Module is a global JavaScript object with attributes that 
 Emscripten-generated code calls at various points in its execution.
@@ -49,7 +48,7 @@ Module.print attribute.
     <script type="text/javascript" src="refine.js"></script>
 
     <script type="text/javascript">
-        alert(bla);
+    
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
             console.log("Name: ", files[0].name);
@@ -63,17 +62,25 @@ Module.print attribute.
             var fileToLoad = files[0];
             var fileReader = new FileReader();
             
+
             fileReader.onload = function (fileLoadedEvent) {
                 var textFromFileLoaded = fileLoadedEvent.target.result;
                 console.log("Read file", textFromFileLoaded.length);
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
                 console.time("Refinement Time");
-                result = Module.ccall('refine',
+                var result1 = Module.ccall('refine',
                     'number', // return type
                 ['number'], // argument types
                 [1]);
                 console.timeEnd("Refinement Time");
+                // for(var i=0; i<result.length; i++){
+                    console.log(result1);
+                    var res=Module.getValue(result, 'double');
+                    console.log(res);
+                    console.log(res);
+
+                // }
             };
             fileReader.readAsText(fileToLoad, "UTF-8");
             }

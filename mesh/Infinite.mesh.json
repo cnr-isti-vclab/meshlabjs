@@ -1,0 +1,20 @@
+{
+	"vertices": 
+	{
+		"count": 9223,
+		"attributes": 
+		[
+			{ "name": "POSITION", "size": 3, "type": "FLOAT" },
+			{ "name": "NORMAL", "size": 3, "type": "FLOAT"  },
+			{ "name": "TEXCOORD", "size": 2, "type": "FLOAT"  }
+		]
+	},
+	"triangles": 
+	{
+		"type": "UNSIGNED_SHORT",
+		"groups": 
+		[
+			{ "name": "diffuse", "count": 17684 }
+		]
+	}
+}

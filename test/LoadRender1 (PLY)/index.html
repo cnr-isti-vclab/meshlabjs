@@ -1,0 +1,151 @@
+<html lang="en-us">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>LoadRender1</title>
+    <style>
+            body { margin: 0; }
+            .cont {
+                width: 100%;
+                max-width: 100%;
+                min-height: 100%;
+                height:     100%;
+                margin:     0 auto -30px;
+                width:450px;
+            }
+    </style>
+
+
+</head>
+
+<body>
+    <script src="../js/three.js"></script>
+    <script src="../js/loaders/STLLoader.js"></script>
+    <script src="../js/controls/TrackballControls.js"></script>
+    <script src="../js/loaders/PLYLoader.js"></script>
+    <input type="file" id="files" name="files[]" />
+    <br>
+    <output id="list"></output>
+    <textarea id="output" rows="8"></textarea>
+    <div id='renderingMesh' class='cont'> </div> 
+
+    <script type='text/javascript'>
+        var isAnimatedMesh=false;
+        var camera, scene, renderer, controls, time, mesh;
+        var div_WIDTH = document.getElementById("renderingMesh").offsetWidth, 
+        div_HEIGHT = document.getElementById("renderingMesh").offsetHeight;
+        
+        init();
+
+        function handleFileSelect(evt) {
+
+            var files = evt.target.files; // FileList object
+            console.log("Name: ", files[0].name);
+            console.log("Size: ", files[0].size);
+            var text = "Name: "+ files[0].name + '\n';
+            text += "Size: "+ files[0].size + '\n';
+            var element = document.getElementById('output');
+            if (element) element.value = ''; // clear browser cache
+            if (element) {
+                element.value =  text;
+                element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+            
+            console.time("File Reading Time");
+
+            var fileToLoad = files[0];
+            var fileReader = new FileReader();
+
+            createMesh(files[0]);
+            animate();
+            fileReader.onload = function (fileLoadedEvent) {
+                var textFromFileLoaded = fileLoadedEvent.target.result;
+                console.log("Read file", textFromFileLoaded.length);
+                console.timeEnd("File Reading Time");
+            };
+            fileReader.readAsText(fileToLoad, "UTF-8");
+            
+            
+        }
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        
+        function init() {
+          // sezione di set-up di progetto, di iniziazione
+        scene = new THREE.Scene();
+        // camera = new THREE.PerspectiveCamera(  75, window.innerWidth/window.innerHeight, 0.1, 1000  );
+        camera = new THREE.PerspectiveCamera(  75, div_WIDTH / div_HEIGHT, 0.1, 1000  );
+         //parametri di PerspectiveCamera: FOV, aspectRatio, NEar, Far
+        camera.position.z = 5;
+        renderer = new THREE.WebGLRenderer();
+        renderer.shadowMapEnabled = true;
+        renderer.setClearColor(0x000000, 1); 
+        renderer.setSize(div_WIDTH, div_HEIGHT);
+        document.getElementById("renderingMesh").appendChild(renderer.domElement);
+        // document.body.appendChild( renderer.domElement );        
+        scene.add( camera );
+         if(isAnimatedMesh==false){
+            controls = new THREE.TrackballControls( camera );
+            controls.rotateSpeed = 1.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.noZoom = false;
+            controls.noPan = false;
+            controls.staticMoving = true;
+            controls.dynamicDampingFactor = 0.3;
+            controls.keys = [ 65, 83, 68 ];
+            controls.addEventListener( 'change', render );
+        }
+        
+        
+        } //end init
+        
+        function animate() {
+          // sezione per l'aggiornamento e l'animazione
+          //facoltativo, non necessario per rendering statici
+            requestAnimationFrame( animate );//crea un loop
+            if(isAnimatedMesh==false) controls.update();
+          render();
+        }
+         
+        function render() {
+          // sezione di disegno su canvas
+            if(isAnimatedMesh==true){
+                var now = new Date().getTime(),
+                dt = now - (time || now);
+                time = now;
+                // Drawing code goes here... for example updating an 'x' position:
+                mesh.rotation.x+=0.001 *dt;
+                mesh.rotation.y += 0.001 * dt;
+                mesh.rotation.z += 0.001 *dt;
+            }         
+            renderer.render(scene, camera);
+        }
+
+        function createMesh(file) {
+
+            var loader = new THREE.PLYLoader();
+            loader.addEventListener( 'load', function ( event ) {
+                var geometry = event.content;
+                scene.add( new THREE.Mesh( geometry ) );
+            } );
+            loader.load("../../mesh/test.ply");
+            // loader.load("../../mesh/test.ply");
+//             var loader = new THREE.JSONLoader();
+//               loader.load(
+//     // resource URL
+//     "../../mesh/infinite.mesh.json",
+//     // Function when resource is loaded
+//     function ( geometry, materials ) {
+//         var material = new THREE.MeshFaceMaterial( materials );
+//         var object = new THREE.Mesh( geometry, material );
+//         scene.add( object );
+//     }
+// );
+            
+        }
+         
+    
+    </script>
+</body>
+</html>

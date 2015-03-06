@@ -56,7 +56,7 @@ extern "C"
      return buf;
   }
 
-  int refine(int num)
+double * refine(int num)
   {
     MyMesh m;
     int t0=clock();
@@ -74,13 +74,23 @@ extern "C"
     }
     int t2=clock();
     printf("Read mesh %i %i\n",m.FN(),m.VN());
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-    tri::EdgeLen<MyMesh,float> edgePred(0);
-    tri::MidPoint<MyMesh> midFun(&m);
-    tri::RefineE(m,midFun,edgePred);
+    // tri::UpdateTopology<MyMesh>::FaceFace(m);
+    // tri::EdgeLen<MyMesh,float> edgePred(0);
+    // tri::MidPoint<MyMesh> midFun(&m);
+    // tri::RefineE(m,midFun,edgePred);
     int t3=clock();
     printf("Refined mesh %i %i\n",m.FN(),m.VN());
     printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
-    return 0;
+    vector<double> pippo;
+    pippo.push_back(2.0);
+    double * pal = new double [2];
+    pal[0]=2.0;
+    pal[1]=3.0;
+    int test=0;
+   
+
+    return pal;
   }
+
 }
+
