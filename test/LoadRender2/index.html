@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <script src="../js/three.js"></script>
+    <script src="../js/three.min.js"></script>
     <script src="../js/loaders/STLLoader.js"></script>
     <script src="../js/controls/TrackballControls.js"></script>
     <script src="../js/loaders/PLYLoader.js"></script>
@@ -152,8 +152,8 @@
             var lines = textFile.split("\n");
             // [ST][C][N][4][n]OFF # Header keyword
             switch(lines[0]){
-                case 'COFF' : break;
-                case 'OFF' : break;
+                case "COFF" : break;
+                case "OFF" : break;
               default : {
                     console.log(lines[0]);
                     throw new Error("Not a valid file!");
@@ -164,15 +164,15 @@
             var faceNum = parseInt(header[1]); 
             for (var i=2; i<vertexNum ; i++){
                 var point = lines[i].split(" ");
-                 geometry.vertices.push(  new THREE.Vector3( point[0], point[1], point[2] ) );
+                 geometry.vertices.push(  new THREE.Vector3( parseFloat(point[0]), parseFloat(point[1]), parseFloat(point[2]) ) );
             }
             for(var i=vertexNum+parseInt(1); i<lines.length; i++){
                 var faceIndex = lines[i].split(" ");
                 if(faceIndex[0]==3){
-                    geometry.faces.push( new THREE.Face3( faceIndex[1], faceIndex[2], faceIndex[3]) );
+                    geometry.faces.push( new THREE.Face3( parseInt(faceIndex[1]), parseInt(faceIndex[2]), parseInt(faceIndex[3])) );
                 }
                 if(faceIndex[0]==4){
-                    geometry.faces.push( new THREE.Face4( faceIndex[1], faceIndex[2], faceIndex[3]), faceIndex[4]);
+                    geometry.faces.push( new THREE.Face4( parseInt(faceIndex[1]), parseInt(faceIndex[2]), parseInt(faceIndex[3])), parseInt(faceIndex[4])  );
                 }
             }
                 // console.log();
