@@ -41,7 +41,7 @@ Module.print attribute.
                     //text = text.replace(/</g, "&lt;");
                     //text = text.replace(/>/g, "&gt;");
                     //text = text.replace('\n', '<br>', 'g');
-                    // console.log(text);
+                    console.log(text);
                     if (element) {
                         element.value += text + "\n";
                         element.scrollTop = element.scrollHeight; // focus on bottom
@@ -54,15 +54,43 @@ Module.print attribute.
     <script type="text/javascript" src="refine.js"></script>
 
     <script type="text/javascript">
-    var result = Module.ccall('getVector',
+    function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            console.log("Name: ", files[0].name);
+            console.log("Size: ", files[0].size);
+            var result = Module.ccall('allocator', // name of C function
                 'number', // return type
                 ['number'], // argument types
-                [1]);
-    var length = Module.ccall('getLength','number');
-    console.log("pointer "+result);
-    console.log("length vector "+length);
-    for(var i=0; i<length; i++)
-        console.log(Module.getValue(result+parseInt(i*4),'*'));
+                [files[0].size]); // arguments
+            var mesh=Module.Pointer_stringify (result, result.length);
+            console.log(mesh);
+            console.time("File Reading Time");
+
+            var fileToLoad = files[0];
+            var fileReader = new FileReader();
+            
+            fileReader.onload = function (fileLoadedEvent) {
+                var textFromFileLoaded = fileLoadedEvent.target.result;
+                console.log("Read file", textFromFileLoaded.length);
+                Module.writeStringToMemory(textFromFileLoaded, result);
+                console.timeEnd("File Reading Time");
+                console.time("Refinement Time");
+                // var openMesh = Module.ccall('openMesh','number');
+                // console.log("openMesh result is"+openMesh);
+
+                };
+            fileReader.readAsText(fileToLoad, "UTF-8");
+            }
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    // var result = Module.ccall('getVector',
+    //             'number', // return type
+    //             ['number'], // argument types
+    //             [1]);
+    // var length = Module.ccall('getLength','number');
+    // console.log("pointer "+result);
+    // console.log("length vector "+length);
+    // for(var i=0; i<length; i++)
+    //     console.log(Module.getValue(result+parseInt(i*4),'*'));
     
     </script>
 </body>
