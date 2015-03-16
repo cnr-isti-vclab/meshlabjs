@@ -22,6 +22,7 @@
 ****************************************************************************/
 #include <stdlib.h>
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
 #include <wrap/io_trimesh/import_off.h>
 #include <wrap/io_trimesh/export_off.h>
@@ -29,6 +30,7 @@
 #include <vcg/complex/algorithms/refine.h>
 using namespace vcg;
 using namespace std;
+using namespace emscripten;
 
 
 class MyEdge;
@@ -54,33 +56,26 @@ extern "C"
      buf = (char *) malloc(size);
      return buf;
   }
-
-  char* refine(int num)
-  {
-    MyMesh m;
-    int t0=clock();
-    int loadmask;
-
-    printf("Buffer ptr is '%i'\n",buf);
-    printf("Buffer[0] is '%c'\n",buf[0]);
-
-    int ret = tri::io::ImporterOFF<MyMesh>::OpenMem(m,buf,strlen(buf),loadmask);
-    int t1=clock();
-    if(ret != 0)
-    {
-      printf("Error in opening file\n");
-      exit(-1);
-    }
-    int t2=clock();
-    printf("Read mesh %i %i\n",m.FN(),m.VN());
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-    tri::EdgeLen<MyMesh,float> edgePred(0);
-    tri::MidPoint<MyMesh> midFun(&m);
-    tri::RefineE(m,midFun,edgePred);
-    int t3=clock();
-    printf("Refined mesh %i %i\n",m.FN(),m.VN());
-    printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
-    char *bufMeshOut = tri::io::ExporterOFF<MyMesh>::SaveStream(m);
-    return bufMeshOut;
-  }
 }
+
+  vector<int> refine(int num)
+  {
+    vector<int> v;
+    // v[0]=3;
+    // v[1]=2;
+    // v[2]=4;
+    v.push_back(2);
+    v.push_back(4);
+    v.push_back(3);
+    return v;
+  }
+
+
+  // EMSCRIPTEN_BINDINGS(foo){
+  //   register_vector<int>("v");
+  //   emscripten::function("refine",&refine);
+  // }
+
+
+
+

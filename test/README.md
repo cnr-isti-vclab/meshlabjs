@@ -19,3 +19,27 @@ Each sample aims to to be the smallest example for each tech.
 * `LoadRender1` implement a basic load-render pipeline using three.js. It takes a file from the local file system, parse it using the three.js loaders and render it. 
 * `LoadProcRender1` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
 * `LoadProcRender2` alternative approach. The mesh is loaded using three.js parsers and then the mesh data are passed in some compact way to the emscripten that trasform it back into a vcg mesh.
+
+
+Update test:
+* `LoadProc` OK
+* `LoadProcSave1` OK
+* `LoadProcSave2` OK  
+
+* `LoadRender1` 
+
+	* test PLY presente nella cartella `LoadRender1 (PLY)`: 
+	Il loader ply (file PLYloader.js nella cartella js) era presente nella versione 63 della libreria three.js, e oggi, nella versione 70, non esiste più. Io l’ho trovato in un’altra repository (https://github.com/josdirksen/learning-threejs), assieme al file three.js (che ho caricato nella cartella js della nostra repository). Così come con json, non funziona con tutte le mesh, ma solo con alcune: test.ply, che è una mesh di esempio trovata nella repository di cui sopra, viene mostrata, mentre density.ply (che è una mesh che proviene dagli esempi delle sue lezioni) no. Inoltre, il loader ply è incompatibile con le api del FileReader di html5, poiché la funzione fa una get con l’argomento passato al loader, e la get va a cercare il file all’interno del server che ospita la nostra pagina, non trovando niente. 
+	
+	* test con JSON
+	ad oggi Three.js, nella documentazione ufficiale, mette a disposizione diversi loader, fra cui quelli per file json. Seguendo gli esempi della documentazione ho provato a caricare delle mesh in json (una trovata in una repository, l’altra creata attraverso meshlab) ma ritorna errore. Non carica nessun file. 
+
+	*parser presente nella cartella 'LoadRender2': 
+	egge i file codificati OFF e COFF (ignorando per ora i colori)
+
+* `LoadProcRender1` 
+
+	*test con passaggio di vettore:
+	risolto il problema di EMSCRIPTEN_BINDINGS
+	test in corso...
+

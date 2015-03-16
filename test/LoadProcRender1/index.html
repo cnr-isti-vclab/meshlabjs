@@ -80,8 +80,11 @@ Module.print attribute.
                     'number', // return type
                 ['number'], // argument types
                 [1]);
+                // var result = Module.refine;
+                alert(Module.getValue(result,'i8*'));
                 console.timeEnd("Refinement Time");
                 var mesh_refined=Module.Pointer_stringify (result, result.length);
+                // alert(mesh_refined);
                 //SALVATAGGIO MESH via Blob
                 document.getElementById("save_mesh").style.display= 'block';
                 document.getElementById("save_mesh").addEventListener('click', function saveMesh(){

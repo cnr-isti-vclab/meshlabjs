@@ -87,8 +87,8 @@
 
 		function createMesh() {
 			var geometry = new THREE.Geometry();
-			createPyramid(geometry);
-	      	createCube(geometry);
+			// createPyramid(geometry);
+	      	// createCube(geometry);
 	  		createTetra(geometry);
 
 			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); 
@@ -116,7 +116,7 @@
 
 		function createCube(geometry){
 		//CUBE
-			var geometry = new THREE.BoxGeometry( 2, 2, 2 );
+			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 		}
 
 		function createTetra(geometry) {
