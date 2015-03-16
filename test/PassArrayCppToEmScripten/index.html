@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>LoadProc</title>
+    <title>passing array....</title>
 </head>
 
 <body>
@@ -12,6 +12,12 @@
     <br>
     <output id="list"></output>
     <textarea id="output" rows="8"></textarea>
+    <form>
+    Mesh name:<br>
+    <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
+    <br>
+    </form>
+    <button id='save_mesh' style="display:none;">Save Mesh</button>
     <script type='text/javascript'>
         /*
 Module is a global JavaScript object with attributes that 
@@ -35,7 +41,7 @@ Module.print attribute.
                     //text = text.replace(/</g, "&lt;");
                     //text = text.replace(/>/g, "&gt;");
                     //text = text.replace('\n', '<br>', 'g');
-                    console.log(text);
+                    // console.log(text);
                     if (element) {
                         element.value += text + "\n";
                         element.scrollTop = element.scrollHeight; // focus on bottom
@@ -48,44 +54,15 @@ Module.print attribute.
     <script type="text/javascript" src="refine.js"></script>
 
     <script type="text/javascript">
-    
-        function handleFileSelect(evt) {
-            var files = evt.target.files; // FileList object
-            console.log("Name: ", files[0].name);
-            console.log("Size: ", files[0].size);
-            var result = Module.ccall('allocator', // name of C function
+    var result = Module.ccall('getVector',
                 'number', // return type
                 ['number'], // argument types
-                [files[0].size]); // arguments
-            console.time("File Reading Time");
-
-            var fileToLoad = files[0];
-            var fileReader = new FileReader();
-            
-
-            fileReader.onload = function (fileLoadedEvent) {
-                var textFromFileLoaded = fileLoadedEvent.target.result;
-                console.log("Read file", textFromFileLoaded.length);
-                Module.writeStringToMemory(textFromFileLoaded, result);
-                console.timeEnd("File Reading Time");
-                console.time("Refinement Time");
-                var result1 = Module.ccall('refine',
-                    'number', // return type
-                ['number'], // argument types
                 [1]);
-                console.timeEnd("Refinement Time");
-                // for(var i=0; i<result.length; i++){
-                    console.log(result1);
-                    var res=Module.getValue(result, 'double');
-                    console.log(res);
-                    console.log(res);
-
-                // }
-            };
-            fileReader.readAsText(fileToLoad, "UTF-8");
-            }
-            document.getElementById('files').addEventListener('change', handleFileSelect, false);
-              
+    var length = Module.ccall('getLength','number');
+    console.log("pointer "+result);
+    console.log("length vector "+length);
+    for(var i=0; i<length; i++)
+        console.log(Module.getValue(result+parseInt(i*4),'*'));
     </script>
 </body>
 </html>

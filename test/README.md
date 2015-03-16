@@ -38,6 +38,12 @@ Update test:
 	egge i file codificati OFF e COFF (ignorando per ora i colori)
 	Problema: centrare e scalare il rendering della mesh automaticamente
 
+* `PassArrayCppToEmScripten` 
+	test passaggio vettore da cpp a js. Poichè non sappiamo la lunghezza del vettore a runtime, si ha bisogno di chiamare il metodo getLength che restituisce la lunghezza del vettore. In js il metodo getVector ritorna il puntatore al primo indirizzo di memoria del vettore e, sapendo la lunghezza del vettore ed il tipo contenuto, possiamo iterare per ogni elemento del vettore, richiamandolo attraverso 
+				Module.getValue(pointer,'type')
+	dove type può essere anche solo '*'
+	NBB: nel compilare specificare il flag --bind
+
 * `LoadProcRender1` 
 
 	*test con passaggio di vettore:

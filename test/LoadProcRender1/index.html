@@ -41,7 +41,7 @@ Module.print attribute.
                     //text = text.replace(/</g, "&lt;");
                     //text = text.replace(/>/g, "&gt;");
                     //text = text.replace('\n', '<br>', 'g');
-                    console.log(text);
+                    // console.log(text);
                     if (element) {
                         element.value += text + "\n";
                         element.scrollTop = element.scrollHeight; // focus on bottom
@@ -54,14 +54,15 @@ Module.print attribute.
     <script type="text/javascript" src="refine.js"></script>
 
     <script type="text/javascript">
-    var result = Module.ccall('refine',
+    var result = Module.ccall('getVector',
                 'number', // return type
                 ['number'], // argument types
                 [1]);
-    console.log(result);
-    console.log(Module.getValue(result,'*'));
-    console.log(Module.getValue(result+parseInt(4),'*'));
-    console.log(Module.getValue(result+parseInt(8),'*'));
+    var length = Module.ccall('getLength','number');
+    console.log("pointer "+result);
+    console.log("length vector "+length);
+    for(var i=0; i<length; i++)
+        console.log(Module.getValue(result+parseInt(i*4),'*'));
     
     </script>
 </body>
