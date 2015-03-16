@@ -56,26 +56,28 @@ extern "C"
      buf = (char *) malloc(size);
      return buf;
   }
-}
 
-  vector<int> refine(int num)
+
+  int * refine()
   {
-    vector<int> v;
-    // v[0]=3;
-    // v[1]=2;
-    // v[2]=4;
-    v.push_back(2);
-    v.push_back(4);
-    v.push_back(3);
+    int* v = new int[3];
+    v[0]=1;
+    v[1]=2;
+    v[2]=4;
+    // vector<int> v;
+    // v.push_back(2);
+    // v.push_back(4);
+    // v.push_back(3);
     return v;
   }
+}
+
 
 
   // EMSCRIPTEN_BINDINGS(foo){
-  //   register_vector<int>("v");
+  // //   // register_vector<int>("v");
   //   emscripten::function("refine",&refine);
   // }
-
 
 
 

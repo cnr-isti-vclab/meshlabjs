@@ -36,6 +36,7 @@ Update test:
 
 	*parser presente nella cartella 'LoadRender2': 
 	egge i file codificati OFF e COFF (ignorando per ora i colori)
+	Problema: centrare e scalare il rendering della mesh automaticamente
 
 * `LoadProcRender1` 
 

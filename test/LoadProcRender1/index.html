@@ -54,50 +54,15 @@ Module.print attribute.
     <script type="text/javascript" src="refine.js"></script>
 
     <script type="text/javascript">
-    
-        function handleFileSelect(evt) {
-            var files = evt.target.files; // FileList object
-            console.log("Name: ", files[0].name);
-            console.log("Size: ", files[0].size);
-            var result = Module.ccall('allocator', // name of C function
+    var result = Module.ccall('refine',
                 'number', // return type
                 ['number'], // argument types
-                [files[0].size]); // arguments
-            var mesh=Module.Pointer_stringify (result, result.length);
-            // console.log(mesh);
-            console.time("File Reading Time");
-
-            var fileToLoad = files[0];
-            var fileReader = new FileReader();
-            
-            fileReader.onload = function (fileLoadedEvent) {
-                var textFromFileLoaded = fileLoadedEvent.target.result;
-                console.log("Read file", textFromFileLoaded.length);
-                Module.writeStringToMemory(textFromFileLoaded, result);
-                console.timeEnd("File Reading Time");
-                console.time("Refinement Time");
-                result = Module.ccall('refine',
-                    'number', // return type
-                ['number'], // argument types
                 [1]);
-                // var result = Module.refine;
-                alert(Module.getValue(result,'i8*'));
-                console.timeEnd("Refinement Time");
-                var mesh_refined=Module.Pointer_stringify (result, result.length);
-                // alert(mesh_refined);
-                //SALVATAGGIO MESH via Blob
-                document.getElementById("save_mesh").style.display= 'block';
-                document.getElementById("save_mesh").addEventListener('click', function saveMesh(){
-                var link = document.createElement('a');
-                link.download = document.getElementById("name_mesh").value;
-                var blob = new Blob([mesh_refined], {type: 'text/plain'});
-                link.href = window.URL.createObjectURL(blob);
-                link.click();
-                });
-            };
-            fileReader.readAsText(fileToLoad, "UTF-8");
-            }
-            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    console.log(result);
+    console.log(Module.getValue(result,'*'));
+    console.log(Module.getValue(result+parseInt(4),'*'));
+    console.log(Module.getValue(result+parseInt(8),'*'));
+    
     </script>
 </body>
 </html>
