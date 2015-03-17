@@ -51,7 +51,7 @@ Module.print attribute.
         };
     </script>
     
-    <script type="text/javascript" src="refine.js"></script>
+    <script type="text/javascript" src="open.js"></script>
 
     <script type="text/javascript">
     function handleFileSelect(evt) {
@@ -75,22 +75,25 @@ Module.print attribute.
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
                 console.time("Refinement Time");
-                // var openMesh = Module.ccall('openMesh','number');
-                // console.log("openMesh result is"+openMesh);
+                var openMesh = Module.ccall('openMesh','number');
+                console.log("openMesh result is "+openMesh);
+                var VN = Module.ccall('getVertexNumber','number');
+                console.log("Vertices No. is : "+VN);
+                var vert = Module.ccall('getVertexVector','number');
+                console.log("indirizzo di memoria vettore vertici : "+vert);
+                for(var i=0; i<VN*3; i++)
+                    console.log(Module.getValue(vert+parseInt(i*4),'float'));
+                var FN = Module.ccall('getFaceNumber','number');
+                var face = Module.ccall('getFaceVector','number');
+                console.log("indirizzo di memoria vettore facce : "+face);
+                for(var i=0; i<FN*3; i++)
+                    console.log(Module.getValue(face+parseInt(i*4),'*'));
 
                 };
             fileReader.readAsText(fileToLoad, "UTF-8");
             }
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
-    // var result = Module.ccall('getVector',
-    //             'number', // return type
-    //             ['number'], // argument types
-    //             [1]);
-    // var length = Module.ccall('getLength','number');
-    // console.log("pointer "+result);
-    // console.log("length vector "+length);
-    // for(var i=0; i<length; i++)
-    //     console.log(Module.getValue(result+parseInt(i*4),'*'));
+
     
     </script>
 </body>

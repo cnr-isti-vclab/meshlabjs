@@ -1,15 +1,10 @@
 #include <stdlib.h>
-#include <vector>
 #include <emscripten.h>
-// #include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
 #include <wrap/io_trimesh/import_off.h>
-#include <wrap/io_trimesh/export_off.h>
 
-#include <vcg/complex/algorithms/refine.h>
 using namespace vcg;
 using namespace std;
-// using namespace emscripten;
 
 
 class MyEdge;
@@ -53,11 +48,34 @@ extern "C" {
 
   int getVertexNumber(){ return m.VN(); }
 
-  MyMesh::VertContainer* getVertexVector() { return m.vert; }
+  float * getVertexVector() { 
+    tri::RequireCompactness(m);
+    float * v = new float[m.VN()*3];
+    int k=0;
+    for (int i = 0; i < m.VN(); i++){
+      for (int j = 0; j < 3; j++){
+        v[k] = m.vert[i].cP()[j];
+         k++;
+      }
+    }  
+
+    return v; 
+  }
 
   int getFaceNumber() { return m.FN(); }
 
-  MyMesh::FaceContainer* getFaceVector() { return m.face; }
+  int * getFaceVector() { 
+    tri::RequireCompactness(m);
+    int * f = new int[m.FN()*3];
+    int k=0;
+    for (int i = 0; i < m.FN(); i++)
+      for (int j = 0; j < 3; j++){
+        f[k] = (int)tri::Index(m,m.face[i].cV(j));
+        k++;
+      }
+
+    return f;
+  }
 
 
 }

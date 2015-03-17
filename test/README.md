@@ -28,25 +28,23 @@ Update test:
 
 * `LoadRender1` 
 
-	* test PLY presente nella cartella `LoadRender1 (PLY)`: 
-	Il loader ply (file PLYloader.js nella cartella js) era presente nella versione 63 della libreria three.js, e oggi, nella versione 70, non esiste più. Io l’ho trovato in un’altra repository (https://github.com/josdirksen/learning-threejs), assieme al file three.js (che ho caricato nella cartella js della nostra repository). Così come con json, non funziona con tutte le mesh, ma solo con alcune: test.ply, che è una mesh di esempio trovata nella repository di cui sopra, viene mostrata, mentre density.ply (che è una mesh che proviene dagli esempi delle sue lezioni) no. Inoltre, il loader ply è incompatibile con le api del FileReader di html5, poiché la funzione fa una get con l’argomento passato al loader, e la get va a cercare il file all’interno del server che ospita la nostra pagina, non trovando niente. 
-	
-	* test con JSON
-	ad oggi Three.js, nella documentazione ufficiale, mette a disposizione diversi loader, fra cui quelli per file json. Seguendo gli esempi della documentazione ho provato a caricare delle mesh in json (una trovata in una repository, l’altra creata attraverso meshlab) ma ritorna errore. Non carica nessun file. 
+	* test PLY in `LoadRender1 (PLY)` folder: 
+	Loader ply (PLYloader.js file in the folder js) was in version 63 of the library Three.js, and today, in version 70, no longer exists. I found it in another repository (https://github.com/josdirksen/learning-threejs), together with the file Three.js (I uploaded js folder of our repository). As well as with json, it doesn't work with all the mesh, but only with some: test.ply, which is a mesh of example found in the repository above, is shown, while density.ply (which is a mesh that comes from the examples of his lectures) no. In addition, the loader ply is incompatible with API FileReader of html5, because the function does a get with the argument passed to the loader, and get going to search for the file in the server hosting our page, not finding nothing.
 
-	*parser presente nella cartella 'LoadRender2': 
-	egge i file codificati OFF e COFF (ignorando per ora i colori)
-	Problema: centrare e scalare il rendering della mesh automaticamente
+	* Test with JSON
+	Three.js today, in the official documentation, provides various loader, including those for json file. Following the examples of the documentation I tried to load the mesh in json (one found in a repository, the other created through MeshLab) but returns error. Do not load any files.
+
+	* Parser in the folder 'LoadRender2':
+	It reads files encoded OFF and COFF (ignoring the colors)
+	Problem: centralize and scale rendering of the mesh automatically
 
 * `PassArrayCppToEmScripten` 
-	test passaggio vettore da cpp a js. Poichè non sappiamo la lunghezza del vettore a runtime, si ha bisogno di chiamare il metodo getLength che restituisce la lunghezza del vettore. In js il metodo getVector ritorna il puntatore al primo indirizzo di memoria del vettore e, sapendo la lunghezza del vettore ed il tipo contenuto, possiamo iterare per ogni elemento del vettore, richiamandolo attraverso 
-				Module.getValue(pointer,'type')
-	dove type può essere anche solo '*'
-	NBB: nel compilare specificare il flag --bind
+	test vector from cpp to js. Since we don't know the length of the vector at runtime, you need to call getLength that returns the length of the vector. In js method getVector returns the pointer to the first memory address of the vector and, knowing the length of the vector and the content type, we can iterate for each element of the vector, retrieving through
+			Module.getValue (pointer, 'type')
+	where type can be '*' or 'i8*' 
+	NBB: compiling specify the flag --bind
 
 * `LoadProcRender1` 
 
-	*test con passaggio di vettore:
-	risolto il problema di EMSCRIPTEN_BINDINGS
-	test in corso...
+	in progress...
 
