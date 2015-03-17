@@ -8,26 +8,24 @@
 </head>
 
 <body>
-    <input type="file" id="files" name="files[]" value="tetra.off" />
+    Choose a 3D file of type '*.off' <br>
+    <input type="file" id="files" name="files[]" accept="*.off" value="tetra.off" />
     <br>
-    <output id="list"></output>
-    <textarea id="output" rows="8"></textarea>
+    <textarea id="output" rows="8" readonly ></textarea>
     <script type='text/javascript'>
         /*
 Module is a global JavaScript object with attributes that 
 Emscripten-generated code calls at various points in its execution.
 
-Developers can provide an implementation of Module to control 
-the execution of code. For example, to define how notification 
-messages from Emscripten are displayed, developers implement the 
-Module.print attribute.
+Here we just override the module print function to redirect the stdout of c++ code 
+into an html textarea
 */
         var Module = {
             preRun: [],
             postRun: [],
             print: (function () {
                 var element = document.getElementById('output');
-                if (element) element.value = ''; // clear browser cache
+                if (element) element.value = "C++ Output:\n"; // clear browser cache
                 return function (text) {
                     text = Array.prototype.slice.call(arguments).join(' ');
                     // These replacements are necessary if you render to raw HTML
@@ -35,7 +33,7 @@ Module.print attribute.
                     //text = text.replace(/</g, "&lt;");
                     //text = text.replace(/>/g, "&gt;");
                     //text = text.replace('\n', '<br>', 'g');
-                    console.log(text);
+                    console.log(":" + text);
                     if (element) {
                         element.value += text + "\n";
                         element.scrollTop = element.scrollHeight; // focus on bottom
@@ -76,8 +74,7 @@ Module.print attribute.
             };
             fileReader.readAsText(fileToLoad, "UTF-8");
             }
-            document.getElementById('files').addEventListener('change', handleFileSelect, false);
-              
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);              
     </script>
 </body>
 </html>
