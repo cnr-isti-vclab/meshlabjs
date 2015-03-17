@@ -53,7 +53,6 @@ Update test:
 * `LoadProcRender1` OK
 	file is loaded using html5 file api, then it passed to the allocator, read as MyMesh and from methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' passed to 'createMesh' for renderize in three.js
 	
-	
 * `LoadProcRender2`
 	Same problem as LoadRender1 
 

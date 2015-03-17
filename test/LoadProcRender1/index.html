@@ -82,8 +82,6 @@ Module.print attribute.
                 'number', // return type
                 ['number'], // argument types
                 [files[0].size]); // arguments
-            var mesh=Module.Pointer_stringify (result, result.length);
-            console.log(mesh);
             console.time("File Reading Time");
 
             var fileToLoad = files[0];
@@ -94,12 +92,13 @@ Module.print attribute.
                 console.log("Read file", textFromFileLoaded.length);
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
-                console.time("Refinement Time");
+                console.time("Getting mesh Time");
                 var openMesh = Module.ccall('openMesh','number');
                 var VN = Module.ccall('getVertexNumber','number');
                 var vert = Module.ccall('getVertexVector','number');
                 var face = Module.ccall('getFaceVector','number');
                 var FN = Module.ccall('getFaceNumber','number');
+                console.timeEnd("Getting mesh Time");
                 console.log("openMesh result is "+openMesh);
                 createMesh(vert,face,VN,FN);
                 animate();
@@ -168,6 +167,7 @@ Module.print attribute.
             var geometry = new THREE.Geometry();
             console.log("Vertices are "+VN);
             console.log("Faces are "+FN);
+            console.time("Time to create: ");
             for(var i=0; i<VN*3; i++){
                 var v1 = Module.getValue(vert+parseInt(i*4),'float'); i++;
                 var v2 = Module.getValue(vert+parseInt(i*4),'float'); i++;
@@ -181,6 +181,7 @@ Module.print attribute.
                 geometry.faces.push( new THREE.Face3(a,b,c));
             }
             console.log("geometry created.");
+            console.timeEnd("Time to create: ");
             var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
             scene.add( mesh );
