@@ -11,7 +11,7 @@
     Choose a 3D file of type '*.off' <br>
     <input type="file" id="files" name="files[]" accept="*.off" value="tetra.off" />
     <br>
-    <textarea id="output" rows="8" readonly ></textarea>
+    <textarea id="output" rows="8" cols="80" readonly ></textarea>
     <script type='text/javascript'>
         /*
 Module is a global JavaScript object with attributes that 
@@ -66,7 +66,7 @@ into an html textarea
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
                 console.time("Refinement Time");
-                result = Module.ccall('refine',
+                result = Module.ccall('LoadAndRefine',
                     'number', // return type
                 ['number'], // argument types
                 [1]);

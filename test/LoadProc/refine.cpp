@@ -24,12 +24,10 @@
 #include <emscripten.h>
 #include <vcg/complex/complex.h>
 #include <wrap/io_trimesh/import_off.h>
-#include <wrap/io_trimesh/export_off.h>
-
 #include <vcg/complex/algorithms/refine.h>
+
 using namespace vcg;
 using namespace std;
-
 
 class MyEdge;
 class MyFace;
@@ -43,6 +41,8 @@ class MyFace    : public vcg::Face< MyUsedTypes,  vcg::face::Normal3f, vcg::face
 class MyEdge    : public vcg::Edge<MyUsedTypes>{};
 class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {};
 
+// These two global vars keep the allocated buffer that is filled by javascript with the content of a file
+// Modified by allocator() and used by LoadAndRefine()
 char *buf=0;
 int size;
 
@@ -52,18 +52,17 @@ extern "C"
   {
      size = _size;
      buf = (char *) malloc(size);
-     buf[0]='Q';
      return buf;
   }
 
-  int refine(int num)
+  int LoadAndRefine(int num)
   {
     MyMesh m;
     int t0=clock();
     int loadmask;
 
-    printf("Buffer ptr is '%i'\n",buf);
-    printf("Buffer[0] is '%c'\n",buf[0]);
+    printf("Buffer ptr is '%u'\n",(unsigned int)buf);
+    printf("Buffer starts with '%c%c%c' \n",buf[0],buf[1],buf[2]);
 
     int ret = tri::io::ImporterOFF<MyMesh>::OpenMem(m,buf,strlen(buf),loadmask);
     int t1=clock();
@@ -73,14 +72,16 @@ extern "C"
       exit(-1);
     }
     int t2=clock();
-    printf("Read mesh %i %i\n",m.FN(),m.VN());
+    printf("Read    mesh %i vert - %i face \n",m.VN(),m.FN());
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::EdgeLen<MyMesh,float> edgePred(0);
     tri::MidPoint<MyMesh> midFun(&m);
     tri::RefineE(m,midFun,edgePred);
     int t3=clock();
-    printf("Refined mesh %i %i\n",m.FN(),m.VN());
-    printf("Opening time %5.2f \n Refinement time %5.2f",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
+    printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
+    printf("Opening time %5.2f (reading an off file from memory)\n"
+           "Refinement time %5.2f\n",float(t1-t0)/CLOCKS_PER_SEC,float(t3-t2)/CLOCKS_PER_SEC);
+      
     return 0;
   }
 }
