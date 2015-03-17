@@ -186,6 +186,10 @@ Module.print attribute.
             console.timeEnd("Time to create: ");
             var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
+            box = new THREE.Box3().setFromObject(mesh);
+            scale = 7.0/box.min.distanceTo(box.max);
+            mesh.position = box.center().negate().multiplyScalar(scale);             
+            mesh.scale = new THREE.Vector3(scale,scale,scale);
             scene.add( mesh );
         }
     
