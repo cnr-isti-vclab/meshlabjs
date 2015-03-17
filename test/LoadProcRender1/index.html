@@ -92,8 +92,10 @@ Module.print attribute.
                 console.log("Read file", textFromFileLoaded.length);
                 Module.writeStringToMemory(textFromFileLoaded, result);
                 console.timeEnd("File Reading Time");
-                console.time("Getting mesh Time");
+                console.time("Parsing mesh Time");
                 var openMesh = Module.ccall('openMesh','number');
+                console.timeEnd("Parsing mesh Time");
+                console.time("Getting mesh Time");
                 var VN = Module.ccall('getVertexNumber','number');
                 var vert = Module.ccall('getVertexVector','number');
                 var face = Module.ccall('getFaceVector','number');
