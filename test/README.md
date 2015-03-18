@@ -47,13 +47,23 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 
 
 * `LoadProcRender1.0` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File is loaded using html5 file api, then it passed to the allocator, read as MyMesh by method 'openStream' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	* File OFF is loaded using html5 file api, then it passed to the allocator, read as MyMesh by method 'openStream' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
 	When you load another mesh, the previous one is deleted.
 	**Status**: Complete
 
 * `LoadProcRender1.1` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	* File OFF is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
 	When you load another mesh, the previous one is deleted.
 	**Status**: Complete
+
+* `LoadProcRender1.2` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
+	* File PLY is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_ply.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	When you load another mesh, the previous one is deleted.
+	**Status**: 
+
+* `LoadProcRender1.3` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
+	* File STL is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_stl.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	When you load another mesh, the previous one is deleted.
+	**Status**: 
 
 
