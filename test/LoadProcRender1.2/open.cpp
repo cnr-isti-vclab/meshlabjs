@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <fstream>
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
-#include <wrap/io_trimesh/import_off.h>
+#include <wrap/io_trimesh/import_ply.h>
 
 using namespace vcg;
 using namespace std;
@@ -30,13 +32,15 @@ extern "C" {
   {
      size = _size;
      buf = (char *) malloc(size);
+     ofstream foo("tmp.ply");
+     foo << buf;
+     foo.close();
      return buf;
   }
 
   int openMesh(){
-    int loadmask;
 
-    int ret = tri::io::ImporterOFF<MyMesh>::OpenMem(m,buf,strlen(buf),loadmask);
+    int ret = tri::io::ImporterPLY<MyMesh>::Open(m,"tmp.ply");
     if(ret != 0)
     {
       printf("Error in opening file\n");
@@ -49,7 +53,6 @@ extern "C" {
   int getVertexNumber(){ return m.VN(); }
 
   float * getVertexVector() { 
-    tri::RequireCompactness(m);
     float * v = new float[m.VN()*3];
     int k=0;
     for (int i = 0; i < m.VN(); i++){
@@ -65,7 +68,6 @@ extern "C" {
   int getFaceNumber() { return m.FN(); }
 
   int * getFaceVector() { 
-    tri::RequireCompactness(m);
     int * f = new int[m.FN()*3];
     int k=0;
     for (int i = 0; i < m.FN(); i++)

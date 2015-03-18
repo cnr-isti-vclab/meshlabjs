@@ -22,37 +22,38 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	* Require a image button and the non standard, doomed to die, deprecated *flash*.
     * **Status**: Complete
 
-* `LoadRender1` implement a basic load-render pipeline using three.js. It takes a file from the local file system, parse it using the three.js loaders and render it. 
-* `LoadProcRender1` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
+* `LoadRender1 (PLY)` implement a basic load-render pipeline using three.js. It takes a file from the local file system, parse it using the three.js loaders and render it. 
+	* Loader ply (PLYloader.js file in the folder js) was in version 63 of the library Three.js, and today, in version 70, no longer exists. I found it in another repository (https://github.com/josdirksen/learning-threejs), together with the file Three.js (This Three.js version is in js folder). It doesn't work with all the mesh, but only with some: test.ply, which is a mesh of example found in the repository above, is shown, while density.ply no. In addition, the loader ply is incompatible with API FileReader of html5, because the function does a get with the argument passed to the loader, and get going to search for the file in the server hosting our page, not finding nothing.
+	**Status**: Complete
+
+* `LoadRender1 (JSON)` implement a basic load-render pipeline using three.js. It takes a file from the local file system, parse it using the three.js loaders and render it.
+	* Three.js today, in the official documentation, provides various loader, including those for json file. Following the examples of the documentation I tried to load the mesh in json (one found in a repository, the other created through MeshLab) but returns error. Do not load any files.
+	**Status**: Complete
+
+* `LoadRender1 (parse BLOB)` 
+	* It reads files encoded OFF and COFF (ignoring the colors) using a function, 'parseOff', which parse the content of a blob, blob created by file loaded using fileReader html5 Api 
+	**Status**: Complete
+
 * `LoadProcRender2` alternative approach. The mesh is loaded using three.js parsers and then the mesh data are passed in some compact way to the emscripten that trasform it back into a vcg mesh.
+	**Status**: Unavaiable
 
-
-Update test:
-* `LoadProc` OK
-* `LoadProcSave1` OK
-* `LoadProcSave2` OK  
-
-* `LoadRender1` 
-
-	* test PLY in `LoadRender1 (PLY)` folder: 
-	Loader ply (PLYloader.js file in the folder js) was in version 63 of the library Three.js, and today, in version 70, no longer exists. I found it in another repository (https://github.com/josdirksen/learning-threejs), together with the file Three.js (I uploaded js folder of our repository). As well as with json, it doesn't work with all the mesh, but only with some: test.ply, which is a mesh of example found in the repository above, is shown, while density.ply (which is a mesh that comes from the examples of his lectures) no. In addition, the loader ply is incompatible with API FileReader of html5, because the function does a get with the argument passed to the loader, and get going to search for the file in the server hosting our page, not finding nothing.
-
-	* Test with JSON
-	Three.js today, in the official documentation, provides various loader, including those for json file. Following the examples of the documentation I tried to load the mesh in json (one found in a repository, the other created through MeshLab) but returns error. Do not load any files.
-
-	* Parser in the folder 'LoadRender2':
-	It reads files encoded OFF and COFF (ignoring the colors)
-	Problem: centralize and scale rendering of the mesh automatically
 
 * `PassArrayCppToEmScripten` 
-	test vector from cpp to js. Since we don't know the length of the vector at runtime, you need to call getLength that returns the length of the vector. In js method getVector returns the pointer to the first memory address of the vector and, knowing the length of the vector and the content type, we can iterate for each element of the vector, retrieving through
+	Example of bind a vector from cpp to js. Since we don't know the length of the vector at runtime, you need to call 'getLength' that returns the length of the vector. In js, method 'getVector' returns the pointer to the first memory address of the vector and, knowing the length of the vector and the content type, we can iterate for each element of the vector, retrieving through
 			Module.getValue (pointer, 'type')
 	where type can be '*' or 'i8*' 
-	NBB: compiling specify the flag --bind
+	NBB: Emcc compiler needs to specify the flag --bind
+	**Status**: Complete
 
-* `LoadProcRender1` OK
-	file is loaded using html5 file api, then it passed to the allocator, read as MyMesh and from methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' passed to 'createMesh' for renderize in three.js
-	
-* `LoadProcRender2`
-	Same problem as LoadRender1 
+
+* `LoadProcRender1.0` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
+	* File is loaded using html5 file api, then it passed to the allocator, read as MyMesh by method 'openStream' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	When you load another mesh, the previous one is deleted.
+	**Status**: Complete
+
+* `LoadProcRender1.1` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
+	* File is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+	When you load another mesh, the previous one is deleted.
+	**Status**: Complete
+
 

@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <script src="../js/three63.js"></script>
+    <script src="../js/three.js"></script>
     <script src="../js/loaders/STLLoader.js"></script>
     <script src="../js/controls/TrackballControls.js"></script>
     <script src="../js/loaders/PLYLoader.js"></script>
@@ -71,7 +71,7 @@
         document.getElementById('files').addEventListener('change', handleFileSelect, false);
         
         function init() {
-          // set-up section 
+          // set-up section
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  75, div_WIDTH / div_HEIGHT, 0.1, 1000  );
          //PerspectiveCamera parameters: FOV, aspectRatio, NEar, Far
@@ -81,6 +81,7 @@
         renderer.setClearColor(0x000000, 1); 
         renderer.setSize(div_WIDTH, div_HEIGHT);
         document.getElementById("renderingMesh").appendChild(renderer.domElement);
+        // document.body.appendChild( renderer.domElement );        
         scene.add( camera );
          if(isAnimatedMesh==false){
             controls = new THREE.TrackballControls( camera );
@@ -112,6 +113,7 @@
                 var now = new Date().getTime(),
                 dt = now - (time || now);
                 time = now;
+                // Drawing code goes here... for example updating an 'x' position:
                 mesh.rotation.x+=0.001 *dt;
                 mesh.rotation.y += 0.001 * dt;
                 mesh.rotation.z += 0.001 *dt;
@@ -121,15 +123,19 @@
 
         function createMesh(file) {
 
-            var loader = new THREE.PLYLoader();
-            loader.addEventListener( 'load', function ( event ) {
-                var geometry = event.content;
-                scene.add( new THREE.Mesh( geometry ) );
-            } );
-            loader.load("../../mesh/test.ply");
+            var loader = new THREE.JSONLoader();
+            loader.load(
+                // resource URL
+                "../../mesh/infinite.mesh.json",
+                // Function when resource is loaded
+                function ( geometry, materials ) {
+                    var material = new THREE.MeshFaceMaterial( materials );
+                    var object = new THREE.Mesh( geometry, material );
+                    scene.add( object );
+                    } 
+            );
         }
          
-    
     </script>
 </body>
 </html>

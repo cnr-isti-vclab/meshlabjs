@@ -120,6 +120,7 @@ Module.print attribute.
         renderer.shadowMapEnabled = true;
         renderer.setClearColor(0x000000, 1); 
         renderer.setSize(div_WIDTH, div_HEIGHT);
+
         document.getElementById("renderingMesh").appendChild(renderer.domElement);
         scene.add( camera );
         controls = new THREE.TrackballControls( camera );
@@ -139,13 +140,16 @@ Module.print attribute.
         function animate() {        
             requestAnimationFrame( animate );//crea un loop
              controls.update();
+             renderer.render(scene, camera);
         }
          
         function render() {
             renderer.render(scene, camera);
         }
+       
 
         function createMesh(vert,fac,VN,FN) {
+            scene.remove(mesh);
             var geometry = new THREE.Geometry();
             console.log("Vertices are "+VN);
             console.log("Faces are "+FN);

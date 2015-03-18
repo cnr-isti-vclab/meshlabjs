@@ -28,11 +28,6 @@ into an html textarea
                 if (element) element.value = "C++ Output:\n"; // clear browser cache
                 return function (text) {
                     text = Array.prototype.slice.call(arguments).join(' ');
-                    // These replacements are necessary if you render to raw HTML
-                    //text = text.replace(/&/g, "&amp;");
-                    //text = text.replace(/</g, "&lt;");
-                    //text = text.replace(/>/g, "&gt;");
-                    //text = text.replace('\n', '<br>', 'g');
                     console.log(":" + text);
                     if (element) {
                         element.value += text + "\n";

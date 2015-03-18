@@ -24,37 +24,6 @@
 			var cube = new THREE.Mesh( geometry, material );
 			scene.add( cube );
 
-			//TEST TETRAHEDON //WRONG!!!!!!!!
-			// var geom = new THREE.Geometry(); 
-			// /*
-			// 1 1 1 
-			// -1 1 -1 
-			// -1 -1 1 
-			// 1 -1 -1 
-			// 3 0 1 2
-			// 3 0 2 3
-			// 3 0 3 1
-			// 3 3 2 1
-			// */
-
-			// geom.vertices.push(new THREE.Vector3(-1,1,-1));
-			// geom.vertices.push(new THREE.Vector3(-1,-1,1));
-			// geom.vertices.push(new THREE.Vector3(1,-1,-1));
-
-			// geom.faces.push( new THREE.Face3( 0, 1, 2 ) );
-			// geom.faces.push( new THREE.Face3( 0, 2, 3 ) );
-			// geom.faces.push( new THREE.Face3( 0, 3, 1 ) );
-			// geom.faces.push( new THREE.Face3( 3, 2, 1 ) );
-			// // geom.computeFaceNormals();
-			// geom.computeBoundingSphere();
-			// var object = new THREE.Mesh( geom, new THREE.MeshBasicMaterial({ color:0x00ff00, side:THREE.DoubleSide })  );
-			// // geom.position.set(3, 0.0, 1.0);
-			// // object.position.z = 0;//move a bit back - size of 500 is a bit big
-			// // object.rotation.y = -Math.PI * .5;//triangle is pointing in depth, rotate it -90 degrees on Y
-
-			// scene.add(object);
-
-
 
 			camera.position.z = 5;
             var time;
