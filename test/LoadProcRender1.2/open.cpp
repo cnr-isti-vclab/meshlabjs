@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <fstream>
 #include <emscripten.h>
-#include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
 #include <wrap/io_trimesh/import_ply.h>
 
@@ -32,14 +31,14 @@ extern "C" {
   {
      size = _size;
      buf = (char *) malloc(size);
-     ofstream foo("tmp.ply");
-     foo << buf;
-     foo.close();
      return buf;
   }
 
   int openMesh(){
 
+     ofstream f("tmp.ply");
+     f << buf;
+     f.close();
     int ret = tri::io::ImporterPLY<MyMesh>::Open(m,"tmp.ply");
     if(ret != 0)
     {

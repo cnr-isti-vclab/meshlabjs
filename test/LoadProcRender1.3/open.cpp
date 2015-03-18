@@ -3,6 +3,7 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
+#include <wrap/io_trimesh/import_off.h>
 #include <wrap/io_trimesh/import_stl.h>
 
 using namespace vcg;
@@ -32,16 +33,14 @@ extern "C" {
   {
      size = _size;
      buf = (char *) malloc(size);
-     ofstream foo("tmp.stl");
-     foo << buf;
-     foo.close();
      return buf;
   }
 
   int openMesh(){
-
+  ofstream f("tmp.stl");
+  f << buf;
+  f.close();
   int loadmask;
-  MyMesh m;
   int ret = tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);
   if(ret != 0)
     {
