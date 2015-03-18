@@ -30,13 +30,13 @@ extern "C" {
   {
      size = _size;
      buf = (char *) malloc(size);
-     ofstream f("tmp.off");
-     f << buf;
-     f.close();
      return buf;
   }
 
   int openMesh(){
+    ofstream fileOff("tmp.off");
+    fileOff << buf;
+    fileOff.close();
 
     int ret = tri::io::ImporterOFF<MyMesh>::Open(m,"tmp.off");
     if(ret != 0)
