@@ -2,7 +2,6 @@
 #include <fstream>
 #include <emscripten.h>
 #include <vcg/complex/complex.h>
-#include <wrap/io_trimesh/import_off.h>
 #include <wrap/io_trimesh/import_stl.h>
 #include <vcg/complex/algorithms/update/topology.h>
 #include <vcg/complex/algorithms/update/normal.h>
@@ -46,8 +45,10 @@ extern "C" {
   f << buf;
   f.close();
   printf("fine creazione e caricamento\n");
+  //for(int i=0;i<100;++i) printf("%c",buf[i]); printf("\n");
   int loadmask;
-  int ret = vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);
+  int ret = vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);      
+  if(ret!=0)
     {
       printf("Error in opening file\n");
       exit(-1);

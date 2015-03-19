@@ -6,7 +6,7 @@ The high level objective is to set up in the most efficient way a framework that
 1. loading a mesh from local storage
 2. visualising it using either three.js or spidergl or even direct webgl. 
 3. applying some mesh processing algorithm on it using the c++ code compiled in asm.js
-4. 
+4. passing back to three.js and substituting the currently shown mesh
 5. saving back the result on the local storage
  
 There are a number of pitfalls here and there. The purpose of the samples in this folder is to test all the possible ways of implementing the above points, for feasibility and for efficiency testing. 
@@ -46,24 +46,20 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	**Status**: Complete
 
 
-* `LoadProcRender1.0` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File OFF is loaded using html5 file api, then it passed to the allocator, read as MyMesh by method 'openStream' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+* `LoadProcRender1.0` OFF file -> mem -> c++ Mem Parsing -> three.js
+	* File OFF is loaded using html5 file api, then it passed to the allocator read as MyMesh by method 'openStream' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
 	When you load another mesh, the previous one is deleted.
 	**Status**: Complete
 
-* `LoadProcRender1.1` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File OFF is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
+* `LoadProcRender1.1` OFF file -> mem -> c++ mem to file -> c++ File Parsing -> three.js
+	* File OFF is loaded using html5 file api, then it passed to the allocator , wrote to a tmp file, read by classic method 'open' (vcglib-> wrap/io_trimesh/import_off.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
 	When you load another mesh, the previous one is deleted.
 	**Status**: Complete
 
-* `LoadProcRender1.2` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File PLY is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_ply.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
-	When you load another mesh, the previous one is deleted.
+* `LoadProcRender1.2` Same of above but for ply
 	**Status**: 
 
-* `LoadProcRender1.3` implement a direct pass of the mesh data as kept by the emscripten compiled code to the rendering engine. The file is parsed into a mesh using the vcg parsing code and passed back to three.js
-	* File STL is loaded using html5 file api, then it passed to the allocator, read as MyMesh by classic method 'open' (vcglib-> wrap/io_trimesh/import_stl.h). From methods 'openMesh', 'getVertexNumber', 'getVertexVector', 'getFaceNumber' and 'getFaceVector' the mesh is passed to 'createMesh' for renderize in three.js
-	When you load another mesh, the previous one is deleted.
-	**Status**: 
+* `LoadProcRender1.3` same of above but for stl
+	**Status**: work for ascii. Hang for binary...
 
 
