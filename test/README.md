@@ -57,7 +57,7 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	**Status**: Complete
 
 * `LoadProcRender1.2` Same of above but for ply
-	**Status**: 
+	**Status**:  work for ascii. report error for binary...
 
 * `LoadProcRender1.3` same of above but for stl
 	**Status**: work for ascii. Hang for binary...
