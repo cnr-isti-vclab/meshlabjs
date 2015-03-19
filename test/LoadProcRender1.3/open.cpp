@@ -40,10 +40,11 @@ extern "C" {
   }
 
   int openMesh(){
-  printf("creazione file\n");
-  ofstream f("tmp.stl");
-  f << buf;
+  printf("creazione file of size %i\n",size);
+  ofstream f("tmp.stl", std::ofstream::binary);
+  f.write(buf,size);
   f.close();
+  printf("buf '%i','%i'\n",(int)buf[80],(int)buf[81]);
   printf("fine creazione e caricamento\n");
   //for(int i=0;i<100;++i) printf("%c",buf[i]); printf("\n");
   int loadmask;
