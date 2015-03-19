@@ -44,11 +44,12 @@ extern "C" {
   ofstream f("tmp.stl", std::ofstream::binary);
   f.write(buf,size);
   f.close();
-  printf("buf '%i','%i'\n",(int)buf[80],(int)buf[81]);
+//  for(int qq=0;qq<40;++qq)
+//  printf("%04i '%02x %02x %02x %02x'\n", qq*4, buf[qq*4+0]&0xff, buf[qq*4+1]&0xff, buf[qq*4+2]&0xff, buf[qq*4+3]&0xff );
   printf("fine creazione e caricamento\n");
   //for(int i=0;i<100;++i) printf("%c",buf[i]); printf("\n");
   int loadmask;
-  int ret = vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);      
+  int ret=vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);      
   if(ret!=0)
     {
       printf("Error in opening file\n");
