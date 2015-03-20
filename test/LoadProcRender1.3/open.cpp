@@ -41,7 +41,7 @@ extern "C" {
 
   int openMesh(){
   printf("creazione file of size %i\n",size);
-  ofstream f("tmp.stl", std::ofstream::binary);
+  ofstream f("tmp_p.stl", std::ofstream::binary);
   f.write(buf,size);
   f.close();
 //  for(int qq=0;qq<40;++qq)
@@ -49,7 +49,7 @@ extern "C" {
   printf("fine creazione e caricamento\n");
   //for(int i=0;i<100;++i) printf("%c",buf[i]); printf("\n");
   int loadmask;
-  int ret=vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);      
+  int ret=vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp_p.stl",loadmask);      
   if(ret!=0)
     {
       printf("Error in opening file\n");

@@ -63,10 +63,11 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	* File STL (ascii or binary) is loaded using html5 file api, then it passed to the allocator, wrote to a tmp file in c++, read by classic method 'open' but, rather than read file in a classical "string" way and write in c++ file in a basic way, Emscripten, for read binary files, needs to read data as arrayBuffer of the data. In fact file is loaded in an ArrayBuffer of size equals to file size, then it passed in an array and finally write in memory by 'Module.writeArrayToMemory' call. In c++, file is written by 'ofstream' call with parameter 'std::ofstream::binary', i.e 'ofstream f("tmp.stl", std::ofstream::binary);' and file is written using f.write rathen than '<<' operator.
 	**Status**: Complete
 
-* `LoadProcRender1.4` STL file -> tmp file -> c++ File Parsing -> three.js
-	* File STL (ascii or binary) is loaded using html5 file api, then it read from FileReader html5 Api, wrote to a tmp file in Js, read by classic method 'open'.
+* `LoadProcRender1.4` mesh file -> tmp file -> c++ File Parsing -> three.js
+	* File (ascii or binary, format obj, ply, stl, off, vmi)  is loaded using html5 file api, then it read from FileReader html5 Api, wrote to a tmp file in Js, read by classic method 'open'.
 	Don't work with html5 FileWriter Api because, despite Js created the file, cpp code compiled by Emscripten is unable to retreive this file.
 	The solution is create file by Emscripten function 'FS.createDataFile(position,fileName,content,readable,writable)' which permits to create a file directy in memory by Js without require allocation of memory and read/write data in low-level memory, but simply work with file.
+	* NBB: It can't pass directly file name for incompatibility problems with the length of name
 	**Status**: Complete
 
 

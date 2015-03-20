@@ -1,10 +1,7 @@
 #include <stdlib.h>
-#include <fstream>
 #include <emscripten.h>
 #include <vcg/complex/complex.h>
-#include <wrap/io_trimesh/import_stl.h>
-#include <vcg/complex/algorithms/update/topology.h>
-#include <vcg/complex/algorithms/update/normal.h>
+#include <wrap/io_trimesh/import.h>
 
 using namespace vcg;
 using namespace std;
@@ -24,17 +21,25 @@ class MyVertex0  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::v
 class MyVertex1  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
 class MyVertex2  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Color4b, vcg::vertex::CurvatureDirf,
                                                     vcg::vertex::Qualityf, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
-
+char *fileName;
+int size;
 int vertexNum=0;
 int faceNum=0;
 MyMesh m;
 
 extern "C" {
+  char * getFileName(size_t _size)
+  {
+    fileName=0;
+    size = _size;
+    fileName = (char *) malloc(size);
+    return fileName;
+  }
 
   int openMesh(){
 
   int loadmask;
-  int ret=vcg::tri::io::ImporterSTL<MyMesh>::Open(m,"tmp.stl",loadmask);      
+  int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName,loadmask);      
   if(ret!=0)
     {
       printf("Error in opening file\n");
