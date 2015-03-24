@@ -99,14 +99,12 @@ Module.print attribute.
             
             fileReader.onload = function (fileLoadedEvent) {
 
-                var binbuf = new ArrayBuffer(files[0].size);
-                binbuf = fileLoadedEvent.target.result;
-                var int8buf = new Int8Array(binbuf); // Emscripten need a Arrayview! 
-
+                // Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
+                var int8buf = new Int8Array(fileLoadedEvent.target.result); 
                 Module.writeAsciiToMemory(fileName, pointerToMemory);
                 FS.createDataFile("/", fileName, int8buf, true, true);
 
-                console.log("Read file", binbuf.byteLength );
+                console.log("Read file", fileLoadedEvent.target.result.byteLength );
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
                 var openMesh = Module.ccall('openMesh','number');
