@@ -121,11 +121,14 @@ Module.print attribute.
                 FS.unlink(fileName);
                 // FS.deleteFile("tmpfile");
                 };
+                
+
 
             fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
-            }
+            }//end handleFileSelect
+            // Module.ccall('readData','number');
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
-    
+        
         function init() {
         var div_WIDTH = document.getElementById("renderingMesh").offsetWidth, 
             div_HEIGHT = document.getElementById("renderingMesh").offsetHeight;
