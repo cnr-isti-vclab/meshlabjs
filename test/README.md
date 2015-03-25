@@ -70,4 +70,7 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	* NBB: It can't pass directly file name for incompatibility problems with the length of name
 	**Status**: Complete
 
+* `LoadProcRender2.0` mesh file -> tmp file -> c++ File Parsing -> three.js
+	* Same as above, but in cpp source there is more elegant class 'MeshLabJs' instead of a set of function. Conseguently in JS functions are called by instance of 'Module.MeshLabJs' in a way similar to OOP.
+	**Status**: Complete
 

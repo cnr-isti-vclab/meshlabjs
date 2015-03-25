@@ -23,25 +23,25 @@ class MyVertex0  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::v
 class MyVertex1  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
 class MyVertex2  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Color4b, vcg::vertex::CurvatureDirf,
                                                     vcg::vertex::Qualityf, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
-char *fileName;
-int size;
-int vertexNum=0;
-int faceNum=0;
-MyMesh m;
-
 
 class MeshLabJs {
+
+private: 
+  string fileName;
+  MyMesh m;
+
 public:
   MeshLabJs(){}
-  char * getFileName(size_t _size) {
-    fileName=0;
-    size = _size;
-    fileName = (char *) malloc(size);
-    return fileName;
+
+  // MyMesh getMesh() const { return m; }
+  // void setMesh(MyMesh _m) { m = _m; }
+
+  void setFileName(string x) {
+    fileName = x;
   }
   int openMesh() {
     int loadmask;
-    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName,loadmask);      
+    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
     if(ret!=0) {
       printf("Error in opening file\n");
       exit(-1);
@@ -52,7 +52,7 @@ public:
 
   int getVertexNumber(){ return m.VN(); }
 
-  float * getVertexVector() { 
+  uintptr_t getVertexVector() { 
     float * v = new float[m.VN()*3];
     int k=0;
     for (int i = 0; i < m.VN(); i++){
@@ -61,12 +61,12 @@ public:
         k++;
       }
     }  
-    return v; 
+    return (uintptr_t)v; 
   }
 
   int getFaceNumber() { return m.FN(); }
 
-  int * getFaceVector() { 
+  uintptr_t getFaceVector() { 
     int * f = new int[m.FN()*3];
     int k=0;
     for (int i = 0; i < m.FN(); i++)
@@ -74,7 +74,7 @@ public:
         f[k] = (int)tri::Index(m,m.face[i].cV(j));
         k++;
       }
-    return f;
+    return (uintptr_t)f;
   }
 };
 
@@ -82,7 +82,8 @@ public:
 EMSCRIPTEN_BINDINGS(MeshLabJs) {
   class_<MeshLabJs>("MeshLabJs")
     .constructor<>()
-    .function("getFileName", &MeshLabJs::getFileName)
+ // .property("m",               &MeshLabJs::getMesh, &MeshLabJs::setMesh)
+    .function("setFileName",     &MeshLabJs::setFileName)
     .function("openMesh",        &MeshLabJs::openMesh)
     .function("getVertexNumber", &MeshLabJs::getVertexNumber)
     .function("getFaceNumber",   &MeshLabJs::getFaceNumber)

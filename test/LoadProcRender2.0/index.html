@@ -89,39 +89,37 @@ Module.print attribute.
                     return;
                 }
             }
-            var instance = new Module.MeshLabJs();
-            var pointerToMemory = instance.getFileName(fileName.size); // name of C function
-                // 'number', // return type
-                // ['number'], // argument types
-                // []); // arguments
+            var meshLab = new Module.MeshLabJs();
+            
             var fileToLoad = files[0];
             var fileReader = new FileReader();
             
             fileReader.onload = function (fileLoadedEvent) {
 
-                var binbuf = new ArrayBuffer(files[0].size);
-                binbuf = fileLoadedEvent.target.result;
-                var int8buf = new Int8Array(binbuf); // Emscripten need a Arrayview! 
-
-                Module.writeAsciiToMemory(fileName, pointerToMemory);
+            //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
+                var int8buf = new Int8Array(fileLoadedEvent.target.result); 
                 FS.createDataFile("/", fileName, int8buf, true, true);
 
-                console.log("Read file", binbuf.byteLength );
+                meshLab.setFileName(fileName);
+
+                console.log("Read file", fileLoadedEvent.target.result.byteLength );
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
-                var openMesh = Module.ccall('openMesh','number');
+
+                var openMeshResult = meshLab.openMesh();
+
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");
-                var VN = Module.ccall('getVertexNumber','number');
-                var vert = Module.ccall('getVertexVector','number');
-                var face = Module.ccall('getFaceVector','number');
-                var FN = Module.ccall('getFaceNumber','number');
+
+                var VN = meshLab.getVertexNumber();
+                var vert = meshLab.getVertexVector();
+                var face = meshLab.getFaceVector();
+                var FN = meshLab.getFaceNumber();
                 console.timeEnd("Getting mesh Time");
-                console.log("openMesh result is "+openMesh);
+                console.log("openMesh result is "+openMeshResult);
                 createMesh(vert,face,VN,FN);
                 animate();
                 FS.unlink(fileName);
-                // FS.deleteFile("tmpfile");
                 };
 
             fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
