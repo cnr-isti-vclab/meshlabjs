@@ -11,3 +11,4 @@ Notare il parametro:
 per dire esplicitamente quali funzioni esportare.
 L'html e' stato fatto a mano per avere un input field per i file e per tenere la struttura complessiva minimale.
 
+tests
