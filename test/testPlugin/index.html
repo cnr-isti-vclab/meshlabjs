@@ -62,7 +62,6 @@ Module.print attribute.
 </script>
 <script src="open.js"></script>
 <script type='text/javascript'>
-
         var camera, scene, renderer, controls, time, mesh;
         init();
 
@@ -100,13 +99,13 @@ Module.print attribute.
                 var int8buf = new Int8Array(fileLoadedEvent.target.result); 
                 FS.createDataFile("/", fileName, int8buf, true, true);
 
-                meshLab.setFileName(fileName);
+                // meshLab.setFileName(fileName);
 
                 console.log("Read file", fileLoadedEvent.target.result.byteLength );
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
 
-                var openMeshResult = meshLab.openMesh();
+                var openMeshResult = meshLab.openMesh(fileName);
 
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");
@@ -119,6 +118,8 @@ Module.print attribute.
                 console.log("openMesh result is "+openMeshResult);
                 createMesh(vert,face,VN,FN);
                 animate();
+                var test = new Module.Test(meshLab.getMesh());
+                test.testTest();
                 FS.unlink(fileName);
                 };
 
@@ -194,32 +195,6 @@ Module.print attribute.
             scene.add( mesh );
         }
     
-
-    function loadScript(callback) {
-    // Adding the script tag to the head as suggested before
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = "test.js";
-
-    // Then bind the event to the callback function.
-    // There are several events for cross browser compatibility.
-    script.onreadystatechange = callback;
-    script.onload = callback;
-
-    // Fire the loading
-    head.appendChild(script);
-    }
-    //Then you write the code you want to use AFTER the script is loaded in a lambda function:
-
-    var myPrettyCode = function() {
-
-        // Here, do what ever you want
-    };
-    //Then you run all that:
-
-    loadScript(myPrettyCode);
     </script>
-
 </body>
 </html>

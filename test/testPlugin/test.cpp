@@ -9,21 +9,17 @@ using namespace vcg;
 using namespace std;
 using namespace emscripten;
 
-class MyVertexF; class MyEdgeF; class MyFaceF;
-struct MyUsedTypesF : public vcg::UsedTypes<vcg::Use<MyVertexF>   ::AsVertexType,
-                                           vcg::Use<MyEdgeF>     ::AsEdgeType,
-                                           vcg::Use<MyFaceF>     ::AsFaceType>{};
+class MyVertex; class MyEdge; class MyFace;
+struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
+                                           vcg::Use<MyEdge>     ::AsEdgeType,
+                                           vcg::Use<MyFace>     ::AsFaceType>{};
 
-class MyVertexF  : public vcg::Vertex< MyUsedTypesF, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
-class MyFaceF    : public vcg::Face<   MyUsedTypesF, vcg::face::FFAdj,  vcg::face::VertexRef, vcg::face::BitFlags > {};
-class MyEdgeF    : public vcg::Edge<   MyUsedTypesF> {};
+class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
+class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj,  vcg::face::VertexRef, vcg::face::BitFlags > {};
+class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
 
-class MyMeshF    : public vcg::tri::TriMesh< std::vector<MyVertexF>, std::vector<MyFaceF> , std::vector<MyEdgeF>  > {};
+class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {};
 
-class MyVertex0F  : public vcg::Vertex< MyUsedTypesF, vcg::vertex::Coord3f, vcg::vertex::BitFlags  >{};
-class MyVertex1F  : public vcg::Vertex< MyUsedTypesF, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
-class MyVertex2F  : public vcg::Vertex< MyUsedTypesF, vcg::vertex::Coord3f, vcg::vertex::Color4b, vcg::vertex::CurvatureDirf,
-                                                    vcg::vertex::Qualityf, vcg::vertex::Normal3f, vcg::vertex::BitFlags  >{};
 
 class Test {
 
@@ -31,14 +27,15 @@ private:
 
 public:
   
-  MyMeshF m;
-  Test(MyMeshF _m){ 
-    vcg::tri::Append<MyMeshF,MyMeshF>::Mesh(m,_m);
-    vcg::tri::Clean<MyMeshF>::RemoveDuplicateVertex(m); 
+  MyMesh *m;
+  Test(uintptr_t _m){
+    m = (MyMesh*) _m;
+    // vcg::tri::Append<MyMeshF,MyMeshF>::Mesh(m,_m);
+    vcg::tri::Clean<MyMesh>::RemoveDuplicateVertex(*m); 
   }
 
   void testTest(){
-    printf("Read mesh %i %i\n",m.FN(),m.VN());
+    printf("Read mesh %i %i\n",m->FN(),m->VN());
   }
   
 };
@@ -46,6 +43,7 @@ public:
 //Binding code
 EMSCRIPTEN_BINDINGS(Test) {
   class_<Test>("Test")
+    .constructor<uintptr_t>()
     .function("testTest", &Test::testTest)
     ;
 }

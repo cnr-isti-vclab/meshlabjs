@@ -26,8 +26,8 @@ class MyVertex2  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::v
 
 class MeshLabJs {
 
-private: 
-  string fileName;
+// private: 
+//   string fileName;
 
 public:
   MeshLabJs(){}
@@ -36,10 +36,13 @@ public:
   // void setMesh(MyMesh _m) { m = _m; }
   
   MyMesh m;
-  void setFileName(string x) {
-    fileName = x;
+  // void setFileName(string x) {
+  //   fileName = x;
+  // }
+  uintptr_t getMesh(){
+    return (uintptr_t)((void*)(&m)) ;
   }
-  int openMesh() {
+  int openMesh(string fileName) {
     int loadmask;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
     if(ret!=0) {
@@ -83,11 +86,12 @@ EMSCRIPTEN_BINDINGS(MeshLabJs) {
   class_<MeshLabJs>("MeshLabJs")
     .constructor<>()
  // .property("m",               &MeshLabJs::getMesh, &MeshLabJs::setMesh)
-    .function("setFileName",     &MeshLabJs::setFileName)
+    // .function("setFileName",     &MeshLabJs::setFileName)
     .function("openMesh",        &MeshLabJs::openMesh)
     .function("getVertexNumber", &MeshLabJs::getVertexNumber)
     .function("getFaceNumber",   &MeshLabJs::getFaceNumber)
     .function("getFaceVector",   &MeshLabJs::getFaceVector)
     .function("getVertexVector", &MeshLabJs::getVertexVector)
+    .function("getMesh",         &MeshLabJs::getMesh)
     ;
 }

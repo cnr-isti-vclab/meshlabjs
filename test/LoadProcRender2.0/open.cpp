@@ -77,7 +77,7 @@ public:
     int t3=clock();
     printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
     printf("Refinement time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
-        return true;
+    return true;
     }
         
 };

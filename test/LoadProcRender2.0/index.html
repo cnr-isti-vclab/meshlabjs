@@ -68,13 +68,12 @@ Module.print attribute.
         var camera, scene, renderer, controls, time, mesh;
         init();
 
-        document.getElementById("refine_mesh").addEventListener('click', function refineMesh(){
+        document.getElementById("refine_mesh").addEventListener('click', 
+            function refineMesh(){
             console.log("Refine");
             meshLab.refine(1);
-             var VN = meshLab.getVertexNumber();
-            console.log("Refine " + VN);
-            updateMesh();
-                });
+        }
+            );
 
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
