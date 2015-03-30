@@ -33,13 +33,8 @@ private:
 public:
   MeshLabJs(){}
 
-  // MyMesh getMesh() const { return m; }
-  // void setMesh(MyMesh _m) { m = _m; }
-
-  void setFileName(string x) {
-    fileName = x;
-  }
-  int openMesh() {
+  int openMesh(string x) {
+       fileName = x;
     int loadmask;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
     if(ret!=0) {
@@ -76,6 +71,18 @@ public:
       }
     return (uintptr_t)f;
   }
+    
+    bool refine(int step){
+         int t2=clock();
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::EdgeLen<MyMesh,float> edgePred(0);
+    tri::MidPoint<MyMesh> midFun(&m);
+    tri::RefineE(m,midFun,edgePred);
+    int t3=clock();
+    printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
+    printf("Refinement time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
+    }
+        
 };
 
 //Binding code
@@ -83,11 +90,11 @@ EMSCRIPTEN_BINDINGS(MeshLabJs) {
   class_<MeshLabJs>("MeshLabJs")
     .constructor<>()
  // .property("m",               &MeshLabJs::getMesh, &MeshLabJs::setMesh)
-    .function("setFileName",     &MeshLabJs::setFileName)
     .function("openMesh",        &MeshLabJs::openMesh)
     .function("getVertexNumber", &MeshLabJs::getVertexNumber)
     .function("getFaceNumber",   &MeshLabJs::getFaceNumber)
     .function("getFaceVector",   &MeshLabJs::getFaceVector)
     .function("getVertexVector", &MeshLabJs::getVertexVector)
+    .function("refine", &MeshLabJs::refine)
     ;
 }

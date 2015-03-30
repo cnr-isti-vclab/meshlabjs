@@ -31,7 +31,7 @@
     <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
     <br>
     </form>
-    <button id='save_mesh' style="display:none;">Save Mesh</button>
+    <button id='refine_mesh'>Refine Mesh</button>
     <div id='renderingMesh' class='cont'> </div> 
     <script type='text/javascript'>
         /*
@@ -62,10 +62,16 @@ Module.print attribute.
 </script>
 <script src="open.js"></script>
 <script type='text/javascript'>
-
+    
+        var meshLab = new Module.MeshLabJs();
+    
         var camera, scene, renderer, controls, time, mesh;
         init();
 
+        document.getElementById("refine_mesh").addEventListener('click', function refineMesh(){
+            console.log("Refine");
+            meshLab.refine(1);
+                });
 
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
@@ -89,7 +95,7 @@ Module.print attribute.
                     return;
                 }
             }
-            var meshLab = new Module.MeshLabJs();
+            
             
             var fileToLoad = files[0];
             var fileReader = new FileReader();
@@ -100,13 +106,11 @@ Module.print attribute.
                 var int8buf = new Int8Array(fileLoadedEvent.target.result); 
                 FS.createDataFile("/", fileName, int8buf, true, true);
 
-                meshLab.setFileName(fileName);
-
                 console.log("Read file", fileLoadedEvent.target.result.byteLength );
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
 
-                var openMeshResult = meshLab.openMesh();
+                var openMeshResult = meshLab.openMesh(fileName);
 
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");
