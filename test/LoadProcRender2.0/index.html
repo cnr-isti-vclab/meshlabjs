@@ -71,6 +71,9 @@ Module.print attribute.
         document.getElementById("refine_mesh").addEventListener('click', function refineMesh(){
             console.log("Refine");
             meshLab.refine(1);
+             var VN = meshLab.getVertexNumber();
+            console.log("Refine " + VN);
+            updateMesh();
                 });
 
         function handleFileSelect(evt) {
@@ -113,15 +116,9 @@ Module.print attribute.
                 var openMeshResult = meshLab.openMesh(fileName);
 
                 console.timeEnd("Parsing mesh Time");
-                console.time("Getting mesh Time");
-
-                var VN = meshLab.getVertexNumber();
-                var vert = meshLab.getVertexVector();
-                var face = meshLab.getFaceVector();
-                var FN = meshLab.getFaceNumber();
-                console.timeEnd("Getting mesh Time");
+                
                 console.log("openMesh result is "+openMeshResult);
-                createMesh(vert,face,VN,FN);
+                updateMesh();
                 animate();
                 FS.unlink(fileName);
                 };
@@ -167,7 +164,13 @@ Module.print attribute.
             renderer.render(scene, camera);
         }
 
-        function createMesh(vert,fac,VN,FN) {
+        function updateMesh() {
+            console.time("Getting mesh Time");
+                var VN = meshLab.getVertexNumber();
+                var vert = meshLab.getVertexVector();
+                var face = meshLab.getFaceVector();
+                var FN = meshLab.getFaceNumber();
+                console.timeEnd("Getting mesh Time");
             scene.remove(mesh);
             var geometry = new THREE.Geometry();
             console.log("Vertices are "+VN);
@@ -180,9 +183,9 @@ Module.print attribute.
                 geometry.vertices.push( new THREE.Vector3(v1,v2,v3) );
             }
             for(var i=0; i<FN*3; i++){
-                var a = Module.getValue(fac+parseInt(i*4),'*'); i++;
-                var b = Module.getValue(fac+parseInt(i*4),'*'); i++;
-                var c = Module.getValue(fac+parseInt(i*4),'*'); 
+                var a = Module.getValue(face+parseInt(i*4),'*'); i++;
+                var b = Module.getValue(face+parseInt(i*4),'*'); i++;
+                var c = Module.getValue(face+parseInt(i*4),'*'); 
                 geometry.faces.push( new THREE.Face3(a,b,c));
             }
             console.log("geometry created.");
