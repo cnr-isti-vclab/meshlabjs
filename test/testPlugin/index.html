@@ -75,7 +75,7 @@ Module.print attribute.
             //extract format file
             var fileName = files[0].name;
             var format = fileName.split(".");
-            format = format[1];
+            format = format[format.length-1];
             fileName= "tmp." + format;
             switch(format){
                 case "off": {break;}
