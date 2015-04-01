@@ -4,6 +4,7 @@ init();
 document.getElementById("refine_mesh").addEventListener('click', function refineMesh(){
             console.log("Refine");
             meshLab.refine(1);
+            updateMesh();
             });
 
 function handleFileSelect(evt) {
