@@ -11,7 +11,6 @@ using namespace emscripten;
 
 class MyRefine {
 
-
 public:
 void refinement(MeshLabJs &mjs, int step)
 {
