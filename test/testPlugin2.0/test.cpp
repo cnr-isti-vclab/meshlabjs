@@ -11,7 +11,6 @@ using namespace emscripten;
 
 class Test {
 
-
 public:
 void refine(MeshLabJs &mjs, int step)
 {
