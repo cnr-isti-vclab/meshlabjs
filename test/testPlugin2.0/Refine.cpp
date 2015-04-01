@@ -11,9 +11,10 @@ using namespace emscripten;
 class MyRefine {
 
 public:
-void refinement(MeshLabJs &mjs, int step)
+void refinement(void *ptr, int step)
 {
-     MyMesh &m=mjs.m;
+    MeshLabJs *mjs = (MeshLabJs *)ptr;
+    MyMesh &m=mjs->m;
     
          int t2=clock();
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -32,6 +33,6 @@ void refinement(MeshLabJs &mjs, int step)
 EMSCRIPTEN_BINDINGS(MyRefine) {
   class_<MyRefine>("MyRefine")
     .constructor<>()
-    .function("myRefine", &MyRefine::refinement)
+    .function("myRefine", &MyRefine::refinement, allow_raw_pointers())
     ;
 }

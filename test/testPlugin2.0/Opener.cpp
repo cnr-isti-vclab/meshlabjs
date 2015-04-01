@@ -9,8 +9,9 @@ using namespace emscripten;
 class Opener
 {
     public:
-static int openMesh(MeshLabJs &mjs, string fileName) {
-    MyMesh &m=mjs.m;
+    static uintptr_t openMesh(string fileName) {
+    MeshLabJs *msp = new MeshLabJs();
+    MyMesh &m=msp->m;
     
     int loadmask;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
@@ -27,6 +28,6 @@ static int openMesh(MeshLabJs &mjs, string fileName) {
 EMSCRIPTEN_BINDINGS(Opener) {
   class_<Opener>("Opener")
     .constructor<>()
-    .function("openMesh",        &Opener::openMesh)
+    .function("openMesh",        &Opener::openMesh, allow_raw_pointers())
     ;
 }
