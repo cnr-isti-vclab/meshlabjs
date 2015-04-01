@@ -40,7 +40,7 @@
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
 
-                var openMeshResult = Opener.openMesh(fileName);
+                var ptrOpen = Opener.openMesh(fileName);
 
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");

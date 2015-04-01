@@ -20,7 +20,7 @@ class Opener
       exit(-1);
     }
     printf("Read mesh %i %i\n",m.FN(),m.VN());
-    return ret;
+    return (uintptr_t) msp;
   }
 };
 
@@ -28,6 +28,6 @@ class Opener
 EMSCRIPTEN_BINDINGS(Opener) {
   class_<Opener>("Opener")
     .constructor<>()
-    .function("openMesh",        &Opener::openMesh, allow_raw_pointers())
+    .function("openMesh",        &Opener::openMesh)
     ;
 }
