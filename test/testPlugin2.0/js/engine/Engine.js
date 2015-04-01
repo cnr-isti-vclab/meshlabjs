@@ -25,6 +25,7 @@
                 }
             }
             var Opener = new Module.Opener();
+            // var mlj = meshLab.getMesh();
             
             var fileToLoad = files[0];
             var fileReader = new FileReader();
@@ -44,16 +45,16 @@
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");
 
-                var VN = meshLab.getVertexNumber();
-                var vert = meshLab.getVertexVector();
-                var face = meshLab.getFaceVector();
-                var FN = meshLab.getFaceNumber();
+                var VN = Opener.getVertexNumber();
+                var vert = Opener.getVertexVector();
+                var face = Opener.getFaceVector();
+                var FN = Opener.getFaceNumber();
                 console.timeEnd("Getting mesh Time");
                 console.log("openMesh result is "+openMeshResult);
                 createMesh(vert,face,VN,FN);
                 animate();
-                var test = new Module.Test(meshLab.getMesh());
-                test.testTest();
+                // var test = new Module.Test(meshLab.getMesh());
+                // test.testTest();
                 FS.unlink(fileName);
                 };
 

@@ -24,7 +24,7 @@ static int openMesh(MeshLabJs &mjs, string fileName) {
 };
 
 //Binding code
-EMSCRIPTEN_BINDINGS(MeshLabJs) {
+EMSCRIPTEN_BINDINGS(Opener) {
   class_<Opener>("Opener")
     .constructor<>()
     .function("openMesh",        &Opener::openMesh)

@@ -35,10 +35,10 @@ public:
   // void setFileName(string x) {
   //   fileName = x;
   // }
-  inline uintptr_t getMesh(){
+inline uintptr_t getMesh(){
     return (uintptr_t)((void*)(&m)) ;
   }
-      int getVertexNumber(){ return m.VN(); }
+int getVertexNumber(){ return m.VN(); }
 
   inline uintptr_t getVertexVector() { 
     float * v = new float[m.VN()*3];
@@ -52,7 +52,7 @@ public:
     return (uintptr_t)v; 
   }
 
-  inline int getFaceNumber() { return m.FN(); }
+inline int getFaceNumber() { return m.FN(); }
 
 inline uintptr_t getFaceVector() { 
     int * f = new int[m.FN()*3];
@@ -65,3 +65,5 @@ inline uintptr_t getFaceVector() {
     return (uintptr_t)f;
   }
 };
+
+

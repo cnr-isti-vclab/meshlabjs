@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <emscripten.h>
 #include <emscripten/bind.h>
 #include "MeshLabJs.h"
