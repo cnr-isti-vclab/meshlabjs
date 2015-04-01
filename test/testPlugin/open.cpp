@@ -86,7 +86,7 @@ EMSCRIPTEN_BINDINGS(MeshLabJs) {
   class_<MeshLabJs>("MeshLabJs")
     .constructor<>()
  // .property("m",               &MeshLabJs::getMesh, &MeshLabJs::setMesh)
-    // .function("setFileName",     &MeshLabJs::setFileName)
+ // .function("setFileName",     &MeshLabJs::setFileName)
     .function("openMesh",        &MeshLabJs::openMesh)
     .function("getVertexNumber", &MeshLabJs::getVertexNumber)
     .function("getFaceNumber",   &MeshLabJs::getFaceNumber)

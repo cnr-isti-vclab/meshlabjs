@@ -2,7 +2,6 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
 #include <vcg/complex/complex.h>
-#include <vcg/complex/append.h>
 #include <vcg/complex/algorithms/clean.h>
 
 using namespace vcg;
@@ -23,14 +22,11 @@ class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<M
 
 class Test {
 
-private: 
-
 public:
   
   MyMesh *m;
   Test(uintptr_t _m){
     m = (MyMesh*) _m;
-    // vcg::tri::Append<MyMeshF,MyMeshF>::Mesh(m,_m);
     vcg::tri::Clean<MyMesh>::RemoveDuplicateVertex(*m); 
   }
 
