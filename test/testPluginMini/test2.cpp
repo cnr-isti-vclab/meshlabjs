@@ -10,7 +10,8 @@ using namespace emscripten;
 class Test2 {
 
 public:  
-
+Test2(){}
+    
   void use(uintptr_t ptr){
     printf("Use");
   }
@@ -20,6 +21,7 @@ public:
 //Binding code
 EMSCRIPTEN_BINDINGS(Test2) {
   class_<Test2>("Test2")
-    .function("generate", &Test2::use)
+    .constructor<>()
+    .function("use", &Test2::use)
     ;
 }

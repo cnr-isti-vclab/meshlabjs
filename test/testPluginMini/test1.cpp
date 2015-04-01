@@ -10,13 +10,12 @@ using namespace emscripten;
 class Test1 {
 
 public:  
-    int ppp;
-Test1(){}
-  int generate(){
-    printf("generate");
-      return 0;
-  }
-  
+    Test1(){}   
+    int generate()
+    {
+        printf("generate");
+        return 42 ;
+    }
 };
 
 //Binding code
