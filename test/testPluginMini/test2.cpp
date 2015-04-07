@@ -7,12 +7,12 @@ using namespace std;
 using namespace emscripten;
 
 
-class Test2 {
+class Foo2 {
 
 public:  
 
-Test2(){}
-  int generate2(){
+Foo2(){}
+  int foote(){
     printf("generate");
       return 2;
   }
@@ -20,9 +20,9 @@ Test2(){}
 };
 
 //Binding code
-EMSCRIPTEN_BINDINGS(Test2) {
-  class_<Test2>("Test2")
+EMSCRIPTEN_BINDINGS(Foo2) {
+  class_<Foo2>("Foo2")
     .constructor<>()
-    .function("generate2", &Test2::generate2)
+    .function("foote", &Foo2::foote)
     ;
 }

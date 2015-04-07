@@ -16,32 +16,15 @@
             }
     </style>
     <script>
-        // main
-        console.log("start");
-        var Module = {
-            preRun: [],
-            postRun: [],
-            print: (function () {
-                var element = document.getElementById('output');
-                if (element) element.value = ''; // clear browser cache
-                return function (text) {
-                    text = Array.prototype.slice.call(arguments).join(' ');
-                    console.log(text);
-                    if (element) {
-                        element.value += text + "\n";
-                        element.scrollTop = element.scrollHeight; // focus on bottom
-                    }
-                };
-            })()
-        };
+
     </script>
 </head>
 <body>
     <textarea id="output" rows="8"></textarea><br>
     <button id='testbutton1'>Test1!</button>    
     <button id='testbutton2'>Test2!</button>
-    <script src="test1.js"></script>
-    <script src="test2.js"></script> 
+    <!-- <script src="test1.js"></script> -->
+    <script src="test1.js"></script> 
     <script>
     //   
     document.getElementById("testbutton1").addEventListener('click', function (){
@@ -50,11 +33,13 @@
             var t1 = new Module.Test1();
             console.log(t1.generate1());
     });
-
+    </script>
+    <!-- // <script src="test2.js"></script> -->
+    <script>
     document.getElementById("testbutton2").addEventListener('click', function (){
-        console.log("testbutton1");
-        var t2 = new Module.Test2(); 
-        console.log(t2.generate2());  
+        console.log("testbutton2");
+        var t2 = new Module.Foo2(); 
+        console.log(t2.foote());  
      });    
     </script>
 </body>

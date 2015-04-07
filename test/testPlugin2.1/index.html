@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>testPlugin</title>      
+    <style>
+            body { margin: 0; }
+            .cont {
+                width: 850px;
+                max-width: 100%;
+                min-height: 100%;
+                height:     450px;
+                margin:     0 auto -30px;
+                /*width:450px;*/
+            }
+    </style>
+</head>
+<body>
+    <script src="js/engine/Module.js"></script>
+    <input type="file" id="files" name="files[]" value="tetra.off" />
+    <br>
+    <output id="list"></output>
+    <textarea id="output" rows="8"></textarea>
+    <form>
+    Mesh name:<br>
+    <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
+    <br>
+    </form>
+    <button id='save_mesh' style="display:none;">Save Mesh</button>
+    <button id='refinement'>Refine!</button>
+    <div id='renderingMesh' class='cont'> </div> 
+</body>
+    <script src="../js/three.js"></script>
+    <script src="../js/controls/TrackballControls.js"></script> 
+    <script src="MeshlabJs.js"></script>
+    <script src="js/engine/Rendering.js"></script>
+    <script src="js/engine/Engine.js">   </script> 
+</html>
