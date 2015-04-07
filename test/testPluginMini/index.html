@@ -38,23 +38,24 @@
 </head>
 <body>
     <textarea id="output" rows="8"></textarea><br>
-    <button id='testbutton'>Test!</button>
+    <button id='testbutton1'>Test1!</button>    
+    <button id='testbutton2'>Test2!</button>
     <script src="test1.js"></script>
-    <script>
-    //   
-        // document.getElementById("testbutton").addEventListener('click', function (){
-
-            // var com = new Module.Common();
-      
-            console.log("testbutton");
-            var t1 = new Module.Test1();
-            console.log(t1.generate1());
-        // });
-    </script>    
     <script src="test2.js"></script> 
     <script>
+    //   
+    document.getElementById("testbutton1").addEventListener('click', function (){
+            // var com = new Module.Common();
+            console.log("testbutton1");
+            var t1 = new Module.Test1();
+            console.log(t1.generate1());
+    });
+
+    document.getElementById("testbutton2").addEventListener('click', function (){
+        console.log("testbutton1");
         var t2 = new Module.Test2(); 
-        console.log(t2.generate2());      
+        console.log(t2.generate2());  
+     });    
     </script>
 </body>
 </html>

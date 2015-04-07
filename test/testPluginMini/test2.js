@@ -1,6 +1,3 @@
-var Module = function(Module) {
-  Module = Module || {};
-
 // The Module object: Our interface to the outside world. We import
 // and export values on it, and do the work to get that through
 // closure compiler if necessary. There are various ways Module can be used:
@@ -10148,7 +10145,7 @@ function __ZNK10__cxxabiv121__vmi_class_type_info16search_below_dstEPNS_19__dyna
      $30 = (($this) + 8|0);
      $31 = (($info) + 24|0);
      $does_dst_type_point_to_our_static_type$0$off0 = 0;$is_dst_type_derived_from_static_type$0$off0 = 0;$p$0 = $23;
-     L37: while(1) {
+     L34: while(1) {
       $32 = ($p$0>>>0)<($26>>>0);
       if (!($32)) {
        $does_dst_type_point_to_our_static_type$0$off0$lcssa = $does_dst_type_point_to_our_static_type$0$off0;$is_dst_type_derived_from_static_type$2$off0 = $is_dst_type_derived_from_static_type$0$off0;
@@ -10180,7 +10177,7 @@ function __ZNK10__cxxabiv121__vmi_class_type_info16search_below_dstEPNS_19__dyna
          if ($46) {
           $does_dst_type_point_to_our_static_type$0$off0$lcssa = $does_dst_type_point_to_our_static_type$0$off0;$is_dst_type_derived_from_static_type$2$off0 = 1;
           label = 20;
-          break L37;
+          break L34;
          } else {
           $does_dst_type_point_to_our_static_type$1$off0 = $does_dst_type_point_to_our_static_type$0$off0;$is_dst_type_derived_from_static_type$1$off0 = 1;
           break;
@@ -10190,14 +10187,14 @@ function __ZNK10__cxxabiv121__vmi_class_type_info16search_below_dstEPNS_19__dyna
         $40 = ($39|0)==(1);
         if ($40) {
          label = 25;
-         break L37;
+         break L34;
         }
         $41 = HEAP32[$30>>2]|0;
         $42 = $41 & 2;
         $43 = ($42|0)==(0);
         if ($43) {
          label = 25;
-         break L37;
+         break L34;
         } else {
          $does_dst_type_point_to_our_static_type$1$off0 = 1;$is_dst_type_derived_from_static_type$1$off0 = 1;
         }
@@ -14477,6 +14474,3 @@ run();
 
 
 
-
-  return Module;
-};
