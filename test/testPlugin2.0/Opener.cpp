@@ -9,7 +9,7 @@ using namespace emscripten;
 class Opener
 {
     public:
-    static uintptr_t openMesh(string fileName) {
+    uintptr_t openMesh(string fileName) {
     MeshLabJs *msp = new MeshLabJs();
     MyMesh &m=msp->m;
     
@@ -28,6 +28,6 @@ class Opener
 EMSCRIPTEN_BINDINGS(Opener) {
   class_<Opener>("Opener")
     .constructor<>()
-    .function("openMesh",        &Opener::openMesh)
+    .function("openMesh",        &Opener::openMesh, allow_raw_pointers())
     ;
 }

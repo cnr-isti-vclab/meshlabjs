@@ -15,40 +15,46 @@
                 /*width:450px;*/
             }
     </style>
+    <script>
+        // main
+        console.log("start");
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: (function () {
+                var element = document.getElementById('output');
+                if (element) element.value = ''; // clear browser cache
+                return function (text) {
+                    text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                    if (element) {
+                        element.value += text + "\n";
+                        element.scrollTop = element.scrollHeight; // focus on bottom
+                    }
+                };
+            })()
+        };
+    </script>
 </head>
 <body>
     <textarea id="output" rows="8"></textarea><br>
     <button id='testbutton'>Test!</button>
-        <script>
-        // main
-        console.log("start");
-        var Module = {
-        preRun: [],
-        postRun: [],
-        print: (function () {
-            var element = document.getElementById('output');
-            if (element) { element.value = ''; }// clear browser cache
-            return function (text) {
-                text = Array.prototype.slice.call(arguments).join(' ');
-                console.log(text);
-                if (element) {
-                    element.value += text + "\n";
-                    element.scrollTop = element.scrollHeight; // focus on bottom
-                }
-            };
-        })()
-    };
-        document.getElementById("testbutton").addEventListener('click', function (){
+    <script src="test1.js"></script>
+    <script>
+    //   
+        // document.getElementById("testbutton").addEventListener('click', function (){
+
+            // var com = new Module.Common();
+      
             console.log("testbutton");
-            //var test1 = new Module.Test1();        
-            //var val = test1.generate();
-            //console.log("generated " + val);
-            var test2 = new Module.Test2();        
-            test2.use(42);
-            });
+            var t1 = new Module.Test1();
+            console.log(t1.generate1());
+        // });
+    </script>    
+    <script src="test2.js"></script> 
+    <script>
+        var t2 = new Module.Test2(); 
+        console.log(t2.generate2());      
     </script>
 </body>
-    <!-- You can use only one emscripten compiled element at a time /!-->
-    <!-- <script src="test1.js"></script> /!-->
-    <script src="test2.js"></script>
 </html>

@@ -24,7 +24,6 @@
                     return;
                 }
             }
-            var Opener = new Module.Opener();
             // var mlj = meshLab.getMesh();
             
             var fileToLoad = files[0];
@@ -40,7 +39,9 @@
                 console.timeEnd("File Reading Time");
                 console.time("Parsing mesh Time");
 
-                var ptrOpen = Opener.openMesh(fileName);
+                var Opener = new Module.Opener();
+                var m = new Module.MeshLabJs();
+                ptrOpen = opener.openMesh(fileName);
 
                 console.timeEnd("Parsing mesh Time");
                 console.time("Getting mesh Time");

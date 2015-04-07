@@ -66,4 +66,15 @@ inline uintptr_t getFaceVector() {
   }
 };
 
-
+EMSCRIPTEN_BINDINGS(MeshLabJs) {
+  class_<MeshLabJs>("MeshLabJs")
+    .constructor<>()
+ // .property("m",               &MeshLabJs::getMesh, &MeshLabJs::setMesh)
+    .function("getMesh",        &MeshLabJs::getMesh)
+    .function("getVertexNumber", &MeshLabJs::getVertexNumber)
+    .function("getFaceNumber",   &MeshLabJs::getFaceNumber)
+    .function("getFaceVector",   &MeshLabJs::getFaceVector)
+    .function("getVertexVector", &MeshLabJs::getVertexVector)
+    // .function("refine", &MeshLabJs::refine)
+    ;
+}
