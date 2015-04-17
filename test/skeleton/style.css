@@ -1,0 +1,74 @@
+* { 
+-moz-box-sizing: border-box; 
+-webkit-box-sizing: border-box; 
+box-sizing: border-box; 
+}
+body{
+	width: 99%;
+	height: 100%;
+	background: white;
+	overflow: hidden;
+}
+canvas {
+	height: 100%;
+}
+
+
+.wrapper {
+	height: 100%;
+	width: 100%;
+	position: relative;
+	float: none;
+}
+
+
+div {
+	
+	width: 79%;
+ height: 100%;
+ min-height: 500px;
+ padding-left: 2px;
+ padding-right: 2px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+
+
+}
+
+.3Dcontainer {
+	padding-left: 2px;
+ 	padding-right: 2px;
+ 	padding-top: 2px;
+ 	padding-bottom: 2px;
+	float:left; 
+	display:block;
+	/*width: auto;*/
+ 	/*height: auto;*/
+}
+.controls {
+	padding-left: 2px;
+ 	padding-right: 2px;
+ 	padding-top: 2px;
+ 	padding-bottom: 2px;
+	position: absolute;
+	float:right; 
+	display:block;
+	width: 20%;
+ 	height: 100%;
+ 	top: 0;
+ 	right: 0;
+ 	border-left: 2px solid black;
+ 	border-right: 2px solid black;
+ 	border-top: 2px solid black;
+ 	border-bottom: 2px solid black;
+ 	/* padding-right: -2px;*/
+}
+.frame-controls {
+	position: relative;
+	float: top;
+	height: auto;
+	max-height: 30%;
+
+ 	border-bottom: 2px solid red;
+ 	
+}

@@ -1,4 +1,11 @@
-#include "MyMesh.h"
+#include <stdlib.h>
+#include <emscripten.h>
+#include <emscripten/bind.h>
+#include "mesh_def.h"
+
+using namespace vcg;
+using namespace std;
+using namespace emscripten;
 
 class MeshLabJs {
 

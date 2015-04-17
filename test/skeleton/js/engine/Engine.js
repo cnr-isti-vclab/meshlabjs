@@ -69,8 +69,3 @@
             console.timeEnd("Update mesh ");
             });
 
-            var arrayFoo = [0];
-            arrayFoo[1]= 1;
-            arrayFoo[2] = "pijijs";
-            alert(arrayFoo[2]);
-

@@ -1,4 +1,4 @@
-#include "MyMesh.cpp"
+#include "MyMesh.h"
 
 class Opener
 {
