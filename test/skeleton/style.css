@@ -9,30 +9,34 @@ html,body{
 	background: white;
 	overflow: hidden;
 }
+textarea {
+	width: 100%;
+}
 canvas {
 	height: 100%;
 }
-
-
-.wrapper {
-	height: 100%;
-	width: 100%;
-	position: relative;
-	float: none;
-}
-
-
 div {
-	
-	width: 79%;
- height: 100%;
- min-height: 500px;
+ width: 79%;
+ height: 95%;
+
  padding-left: 2px;
  padding-right: 2px;
  padding-top: 2px;
  padding-bottom: 2px;
 
 
+}
+.header {
+	max-height: 20px;
+	height: 8%;
+	text-align: center;
+	vertical-align: center;
+}
+.wrapper {
+	height: 100%;
+	width: 100%;
+	position: relative;
+	float: none;
 }
 
 .3Dcontainer {
@@ -42,11 +46,12 @@ div {
  	padding-bottom: 2px;
 	float:left; 
 	display:block;
+	 min-height: 500px;
 	/*width: auto;*/
  	/*height: auto;*/
 }
 .controls {
-	padding-left: 2px;
+	padding-left: 0px;
  	padding-right: 2px;
  	padding-top: 2px;
  	padding-bottom: 2px;
@@ -66,10 +71,9 @@ div {
 }
 .frame-controls {
 	position: relative;
-	float: top;
-	height: auto;
-	max-height: 30%;
+	/*float: top;*/
+	/*height: auto;*/
+	max-height: 33%;
+	width: 100%;
 
- 	border-bottom: 2px solid red;
- 	
 }
