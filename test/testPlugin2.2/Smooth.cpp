@@ -21,11 +21,11 @@ void smooth(int step)
 {
     int t2=clock();
 
-    tri::RequireVFAdjacency(m);
-    tri::UpdateTopology<MyMesh*>::VertexFace(*m);
+    // tri::RequireVFAdjacency(m);
+    // tri::UpdateTopology<MyMesh*>::VertexFace(*m);
 
     MyMesh::PerVertexAttributeHandle <Point3f>  avgH =
-        tri::Allocator<MyMesh>::GetPerVertexAttribute<Point3f>(*m,"avg");
+        tri::Allocator<MyMesh*>::GetPerVertexAttribute<Point3f>(*m,"avg");
 
     for(MyMesh::VertexIterator vi=m->vert.begin();vi!=m->vert.end();++vi) {
        std::vector<MyVertex *> starVec;

@@ -1,6 +1,6 @@
         var camera, scene, renderer, controls, time, mesh, ptrMesh;
         //declaration of plugin global variable
-        var Refine;
+        var Refine,Smooth;
 
         init();
 
@@ -68,4 +68,16 @@
             createMesh(ptrMesh);
             console.timeEnd("Update mesh ");
             });
+
+            //handler for plugin SMOOTH
+            document.getElementById('smoothed').addEventListener('click', function smoothMesh(){
+            console.time("Smooth time ");
+            Smooth = new Module.MySmooth(ptrMesh);
+            Smooth.smooth(1);
+            console.timeEnd("Smooth time ");
+            console.time("Update mesh ");
+            createMesh(ptrMesh);
+            console.timeEnd("Update mesh ");
+            });
+            
 
