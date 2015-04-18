@@ -3,17 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<!--     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
- -->    <link href="style.css" rel="stylesheet">    
+<!--     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->    
+    <link href="style.css" rel="stylesheet">     
     <!-- PreProcessing information ... -->
     <script src="../js/three.js"></script>
     <script src="../js/controls/TrackballControls.js"></script> 
     <script src="../js/jquery-1.11.2.min.js"></script>
+    <script src="../js/dat.gui.min.js"></script>
 
-    <title>testPlugin</title>      
+    <title>MeshLabJs</title>      
 
 </head>
 <body>
+
 
     <div class="wrapper">
     <div class="header">
@@ -36,7 +38,7 @@
                 <input type="file" id="files" name="files[]" value="tetra.off" />
                 <br>
                 <output id="list"></output>
-                <textarea id="output" rows="8"></textarea>
+                <textarea id="output" ></textarea>
                 <form>
                 Mesh name:
                 <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
@@ -47,11 +49,22 @@
                 
             </div>
             </div>
-            <div id="filters" class="frame-controls">
-                <div class="wrapper">
+            <div id="filters" class="frame-controls" >
+                <!-- <div class="wrapper"> -->
+
+                <fieldset>
+                            <legend>Filtri</legend>
+                            <select>
+                                <option >Please, select a Filter</option>
+                                <option value="refine" >Refine</option>
+                                <option value="smooth">Smooth</option>
+                            </select>
+                        </fieldset>
+                
+
                 <button id='refinement'>Refine!</button>
                 <button id='smoothed'>Smooth</button>
-                </div> 
+                <!-- </div>  -->
             </div>
         
         </div>

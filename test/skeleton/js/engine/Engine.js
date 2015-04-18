@@ -152,14 +152,29 @@
 
             //handler for plugin REFINE
             document.getElementById('refinement').addEventListener('click', function refineMesh(){
-            console.time("Refine time ");
-            Refine = new Module.MyRefine(ptrMesh);
-            Refine.myRefine(1);
-            console.timeEnd("Refine time ");
-            console.time("Update mesh ");
-            createMesh(ptrMesh);
-            console.timeEnd("Update mesh ");
+                var text = new refineGui();
+                var gui = new dat.GUI({ autoPlace: false });
+                document.getElementById('filters').appendChild(gui.domElement);
+                gui.add(text, 'step',0,5).step(1);
+                gui.add(text, 'refine');
             });
+
+            var refineGui = function() {
+                this.step = 1;
+                var s = this.step
+                this.refine = function(s) { 
+                    // console.time("Refine time ");
+                    // Refine = new Module.MyRefine(ptrMesh);
+                    // Refine.myRefine(step);
+                    // console.timeEnd("Refine time ");
+                    // console.time("Update mesh ");
+                    // createMesh(ptrMesh);
+                    // console.timeEnd("Update mesh ");
+                    alert(s);
+                };
+            };
+
+
 
             //handler for plugin SMOOTH
             document.getElementById('smoothed').addEventListener('click', function smoothMesh(){
