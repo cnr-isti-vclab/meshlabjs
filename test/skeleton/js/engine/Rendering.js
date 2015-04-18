@@ -72,5 +72,13 @@
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
-            scene.add( mesh );
+            scene.add(mesh);
         }
+
+        // function addMesh(name){
+        //     scene.add( name );
+        // }
+
+        // function removeMesh(name) {
+        //     scene.remove( name );
+        // }

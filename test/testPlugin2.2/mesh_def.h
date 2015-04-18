@@ -1,6 +1,6 @@
 #include <vcg/complex/complex.h>
 
-
+using namespace vcg;
 
 class MyFace;
 class MyVertex;

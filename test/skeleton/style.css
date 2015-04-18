@@ -11,6 +11,28 @@ html,body{
 }
 textarea {
 	width: 100%;
+	height: auto;
+}
+fieldset {
+	border-left: 0px solid black;
+ 	border-right: 0px solid black;
+ 	border-top: 0px solid black;
+ 	border-bottom: 0px solid black;
+ 	height: auto;
+
+}
+#checkbox{
+	display: inline-block;
+	margin: 0;
+	vertical-align: middle;
+	margin-left: 2px;
+}
+label{
+	display: inline-block;
+	margin: 0;
+	width: 100%
+	vertical-align: middle;
+	margin-left: 2px;
 }
 canvas {
 	height: 100%;

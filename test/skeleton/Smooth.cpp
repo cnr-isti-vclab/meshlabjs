@@ -15,14 +15,14 @@ class MySmooth {
 
 public:
 
-MyMesh *m;
+MyMesh *n;
 MySmooth(uintptr_t _m){
-    m = (MyMesh*) _m;
+    n = (MyMesh*) _m;
 }
-void smooth(int step)
+void mySmooth(int step)
 {
     int t2=clock();
-
+    //from lecture
     // MyMesh::PerVertexAttributeHandle <Point3f>  avgH =
     //     tri::Allocator<MyMesh*>::GetPerVertexAttribute<Point3f>(*m,"avg");
 
@@ -40,26 +40,35 @@ void smooth(int step)
 
     // for(MyMesh::VertexIterator vi=m->vert.begin();vi!=m->vert.end();++vi)
     //     vi->P() = avgH[vi];
-    int dup = tri::Clean<MyMesh>::RemoveDuplicateVertex(*m);
-    int unref = tri::Clean<MyMesh>::RemoveUnreferencedVertex(*m);
-    printf("Removed %i duplicate and %i unreferenced vertices from mesh \n",dup,unref);
 
-    tri::UpdateTopology<MyMesh>::VertexFace(*m);
-     for(int i=0;i<step;++i)
-    {
-    tri::UpdateNormal<MyMesh>::PerFaceNormalized(*m);
-    tri::Smooth<MyMesh>::VertexCoordPasoDoble(*m,3);
-    }
+    //from sample
+  vcg::tri::RequirePerVertexNormal(*n);
+  vcg::tri::UpdateNormal<MyMesh>::PerVertexNormalized(*n);
+
+//   some cleaning to get rid of bad file formats like stl that duplicate vertexes..
+  int dup = tri::Clean<MyMesh>::RemoveDuplicateVertex(*n);
+  int unref = tri::Clean<MyMesh>::RemoveUnreferencedVertex(*n);
+  printf("Removed %i duplicate and %i unreferenced vertices from mesh \n",dup,unref);
+
+  tri::UpdateTopology<MyMesh>::VertexFace(*n);
+
+  for(int i=0;i<step;++i)
+  {
+    tri::UpdateNormal<MyMesh>::PerFaceNormalized(*n);
+    tri::Smooth<MyMesh>::VertexCoordPasoDoble(*n,1);
+  }
+
     int t3=clock();
-    printf("Smooth mesh %i vert - %i face \n",m->VN(),m->FN());
+    printf("Smooth mesh %i vert - %i face \n",n->VN(),n->FN());
     printf("Smooth time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
-    }
+
+}
 };
 
 //Binding code
 EMSCRIPTEN_BINDINGS(MySmooth) {
   class_<MySmooth>("MySmooth")
     .constructor<uintptr_t>()
-    .function("smooth", &MySmooth::smooth)
+    .function("mySmooth", &MySmooth::mySmooth)
     ;
 }

@@ -17,7 +17,7 @@ class Opener
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
     if(ret!=0) {
       printf("Error in opening file\n");
-      exit(-1);
+      
     }
     printf("Read mesh %i %i\n",m.FN(),m.VN());
     return ret;

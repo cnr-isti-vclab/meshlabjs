@@ -8,6 +8,7 @@
     <!-- PreProcessing information ... -->
     <script src="../js/three.js"></script>
     <script src="../js/controls/TrackballControls.js"></script> 
+    <script src="../js/jquery-1.11.2.min.js"></script>
 
     <title>testPlugin</title>      
 
@@ -21,9 +22,13 @@
     <div id='renderingMesh' class='3Dcontainer'> </div>
     <div class='controls'>
         <div id="rendering-mode" class="frame-controls">
-            <div class="wrapper">
-            Rendering Mode
-            </div>
+            <!-- <div class="wrapper"> -->
+            <form method="post">
+            <fieldset id="field">
+                <legend>Rendering Mode</legend>
+            </fieldset>
+        </form>
+            <!-- </div> -->
         </div>
         
             <div id="mesh-info" class="frame-controls" style="border-top: 2px solid black;border-bottom: 2px solid black;">  
@@ -33,11 +38,12 @@
                 <output id="list"></output>
                 <textarea id="output" rows="8"></textarea>
                 <form>
-                Mesh name:<br>
+                Mesh name:
                 <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
                 <br>
-                </form>
                 <button id='save_mesh'>Save Mesh</button>
+                </form>
+                
                 
             </div>
             </div>
