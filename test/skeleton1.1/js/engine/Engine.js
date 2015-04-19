@@ -9,39 +9,41 @@
         //Declaration DAT.GUI
         var masterGui = function() {
             this.OpenMesh = function() {
-                $('#files').click();
-                }; //end OpenMesh di dat.gui
-                this.step = 1;
-                this.refine = function() { 
-                    console.time("Refine time ");
-                    Refine = new Module.MyRefine(ptrMesh);
-                    Refine.myRefine(step);
-                    console.timeEnd("Refine time ");
-                    console.time("Update mesh ");
-                    createMesh(ptrMesh);
-                    console.timeEnd("Update mesh ");
-                }; //end refine
-            };//end mastergui
-
+                $('#files').click(); 
+            }; //end OpenMesh di dat.gui
+        };//end mastergui
         
-        var master = new masterGui();
         var gui = new dat.GUI({ autoPlace: false });
         document.getElementById('controls').appendChild(gui.domElement);
+        var master = new masterGui();
         gui.add(master, 'OpenMesh');
-        var stepController = gui.add(master, 'step',1,5).step(1);
-        var step = 1;
+
+        //end Declaration DAT.GUI
+
+
+        //Declaration Plugin Refine
+        var Step = 1;
+        var refGui = {
+            stepRefine : 1,
+            refine : function() { 
+                console.time("Refine time ");
+                Refine = new Module.MyRefine(ptrMesh);
+                Refine.myRefine(Step);
+                console.timeEnd("Refine time ");
+                console.time("Update mesh ");
+                createMesh(ptrMesh);
+                console.timeEnd("Update mesh ");
+            } //end refine  
+        }; 
+
+        var folderRefine = gui.addFolder('Refine');
+        var stepController = folderRefine.add(refGui,'stepRefine',1,5).step(1).name('Refine Step');
+        
         stepController.onChange(function(value) {
-            step=value;
+            Step=value;
         });
+        folderRefine.add(refGui, 'refine').name('Refine Mesh');
 
-        gui.add(master, 'refine');
-
-
-
-            //handler for plugin REFINE
-            // document.getElementById('refinement').addEventListener('click', function refineMesh(){
-                
-            // });
 
         init();
 
