@@ -6,28 +6,39 @@
         var openedMesh=[];
         var countRadio=0;
 
-        var refineGui = function() {
+        //Declaration DAT.GUI
+        var masterGui = function() {
+            this.OpenMesh = function() {
+                $('#files').click();
+                }; //end OpenMesh di dat.gui
                 this.step = 1;
-                var s = this.step
-                this.refine = function(s) { 
-                    // console.time("Refine time ");
-                    // Refine = new Module.MyRefine(ptrMesh);
-                    // Refine.myRefine(step);
-                    // console.timeEnd("Refine time ");
-                    // console.time("Update mesh ");
-                    // createMesh(ptrMesh);
-                    // console.timeEnd("Update mesh ");
-                    alert(s);
-                };
-            };
+                this.refine = function() { 
+                    console.time("Refine time ");
+                    Refine = new Module.MyRefine(ptrMesh);
+                    Refine.myRefine(step);
+                    console.timeEnd("Refine time ");
+                    console.time("Update mesh ");
+                    createMesh(ptrMesh);
+                    console.timeEnd("Update mesh ");
+                }; //end refine
+            };//end mastergui
+        var master = new masterGui();
+        var gui = new dat.GUI({ autoPlace: false });
+        document.getElementById('controls').appendChild(gui.domElement);
+        gui.add(master, 'OpenMesh');
+        var stepController = gui.add(master, 'step',0,5).step(1);
+        var step = 1;
+        stepController.onChange(function(value) {
+            step=value;
+        });
+
+        gui.add(master, 'refine');
+
+
 
             //handler for plugin REFINE
             // document.getElementById('refinement').addEventListener('click', function refineMesh(){
-                var text = new refineGui();
-                var gui = new dat.GUI({ autoPlace: false });
-                document.getElementById('controls').appendChild(gui.domElement);
-                gui.add(text, 'step',0,5).step(1);
-                gui.add(text, 'refine');
+                
             // });
 
         init();
@@ -35,31 +46,31 @@
 
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
-            console.log("Name: ", files[0].name);
-            console.log("Size: ", files[0].size);
-            console.time("File Reading Time");
+                console.log("Name: ", files[0].name);
+                console.log("Size: ", files[0].size);
+                console.time("File Reading Time");
 
-            //extract format file
-            var fileName = files[0].name;
-            var format = fileName.split(".");
-            format = format[format.length-1];
-            fileName= "tmp." + format;
-            switch(format){
-                case "off": {break;}
-                case "obj": {break;}
-                case "ply": {break;}
-                case "stl": {break;}
-                case "vmi": {break;}
-                default : {
-                    alert("MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again.")
-                    return;
+                //extract format file
+                var fileName = files[0].name;
+                var format = fileName.split(".");
+                format = format[format.length-1];
+                fileName= "tmp." + format;
+                switch(format){
+                    case "off": {break;}
+                    case "obj": {break;}
+                    case "ply": {break;}
+                    case "stl": {break;}
+                    case "vmi": {break;}
+                    default : {
+                        alert("MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again.")
+                        return;
+                    }
                 }
-            }
             
-            var fileToLoad = files[0];
-            var fileReader = new FileReader();
+                var fileToLoad = files[0];
+                var fileReader = new FileReader();
             
-            fileReader.onload = function (fileLoadedEvent) {
+                fileReader.onload = function (fileLoadedEvent) {
 
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
                 var int8buf = new Int8Array(fileLoadedEvent.target.result);
@@ -84,13 +95,14 @@
 
                 FS.unlink(fileName);
                 
-                if(openedMesh.length>4){
-                    document.getElementById('field').elements[0].remove();
-                    document.getElementsByTagName('label')[0].parentNode.removeChild(document.getElementsByTagName('label')[0]);
-                    document.getElementsByTagName('br')[0].parentNode.removeChild(document.getElementsByTagName('br')[0]);
-                    // openedMesh.shift();
-                }
-
+                // go
+                // if(openedMesh.length>4){
+                //     document.getElementById('field').elements[0].remove();
+                //     document.getElementsByTagName('label')[0].parentNode.removeChild(document.getElementsByTagName('label')[0]);
+                //     document.getElementsByTagName('br')[0].parentNode.removeChild(document.getElementsByTagName('br')[0]);
+                //     // openedMesh.shift();
+                // }
+                //go
 
                 //count how many radiobox exist
                 // var countRadio=0;
@@ -108,14 +120,15 @@
                 // checkbox.text = files[0].name;
                 // checkbox.checked="checked";
 
-
-                var radio = document.createElement('input');
-                radio.type = "radio";
-                radio.name = "mesh";
-                radio.value = countRadio;
-                radio.text = files[0].name;
-                radio.checked = "checked";
-                $(radio).on('click',  OnChangeRadio);
+                //go
+                // var radio = document.createElement('input');
+                // radio.type = "radio";
+                // radio.name = "mesh";
+                // radio.value = countRadio;
+                // radio.text = files[0].name;
+                // radio.checked = "checked";
+                // $(radio).on('click',  OnChangeRadio);
+                //go
                 //     // var int8buf = new Int8Array(openedMesh[radio.value]); 
                 //     // FS.createDataFile("/", fileName, int8buf, true, true);
                 //     // var Opener = new Module.Opener();
@@ -132,23 +145,27 @@
                 //  });
                 // radio.onchange = OnChangeRadio(this);
                 // radio.addEventListener ("RadioStateChange", alert("pippo"), false);
-                var label = document.createElement('label')
-                label.htmlFor = files[0].name;
-                label.appendChild(document.createTextNode(files[0].name));
-                // document.getElementById('field').appendChild(checkbox);
-                document.getElementById('field').appendChild(radio);
-                document.getElementById('field').appendChild(label);
-                var br = document.createElement('br');
-                document.getElementById('field').appendChild(br);
                 
-                openedMesh[countRadio]=int8buf;
-                countRadio++;
-            }
-            };
+                //go
+                // var label = document.createElement('label')
+                // label.htmlFor = files[0].name;
+                // label.appendChild(document.createTextNode(files[0].name));
+                // // document.getElementById('field').appendChild(checkbox);
+                // document.getElementById('field').appendChild(radio);
+                // document.getElementById('field').appendChild(label);
+                // var br = document.createElement('br');
+                // document.getElementById('field').appendChild(br);
+                
+                // openedMesh[countRadio]=int8buf;
+                // countRadio++;
+                //go
 
-            fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
+                }//end else
+                }; //end Onload
+
+                fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
             }
-            // document.getElementById('files').addEventListener('change', handleFileSelect, false);
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
             // $('input[type="radio"]').on('click change', function(e) {
             // alert(e.type);
