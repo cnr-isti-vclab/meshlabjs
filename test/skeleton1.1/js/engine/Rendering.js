@@ -7,7 +7,7 @@
         camera.position.z = 15;
         renderer = new THREE.WebGLRenderer();
         renderer.shadowMapEnabled = true;
-        renderer.setClearColor(0x000000, 1); 
+        renderer.setClearColor(0x00000f, 1); 
         renderer.setSize(div_WIDTH, div_HEIGHT);
         var container = document.getElementById("renderingMesh");
         container.appendChild(renderer.domElement);
