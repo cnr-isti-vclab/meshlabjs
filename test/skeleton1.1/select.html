@@ -1,0 +1,30 @@
+                       <div style="float:left;">
+                         <select style="z-index:2;" >
+                                <option selected disabled>Please, select a Filter</option>
+                                <option value="refine" >Refine</option>
+                                <option value="smooth">Smooth</option>
+                            </select>                      
+                            <button id='refinement'>Refine!</button>
+                <button id='smoothed'>Smooth</button>
+            </div>
+    <script src="../js/dat.gui.min.js"></script>
+<script type="text/javascript">
+    
+var FizzyText = function() {
+  this.message = 'dat.gui';
+  this.speed = 0.8;
+  this.displayOutline = false;
+  this.explode = function() { alert(); };
+  // Define render logic ...
+};
+
+window.onload = function() {
+  var text = new FizzyText();
+  var gui = new dat.GUI();
+  gui.add(text, 'message');
+  gui.add(text, 'speed', -5, 5);
+  gui.add(text, 'displayOutline');
+  gui.add(text, 'explode');
+};
+    
+</script>

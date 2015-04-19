@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!--     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->    
+    <link href="style.css" rel="stylesheet">     
+    <!-- PreProcessing information ... -->
+    <script src="../js/three.js"></script>
+    <script src="../js/controls/TrackballControls.js"></script> 
+    <script src="../js/jquery-1.11.2.min.js"></script>
+    <script src="../js/dat.gui.min.js"></script>
+
+    <title>MeshLabJs</title>      
+
+</head>
+<body>
+<div id='renderingMesh' class='3Dcontainer'> </div>
+<div class='controls'>
+<div id="rendering-mode" class="frame-controls">
+<form method="post">
+    <fieldset id="field">
+        <legend>Rendering Mode</legend>
+    </fieldset>
+</form>
+</div>
+<div id="mesh-info" class="frame-controls" style="border-top: 2px solid black;border-bottom: 2px solid black;">   
+    <input type="file" id="files" name="files[]" value="tetra.off" />
+    <br>
+    <output id="list"></output>
+    <textarea id="output" ></textarea>
+    <form>
+    Mesh name:
+    <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
+    <br>
+    <button id='save_mesh'>Save Mesh</button>
+    </form>
+</div>
+<div id="filters" class="frame-controls" >
+<button id='refinement'>Refine!</button>
+<button id='smoothed'>Smooth</button>
+    <legend>Filtri</legend>
+        <select>
+            <option >Please, select a Filter</option>
+            <option value="refine" >Refine</option>
+            <option value="smooth">Smooth</option>
+        </select>
+</div>
+</body>
+    <!-- Post-processing page ... -->
+    <script src="js/engine/Module.js"></script>
+    <script src="MeshlabJs.js"></script>
+    <script src="js/engine/Rendering.js"></script>
+    <script src="js/engine/Engine.js"></script> 
+</html>

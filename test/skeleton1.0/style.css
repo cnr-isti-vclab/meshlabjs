@@ -7,13 +7,17 @@ html,body{
 	width: 99%;
 	height: 99%;
 	/*background: white;*/
-	overflow: hidden;
 }
 textarea{
 	width: 100%;
 	height: 65%;
 }
-
+select {
+	float:left;
+	position:relative;
+	z-index:1;
+}
+fieldset:first-child {float:none;}
 fieldset {
  	border: 0px solid black;
  	height: auto;
@@ -43,7 +47,6 @@ div {
  padding-top: 2px;
  padding-bottom: 2px;
 
-
 }
 .header {
 	max-height: 20px;
@@ -55,7 +58,6 @@ div {
 	height: 100%;
 	width: 100%;
 	position: relative;
-	float: none;
 }
 
 .3Dcontainer {
@@ -88,7 +90,7 @@ div {
  	/* padding-right: -2px;*/
 }
 .frame-controls {
-	position: relative;
+	/*position: relative;*/
 	/*float: top;*/
 	/*height: auto;*/
 	max-height: 33%;

@@ -9,9 +9,10 @@
         renderer.shadowMapEnabled = true;
         renderer.setClearColor(0x000000, 1); 
         renderer.setSize(div_WIDTH, div_HEIGHT);
-        document.getElementById("renderingMesh").appendChild(renderer.domElement);
+        var container = document.getElementById("renderingMesh");
+        container.appendChild(renderer.domElement);
         scene.add( camera );
-        controls = new THREE.TrackballControls( camera );
+        controls = new THREE.TrackballControls( camera ,container);
         controls.rotateSpeed = 4.0;
         controls.zoomSpeed = 1.2;
         controls.panSpeed = 2.0;
