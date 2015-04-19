@@ -9,6 +9,16 @@ using namespace vcg;
 using namespace std;
 using namespace emscripten;
 
+
+
+class ProcessingPlugin 
+{
+    void SetParameter();
+    void Apply()
+}
+
+
+
 class MyRefine {
 
 public:
@@ -17,6 +27,7 @@ MyMesh *m;
 MyRefine(uintptr_t _m){
     m = (MyMesh*) _m;
 }
+
 void refinement(int step)
 {
     int t2=clock();
