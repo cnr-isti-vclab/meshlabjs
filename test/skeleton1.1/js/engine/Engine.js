@@ -22,11 +22,13 @@
                     console.timeEnd("Update mesh ");
                 }; //end refine
             };//end mastergui
+
+        
         var master = new masterGui();
         var gui = new dat.GUI({ autoPlace: false });
         document.getElementById('controls').appendChild(gui.domElement);
         gui.add(master, 'OpenMesh');
-        var stepController = gui.add(master, 'step',0,5).step(1);
+        var stepController = gui.add(master, 'step',1,5).step(1);
         var step = 1;
         stepController.onChange(function(value) {
             step=value;
