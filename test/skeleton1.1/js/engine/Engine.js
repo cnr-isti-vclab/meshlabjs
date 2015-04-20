@@ -61,28 +61,7 @@
         //end Declaration DAT.GUI
 
 
-        //Declaration Plugin Refine
-        var Step = 1;
-        var refGui = {
-            stepRefine : 1,
-            refine : function() { 
-                console.time("Refine time ");
-                Refine = new Module.MyRefine(ptrMesh);
-                Refine.myRefine(Step);
-                console.timeEnd("Refine time ");
-                console.time("Update mesh ");
-                createMesh(ptrMesh);
-                console.timeEnd("Update mesh ");
-            } //end refine  
-        }; 
-
-        var folderRefine = gui.addFolder('Refine');
-        var stepController = folderRefine.add(refGui,'stepRefine',1,5).step(1).name('Refine Step');
         
-        stepController.onChange(function(value) {
-            Step=value;
-        });
-        folderRefine.add(refGui,'refine').name('Refine Mesh');
 
 
         init();
@@ -255,14 +234,7 @@
 
 
             //handler for plugin SMOOTH
-            // document.getElementById('smoothed').addEventListener('click', function smoothMesh(){
-            // console.time("Smooth time ");
-            // Smooth = new Module.MySmooth(ptrMesh);
-            // Smooth.mySmooth(1);
-            // console.timeEnd("Smooth time ");
-            // console.time("Update mesh ");
-            // createMesh(ptrMesh);
-            // console.timeEnd("Update mesh ");
+
             // });
             
 
