@@ -76,6 +76,13 @@
             mesh.matrixAutoUpdate = false;
             scene.add(mesh);
         }
+        window.addEventListener( 'resize', onWindowResize, false );
+
+        function onWindowResize(){
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }       
 
         // function addMesh(name){
         //     scene.add( name );
