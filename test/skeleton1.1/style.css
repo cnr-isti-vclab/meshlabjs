@@ -16,8 +16,8 @@ div.controls{
 	
 }
 canvas{
-
-	background-color: #00000f;
+    background: linear-gradient( #00000f,  #8080ff);
+	background-color: #202020;
 }
 textarea{
 	border: 1px solid white;

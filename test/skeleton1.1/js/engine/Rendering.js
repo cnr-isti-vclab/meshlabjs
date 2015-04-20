@@ -5,7 +5,7 @@
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
         camera.position.z = 15;
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
         renderer.setClearColor(0x00000f, 1); 
         renderer.setSize(div_WIDTH, div_HEIGHT);
