@@ -1,5 +1,5 @@
 //Refine Plugin
-
+var Refine;
 var StepRefine = 1;
 var refGui = {
     stepRefine : 1,

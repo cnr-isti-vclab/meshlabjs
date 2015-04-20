@@ -1,5 +1,6 @@
 //Smooth Plugin
 
+var Smooth;
 var StepSmooth = 1;
 var smoGui = {
     stepSmooth : 1,
