@@ -47,7 +47,7 @@
             console.timeEnd("Getting Mesh Properties Time");
             end = window.performance.now();
             time = Math.round((end-start)/10) / 100;
-            logArea.value += "Getting MeshProperties Time: "+time+" seconds\n";
+            logArea.value += "Getting Mesh Properties Time: "+time+" seconds\n";
             scene.remove(mesh);
             var geometry = new THREE.Geometry();
             console.log("Vertices are "+VN);
