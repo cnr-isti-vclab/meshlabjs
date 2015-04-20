@@ -19,14 +19,30 @@ canvas{
     background: linear-gradient( #00000f,  #8080ff);
 	background-color: #202020;
 }
-textarea{
+textarea#info{
 	border: 1px solid white;
 	width: 239px;
 	height: 15%;
 	float:top;
 	float: right;
 	top: 1%;
- 	right: 1%;
+ 	right: 0;
+ 	vertical-align: right;
+ 	position: absolute;
+ 	resize:none;
+ 	/*color: #00ff00;*/
+ 	color: #d0d0d0;
+	background-color: #00000f;
+ 	/*padding: 2px;*/
+}
+textarea#log{
+	border: 1px solid white;
+	width: 239px;
+	height: 15%;
+	float:bottom;
+	float: right;
+	bottom: 1%;
+ 	right: 0;
  	vertical-align: right;
  	position: absolute;
  	resize:none;
@@ -41,7 +57,7 @@ textarea{
 	float:top;
 	float: right;
 	top: 17.5%;
- 	right: 1%;
+ 	right: 0;
  	vertical-align: right;
  	position: absolute;
 }
