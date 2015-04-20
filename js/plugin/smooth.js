@@ -15,7 +15,7 @@ var smoGui = {
     } //end smooth  
 }; 
 
-var folderSmooth = gui.addFolder('Smooth');
+var folderSmooth = folderFilter.addFolder('Smooth');
 var stepSmoothController = folderSmooth.add(smoGui,'stepSmooth',1,5).step(1).name('Smooth Step');
         
 stepSmoothController.onChange(function(value) {

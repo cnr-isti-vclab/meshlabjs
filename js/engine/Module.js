@@ -11,7 +11,7 @@ var Module = {
         preRun: [],
         postRun: [],
         print: (function () {
-            var element = document.getElementById('output');
+            var element = document.getElementById('info');
             if (element) { element.value = ''; }// clear browser cache
             return function (text) {
                 text = Array.prototype.slice.call(arguments).join(' ');

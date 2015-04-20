@@ -1,5 +1,7 @@
-        var camera, scene, renderer, controls, time, mesh, ptrMesh;
+        var camera, scene, renderer, controls, time, mesh, ptrMesh, start, end, time;
 
+        var infoArea = document.getElementById('info');
+        var logArea = document.getElementById('log');
 
         var openedMesh=[];
         var listMesh = new Object ();
@@ -13,8 +15,7 @@
         var openedMeshController;
         var masterGui = function() {
             this.OpenMesh = function() {
-                $('#files').click();    
-                // addOpenedMesh();
+                $('#files').click();  
             }; //end OpenMesh di dat.gui
             this.meshName = nameMesh;
             this.SaveMesh = function () {
@@ -22,11 +23,10 @@
                 var Save = new Module.SaveMesh(ptrMesh);
                 var resSave = Save.saveMesh(fileName[fileName.length-1]);  
                 var file = FS.readFile('/'+fileName[fileName.length-1]); 
-                console.log("Save mesh with result "+resSave);
                 var blob = new Blob([file], {type: "application/octet-stream"});
                 var fileName = nameMesh;
-                saveAs(blob, nameMesh);     
-                // FS.unlink(fileName[fileName.length-1]);
+                saveAs(blob, nameMesh);    
+                logArea.value +="Save mesh with result "+resSave+"\n"; 
             };//end saveMesh
         };//end mastergui
         
@@ -41,6 +41,7 @@
         });
         gui.add(master, 'SaveMesh').name('Save Mesh');
 
+        var folderFilter = gui.addFolder('Filters');
                  
 
         function updateDatGui(){
@@ -61,9 +62,10 @@
         
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
-                console.log("Name: ", files[0].name);
-                console.log("Size: ", files[0].size);
+                infoArea.value += "Name Mesh: "+files[0].name+"\n";
+                infoArea.value += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
+                start = window.performance.now();
 
                 //extract format file
                 var oldFileName = files[0].name;
@@ -102,7 +104,11 @@
 
                 console.log("Read file", fileLoadedEvent.target.result.byteLength );
                 console.timeEnd("File Reading Time");
+                end = window.performance.now();
+                time = Math.round((end-start)/10) / 100;
+                logArea.value += "File Reading Time: "+time+" seconds\n";
 
+                start = window.performance.now();
                 console.time("Parsing mesh Time");
                 var Opener = new Module.Opener();
                 var resOpen = Opener.openMesh(fileName);
@@ -111,8 +117,11 @@
                     FS.unlink(fileName);
                 }
                 else {
-                    console.log("Open mesh with result "+resOpen);
-                    console.timeEnd("Parsing mesh Time");
+                    logArea.value+= "Open mesh with result "+resOpen+"\n";
+                    console.timeEnd("Parsing Mesh Time");
+                    end = window.performance.now();
+                    time = Math.round((end-start)/10) / 100;
+                    logArea.value += "Parsing Mesh Time: "+time+" seconds\n";
                     ptrMesh = Opener.getMesh();
                     createMesh(ptrMesh);
                     animate();
@@ -129,13 +138,18 @@
                    if(countOpenedMesh!=0) gui.__controllers[3].remove();
                    openedMeshController = gui.add(meshOpenVar,'mesh0',listMesh).name('Opened Mesh');
                    openedMeshController.onChange( function(value) {
-                       var fileName = fileNameGlobal;
-                       var int8buf = new Int8Array(openedMesh[value]); 
-                       FS.createDataFile("/", fileName, int8buf, true, true);
+                        start = window.performance.now();
+                        console.time("Parsing mesh Time");
+                        var fileName = fileNameGlobal;
+                        var int8buf = new Int8Array(openedMesh[value]); 
+                        FS.createDataFile("/", fileName, int8buf, true, true);
                         var Opener = new Module.Opener();
                         var resOpen = Opener.openMesh(fileName);    
-                        console.log("Open mesh with result "+resOpen);
+                        logArea.value+= "Open mesh with result "+resOpen+"\n";
                         console.timeEnd("Parsing mesh Time");
+                        end = window.performance.now();
+                        time = Math.round((end-start)/10) / 100;
+                        logArea.value += "Parsing Mesh Time: "+time+" seconds\n";
                         ptrMesh = Opener.getMesh();
                         createMesh(ptrMesh);
                         animate();

@@ -14,7 +14,7 @@ var refGui = {
     } //end refine  
 }; 
 
-var folderRefine = gui.addFolder('Refine');
+var folderRefine = folderFilter.addFolder('Refine');
 var stepRefineController = folderRefine.add(refGui,'stepRefine',1,5).step(1).name('Refine Step');
         
 stepRefineController.onChange(function(value) {

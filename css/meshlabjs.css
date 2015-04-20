@@ -54,6 +54,7 @@ textarea#log{
 .dg.main{
 	border: 0px solid white;
 	width: 20%;
+	height:auto;
 	float:top;
 	float: right;
 	top: 17.5%;
