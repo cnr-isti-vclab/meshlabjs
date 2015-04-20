@@ -30,7 +30,8 @@ textarea{
  	vertical-align: right;
  	position: absolute;
  	resize:none;
- 	color: #00ff00;
+ 	/*color: #00ff00;*/
+ 	color: #d0d0d0;
 	background-color: #00000f;
  	/*padding: 2px;*/
 }

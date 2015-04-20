@@ -7,7 +7,7 @@
         camera.position.z = 15;
         renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
-        renderer.setClearColor(0x00000f, 1); 
+        // renderer.setClearColor(0x00000f, 1); //colore di sfondo del render
         renderer.setSize(div_WIDTH, div_HEIGHT);
         var container = document.getElementById("renderingMesh");
         container.appendChild(renderer.domElement);
@@ -65,7 +65,8 @@
             }
             console.log("geometry created.");
             console.timeEnd("Time to create: ");
-            var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true }); 
+            //green : 00ff00
+            var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
             box = new THREE.Box3().setFromObject(mesh);
             scale = 7.0/box.min.distanceTo(box.max);
