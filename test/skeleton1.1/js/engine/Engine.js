@@ -4,20 +4,60 @@
 
         //array of opened mesh
         var openedMesh=[];
+        var fileExtension='off';
+        var fileNameGlobal='mesh';
         var countRadio=0;
 
+        var int8buf;
+
         //Declaration DAT.GUI
+        var nameMesh='mesh.'+fileExtension;
         var masterGui = function() {
             this.OpenMesh = function() {
-                $('#files').click(); 
+                $('#files').click();    
+                var meshOpenVar = {
+                    mesh0 : function() { 
+                    var fileName = master.meshName.split('.');
+                    var int8buf = new Int8Array(openedMesh[0]); 
+                    FS.createDataFile("/", "tmp."+fileName[fileName.length-1], int8buf, true, true);
+                    var Opener = new Module.Opener();
+                    var resOpen = Opener.openMesh("tmp."+fileName[fileName.length-1]);    
+                    console.log("Open mesh with result "+resOpen);
+                    console.timeEnd("Parsing mesh Time");
+                    ptrMesh = Opener.getMesh();
+                    createMesh(ptrMesh);
+                    animate();
+                    FS.unlink("tmp."+fileName[fileName.length-1]);
+                } //end   
+            }; 
+            folderOpenedMesh.add(meshOpenVar,'mesh0').name(nameMesh);
+            updateDatGui();
             }; //end OpenMesh di dat.gui
+            this.meshName = nameMesh;
+            this.SaveMesh = function () {
+                var fileName = master.meshName.split('.');
+                var Save = new Module.SaveMesh(ptrMesh);
+                var resSave = Save.saveMesh(fileName[fileName.length-1]);  
+                var file = FS.readFile('/'+fileName[fileName.length-1]); 
+                console.log("Save mesh with result "+resSave);
+                var blob = new Blob([file], {type: "application/octet-stream"});
+                var fileName = fileNameGlobal;
+                saveAs(blob, fileName);     
+                // FS.unlink(fileName[fileName.length-1]);
+            };//end saveMesh
         };//end mastergui
         
+
         var gui = new dat.GUI({ autoPlace: false });
         document.getElementById('controls').appendChild(gui.domElement);
         var master = new masterGui();
-        gui.add(master, 'OpenMesh');
-
+        gui.add(master, 'OpenMesh').name('Open Mesh');
+        var nameController = gui.add(master, 'meshName').name('Mesh Name');
+        nameController.onChange(function(value) {
+            nameMesh=value;
+        });
+        gui.add(master, 'SaveMesh').name('Save Mesh');
+        var folderOpenedMesh = gui.addFolder('Opened Mesh'); 
         //end Declaration DAT.GUI
 
 
@@ -42,12 +82,16 @@
         stepController.onChange(function(value) {
             Step=value;
         });
-        folderRefine.add(refGui, 'refine').name('Refine Mesh');
+        folderRefine.add(refGui,'refine').name('Refine Mesh');
 
 
         init();
 
-
+        function updateDatGui(){
+            for (var i in gui.__controllers) {
+                    gui.__controllers[i].updateDisplay();
+            }
+        }
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
                 console.log("Name: ", files[0].name);
@@ -57,27 +101,35 @@
                 //extract format file
                 var fileName = files[0].name;
                 var format = fileName.split(".");
-                format = format[format.length-1];
-                fileName= "tmp." + format;
-                switch(format){
-                    case "off": {break;}
-                    case "obj": {break;}
-                    case "ply": {break;}
-                    case "stl": {break;}
-                    case "vmi": {break;}
+                var ext = format[format.length-1];
+                fileName= "tmp." + ext;
+                format[format.length-1] = '';
+                fileNameGlobal = format.join('');
+                switch(ext){
+                    case "off": {fileExtension='off'; break;}
+                    case "obj": {fileExtension='obj'; break;}
+                    case "ply": {fileExtension='ply'; break;}
+                    case "stl": {fileExtension='stl'; break;}
+                    case "vmi": {fileExtension='vmi'; break;}
                     default : {
                         alert("MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again.")
                         return;
                     }
                 }
-            
+                
+                //update file name in a meshName textfield
+                fileNameGlobal = fileNameGlobal+'.'+fileExtension;
+                master.meshName= fileNameGlobal;
+                updateDatGui();
+                //end update
+
                 var fileToLoad = files[0];
                 var fileReader = new FileReader();
             
                 fileReader.onload = function (fileLoadedEvent) {
 
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
-                var int8buf = new Int8Array(fileLoadedEvent.target.result);
+                int8buf = new Int8Array(fileLoadedEvent.target.result);
                 FS.createDataFile("/", fileName, int8buf, true, true);
 
                 console.log("Read file", fileLoadedEvent.target.result.byteLength );
@@ -98,6 +150,9 @@
                 animate();
 
                 FS.unlink(fileName);
+
+                openedMesh[countRadio]=int8buf;
+                countRadio++;
                 
                 // go
                 // if(openedMesh.length>4){
@@ -191,6 +246,7 @@
             FS.unlink(fileName);
         // });
         }
+
 
 
 

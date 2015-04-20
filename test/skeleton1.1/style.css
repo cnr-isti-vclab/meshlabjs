@@ -21,7 +21,7 @@ canvas{
 }
 textarea{
 	border: 1px solid white;
-	width: 241px;
+	width: 239px;
 	height: 15%;
 	float:top;
 	float: right;
@@ -39,7 +39,7 @@ textarea{
 	width: 20%;
 	float:top;
 	float: right;
-	top: 17%;
+	top: 17.5%;
  	right: 1%;
  	vertical-align: right;
  	position: absolute;
