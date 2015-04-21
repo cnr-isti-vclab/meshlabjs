@@ -6,8 +6,7 @@ var smoGui = {
     stepSmooth : 1,
     smooth : function() { 
             console.time("Smooth time ");
-            Smooth = new Module.MySmooth(ptrMesh);
-            Smooth.mySmooth(StepSmooth);
+            Module.Smooth(ptrMesh, StepSmooth);
             console.timeEnd("Smooth time ");
             console.time("Update mesh ");
             createMesh(ptrMesh);
