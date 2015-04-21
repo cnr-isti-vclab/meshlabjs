@@ -8,6 +8,7 @@ messages from Emscripten are displayed, developers implement the
 Module.print attribute.
 */
 var Module = {
+        memoryInitializerPrefixURL : "js/generated/",
         preRun: [],
         postRun: [],
         print: (function () {
