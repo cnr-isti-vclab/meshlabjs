@@ -19,6 +19,17 @@ canvas{
     background: linear-gradient( #00000f,  #8080ff);
 	background-color: #202020;
 }
+.dg.main{
+	border: 0px solid white;
+	width: 20%;
+	height:auto;
+	float:top;
+	float: right;
+	top: 17.5%;
+ 	right: 0;
+ 	vertical-align: right;
+ 	position: absolute;
+}
 textarea#info{
 	border: 1px solid white;
 	width: 239px;
@@ -51,17 +62,7 @@ textarea#log{
 	background-color: #00000f;
  	/*padding: 2px;*/
 }
-.dg.main{
-	border: 0px solid white;
-	width: 20%;
-	height:auto;
-	float:top;
-	float: right;
-	top: 17.5%;
- 	right: 0;
- 	vertical-align: right;
- 	position: absolute;
-}
+
 div {
  width: 100%;
  height: 100%;

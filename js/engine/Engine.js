@@ -17,7 +17,10 @@
             this.OpenMesh = function() {
                 $('#files').click();  
             }; //end OpenMesh di dat.gui
-            this.meshName = nameMesh;
+            //meshName
+            // this.meshName = nameMesh;
+            //end meshName
+
             this.SaveMesh = function () {
                 var fileName = master.meshName.split('.');
                 var Save = new Module.SaveMesh(ptrMesh);
@@ -35,10 +38,14 @@
         document.getElementById('controls').appendChild(gui.domElement);
         var master = new masterGui();
         gui.add(master, 'OpenMesh').name('Open Mesh');
-        var nameController = gui.add(master, 'meshName').name('Mesh Name');
-        nameController.onChange(function(value) {
-            nameMesh=value;
-        });
+
+        //meshName
+        // var nameController = gui.add(master, 'meshName').name('Mesh Name');
+        // nameController.onChange(function(value) {
+        //     nameMesh=value;
+        // });
+        //end meshName
+
         gui.add(master, 'SaveMesh').name('Save Mesh');
 
         var folderFilter = gui.addFolder('Filters');
@@ -128,20 +135,78 @@
 
                     FS.unlink(fileName);
 
-                    var meshOpenVar = {
-                       mesh0 : files[0].name
-                        //end   
-                   }; 
+                   //  var meshOpenVar = {
+                   //     mesh0 : true
+                   //      //end   
+                   // }; 
 
                    //update dropdown
-                   listMesh[files[0].name] = countOpenedMesh;
-                   if(countOpenedMesh!=0) gui.__controllers[3].remove();
-                   openedMeshController = gui.add(meshOpenVar,'mesh0',listMesh).name('Opened Mesh');
-                   openedMeshController.onChange( function(value) {
+                   // listMesh[files[0].name] = countOpenedMesh;
+                   // if(countOpenedMesh!=0) gui.__controllers[3].remove();
+                   // openedMeshController = gui.add(meshOpenVar,'mesh0',listMesh).name('Opened Mesh');
+                   // openedMeshController.onChange( function(value) {
+                   //      start = window.performance.now();
+                   //      console.time("Parsing mesh Time");
+                   //      var fileName = fileNameGlobal;
+                   //      var int8buf = new Int8Array(openedMesh[value]); 
+                   //      FS.createDataFile("/", fileName, int8buf, true, true);
+                   //      var Opener = new Module.Opener();
+                   //      var resOpen = Opener.openMesh(fileName);    
+                   //      logArea.value+= "Open mesh with result "+resOpen+"\n";
+                   //      console.timeEnd("Parsing mesh Time");
+                   //      end = window.performance.now();
+                   //      time = Math.round((end-start)/10) / 100;
+                   //      logArea.value += "Parsing Mesh Time: "+time+" seconds\n";
+                   //      ptrMesh = Opener.getMesh();
+                   //      createMesh(ptrMesh);
+                   //      animate();
+                   //      FS.unlink(fileName);
+                   //  });
+                   //  updateDatGui();
+
+                    
+
+
+                    openedMesh[countOpenedMesh]=int8buf;
+                    addCheckBoxMesh(files[0].name, countOpenedMesh);
+                    countOpenedMesh++;
+
+
+                    }//end else
+                }; //end Onload
+
+                fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
+            }
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+            function addCheckBoxMesh(name, index) {
+                    // listMesh[name] = countOpenedMesh;
+                   // if(countOpenedMesh!=0) gui.__controllers[3].remove();
+                    // for (var i in gui.__controllers) {
+                    //     if(gui.__controllers[i].__li.className == 'cr boolean'){
+                    //         gui.__controllers[i].__checkBox.checked = '';
+
+                    //     }
+                    // }
+
+                    var meshOpenVar = {
+                       checkBoxMesh : false,  
+                       id : index
+                    }; 
+                   openedMeshController = gui.add(meshOpenVar,'checkBoxMesh').name(name).listen();
+                   openedMeshController.onFinishChange( function(value) {
+                        var inputs = document.getElementsByTagName("input");
+                        for(var i = 0; i < inputs.length; i++) {
+                            if(inputs[i].type == "checkbox") {
+                                inputs[i].checked = ''; 
+                            }  
+                        }
+                        // alert(meshOpenVar.id);
+                        // alert(openedMesh[meshOpenVar.id]);
                         start = window.performance.now();
                         console.time("Parsing mesh Time");
                         var fileName = fileNameGlobal;
-                        var int8buf = new Int8Array(openedMesh[value]); 
+                        var int8buf = new Int8Array(openedMesh[meshOpenVar.id]); 
                         FS.createDataFile("/", fileName, int8buf, true, true);
                         var Opener = new Module.Opener();
                         var resOpen = Opener.openMesh(fileName);    
@@ -154,15 +219,7 @@
                         createMesh(ptrMesh);
                         animate();
                         FS.unlink(fileName);
+                        meshOpenVar['checkBoxMesh'] = false;
                     });
                     updateDatGui();
-                    openedMesh[countOpenedMesh]=int8buf;
-                    countOpenedMesh++;
-
-
-                    }//end else
-                }; //end Onload
-
-                fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
             }
-            document.getElementById('files').addEventListener('change', handleFileSelect, false);
