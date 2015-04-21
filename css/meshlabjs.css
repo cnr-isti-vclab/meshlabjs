@@ -1,0 +1,69 @@
+
+html,body{
+	width: 100%;
+	height: 100%;
+	background: linear-gradient( #00000f,  #8080ff);
+	overflow: hidden;
+}
+div.renderingMesh{
+	width: 100%;
+	height: 100%;
+	
+	background-color: #00000f;
+}
+div.controls{
+	width: 20%;
+	
+}
+canvas{
+    background: linear-gradient( #00000f,  #8080ff);
+	background-color: #202020;
+}
+textarea#info{
+	border: 1px solid white;
+	width: 239px;
+	height: 15%;
+	float:top;
+	float: right;
+	top: 1%;
+ 	right: 0;
+ 	vertical-align: right;
+ 	position: absolute;
+ 	resize:none;
+ 	/*color: #00ff00;*/
+ 	color: #d0d0d0;
+	background-color: #00000f;
+ 	/*padding: 2px;*/
+}
+textarea#log{
+	border: 1px solid white;
+	width: 239px;
+	height: 15%;
+	float:bottom;
+	float: right;
+	bottom: 1%;
+ 	right: 0;
+ 	vertical-align: right;
+ 	position: absolute;
+ 	resize:none;
+ 	/*color: #00ff00;*/
+ 	color: #d0d0d0;
+	background-color: #00000f;
+ 	/*padding: 2px;*/
+}
+.dg.main{
+	border: 0px solid white;
+	width: 20%;
+	height:auto;
+	float:top;
+	float: right;
+	top: 17.5%;
+ 	right: 0;
+ 	vertical-align: right;
+ 	position: absolute;
+}
+div {
+ width: 100%;
+ height: 100%;
+ float:top;
+}
