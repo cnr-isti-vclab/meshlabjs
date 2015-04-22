@@ -3,10 +3,10 @@
         var infoArea = document.getElementById('infoMesh');
 
         var openedMesh=[];
-        var listMesh = new Object ();
+        // var listMesh = new Object ();
         var fileExtension='off';
         var fileNameGlobal='mesh';
-        var countOpenedMesh=0;
+        // var countOpenedMesh=0;
 
 
 //---------------------------------Declaration DAT.GUI
@@ -33,7 +33,7 @@
         
 
         var gui = new dat.GUI({ autoPlace: false });
-        document.getElementById('controls').appendChild(gui.domElement);
+        document.body.appendChild(gui.domElement);
         var master = new masterGui();
         gui.add(master, 'OpenMesh').name('Open Mesh');
 
@@ -158,7 +158,23 @@
 
                     openedMesh[files[0].name]=ptrMesh;
                     // addCheckBoxMesh(files[0].name, countOpenedMesh);
-                    countOpenedMesh++;
+                    // countOpenedMesh++;
+
+                    //create new checkbox and relative label, append this
+                    var checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.name = files[0].name;
+                    checkbox.value = ptrMesh;
+                    checkbox.text = files[0].name;
+                    checkbox.checked="checked";
+
+                    document.getElementById('field').appendChild(checkbox);
+                    var label = document.createElement('label')
+                    label.htmlFor = files[0].name;
+                    label.appendChild(document.createTextNode(files[0].name));
+                    document.getElementById('field').appendChild(label);
+                    var br = document.createElement('br');
+                    document.getElementById('field').appendChild(br);
 
 
                     }//end else

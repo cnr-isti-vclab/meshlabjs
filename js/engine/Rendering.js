@@ -1,6 +1,8 @@
         function init() {
-        var div_WIDTH = document.getElementById("renderingMesh").offsetWidth, 
-            div_HEIGHT = document.getElementById("renderingMesh").offsetHeight;
+        // var div_WIDTH = document.getElementById("renderingMesh").offsetWidth, 
+        //     div_HEIGHT = document.getElementById("renderingMesh").offsetHeight;
+        var div_WIDTH = document.body.offsetWidth,
+            div_HEIGHT = document.body.offsetHeight;
         // sezione di set-up di progetto, di iniziazione
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
@@ -9,9 +11,11 @@
         renderer.shadowMapEnabled = true;
         // renderer.setClearColor(0x00000f, 1); //colore di sfondo del render
         renderer.setSize(div_WIDTH, div_HEIGHT);
-        var container = document.getElementById("renderingMesh");
-        container.appendChild(renderer.domElement);
+        // var container = document.getElementById("renderingMesh");
+        // container.appendChild(renderer.domElement);
+        document.body.appendChild(renderer.domElement);
         scene.add( camera );
+        var container = document.getElementsByTagName('canvas')[0];
         controls = new THREE.TrackballControls( camera ,container);
         controls.rotateSpeed = 4.0;
         controls.zoomSpeed = 1.2;
@@ -46,7 +50,6 @@
             console.timeEnd("Getting Mesh Properties Time");
             scene.remove(mesh);
             var geometry = new THREE.Geometry();
-            infoArea.value = infoMeshStr+"Vertices: "+VN+"\nFaces: "+FN;
             console.time("Time to create mesh: ");
             for(var i=0; i<VN*3; i++){
                 var v1 = Module.getValue(vert+parseInt(i*4),'float'); i++;
@@ -71,6 +74,7 @@
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
             scene.add(mesh);
+            infoArea.value = infoMeshStr+"Vertices: "+VN+"\nFaces: "+FN;
         }
         window.addEventListener('resize', onWindowResize, false );
 

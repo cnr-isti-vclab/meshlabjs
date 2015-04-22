@@ -15,23 +15,20 @@
 
 </head>
 <body>
-<div id='renderingMesh' class='3Dcontainer'> </div>
-<div class='controls'>
-<div id="divOpenedMesh" class="mesh-controls">
-<form method="post">
-    <fieldset id="field">
-        <legend>Rendering Mode</legend>
-    </fieldset>
-</form>
-</div>
-<div id="mesh-info" class="frame-controls" style="border-top: 2px solid black;border-bottom: 2px solid black;">   
+<!-- <div id='renderingMesh' class='3Dcontainer'> </div> -->
+<div id="inputFile">   
     <input type="file" id="files" name="files[]" value="tetra.off" style="visibility:hidden;"/>
     <br>
     <output id="list"></output>
-<div id='controls'>
+</div>
+<div id='divTextArea'>
     <textarea id="infoMesh" ></textarea>
     <textarea id="log" ></textarea>
 </div>
+<div id="openedMesh" class="mesh-controls">
+    <fieldset id="field"></fieldset>
+</div>
+
 </body>
     <!-- Post-processing page ... -->
     <script src="js/engine/Module.js"></script>
