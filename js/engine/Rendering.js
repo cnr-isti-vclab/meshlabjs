@@ -46,7 +46,7 @@
             console.timeEnd("Getting Mesh Properties Time");
             scene.remove(mesh);
             var geometry = new THREE.Geometry();
-            infoArea.value += "Faces: "+FN+" Vertices: "+VN+"\n";
+            infoArea.value = infoMeshStr+"Vertices: "+VN+"\nFaces: "+FN;
             console.time("Time to create mesh: ");
             for(var i=0; i<VN*3; i++){
                 var v1 = Module.getValue(vert+parseInt(i*4),'float'); i++;

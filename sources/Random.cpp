@@ -25,8 +25,8 @@ void RandomPlugin(uintptr_t _m, float max_displacement)
      vcg::tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 	
     int t3=clock();
-    printf("Smooth mesh %i vert - %i face \n",m.VN(),m.FN());
-    printf("Smooth time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
+    printf("Random mesh %i vert - %i face \n",m.VN(),m.FN());
+    printf("Random time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
 }
 
 //Binding code

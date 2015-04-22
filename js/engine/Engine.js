@@ -1,4 +1,4 @@
-        var camera, scene, renderer, controls, time, mesh, ptrMesh;
+        var camera, scene, renderer, controls, time, mesh, ptrMesh, infoMeshStr;
 
         var infoArea = document.getElementById('infoMesh');
 
@@ -67,8 +67,9 @@
         
         function handleFileSelect(evt) {
                 var files = evt.target.files; // FileList object
-                infoArea.value += "Name Mesh: "+files[0].name+"\n";
-                infoArea.value += "Size Mesh: "+files[0].size+" Bytes\n";
+                infoArea.value = '';
+                infoMeshStr = "Current Mesh: "+files[0].name+"\n";
+                infoMeshStr += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
                 //extract format file
                 var oldFileName = files[0].name;
@@ -92,8 +93,8 @@
                 
                 //update file name in a meshName textfield
                 // fileNameGlobal = fileNameGlobal+'.'+fileExtension;
-                master.meshName = fileNameGlobal;
-                updateDatGui();
+                // master.meshName = fileNameGlobal;
+                // updateDatGui();
                 //end update
 
                 var fileToLoad = files[0];
@@ -155,8 +156,8 @@
                     
 
 
-                    openedMesh[countOpenedMesh]=int8buf;
-                    addCheckBoxMesh(files[0].name, countOpenedMesh);
+                    openedMesh[files[0].name]=ptrMesh;
+                    // addCheckBoxMesh(files[0].name, countOpenedMesh);
                     countOpenedMesh++;
 
 
@@ -167,42 +168,45 @@
             }
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
-            function addCheckBoxMesh(name, index) {
-                    // listMesh[name] = countOpenedMesh;
-                   // if(countOpenedMesh!=0) gui.__controllers[3].remove();
-                    // for (var i in gui.__controllers) {
-                    //     if(gui.__controllers[i].__li.className == 'cr boolean'){
-                    //         gui.__controllers[i].__checkBox.checked = '';
+            // function addCheckBoxMesh(name, index) {
+            //         // listMesh[name] = countOpenedMesh;
+            //        // if(countOpenedMesh!=0) gui.__controllers[3].remove();
+            //         // for (var i in gui.__controllers) {
+            //         //     if(gui.__controllers[i].__li.className == 'cr boolean'){
+            //         //         gui.__controllers[i].__checkBox.checked = '';
 
-                    //     }
-                    // }
+            //         //     }
+            //         // }
 
-                    var meshOpenVar = {
-                       checkBoxMesh : false,  
-                       id : index
-                    }; 
-                   openedMeshController = gui.add(meshOpenVar,'checkBoxMesh').name(name).listen();
-                   openedMeshController.onFinishChange( function(value) {
-                        var inputs = document.getElementsByTagName("input");
-                        for(var i = 0; i < inputs.length; i++) {
-                            if(inputs[i].type == "checkbox") {
-                                inputs[i].checked = ''; 
-                            }  
-                        }
-                        // alert(meshOpenVar.id);
-                        // alert(openedMesh[meshOpenVar.id]);
-                        console.time("Parsing mesh Time");
-                        var fileName = fileNameGlobal;
-                        var int8buf = new Int8Array(openedMesh[meshOpenVar.id]); 
-                        FS.createDataFile("/", fileName, int8buf, true, true);
-                        var Opener = new Module.Opener();
-                        var resOpen = Opener.openMesh(fileName);    
-                        console.timeEnd("Parsing mesh Time");
-                        ptrMesh = Opener.getMesh();
-                        createMesh(ptrMesh);
-                        animate();
-                        FS.unlink(fileName);
-                        meshOpenVar['checkBoxMesh'] = false;
-                    });
-                    updateDatGui();
-            }
+            //         var meshOpenVar = {
+            //            checkBoxMesh : false,  
+            //            id : index
+            //         }; 
+            //        openedMeshController = gui.add(meshOpenVar,'checkBoxMesh').name(name).listen();
+            //        openedMeshController.onFinishChange( function(value) {
+            //             var inputs = document.getElementsByTagName("input");
+            //             for(var i = 0; i < inputs.length; i++) {
+            //                 if(inputs[i].type == "checkbox") {
+            //                     inputs[i].checked = ''; 
+            //                 }  
+            //             }
+            //             // alert(meshOpenVar.id);
+            //             // alert(openedMesh[meshOpenVar.id]);
+            //             console.time("Parsing mesh Time");
+            //             var fileName = fileNameGlobal;
+            //             var int8buf = new Int8Array(openedMesh[meshOpenVar.id]); 
+            //             FS.createDataFile("/", fileName, int8buf, true, true);
+            //             var Opener = new Module.Opener();
+            //             var resOpen = Opener.openMesh(fileName);    
+            //             console.timeEnd("Parsing mesh Time");
+            //             ptrMesh = Opener.getMesh();
+            //             createMesh(ptrMesh);
+            //             animate();
+            //             FS.unlink(fileName);
+            //             meshOpenVar['checkBoxMesh'] = false;
+            //         });
+            //         updateDatGui();
+            // }
+
+
+
