@@ -145,14 +145,14 @@
 
             function OnClickSelectCurrent(name) {
                 var cells = document.getElementById("field").getElementsByTagName("td");
-                for (var i=0; i< cells.length; i++) {
-                    cells[i].style.backgroundColor = "#111";
-                    cells[i].style.color = "#eee";
+                for (var i=1; i< cells.length; i++) {
+                    cells[i].style.borderLeftColor = "#111";
+                    // cells[i].style.color = "#eee";
                 }
                 currentPtr = openedMesh[name];
                 fileNameGlobal = name;
-                document.getElementById(name).style.backgroundColor = "yellow";
-                document.getElementById(name).style.color = "black";
+                document.getElementById(name).style.borderLeftColor = "yellow";
+                // document.getElementById(name).style.color = "black";
                 infoArea.value = arrInfoMeshOut[name];
             }
 
