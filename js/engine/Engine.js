@@ -161,12 +161,7 @@
                     // countOpenedMesh++;
 
                     //create new row of table, new checkbox and relative label, append these
-                    var c = document.getElementById('field').getElementsByTagName('input');
-                    for (var i = 0; i < c.length; i++) {
-                        if (c[i].type == 'checkbox') {
-                            c[i].checked = false;
-                        }
-                    }
+                    uncheckAllCheckboxes();
                     document.getElementsByTagName('input[type=checkbox]');
                     var row = document.createElement('tr');
                     var coloumn = document.createElement('td');
@@ -176,10 +171,13 @@
                     checkbox.checked = true;
                     checkbox.name = files[0].name;
                     checkbox.value = ptrMesh;
+                    // var callOnClickFunction = OnClickCheckBox(files[0].name);
                     coloumn.appendChild(checkbox);
                     coloumn.innerHTML += files[0].name;
                     document.getElementById('field').appendChild(row).appendChild(coloumn);
                     document.getElementsByName(files[0].name)[0].checked = true;
+                    row.addEventListener('click',function() { OnClickCheckBox(files[0].name); });
+                    // document.getElementsByName(files[0].name)[0]
                     // var label = document.createElement('label')
                     // label.htmlFor = files[0].name;
                     // label.appendChild(document.createTextNode(files[0].name));
@@ -194,7 +192,13 @@
                 fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
             }
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
-
+            
+            function OnClickCheckBox(name){
+                uncheckAllCheckboxes();
+                var meshToPointer = openedMesh[name];
+                createMesh(meshToPointer);
+                document.getElementsByName(name)[0].checked = true;
+            }
             // function addCheckBoxMesh(name, index) {
             //         // listMesh[name] = countOpenedMesh;
             //        // if(countOpenedMesh!=0) gui.__controllers[3].remove();
@@ -235,5 +239,13 @@
             //         updateDatGui();
             // }
 
+            function uncheckAllCheckboxes() {
+                var c = document.getElementById('field').getElementsByTagName('input');
+                    for (var i = 0; i < c.length; i++) {
+                        if (c[i].type == 'checkbox') {
+                            c[i].checked = false;
+                        }
+                    }
+            }
 
 

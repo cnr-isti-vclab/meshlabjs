@@ -12,12 +12,12 @@ table {
 	min-height: 5%;
 	float:top;
 	float: right;
-	top: 12%;
+	top: 11%;
  	right: 4px;
  	position: absolute;
  	/*color: #00ff00;*/
  	color: #d0d0d0;
-	background-color: #111;
+	background-color: transparent;
 
 }
 input[type=checkbox]{
@@ -27,7 +27,7 @@ td{
 	padding: 0 4px 0 5px;
 	height: 24px;
 	background-color: #111;
-	border-bottom: #2c2c2c;
+	border-bottom: 1px solid #2c2c2c;
 	border-left: 3px solid #e61d5f;
 	color: #eee;
   	font: 11px 'Lucida Grande', sans-serif;
@@ -44,8 +44,6 @@ canvas{
 		width: 100%;
 	height: 100%;  
 	float:top;
-/*    background: linear-gradient( #00000f,  #8080ff);
-	background-color: #202020;*/
 }
 .dg.main{
 	border: 0px solid white;
