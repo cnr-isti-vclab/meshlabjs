@@ -14,6 +14,8 @@ var rndGui = {
             createMesh(currentPtr,fileNameGlobal);
         	if(statusVisible)
                 addMeshByName(fileNameGlobal);
+            infoArea.value = arrInfoMeshOut[fileNameGlobal,0]+arrInfoMeshOut[fileNameGlobal,1];
+
     } //end smooth  
 }; 
 

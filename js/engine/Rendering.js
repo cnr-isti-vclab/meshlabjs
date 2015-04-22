@@ -68,7 +68,7 @@
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
-            arrInfoMeshOut[name] +="Vertices: "+VN+"\nFaces: "+FN;
+            arrInfoMeshOut[name,1] ="Vertices: "+VN+"\nFaces: "+FN;
             arrThreeJsMeshObj[name] = mesh;
             return mesh;
         }
