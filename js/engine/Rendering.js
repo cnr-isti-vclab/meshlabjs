@@ -1,3 +1,6 @@
+        var boxes=[];
+        var cnt=0;
+
         function init() {
         var div_WIDTH = document.body.offsetWidth,
             div_HEIGHT = document.body.offsetHeight;
@@ -5,8 +8,6 @@
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
         camera.position.z = 15;
-        camera.position.x = 0;
-        camera.position.y = 0;
         renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
 
@@ -66,13 +67,21 @@
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
 
             mesh = new THREE.Mesh( geometry, material );
+
             box = new THREE.Box3().setFromObject(mesh);
-            scale = 5.0/box.min.distanceTo(box.max);
+
+            for (var i=0; i< boxes.length;i++){
+               boxes[i].translate(boxes[i].min.distanceTo(boxes[i].max));
+               box.union(boxes[i]);
+            }
+            boxes[cnt] = box;
+            cnt++;
+            scale = 4.0/box.min.distanceTo(box.max);
             mesh.position = box.center().multiplyScalar(scale);             
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             THREE.GeometryUtils.center( geometry );
             mesh.updateMatrix();
-            mesh.matrixAutoUpdate = true;
+            mesh.matrixAutoUpdate = false;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
             arrThreeJsMeshObj[name] = mesh;
             return mesh;
