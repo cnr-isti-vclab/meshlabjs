@@ -67,10 +67,10 @@
 
             mesh = new THREE.Mesh( geometry, material );
             box = new THREE.Box3().setFromObject(mesh);
-            THREE.GeometryUtils.center( geometry );
             scale = 7.0/box.min.distanceTo(box.max);
             mesh.position = box.center().multiplyScalar(scale);             
             mesh.scale = new THREE.Vector3(scale,scale,scale);
+            THREE.GeometryUtils.center( geometry );
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = true;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
