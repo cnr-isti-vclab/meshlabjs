@@ -4,8 +4,6 @@ html,body{
 	background: linear-gradient( #00000f,  #8080ff);
 	overflow: hidden;
 }
-
-/*table:first-child {float:none;}*/
 table {
  	border: 0px solid white;
 	width: 20.6%;
@@ -15,7 +13,6 @@ table {
 	top: 11%;
  	right: 4px;
  	position: absolute;
- 	/*color: #00ff00;*/
  	color: #d0d0d0;
 	background-color: transparent;
 
@@ -67,10 +64,8 @@ textarea#infoMesh{
  	vertical-align: right;
  	position: absolute;
  	resize:none;
- 	/*color: #00ff00;*/
  	color: #d0d0d0;
 	background-color: #00000f;
- 	/*padding: 2px;*/
 }
 textarea#log{
 	border: 1px solid white;

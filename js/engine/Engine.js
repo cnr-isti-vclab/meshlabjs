@@ -8,6 +8,7 @@
         var currentPtr;
         var fileExtension='off';
         var fileNameGlobal='mesh';
+        var isCurrentMeshVisible;
 
 //---------------------------------Declaration DAT.GUI
         var nameMesh='mesh.'+fileExtension;
@@ -98,6 +99,7 @@
                     var meshCreated = createMesh(ptrMesh,files[0].name);
                     arrThreeJsMeshObj[files[0].name] = meshCreated;
                     addMeshByName(files[0].name);
+
                     animate();
 
                     FS.unlink(fileName);
@@ -137,7 +139,6 @@
                 } else {
                     addMeshByName(name);
                     document.getElementsByName(name)[0].checked = true;
-                    fileNameGlobal = name;
                 }
             }
 

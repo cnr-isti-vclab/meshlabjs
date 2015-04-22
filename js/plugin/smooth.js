@@ -10,8 +10,9 @@ var smoGui = {
             Module.Smooth(currentPtr, StepSmooth);
             console.timeEnd("Smooth time ");
             console.time("Update mesh ");
-            var resultMesh = createMesh(currentPtr,name);
-            arrThreeJsMeshObj[fileNameGlobal] = resultMesh;
+            // var mesh = 
+            createMesh(currentPtr,fileNameGlobal);
+            // arrThreeJsMeshObj[name] = mesh;
             addMeshByName(fileNameGlobal);
             console.timeEnd("Update mesh ");
     } //end smooth  

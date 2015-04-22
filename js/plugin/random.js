@@ -9,8 +9,9 @@ var rndGui = {
             console.time("random time ");
             Module.RandomDisplacement(currentPtr, dispAmount);
             console.timeEnd("random time ");
-            var resultMesh = createMesh(currentPtr,name);
-        	arrThreeJsMeshObj[fileNameGlobal] = resultMesh;
+            // var mesh = 
+            createMesh(currentPtr,fileNameGlobal);
+            
         	addMeshByName(fileNameGlobal);
     } //end smooth  
 }; 

@@ -1,6 +1,4 @@
         function init() {
-        // var div_WIDTH = document.getElementById("renderingMesh").offsetWidth, 
-        //     div_HEIGHT = document.getElementById("renderingMesh").offsetHeight;
         var div_WIDTH = document.body.offsetWidth,
             div_HEIGHT = document.body.offsetHeight;
         // sezione di set-up di progetto, di iniziazione
@@ -11,8 +9,6 @@
         renderer.shadowMapEnabled = true;
         // renderer.setClearColor(0x00000f, 1); //colore di sfondo del render
         renderer.setSize(div_WIDTH, div_HEIGHT);
-        // var container = document.getElementById("renderingMesh");
-        // container.appendChild(renderer.domElement);
         document.body.appendChild(renderer.domElement);
         scene.add( camera );
         var container = document.getElementsByTagName('canvas')[0];
@@ -73,6 +69,7 @@
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
             arrInfoMeshOut[name] +="Vertices: "+VN+"\nFaces: "+FN;
+            arrThreeJsMeshObj[name] = mesh;
             return mesh;
         }
         window.addEventListener('resize', onWindowResize, false );
@@ -80,11 +77,13 @@
         function addMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
             scene.add(mesh);
+            isCurrentMeshVisible = true;
         }
 
         function removeMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
             scene.remove(mesh);
+            isCurrentMeshVisible = false;
         }
 
         function onWindowResize(){
