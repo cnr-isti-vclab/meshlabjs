@@ -48,8 +48,8 @@
         init();        
         
         function handleFileSelect(evt) {
+            if(evt.target.files.length!=0){
                 var files = evt.target.files; // FileList object
-                infoArea.value = '';
                 arrInfoMeshOut[files[0].name] = "Current Mesh: "+files[0].name+"\n";
                 arrInfoMeshOut[files[0].name] += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
@@ -105,7 +105,6 @@
                     openedMesh[files[0].name]=ptrMesh;
 
                     //create new row of table, new checkbox and relative label, append these
-                    // uncheckAllCheckboxes();
                     document.getElementsByTagName('input[type=checkbox]');
                     var row = document.createElement('tr');
                     var coloumn = document.createElement('td');
@@ -127,6 +126,7 @@
 
                 fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");  // Efficient binary read.
             }
+        }
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
             
             function OnClickCheckBox(name){
@@ -134,9 +134,7 @@
                 
                 if(isChecked==false){
                     removeMeshByName(name);
-                    // uncheckAllCheckboxes();
                 } else {
-                    // uncheckAllCheckboxes();
                     addMeshByName(name);
                     document.getElementsByName(name)[0].checked = true;
                     fileNameGlobal = name;
@@ -147,22 +145,12 @@
                 var cells = document.getElementById("field").getElementsByTagName("td");
                 for (var i=1; i< cells.length; i++) {
                     cells[i].style.borderLeftColor = "#111";
-                    // cells[i].style.color = "#eee";
                 }
                 currentPtr = openedMesh[name];
                 fileNameGlobal = name;
                 document.getElementById(name).style.borderLeftColor = "yellow";
-                // document.getElementById(name).style.color = "black";
                 infoArea.value = arrInfoMeshOut[name];
             }
 
-            function uncheckAllCheckboxes() {
-                var c = document.getElementById('field').getElementsByTagName('input');
-                    for (var i = 0; i < c.length; i++) {
-                        if (c[i].type == 'checkbox') {
-                            c[i].checked = false;
-                        }
-                    }
-            }
 
 
