@@ -5,8 +5,11 @@
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
         camera.position.z = 15;
+        camera.position.x = 0;
+        camera.position.y = 0;
         renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
+
         // renderer.setClearColor(0x00000f, 1); //colore di sfondo del render
         renderer.setSize(div_WIDTH, div_HEIGHT);
         document.body.appendChild(renderer.domElement);
@@ -61,13 +64,15 @@
             console.timeEnd("Time to create mesh: ");
             //green : 00ff00
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
+
             mesh = new THREE.Mesh( geometry, material );
             box = new THREE.Box3().setFromObject(mesh);
+            THREE.GeometryUtils.center( geometry );
             scale = 7.0/box.min.distanceTo(box.max);
-            mesh.position = box.center().negate().multiplyScalar(scale);             
+            mesh.position = box.center().multiplyScalar(scale);             
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             mesh.updateMatrix();
-            mesh.matrixAutoUpdate = false;
+            mesh.matrixAutoUpdate = true;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
             arrThreeJsMeshObj[name] = mesh;
             return mesh;
