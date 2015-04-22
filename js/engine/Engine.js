@@ -124,11 +124,17 @@
             document.getElementById('files').addEventListener('change', handleFileSelect, false);
             
             function OnClickCheckBox(name){
-                uncheckAllCheckboxes();
-                var meshToPointer = openedMesh[name];
-                createMesh(meshToPointer);
-                document.getElementsByName(name)[0].checked = true;
-                fileNameGlobal = name;
+                var isChecked = document.getElementsByName(name)[0].checked;
+                if(isChecked==false){
+                    scene.remove(mesh);
+                    uncheckAllCheckboxes();
+                } else {
+                    uncheckAllCheckboxes();
+                    var meshToPointer = openedMesh[name];
+                    createMesh(meshToPointer);
+                    document.getElementsByName(name)[0].checked = true;
+                    fileNameGlobal = name;
+                }
             }
 
             function uncheckAllCheckboxes() {
