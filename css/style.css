@@ -4,13 +4,12 @@ html,body{
 	background: linear-gradient( #00000f,  #8080ff);
 	overflow: hidden;
 }
-/*div.renderingMesh{
-}*/
-fieldset:first-child {float:none;}
-fieldset {
- 	border: 1px solid white;
-	width: 18%;
-	height: auto;
+
+/*table:first-child {float:none;}*/
+table {
+ 	border: 0px solid white;
+	width: 21%;
+	min-height: 5%;
 	float:top;
 	float: right;
 	top: 12%;
@@ -18,8 +17,21 @@ fieldset {
  	position: absolute;
  	/*color: #00ff00;*/
  	color: #d0d0d0;
-	background-color: #00000f;
+	background-color: #111;
 
+}
+input[type=checkbox]{
+	float: left;
+}
+td{
+	padding: 0 4px 0 5px;
+	height: 24px;
+	background-color: #111;
+	border-bottom: #2c2c2c;
+	border-left: 3px solid #e61d5f;
+	color: #eee;
+  	font: 11px 'Lucida Grande', sans-serif;
+  	text-shadow: 0 1px 0 #111;
 }
 
 label{

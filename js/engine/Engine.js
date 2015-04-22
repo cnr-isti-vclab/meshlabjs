@@ -160,21 +160,32 @@
                     // addCheckBoxMesh(files[0].name, countOpenedMesh);
                     // countOpenedMesh++;
 
-                    //create new checkbox and relative label, append this
+                    //create new row of table, new checkbox and relative label, append these
+                    var c = document.getElementById('field').getElementsByTagName('input');
+                    for (var i = 0; i < c.length; i++) {
+                        if (c[i].type == 'checkbox') {
+                            c[i].checked = false;
+                        }
+                    }
+                    document.getElementsByTagName('input[type=checkbox]');
+                    var row = document.createElement('tr');
+                    var coloumn = document.createElement('td');
+                    coloumn.name = files[0].name;
                     var checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
+                    checkbox.checked = true;
                     checkbox.name = files[0].name;
                     checkbox.value = ptrMesh;
-                    checkbox.text = files[0].name;
-                    checkbox.checked="checked";
-
-                    document.getElementById('field').appendChild(checkbox);
-                    var label = document.createElement('label')
-                    label.htmlFor = files[0].name;
-                    label.appendChild(document.createTextNode(files[0].name));
-                    document.getElementById('field').appendChild(label);
-                    var br = document.createElement('br');
-                    document.getElementById('field').appendChild(br);
+                    coloumn.appendChild(checkbox);
+                    coloumn.innerHTML += files[0].name;
+                    document.getElementById('field').appendChild(row).appendChild(coloumn);
+                    document.getElementsByName(files[0].name)[0].checked = true;
+                    // var label = document.createElement('label')
+                    // label.htmlFor = files[0].name;
+                    // label.appendChild(document.createTextNode(files[0].name));
+                    // document.getElementById('field').appendChild(label);
+                    // var br = document.createElement('br');
+                    // document.getElementById('field').appendChild(br);
 
 
                     }//end else
