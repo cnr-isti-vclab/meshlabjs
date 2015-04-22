@@ -5,15 +5,16 @@ var StepSmooth = 1;
 var smoGui = {
     stepSmooth : 1,
     smooth : function() { 
-            removeMeshByName(fileNameGlobal);
+            var statusVisible = isCurrentMeshVisible;
+            if(statusVisible)
+                removeMeshByName(fileNameGlobal);
             console.time("Smooth time ");
             Module.Smooth(currentPtr, StepSmooth);
             console.timeEnd("Smooth time ");
             console.time("Update mesh ");
-            // var mesh = 
             createMesh(currentPtr,fileNameGlobal);
-            // arrThreeJsMeshObj[name] = mesh;
-            addMeshByName(fileNameGlobal);
+            if(statusVisible)
+                addMeshByName(fileNameGlobal);
             console.timeEnd("Update mesh ");
     } //end smooth  
 }; 

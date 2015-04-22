@@ -5,14 +5,15 @@ var dispAmount = 0.01;
 var rndGui = {
     dispAmount : 0.01,
     randomDisp : function() {         
-    		removeMeshByName(fileNameGlobal);
+    		var statusVisible = isCurrentMeshVisible;
+            if(statusVisible)
+                removeMeshByName(fileNameGlobal);
             console.time("random time ");
             Module.RandomDisplacement(currentPtr, dispAmount);
             console.timeEnd("random time ");
-            // var mesh = 
             createMesh(currentPtr,fileNameGlobal);
-            
-        	addMeshByName(fileNameGlobal);
+        	if(statusVisible)
+                addMeshByName(fileNameGlobal);
     } //end smooth  
 }; 
 
