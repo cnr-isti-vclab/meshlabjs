@@ -7,15 +7,15 @@ html,body{
 div.renderingMesh{
 	width: 100%;
 	height: 100%;
-	background-color: #00000f;
+	/*background-color: #00000f;*/
 }
 div.controls{
 	width: 20%;
 	
 }
 canvas{
-    background: linear-gradient( #00000f,  #8080ff);
-	background-color: #202020;
+/*    background: linear-gradient( #00000f,  #8080ff);
+	background-color: #202020;*/
 }
 .dg.main{
 	border: 0px solid white;

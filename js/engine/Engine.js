@@ -1,6 +1,6 @@
         var camera, scene, renderer, controls, time, mesh, ptrMesh, start, end, time;
 
-        var infoArea = document.getElementById('info');
+        var infoArea = document.getElementById('infoMesh');
         var logArea = document.getElementById('log');
 
         var openedMesh=[];
@@ -68,7 +68,7 @@
         
         
         function handleFileSelect(evt) {
-            var files = evt.target.files; // FileList object
+                var files = evt.target.files; // FileList object
                 infoArea.value += "Name Mesh: "+files[0].name+"\n";
                 infoArea.value += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
