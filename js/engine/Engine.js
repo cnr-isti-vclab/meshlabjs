@@ -96,7 +96,7 @@
                 
                 //update file name in a meshName textfield
                 // fileNameGlobal = fileNameGlobal+'.'+fileExtension;
-                master.meshName= fileNameGlobal;
+                master.meshName = fileNameGlobal;
                 updateDatGui();
                 //end update
 

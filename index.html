@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link href="css/meshlabjs.css" rel="stylesheet">     
+    <link href="css/style.css" rel="stylesheet">     
     <!-- PreProcessing information ... -->
     <script src="js/include/three.js"></script>
     <script src="js/include/TrackballControls.js"></script> 
@@ -17,7 +17,7 @@
 <body>
 <div id='renderingMesh' class='3Dcontainer'> </div>
 <div class='controls'>
-<div id="rendering-mode" class="frame-controls">
+<div id="divOpenedMesh" class="mesh-controls">
 <form method="post">
     <fieldset id="field">
         <legend>Rendering Mode</legend>
@@ -29,27 +29,9 @@
     <br>
     <output id="list"></output>
 <div id='controls'>
-    <textarea id="info" ></textarea>
+    <textarea id="infoMesh" ></textarea>
     <textarea id="log" ></textarea>
 </div>
-
-    <!-- <form>
-    Mesh name:
-    <input type="text" id="name_mesh" name="mesh_name" value="mesh.off">
-    <br>
-    <button id='save_mesh'>Save Mesh</button>
-    </form>
-</div>
-<div id="filters" class="frame-controls" >
-<button id='refinement'>Refine!</button>
-<button id='smoothed'>Smooth</button>
-    <legend>Filtri</legend>
-        <select>
-            <option >Please, select a Filter</option>
-            <option value="refine" >Refine</option>
-            <option value="smooth">Smooth</option>
-        </select>
-</div> -->
 </body>
     <!-- Post-processing page ... -->
     <script src="js/engine/Module.js"></script>
@@ -59,7 +41,6 @@
 
     <!-- Import Plugin -->
     <script src="js/plugin/refine.js"></script>
-    <script src="js/plugin/smooth.js"></script>    
+    <script src="js/plugin/smooth.js"></script>   
     <script src="js/plugin/random.js"></script>
-
 </html>
