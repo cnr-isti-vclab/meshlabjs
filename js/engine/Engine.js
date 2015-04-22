@@ -4,7 +4,8 @@
 
         var openedMesh=[];
         var arrThreeJsMeshObj=[];
-        var arrInfoMeshOut=[,];
+        var arrInfoMeshOut=[];
+        var arrVNFNMeshOut=[];
         var currentPtr;
         var fileExtension='off';
         var fileNameGlobal='mesh';
@@ -51,8 +52,8 @@
         function handleFileSelect(evt) {
             if(evt.target.files.length!=0){
                 var files = evt.target.files; // FileList object
-                arrInfoMeshOut[files[0].name,0] = "Current Mesh: "+files[0].name+"\n";
-                arrInfoMeshOut[files[0].name,0] += "Size Mesh: "+files[0].size+" Bytes\n";
+                arrInfoMeshOut[files[0].name] = "Current Mesh: "+files[0].name+"\n";
+                arrInfoMeshOut[files[0].name] += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
                 //extract format file
                 var oldFileName = files[0].name;
@@ -61,7 +62,7 @@
                 var ext = format[format.length-1];
                 fileName= "tmp." + ext;
                 format[format.length-1] = '';
-                fileNameGlobal = oldFileName;
+                fileNameGlobal = files[0].name;
                 switch(ext){
                     case "off": {fileExtension='off'; break;}
                     case "obj": {fileExtension='obj'; break;}
@@ -150,7 +151,7 @@
                 currentPtr = openedMesh[name];
                 fileNameGlobal = name;
                 document.getElementById(name).style.borderLeftColor = "yellow";
-                infoArea.value = arrInfoMeshOut[name,0]+arrInfoMeshOut[name,1];
+                infoArea.value = arrInfoMeshOut[name] + arrVNFNMeshOut[name];
             }
 
 

@@ -16,7 +16,7 @@ var refGui = {
         if(statusVisible)
             addMeshByName(fileNameGlobal);
 	    console.timeEnd("Update mesh ");
-        infoArea.value = arrInfoMeshOut[fileNameGlobal,0]+arrInfoMeshOut[fileNameGlobal,1];
+        infoArea.value = arrInfoMeshOut[fileNameGlobal]+arrVNFNMeshOut[fileNameGlobal];
 
     } //end refine  
 }; 
