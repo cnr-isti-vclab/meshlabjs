@@ -27,7 +27,6 @@
         controls.keys = [ 65, 83, 68 ];
         controls.addEventListener( 'change', render );
         
-        
         } //end init
         
         function animate() {        
@@ -40,7 +39,7 @@
             renderer.render(scene, camera);
         }
 
-        function createMesh(ptrMesh) {
+        function createMesh(ptrMesh,name) {
             console.time("Getting Mesh Properties Time");
             var MeshProperties = new Module.MeshLabJs(ptrMesh);
             var VN = MeshProperties.getVertexNumber();
@@ -48,7 +47,7 @@
             var face = MeshProperties.getFaceVector();
             var FN = MeshProperties.getFaceNumber();
             console.timeEnd("Getting Mesh Properties Time");
-            scene.remove(mesh);
+            // scene.remove(mesh);
             var geometry = new THREE.Geometry();
             console.time("Time to create mesh: ");
             for(var i=0; i<VN*3; i++){
@@ -73,10 +72,20 @@
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
-            scene.add(mesh);
-            infoArea.value = infoMeshStr+"Vertices: "+VN+"\nFaces: "+FN;
+            arrInfoMeshOut[name] +="Vertices: "+VN+"\nFaces: "+FN;
+            return mesh;
         }
         window.addEventListener('resize', onWindowResize, false );
+
+        function addMeshByName(name){
+            var mesh = arrThreeJsMeshObj[name];
+            scene.add(mesh);
+        }
+
+        function removeMeshByName(name){
+            var mesh = arrThreeJsMeshObj[name];
+            scene.remove(mesh);
+        }
 
         function onWindowResize(){
             camera.aspect = window.innerWidth / window.innerHeight;

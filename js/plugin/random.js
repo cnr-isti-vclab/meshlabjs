@@ -4,11 +4,14 @@ var RandomDisplacemnt;
 var dispAmount = 0.01;
 var rndGui = {
     dispAmount : 0.01,
-    randomDisp : function() { 
+    randomDisp : function() {         
+    		removeMeshByName(fileNameGlobal);
             console.time("random time ");
-            Module.RandomDisplacement(ptrMesh, dispAmount);
+            Module.RandomDisplacement(currentPtr, dispAmount);
             console.timeEnd("random time ");
-            createMesh(ptrMesh);
+            var resultMesh = createMesh(currentPtr,name);
+        	arrThreeJsMeshObj[fileNameGlobal] = resultMesh;
+        	addMeshByName(fileNameGlobal);
     } //end smooth  
 }; 
 

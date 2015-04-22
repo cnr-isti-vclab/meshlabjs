@@ -1,8 +1,11 @@
-        var camera, scene, renderer, controls, time, mesh, ptrMesh, infoMeshStr;
+        var camera, scene, renderer, controls, time, mesh, ptrMesh;
 
         var infoArea = document.getElementById('infoMesh');
 
         var openedMesh=[];
+        var arrThreeJsMeshObj=[];
+        var arrInfoMeshOut=[];
+        var currentPtr;
         var fileExtension='off';
         var fileNameGlobal='mesh';
 
@@ -47,8 +50,8 @@
         function handleFileSelect(evt) {
                 var files = evt.target.files; // FileList object
                 infoArea.value = '';
-                infoMeshStr = "Current Mesh: "+files[0].name+"\n";
-                infoMeshStr += "Size Mesh: "+files[0].size+" Bytes\n";
+                arrInfoMeshOut[files[0].name] = "Current Mesh: "+files[0].name+"\n";
+                arrInfoMeshOut[files[0].name] += "Size Mesh: "+files[0].size+" Bytes\n";
                 console.time("File Reading Time");
                 //extract format file
                 var oldFileName = files[0].name;
@@ -92,7 +95,9 @@
                 else {
                     console.timeEnd("Parsing Mesh Time");
                     ptrMesh = Opener.getMesh();
-                    createMesh(ptrMesh);
+                    var meshCreated = createMesh(ptrMesh,files[0].name);
+                    arrThreeJsMeshObj[files[0].name] = meshCreated;
+                    addMeshByName(files[0].name);
                     animate();
 
                     FS.unlink(fileName);
@@ -100,11 +105,11 @@
                     openedMesh[files[0].name]=ptrMesh;
 
                     //create new row of table, new checkbox and relative label, append these
-                    uncheckAllCheckboxes();
+                    // uncheckAllCheckboxes();
                     document.getElementsByTagName('input[type=checkbox]');
                     var row = document.createElement('tr');
                     var coloumn = document.createElement('td');
-                    coloumn.name = files[0].name;
+                    coloumn.id = files[0].name;
                     var checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
                     checkbox.checked = true;
@@ -115,7 +120,8 @@
                     document.getElementById('field').appendChild(row).appendChild(coloumn);
                     document.getElementsByName(files[0].name)[0].checked = true;
                     row.addEventListener('click',function() { OnClickCheckBox(files[0].name); });
-
+                    coloumn.addEventListener('click', function() { OnClickSelectCurrent(files[0].name);});
+                    OnClickSelectCurrent(files[0].name);
                     }//end else
                 }; //end Onload
 
@@ -125,16 +131,29 @@
             
             function OnClickCheckBox(name){
                 var isChecked = document.getElementsByName(name)[0].checked;
+                
                 if(isChecked==false){
-                    scene.remove(mesh);
-                    uncheckAllCheckboxes();
+                    removeMeshByName(name);
+                    // uncheckAllCheckboxes();
                 } else {
-                    uncheckAllCheckboxes();
-                    var meshToPointer = openedMesh[name];
-                    createMesh(meshToPointer);
+                    // uncheckAllCheckboxes();
+                    addMeshByName(name);
                     document.getElementsByName(name)[0].checked = true;
                     fileNameGlobal = name;
                 }
+            }
+
+            function OnClickSelectCurrent(name) {
+                var cells = document.getElementById("field").getElementsByTagName("td");
+                for (var i=0; i< cells.length; i++) {
+                    cells[i].style.backgroundColor = "#111";
+                    cells[i].style.color = "#eee";
+                }
+                currentPtr = openedMesh[name];
+                fileNameGlobal = name;
+                document.getElementById(name).style.backgroundColor = "yellow";
+                document.getElementById(name).style.color = "black";
+                infoArea.value = arrInfoMeshOut[name];
             }
 
             function uncheckAllCheckboxes() {
