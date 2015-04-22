@@ -67,7 +67,7 @@
 
             mesh = new THREE.Mesh( geometry, material );
             box = new THREE.Box3().setFromObject(mesh);
-            scale = 7.0/box.min.distanceTo(box.max);
+            scale = 5.0/box.min.distanceTo(box.max);
             mesh.position = box.center().multiplyScalar(scale);             
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             THREE.GeometryUtils.center( geometry );
