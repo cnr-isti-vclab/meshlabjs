@@ -12,7 +12,7 @@ var Module = {
         preRun: [],
         postRun: [],
         print: (function () {
-            var element = document.getElementById('infoMesh');
+            var element = document.getElementById('log');
             if (element) { element.value = ''; }// clear browser cache
             return function (text) {
                 text = Array.prototype.slice.call(arguments).join(' ');

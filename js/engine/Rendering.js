@@ -37,7 +37,6 @@
         }
 
         function createMesh(ptrMesh) {
-            start = window.performance.now();
             console.time("Getting Mesh Properties Time");
             var MeshProperties = new Module.MeshLabJs(ptrMesh);
             var VN = MeshProperties.getVertexNumber();
@@ -45,14 +44,9 @@
             var face = MeshProperties.getFaceVector();
             var FN = MeshProperties.getFaceNumber();
             console.timeEnd("Getting Mesh Properties Time");
-            end = window.performance.now();
-            time = Math.round((end-start)/10) / 100;
-            logArea.value += "Getting Mesh Properties Time: "+time+" seconds\n";
             scene.remove(mesh);
             var geometry = new THREE.Geometry();
-            console.log("Vertices are "+VN);
-            console.log("Faces are "+FN);
-            start = window.performance.now();
+            infoArea.value += "Faces: "+FN+" Vertices: "+VN+"\n";
             console.time("Time to create mesh: ");
             for(var i=0; i<VN*3; i++){
                 var v1 = Module.getValue(vert+parseInt(i*4),'float'); i++;
@@ -66,11 +60,7 @@
                 var c = Module.getValue(face+parseInt(i*4),'*'); 
                 geometry.faces.push( new THREE.Face3(a,b,c));
             }
-            logArea.value+="geometry created.\n";
             console.timeEnd("Time to create mesh: ");
-            end = window.performance.now();
-            time = Math.round((end-start)/10) / 100;
-            logArea.value += "Time to create mesh: "+time+" seconds\n";
             //green : 00ff00
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
