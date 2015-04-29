@@ -1,5 +1,5 @@
         var BBGlobal;
-
+        var cnt=0;
         function init() {
         var div_WIDTH = document.body.offsetWidth,
             div_HEIGHT = document.body.offsetHeight;
@@ -71,7 +71,7 @@
 
 
             arrThreeJsMeshObj[name] = mesh;
-            computeGlobalBBox();
+            
 
 
             // console.log("min box "+BBGlobal.min.x+" "+BBGlobal.min.y+" "+BBGlobal.min.z+" max box "+BBGlobal.max.x+" "+BBGlobal.max.y+" "+BBGlobal.max.z);
@@ -82,7 +82,7 @@
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
-
+            computeGlobalBBox();
             // fitAll();
             // camera.lookAt(box.center());  
 
@@ -94,12 +94,14 @@
             var mesh = arrThreeJsMeshObj[name];
             scene.add(mesh);
             isCurrentMeshVisible = true;
+            cnt++;
         }
 
         function removeMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
             scene.remove(mesh);
             isCurrentMeshVisible = false;
+            cnt--;
         }
 
         function onWindowResize(){
@@ -136,12 +138,28 @@
             camera.lookAt(bbCenter);
 
             BBGlobal = new THREE.Box3(bbMin,bbMax);
+
+
+            var origin = new THREE.Vector3(0,0,0);
+            var offset = new THREE.Vector3();
+            offset = origin.distanceTo(bbCenter);
+            console.log(offset);
+            if(cnt!=0){
+            for(var i in arrThreeJsMeshObj){
+                var mesh = arrThreeJsMeshObj[i];
+                removeMeshByName(i);
+                // mesh.position.x+=offset;
+                // mesh.position.y+=offset;
+                mesh.position.z+=offset;
+                addMeshByName(i);
+            }
+            }
             // controls.target = bbCenter;
 
-            for(var i in arrThreeJsMeshObj){
-                // scene.getObjectByName(i).scale.set()
+            // for(var i in arrThreeJsMeshObj){
+            //     // scene.getObjectByName(i).scale.set()
 
-            }
+            // }
             // console.log(arrThreeJsMeshObj.length);
             // if(arrThreeJsMeshObj.length>0){
             //     console.log(arrThreeJsMeshObj.length);
@@ -155,18 +173,18 @@
 
             // console.log(BBGlobal.center().x);
 
-            var diag = new THREE.Vector3();
-            diag = diag.subVectors(bbMax, bbMin);
-            var radius = diag.length() * 0.5;
+            // var diag = new THREE.Vector3();
+            // diag = diag.subVectors(bbMax, bbMin);
+            // var radius = diag.length() * 0.5;
 
-            // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
-            var offset = radius / Math.tan(Math.PI / 180.0 * camera.fov * 0.5);
+            // // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
+            // var offset = radius / Math.tan(Math.PI / 180.0 * camera.fov * 0.5);
 
-            // Compute new camera position
-            var dir = camera.matrix.z;
-            dir*=offset; 
-            var newPos = new THREE.Vector3();
-            newPos.add(bbCenter);
+            // // Compute new camera position
+            // var dir = camera.matrix.z;
+            // dir*=offset; 
+            // var newPos = new THREE.Vector3();
+            // newPos.add(bbCenter);
 
 
             // camera.rotationAutoUpdate = false;
