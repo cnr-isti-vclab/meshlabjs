@@ -71,8 +71,8 @@
 
 
             // console.log("min box "+BBGlobal.min.x+" "+BBGlobal.min.y+" "+BBGlobal.min.z+" max box "+BBGlobal.max.x+" "+BBGlobal.max.y+" "+BBGlobal.max.z);
-            scale = 7.0 / BBGlobal.min.distanceTo(BBGlobal.max);
-            mesh.position = BBGlobal.center().multiplyScalar(scale);   //     negate().   
+            scale = 7.0 / box.min.distanceTo(box.max);
+            mesh.position = box.center().multiplyScalar(scale);   //     negate().   
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             THREE.GeometryUtils.center( geometry );
             mesh.updateMatrix();
@@ -129,35 +129,42 @@
             // console.log(bbCenter.x);
 
             BBGlobal = new THREE.Box3(bbMin,bbMax);
+            // controls.target = bbCenter;
+
+
 
             // console.log(BBGlobal.center().x);
 
-            // var diag = new THREE.Vector3();
-            // diag = diag.subVectors(bbMax, bbMin);
-            // var radius = diag.length() * 0.5;
+            var diag = new THREE.Vector3();
+            diag = diag.subVectors(bbMax, bbMin);
+            var radius = diag.length() * 0.5;
 
-            // // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
-            // var offset = radius / Math.tan(Math.PI / 180.0 * camera.fov * 0.5);
+            // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
+            var offset = radius / Math.tan(Math.PI / 180.0 * camera.fov * 0.5);
 
-            // // Compute new camera position
-            // var dir = camera.projectionMatrix.z;
-            // dir*=offset; 
-            // var newPos = new THREE.Vector3();
-            // newPos.add(bbCenter);
+            // Compute new camera position
+            var dir = camera.matrix.z;
+            dir*=offset; 
+            var newPos = new THREE.Vector3();
+            newPos.add(bbCenter);
 
 
             // camera.rotationAutoUpdate = false;
-            // camera.position.set( newPos.x, newPos.y, newPos.z );
+            // scene.remove(camera);
+            // camera.position.x = newPos.x;
+            // camera.position.y = newPos.y;
+            // camera.position.z = ;
             // camera.lookAt(bbCenter);  
             // camera.rotationAutoUpdate = true;        
             // var container = document.getElementsByTagName('canvas')[0];
             // controls = new THREE.TrackballControls( camera, container );
             // controls.target = bbCenter;
+            // scene.add(camera);
 
         }
 
 function addAxes() {
-    axes = buildAxes( 1000 );
+    axes = buildAxes( 300 );
     scene.add( axes );
 }   
 function buildAxes( length ) {
