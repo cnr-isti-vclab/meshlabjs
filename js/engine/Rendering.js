@@ -1,5 +1,4 @@
-        var boxes=[];
-        var cnt=0;
+        var BBGlobal;
 
         function init() {
         var div_WIDTH = document.body.offsetWidth,
@@ -7,7 +6,7 @@
         // sezione di set-up di progetto, di iniziazione
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
-        camera.position.z = 15;
+        camera.position.z = 25;
         renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
 
@@ -26,7 +25,7 @@
         controls.dynamicDampingFactor = 0.3;
         controls.keys = [ 65, 83, 68 ];
         controls.addEventListener( 'change', render );
-        
+        addAxes();
         } //end init
         
         function animate() {        
@@ -65,25 +64,24 @@
             console.timeEnd("Time to create mesh: ");
             //green : 00ff00
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
-
             mesh = new THREE.Mesh( geometry, material );
-
             box = new THREE.Box3().setFromObject(mesh);
+            arrThreeJsMeshObj[name] = mesh;
+            computeGlobalBBox();
 
-            for (var i=0; i< boxes.length;i++){
-               boxes[i].translate(boxes[i].min.distanceTo(boxes[i].max));
-               box.union(boxes[i]);
-            }
-            boxes[cnt] = box;
-            cnt++;
-            scale = 4.0/box.min.distanceTo(box.max);
-            mesh.position = box.center().multiplyScalar(scale);             
+
+            // console.log("min box "+BBGlobal.min.x+" "+BBGlobal.min.y+" "+BBGlobal.min.z+" max box "+BBGlobal.max.x+" "+BBGlobal.max.y+" "+BBGlobal.max.z);
+            scale = 7.0 / BBGlobal.min.distanceTo(BBGlobal.max);
+            mesh.position = BBGlobal.center().multiplyScalar(scale);   //     negate().   
             mesh.scale = new THREE.Vector3(scale,scale,scale);
             THREE.GeometryUtils.center( geometry );
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
-            arrThreeJsMeshObj[name] = mesh;
+
+            // fitAll();
+            // camera.lookAt(box.center());  
+
             return mesh;
         }
         window.addEventListener('resize', onWindowResize, false );
@@ -105,3 +103,93 @@
             camera.updateProjectionMatrix();
             renderer.setSize( window.innerWidth, window.innerHeight );
         }       
+
+        function computeGlobalBBox(){
+            var bbMin = new THREE.Vector3();
+            var bbMax = new THREE.Vector3();
+            for(var i in arrThreeJsMeshObj){
+                var bbox = new THREE.Box3().setFromObject(arrThreeJsMeshObj[i]);
+                if (arrThreeJsMeshObj.length < 2) {
+                    bbMin = bbox.min;
+                    bbMax = bbox.max;
+                } else {
+                bbMin.x = Math.min(bbMin.x,bbox.min.x);
+                bbMin.y = Math.min(bbMin.y,bbox.min.y);
+                bbMin.z = Math.min(bbMin.z,bbox.min.z);
+                bbMax.x = Math.max(bbMax.x,bbox.max.x);
+                bbMax.y = Math.max(bbMax.y,bbox.max.y);
+                bbMax.z = Math.max(bbMax.z,bbox.max.z);
+                }
+            }
+
+            var bbCenter = new THREE.Vector3();
+            bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
+            bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
+            bbCenter.z = (bbMax.z + bbMin.z) * 0.5;
+            // console.log(bbCenter.x);
+
+            BBGlobal = new THREE.Box3(bbMin,bbMax);
+
+            // console.log(BBGlobal.center().x);
+
+            // var diag = new THREE.Vector3();
+            // diag = diag.subVectors(bbMax, bbMin);
+            // var radius = diag.length() * 0.5;
+
+            // // Compute offset needed to move the camera back that much needed to center AABB (approx: better if from BB front face)
+            // var offset = radius / Math.tan(Math.PI / 180.0 * camera.fov * 0.5);
+
+            // // Compute new camera position
+            // var dir = camera.projectionMatrix.z;
+            // dir*=offset; 
+            // var newPos = new THREE.Vector3();
+            // newPos.add(bbCenter);
+
+
+            // camera.rotationAutoUpdate = false;
+            // camera.position.set( newPos.x, newPos.y, newPos.z );
+            // camera.lookAt(bbCenter);  
+            // camera.rotationAutoUpdate = true;        
+            // var container = document.getElementsByTagName('canvas')[0];
+            // controls = new THREE.TrackballControls( camera, container );
+            // controls.target = bbCenter;
+
+        }
+
+function addAxes() {
+    axes = buildAxes( 1000 );
+    scene.add( axes );
+}   
+function buildAxes( length ) {
+        var axes = new THREE.Object3D();
+
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000, false ) ); // +X
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000, true) ); // -X
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ), 0x00FF00, false ) ); // +Y
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00, true ) ); // -Y
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ), 0x0000FF, false ) ); // +Z
+        axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF, true ) ); // -Z
+
+        return axes;
+
+    }
+
+function buildAxis( src, dst, colorHex, dashed ) {
+        var geom = new THREE.Geometry(),
+            mat; 
+
+        if(dashed) {
+            mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
+        } else {
+            mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
+        }
+
+        geom.vertices.push( src.clone() );
+        geom.vertices.push( dst.clone() );
+        geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+
+        var axis = new THREE.Line( geom, mat, THREE.LinePieces );
+
+        return axis;
+
+    }
