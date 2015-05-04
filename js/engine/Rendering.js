@@ -65,10 +65,12 @@
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
             box = new THREE.Box3().setFromObject(mesh);
+
+            //create Bounding Box of mesh added
             var bbox = new THREE.BoundingBoxHelper( mesh, 0xaaaaaa );
             bbox.update();
             scene.add( bbox );
-
+            //end creation Bounding Box
 
             arrThreeJsMeshObj[name] = mesh;
             
@@ -82,6 +84,8 @@
             mesh.updateMatrix();
             mesh.matrixAutoUpdate = false;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
+
+
             computeGlobalBBox();
             // fitAll();
             // camera.lookAt(box.center());  
@@ -127,33 +131,37 @@
                 bbMax.z = Math.max(bbMax.z,bbox.max.z);
                 // }
             }
-
-
-            var bbCenter = new THREE.Vector3();
-            bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
-            bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
-            bbCenter.z = (bbMax.z + bbMin.z) * 0.5;
-            // console.log(bbCenter.x);
-
-            camera.lookAt(bbCenter);
-
             BBGlobal = new THREE.Box3(bbMin,bbMax);
 
+            console.log("Global BBOX");
+            console.log("Min is ("+BBGlobal.min.x+","+BBGlobal.min.y+","+BBGlobal.min.z+")");
+            console.log("Max is ("+BBGlobal.max.x+","+BBGlobal.max.y+","+BBGlobal.max.z+")");
 
-            var origin = new THREE.Vector3(0,0,0);
-            var offset = new THREE.Vector3();
-            offset = origin.distanceTo(bbCenter);
-            console.log(offset);
-            if(cnt!=0){
-            for(var i in arrThreeJsMeshObj){
-                var mesh = arrThreeJsMeshObj[i];
-                removeMeshByName(i);
-                // mesh.position.x+=offset;
-                // mesh.position.y+=offset;
-                mesh.position.z+=offset;
-                addMeshByName(i);
-            }
-            }
+            // var bbCenter = new THREE.Vector3();
+            // bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
+            // bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
+            // bbCenter.z = (bbMax.z + bbMin.z) * 0.5;
+            // // console.log(bbCenter.x);
+
+            // camera.lookAt(bbCenter);
+
+            // BBGlobal = new THREE.Box3(bbMin,bbMax);
+
+
+            // var origin = new THREE.Vector3(0,0,0);
+            // var offset = new THREE.Vector3();
+            // offset = origin.distanceTo(bbCenter);
+            // console.log(offset);
+            // if(cnt!=0){
+            // for(var i in arrThreeJsMeshObj){
+            //     var mesh = arrThreeJsMeshObj[i];
+            //     removeMeshByName(i);
+            //     // mesh.position.x+=offset;
+            //     // mesh.position.y+=offset;
+            //     mesh.position.z+=offset;
+            //     addMeshByName(i);
+            // }
+            // }
             // controls.target = bbCenter;
 
             // for(var i in arrThreeJsMeshObj){
