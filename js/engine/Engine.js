@@ -9,7 +9,7 @@
         var currentPtr;
         var fileExtension='off';
         var fileNameGlobal='mesh';
-        var isCurrentMeshVisible;
+        // var isCurrentMeshVisible;
 
 //---------------------------------Declaration DAT.GUI
         var nameMesh='mesh.'+fileExtension;
@@ -99,7 +99,7 @@
                     ptrMesh = Opener.getMesh();
                     var meshCreated = createMesh(ptrMesh,files[0].name);
                     arrThreeJsMeshObj[files[0].name] = meshCreated;
-                    addMeshByName(files[0].name);
+                    // addMeshByName(files[0].name);
 
                     animate();
 
@@ -136,9 +136,9 @@
                 var isChecked = document.getElementsByName(name)[0].checked;
                 
                 if(isChecked==false){
-                    removeMeshByName(name);
+                    hideMeshByName(name);
                 } else {
-                    addMeshByName(name);
+                    showMeshByName(name);
                     document.getElementsByName(name)[0].checked = true;
                 }
             }

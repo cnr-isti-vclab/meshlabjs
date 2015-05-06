@@ -1,11 +1,11 @@
-        var BBGlobal;
-        var cnt=0;
+        var BBGlobal, offset, scenebbox;
+        // var cnt=0;
         function init() {
         var div_WIDTH = document.body.offsetWidth,
             div_HEIGHT = document.body.offsetHeight;
         // sezione di set-up di progetto, di iniziazione
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(  45, div_WIDTH/div_HEIGHT, 0.1, 1000  );
+        camera = new THREE.PerspectiveCamera(  60, div_WIDTH/div_HEIGHT, 0.1, 1800 );
         camera.position.z = 25;
         renderer = new THREE.WebGLRenderer({alpha:true});
         renderer.shadowMapEnabled = true;
@@ -25,6 +25,7 @@
         controls.keys = [ 65, 83, 68 ];
         controls.addEventListener( 'change', render );
         addAxes();
+        addBboxScene();
         } //end init
         
         function animate() {        
@@ -34,6 +35,7 @@
         }
          
         function render() {
+            // console.log("camera position "+camera.position.x+" "+camera.position.y+" "+camera.position.z);
             renderer.render(scene, camera);
         }
 
@@ -64,29 +66,39 @@
             //green : 00ff00
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
-            box = new THREE.Box3().setFromObject(mesh);
-
-            //create Bounding Box of mesh added
-            var bbox = new THREE.BoundingBoxHelper( mesh, 0xaaaaaa );
-            bbox.update();
-            scene.add( bbox );
-            //end creation Bounding Box
-
+            mesh.name = name;
+            mesh.visible = false;
             arrThreeJsMeshObj[name] = mesh;
+            // box = new THREE.Box3().setFromObject(mesh);
+            scene.add(mesh);
+            computeGlobalBBox();
+            mesh.visible = true;
+            // scale = 20.0 / BBGlobal.min.distanceTo(BBGlobal.max);
+            // mesh.scale.set(scale,scale,scale);
+            // mesh.updateMatrix();
+            // mesh.matrixAutoUpdate = false;
+
+            // mesh.translateX(offset.x);
+            // mesh.translateY(offset.y);
+            // mesh.translateZ(offset.z);
+
+            // mesh.position += offset;
+
+
             
 
 
             // console.log("min box "+BBGlobal.min.x+" "+BBGlobal.min.y+" "+BBGlobal.min.z+" max box "+BBGlobal.max.x+" "+BBGlobal.max.y+" "+BBGlobal.max.z);
-            scale = 7.0 / bbox.box.min.distanceTo(bbox.box.max);
-            mesh.position = box.center();//.multiplyScalar(scale);   //     negate().   
+            // scale = 7.0 / bbox.box.min.distanceTo(bbox.box.max);
+            // mesh.position = box.center();//.multiplyScalar(scale);   //     negate().   
             // mesh.scale.set(scale,scale,scale); //= new THREE.Vector3(scale,scale,scale);
-            THREE.GeometryUtils.center( geometry );
-            mesh.updateMatrix();
-            mesh.matrixAutoUpdate = false;
+            // THREE.GeometryUtils.center( geometry );
+            // mesh.updateMatrix();
+            // mesh.matrixAutoUpdate = false;
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
 
 
-            computeGlobalBBox();
+            // computeGlobalBBox();
             // fitAll();
             // camera.lookAt(box.center());  
 
@@ -94,18 +106,20 @@
         }
         window.addEventListener('resize', onWindowResize, false );
 
-        function addMeshByName(name){
+        function showMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
-            scene.add(mesh);
-            isCurrentMeshVisible = true;
-            cnt++;
+            // scene.add(mesh);
+            mesh.visible = true;
+            // isCurrentMeshVisible = true;
+            // cnt++;
         }
 
-        function removeMeshByName(name){
+        function hideMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
-            scene.remove(mesh);
-            isCurrentMeshVisible = false;
-            cnt--;
+            // scene.remove(mesh);
+            mesh.visible = false;
+            // isCurrentMeshVisible = false;
+            // cnt--;
         }
 
         function onWindowResize(){
@@ -115,10 +129,27 @@
         }       
 
         function computeGlobalBBox(){
+
+            for (var i =0; i< scene.children.length; i++){
+                // if(scene.children[i].name != ""){
+                console.log(scene.children[i]);
+                // var mesh = scene.children[i];
+                // console.log(mesh.position.x);
+            }
+                // console.log(scene.getObjectByName(arrThreeJsMeshObj[i]).name);
+            // }
+
+
             var bbMin = new THREE.Vector3();
             var bbMax = new THREE.Vector3();
-            for(var i in arrThreeJsMeshObj){
-                var bbox = new THREE.Box3().setFromObject(arrThreeJsMeshObj[i]);
+
+            // for(var i in arrThreeJsMeshObj){
+            for (var i =0; i < scene.children.length; i++){
+                if(scene.children[i].name != ""){
+                // console.log(scene.children[i].name);
+                var mesh = scene.children[i];
+                // var mesh = arrThreeJsMeshObj[i];
+                var bbox = new THREE.Box3().setFromObject(mesh);
                 // if (arrThreeJsMeshObj.length < 2) {
                 //     bbMin = bbox.min;
                 //     bbMax = bbox.max;
@@ -129,14 +160,88 @@
                 bbMax.x = Math.max(bbMax.x,bbox.max.x);
                 bbMax.y = Math.max(bbMax.y,bbox.max.y);
                 bbMax.z = Math.max(bbMax.z,bbox.max.z);
-                // }
+                }
             }
+            // BBGlobal = new THREE.Box3(bbMin,bbMax);
+            var bbCenter = new THREE.Vector3();
+            bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
+            bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
+            bbCenter.z = (bbMax.z + bbMin.z) * 0.5;
+
+
+            offset = new THREE.Vector3();
+            //scenebbox.box.center is assumed (0,0,0) by default
+            // scenebbox.box.center().x
+            offset.x = - bbCenter.x;
+            offset.y = - bbCenter.y;
+            offset.z = - bbCenter.z;
+
+            bbMin.x += offset.x;
+            bbMin.y += offset.y;
+            bbMin.z += offset.z;
+
+            bbMax.x += offset.x;
+            bbMax.y += offset.y;
+            bbMax.z += offset.z;
+
             BBGlobal = new THREE.Box3(bbMin,bbMax);
+
+            console.log("is centered BBGlobal? ");
+            console.log(BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z);
 
             console.log("Global BBOX");
             console.log("Min is ("+BBGlobal.min.x+","+BBGlobal.min.y+","+BBGlobal.min.z+")");
             console.log("Max is ("+BBGlobal.max.x+","+BBGlobal.max.y+","+BBGlobal.max.z+")");
+            console.log("Center is ("+BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z+")");
+            console.log("diagonal is "+ BBGlobal.min.distanceTo(BBGlobal.max));
 
+            console.log("offset is "+offset.x+","+offset.y+","+offset.z);
+
+            scene.position.x += offset.x;
+            scene.position.y += offset.y;
+            scene.position.z += offset.z;
+
+
+            // for(var i in arrThreeJsMeshObj){
+            //     var mesh = arrThreeJsMeshObj[i];
+            for (var i =0; i < scene.children.length; i++){
+                if(scene.children[i].name != ""){
+                // console.log(scene.children[i].name);
+                var mesh = scene.children[i];
+                var bbox = new THREE.Box3().setFromObject(mesh);
+                scale = 20.0 / BBGlobal.min.distanceTo(BBGlobal.max);
+                mesh.scale.set(scale,scale,scale);
+                //methods translateA traslate object in a point specified
+                // mesh.translateX(offset.x);
+                // mesh.translateY(offset.y);
+                // mesh.translateZ(offset.z);
+                mesh.position = bbox.center();
+                // mesh.position.x += offset.x;
+                // mesh.position.y += offset.y;
+                // mesh.position.z += offset.z;
+
+
+                mesh.updateMatrix();
+                mesh.matrixAutoUpdate = false;
+
+                //create Bounding Box of mesh added
+                scene.remove(bbox);
+                var bbox = new THREE.BoundingBoxHelper( mesh, 0xaaaaaa );
+                bbox.update();
+                scene.add( bbox );
+                //end creation Bounding Box
+            }
+        }
+
+            console.log("Global BBOX");
+            console.log("Min is ("+BBGlobal.min.x+","+BBGlobal.min.y+","+BBGlobal.min.z+")");
+            console.log("Max is ("+BBGlobal.max.x+","+BBGlobal.max.y+","+BBGlobal.max.z+")");
+            console.log("Center is ("+BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z+")");
+
+            // 
+
+            // var offset = 
+            // camera.position.z-=100;
             // var bbCenter = new THREE.Vector3();
             // bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
             // bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
@@ -248,7 +353,7 @@ function buildAxis( src, dst, colorHex, dashed ) {
     }
 
 function addBboxScene () {
-    var scenebbox = new THREE.BoundingBoxHelper( scene, 0xffffff );
+    scenebbox = new THREE.BoundingBoxHelper( scene, 0xffffff );
     scenebbox.update();
     scene.add( scenebbox );
 }
