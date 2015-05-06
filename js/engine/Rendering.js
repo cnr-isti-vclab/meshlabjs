@@ -209,16 +209,16 @@
                 // console.log(scene.children[i].name);
                 var mesh = scene.children[i];
                 var bbox = new THREE.Box3().setFromObject(mesh);
-                scale = 20.0 / BBGlobal.min.distanceTo(BBGlobal.max);
+                scale = 7.0 / BBGlobal.min.distanceTo(BBGlobal.max);
                 mesh.scale.set(scale,scale,scale);
                 //methods translateA traslate object in a point specified
                 // mesh.translateX(offset.x);
                 // mesh.translateY(offset.y);
                 // mesh.translateZ(offset.z);
-                mesh.position = bbox.center();
-                // mesh.position.x += offset.x;
-                // mesh.position.y += offset.y;
-                // mesh.position.z += offset.z;
+                // mesh.position = bbox.center();
+                mesh.position.x += offset.x;
+                mesh.position.y += offset.y;
+                mesh.position.z += offset.z;
 
 
                 mesh.updateMatrix();
