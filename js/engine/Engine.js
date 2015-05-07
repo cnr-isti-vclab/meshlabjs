@@ -9,7 +9,7 @@
         var currentPtr;
         var fileExtension='off';
         var fileNameGlobal='mesh';
-        // var isCurrentMeshVisible;
+        var isCurrentMeshVisible;
 
 //---------------------------------Declaration DAT.GUI
         var nameMesh='mesh.'+fileExtension;
