@@ -1,4 +1,4 @@
-        var BBGlobal, offset, scenebbox;
+        var BBGlobal, offset, scenebbox, meshContainer;
         // var cnt=0;
         function init() {
         var div_WIDTH = document.body.offsetWidth,
@@ -25,7 +25,7 @@
         controls.keys = [ 65, 83, 68 ];
         controls.addEventListener( 'change', render );
         addAxes();
-        // addBboxScene();
+        addBboxScene();
         } //end init
         
         function animate() {        
@@ -35,7 +35,7 @@
         }
          
         function render() {
-            // console.log("camera position "+camera.position.x+" "+camera.position.y+" "+camera.position.z);
+
             renderer.render(scene, camera);
         }
 
@@ -67,15 +67,17 @@
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
             mesh.name = name;
-            mesh.visible = false;
+            // mesh.visible = false;
             arrThreeJsMeshObj[name] = mesh;
-            box = new THREE.Box3().setFromObject(mesh);
+            box = new THREE.Box3().setFromObject(mesh);            
+            mesh.position = box.center();//.multiplyScalar(scale);   //     negate().   
+
             scene.add(mesh);
             // computeGlobalBBox();
-            mesh.visible = true;
-            // scale = 20.0 / BBGlobal.min.distanceTo(BBGlobal.max);
+            // mesh.visible = true;
+            // scale = 20.0 / scenebbox.box.min.distanceTo(scenebbox.box.max);
             // scale = 7.0/ box.min.distanceTo(box.max);
-
+            mesh.customInfo = "mesh_loaded";
             // scene.position.set (500,0,0);
             // mesh.scale.set(scale,scale,scale);
             // scene.updateMatrix();
@@ -103,7 +105,7 @@
             arrVNFNMeshOut[name] = "Vertices: "+VN+"\nFaces: "+FN;
 
 
-            // computeGlobalBBox();
+            computeGlobalBBox();
             // fitAll();
             // camera.lookAt(box.center());  
 
@@ -151,8 +153,8 @@
 
         function computeGlobalBBox(){
 
-            for (var i =0; i< scene.children.length; i++){
-                // if(scene.children[i].name != ""){
+            for (var i =0; i < scene.children.length; i++){
+                if(scene.children[i].customInfo == "mesh_loaded")
                 console.log(scene.children[i]);
                 // var mesh = scene.children[i];
                 // console.log(mesh.position.x);
@@ -166,7 +168,7 @@
 
             // for(var i in arrThreeJsMeshObj){
             for (var i =0; i < scene.children.length; i++){
-                if(scene.children[i].name != ""){
+                if(scene.children[i].customInfo == "mesh_loaded"){
                 // console.log(scene.children[i].name);
                 var mesh = scene.children[i];
                 // var mesh = arrThreeJsMeshObj[i];
@@ -218,9 +220,23 @@
 
             console.log("offset is "+offset.x+","+offset.y+","+offset.z);
 
-            scene.position.x += offset.x;
-            scene.position.y += offset.y;
-            scene.position.z += offset.z;
+            for (var i = 0; i< scene.children.length; i++){
+                if(scene.children[i].customInfo == "mesh_loaded"){
+                    console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
+
+                    var scale = 7.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
+                    scene.children[i].scale.set(scale,scale,scale);
+                    // scene.children[i].position.set(-bbCenter.x,-bbCenter.y,-bbCenter.z);
+
+                    console.log("mesh "+scene.children[i].name+" in position "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
+                }
+            }
+
+
+            // scene.position.x += offset.x;
+            // scene.position.y += offset.y;
+            // scene.position.z += offset.z;
+        }
 
 
             // for(var i in arrThreeJsMeshObj){
@@ -333,7 +349,7 @@
             // controls.target = bbCenter;
             // scene.add(camera);
 
-        }
+        
 
 function addAxes() {
     axes = buildAxes( 300 );
