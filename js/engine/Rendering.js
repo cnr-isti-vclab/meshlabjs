@@ -177,11 +177,12 @@
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
                     if(scene.children[i].scaleFactor){
-                        scene.children[i].position.x -= -BBGlobal.center().x;
-                        scene.children[i].position.y -= -BBGlobal.center().y;
-                        scene.children[i].position.z -= -BBGlobal.center().z;
+
+                        scene.children[i].position.x -= scene.children[i].offsetVec.x;
+                        scene.children[i].position.y -= scene.children[i].offsetVec.y;
+                        scene.children[i].position.z -= scene.children[i].offsetVec.z;
                         var scaling = scene.children[i].scaleFactor;
-                        scene.children[i].scale.set(1/scaling,1/scaling,1/scaling);
+                        scene.children[i].scale.multiplyScalar(1/scaling);
                     }
                 }
             }
@@ -189,7 +190,8 @@
 
         function computeGlobalBBox(){
             refactScene();
-
+            console.log("first BB");
+            console.log(BBGlobal);
             BBGlobal = new THREE.Box3();
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
@@ -199,16 +201,16 @@
                 BBGlobal.union(bbox);
                 }
             }
-            console.log(lastBB);
-            console.log(BBGlobal);
-            console.log(lastBB.equals(BBGlobal));
-            if(!lastBB.equals(BBGlobal)){
+            // console.log(lastBB);
+            // console.log(BBGlobal);
+            // console.log(lastBB.equals(BBGlobal));
+            // if(!lastBB.equals(BBGlobal)){
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
                     console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
-                    var scale = 5.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-                    scene.children[i].scale.set(scale,scale, scale);                  
-                    scene.children[i].scaleFactor = scale;
+                    var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
+                    scene.children[i].scale.multiplyScalar(scaleFac);                  
+                    scene.children[i].scaleFactor = scaleFac;
                     console.log("mesh "+scene.children[i].name+" in position "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
                 }
             }
@@ -221,26 +223,34 @@
                 BBGlobal.union(bbox);
                 }
             }
-            console.log("is centered BBGlobal? ");
-            console.log(BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z);
+            // console.log("is centered BBGlobal? ");
+            // console.log(BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z);
 
-            console.log("Global BBOX");
-            console.log("Min is ("+BBGlobal.min.x+","+BBGlobal.min.y+","+BBGlobal.min.z+")");
-            console.log("Max is ("+BBGlobal.max.x+","+BBGlobal.max.y+","+BBGlobal.max.z+")");
-            console.log("Center is ("+BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z+")");
-            console.log("diagonal is "+ BBGlobal.min.distanceTo(BBGlobal.max));
+            // console.log("Global BBOX");
+            // console.log("Min is ("+BBGlobal.min.x+","+BBGlobal.min.y+","+BBGlobal.min.z+")");
+            // console.log("Max is ("+BBGlobal.max.x+","+BBGlobal.max.y+","+BBGlobal.max.z+")");
+            // console.log("Center is ("+BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z+")");
+            // console.log("diagonal is "+ BBGlobal.min.distanceTo(BBGlobal.max));
 
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
-                    console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
+                    // console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
                     // scene.children[i].position.set(-bbCenter.x,-bbCenter.y,-bbCenter.z);
-                    scene.children[i].position.x += -BBGlobal.center().x;
-                    scene.children[i].position.y += -BBGlobal.center().y;
-                    scene.children[i].position.z += -BBGlobal.center().z;
-                    console.log("mesh "+scene.children[i].name+" in position "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
+                    var offset = new THREE.Vector3();
+                    offset = BBGlobal.center().negate();
+                    // scene.children[i].position.x += -BBGlobal.center().x;
+                    // scene.children[i].position.y += -BBGlobal.center().y;
+                    // scene.children[i].position.z += -BBGlobal.center().z;
+                    scene.children[i].position.x += offset.x;
+                    scene.children[i].position.y += offset.y;
+                    scene.children[i].position.z += offset.z;
+                    scene.children[i].offsetVec = offset;
+                    // console.log("mesh "+scene.children[i].name+" in position "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
                 }
             }
-        }
+            console.log("Last BB");
+            console.log(BBGlobal);
+        // }
         }
 
 
