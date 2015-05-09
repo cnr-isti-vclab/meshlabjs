@@ -190,7 +190,6 @@
         function computeGlobalBBox(){
             refactScene();
 
-
             BBGlobal = new THREE.Box3();
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
@@ -198,12 +197,6 @@
                 var mesh = scene.children[i];
                 var bbox = new THREE.Box3().setFromObject(mesh);
                 BBGlobal.union(bbox);
-                // bbMin.x = Math.min(bbMin.x,bbox.min.x);
-                // bbMin.y = Math.min(bbMin.y,bbox.min.y);
-                // bbMin.z = Math.min(bbMin.z,bbox.min.z);
-                // bbMax.x = Math.max(bbMax.x,bbox.max.x);
-                // bbMax.y = Math.max(bbMax.y,bbox.max.y);
-                // bbMax.z = Math.max(bbMax.z,bbox.max.z);
                 }
             }
             console.log(lastBB);
@@ -213,7 +206,6 @@
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
                     console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
-                    // scene.children[i].position.set(-bbCenter.x,-bbCenter.y,-bbCenter.z);
                     var scale = 5.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
                     scene.children[i].scale.set(scale,scale, scale);                  
                     scene.children[i].scaleFactor = scale;
@@ -227,41 +219,8 @@
                 var mesh = scene.children[i];
                 var bbox = new THREE.Box3().setFromObject(mesh);
                 BBGlobal.union(bbox);
-                // bbMin.x = Math.min(bbMin.x,bbox.min.x);
-                // bbMin.y = Math.min(bbMin.y,bbox.min.y);
-                // bbMin.z = Math.min(bbMin.z,bbox.min.z);
-                // bbMax.x = Math.max(bbMax.x,bbox.max.x);
-                // bbMax.y = Math.max(bbMax.y,bbox.max.y);
-                // bbMax.z = Math.max(bbMax.z,bbox.max.z);
                 }
             }
-            // BBGlobal = new THREE.Box3(bbMin,bbMax);
-            // bbCenter = new THREE.Vector3();
-            // // bbCenter.x = (bbMax.x + bbMin.x) * 0.5;
-            // // bbCenter.y = (bbMax.y + bbMin.y) * 0.5;
-            // // bbCenter.z = (bbMax.z + bbMin.z) * 0.5;
-            // bbCenter.x = (BBGlobal.max.x + BBGlobal.min.x) * 0.5;
-            // bbCenter.y = (BBGlobal.max.y + BBGlobal.min.y) * 0.5;
-            // bbCenter.z = (BBGlobal.max.z + BBGlobal.min.z) * 0.5;
-
-
-            // offset = new THREE.Vector3();
-            // //scenebbox.box.center is assumed (0,0,0) by default
-            // // scenebbox.box.center().x
-            // offset.x = - bbCenter.x;
-            // offset.y = - bbCenter.y;
-            // offset.z = - bbCenter.z;
-
-            // bbMin.x += offset.x;
-            // bbMin.y += offset.y;
-            // bbMin.z += offset.z;
-
-            // bbMax.x += offset.x;
-            // bbMax.y += offset.y;
-            // bbMax.z += offset.z;
-
-            // BBGlobal = new THREE.Box3(bbMin,bbMax);
-
             console.log("is centered BBGlobal? ");
             console.log(BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z);
 
@@ -271,7 +230,6 @@
             console.log("Center is ("+BBGlobal.center().x+","+BBGlobal.center().y+","+BBGlobal.center().z+")");
             console.log("diagonal is "+ BBGlobal.min.distanceTo(BBGlobal.max));
 
-            // console.log("offset is "+offset.x+","+offset.y+","+offset.z);
             for (var i = 0; i < scene.children.length; i++){
                 if(scene.children[i].customInfo == "mesh_loaded"){
                     console.log("original position of mesh "+scene.children[i].name+": "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
@@ -279,32 +237,9 @@
                     scene.children[i].position.x += -BBGlobal.center().x;
                     scene.children[i].position.y += -BBGlobal.center().y;
                     scene.children[i].position.z += -BBGlobal.center().z;
-
-                    // var scale = 5.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-                    // scene.children[i].scale.set(scale,scale, scale);
-                    
-
                     console.log("mesh "+scene.children[i].name+" in position "+scene.children[i].position.x+","+scene.children[i].position.y+","+scene.children[i].position.z);
                 }
             }
-            // BBGlobal = new THREE.Box3();
-
-            // for (var i = 0; i < scene.children.length; i++){
-            //     if(scene.children[i].customInfo == "mesh_loaded"){
-            //     var mesh = scene.children[i];
-            //     var bbox = new THREE.Box3().setFromObject(mesh);
-            //     BBGlobal.union(bbox);
-            //     // bbMin.x = Math.min(bbMin.x,bbox.min.x);
-            //     // bbMin.y = Math.min(bbMin.y,bbox.min.y);
-            //     // bbMin.z = Math.min(bbMin.z,bbox.min.z);
-            //     // bbMax.x = Math.max(bbMax.x,bbox.max.x);
-            //     // bbMax.y = Math.max(bbMax.y,bbox.max.y);
-            //     // bbMax.z = Math.max(bbMax.z,bbox.max.z);
-            //     }
-            // }
-            // lastBB = BBGlobal;
-            // var offset = -BBGlobal.center();
-            // BBGlobal.translate(offset);
         }
         }
 
