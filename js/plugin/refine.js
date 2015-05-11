@@ -12,7 +12,7 @@ var refGui = {
     	Refine.myRefine(StepRefine);
     	console.timeEnd("Refine time ");
     	console.time("Update mesh ");
-        arrThreeJsMeshObj[name] = createMesh(currentPtr,fileNameGlobal);
+        arrThreeJsMeshObj[fileNameGlobal] = createMesh(currentPtr,fileNameGlobal);
         if(statusVisible)
             addMeshByName(fileNameGlobal);
 	    console.timeEnd("Update mesh ");

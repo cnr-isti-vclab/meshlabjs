@@ -99,7 +99,7 @@
                     ptrMesh = Opener.getMesh();
                     var meshCreated = createMesh(ptrMesh,files[0].name);
                     arrThreeJsMeshObj[files[0].name] = meshCreated;
-                    // addMeshByName(files[0].name);
+                    addMeshByName(files[0].name);
 
                     animate();
 
@@ -136,9 +136,9 @@
                 var isChecked = document.getElementsByName(name)[0].checked;
                 
                 if(isChecked==false){
-                    hideMeshByName(name);
+                    removeMeshByName(name);
                 } else {
-                    showMeshByName(name);
+                    addMeshByName(name);
                     document.getElementsByName(name)[0].checked = true;
                 }
             }
@@ -153,6 +153,7 @@
                 document.getElementById(name).style.borderLeftColor = "yellow";
                 infoArea.value = arrInfoMeshOut[name] + arrVNFNMeshOut[name];
             }
+
 
 
 

@@ -11,7 +11,7 @@ var rndGui = {
             console.time("random time ");
             Module.RandomDisplacement(currentPtr, dispAmount);
             console.timeEnd("random time ");
-            arrThreeJsMeshObj[name] = createMesh(currentPtr,fileNameGlobal);
+            arrThreeJsMeshObj[fileNameGlobal] = createMesh(currentPtr,fileNameGlobal);
         	if(statusVisible)
                 addMeshByName(fileNameGlobal);
             infoArea.value = arrInfoMeshOut[fileNameGlobal]+arrVNFNMeshOut[fileNameGlobal];

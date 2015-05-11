@@ -73,7 +73,7 @@
             var material = new THREE.MeshBasicMaterial( { color: 0xa0a0a0, wireframe: true }); 
             mesh = new THREE.Mesh( geometry, material );
             mesh.name = name;
-            // mesh.visible = false;
+            mesh.visible = false;
             arrThreeJsMeshObj[name] = mesh;
             box = new THREE.Box3().setFromObject(mesh);   
             // bbMin = box.min;
@@ -154,7 +154,7 @@
         function addMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
             scene.add(mesh);
-            // mesh.visible = true;
+            mesh.visible = true;
             isCurrentMeshVisible = true;
             // cnt++;
         }
@@ -162,7 +162,7 @@
         function removeMeshByName(name){
             var mesh = arrThreeJsMeshObj[name];
             scene.remove(mesh);
-            // mesh.visible = false;
+            mesh.visible = false;
             isCurrentMeshVisible = false;
             // cnt--;
         }
@@ -183,6 +183,16 @@
                         scene.children[i].position.z -= scene.children[i].offsetVec.z;
                         var scaling = scene.children[i].scaleFactor;
                         scene.children[i].scale.multiplyScalar(1/scaling);
+                    }
+                }
+            }
+        }
+
+        function getMeshFromSceneByName(nameMesh) {
+            for (var i=0; i<scene.children.length; i++){
+                if(scene.children[i].customInfo == "mesh_loaded"){
+                    if(scene.children[i].name == nameMesh){
+                        return scene.children[i];
                     }
                 }
             }
