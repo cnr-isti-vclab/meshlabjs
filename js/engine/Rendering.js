@@ -28,8 +28,8 @@
         controls.dynamicDampingFactor = 0.3;
         controls.keys = [ 65, 83, 68 ];
         controls.addEventListener( 'change', render );
-        addAxes();
-        addBboxScene();
+        // addAxes();
+        // addBboxScene();
         // BBGlobal = new THREE.Box3();
         lastBB = new THREE.Box3();
         } //end init
