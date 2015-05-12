@@ -19,7 +19,7 @@ class Opener
       printf("Error in opening file\n");
       
     }
-    printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
+    // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
     return ret;
   }
 

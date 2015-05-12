@@ -4,13 +4,20 @@ var StepRefine = 1;
 var refGui = {
     stepRefine : 1,
     refine : function() { 
+        var statusVisible = isCurrentMeshVisible;
+        if(statusVisible)
+            removeMeshByName(fileNameGlobal);
     	console.time("Refine time ");
-    	Refine = new Module.MyRefine(ptrMesh);
+    	Refine = new Module.MyRefine(currentPtr);
     	Refine.myRefine(StepRefine);
     	console.timeEnd("Refine time ");
     	console.time("Update mesh ");
-    	createMesh(ptrMesh);
+        arrThreeJsMeshObj[fileNameGlobal] = createMesh(currentPtr,fileNameGlobal);
+        if(statusVisible)
+            addMeshByName(fileNameGlobal);
 	    console.timeEnd("Update mesh ");
+        infoArea.value = arrInfoMeshOut[fileNameGlobal]+arrVNFNMeshOut[fileNameGlobal];
+
     } //end refine  
 }; 
 

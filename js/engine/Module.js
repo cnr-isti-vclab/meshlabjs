@@ -8,10 +8,11 @@ messages from Emscripten are displayed, developers implement the
 Module.print attribute.
 */
 var Module = {
+        memoryInitializerPrefixURL : "js/generated/",
         preRun: [],
         postRun: [],
         print: (function () {
-            var element = document.getElementById('info');
+            var element = document.getElementById('log');
             if (element) { element.value = ''; }// clear browser cache
             return function (text) {
                 text = Array.prototype.slice.call(arguments).join(' ');
@@ -23,3 +24,5 @@ var Module = {
             };
         })()
     };
+
+/* parameter 'memoryInitializerPrefixURL' indicates path of file.js.mem  */
