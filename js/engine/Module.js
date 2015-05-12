@@ -24,3 +24,5 @@ var Module = {
             };
         })()
     };
+
+/* parameter 'memoryInitializerPrefixURL' indicates path of file.js.mem  */

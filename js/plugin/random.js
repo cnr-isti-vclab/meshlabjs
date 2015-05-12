@@ -15,7 +15,6 @@ var rndGui = {
         	if(statusVisible)
                 addMeshByName(fileNameGlobal);
             infoArea.value = arrInfoMeshOut[fileNameGlobal]+arrVNFNMeshOut[fileNameGlobal];
-
     } //end smooth  
 }; 
 
