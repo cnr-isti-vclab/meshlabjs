@@ -1,3 +1,11 @@
+function MeshLabJsLoader() {
+	this._viewer = new MeshLabJsGui();
+	this._viewer.loadGui();
+	this._render = new MeshLabJsRender();
+	this._render.loadRender();
+	this._Module = Module;
+}
+
 /*
 Module is a global JavaScript object with attributes that 
 Emscripten-generated code calls at various points in its execution.
@@ -26,3 +34,4 @@ var Module = {
     };
 
 /* parameter 'memoryInitializerPrefixURL' indicates path of file.js.mem  */
+
