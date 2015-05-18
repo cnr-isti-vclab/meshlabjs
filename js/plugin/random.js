@@ -25,7 +25,6 @@ function RandomPlugin () {
                 console.timeEnd("random time ");
                 var mlRender = new MeshLabJsRender();
                 mesh = mlRender.createMesh(ptr,fileNameGlobal);
-                console.log(mesh);
                 if(!statusVisible)
                     mlRender.hideMeshByName(fileNameGlobal);
                 console.timeEnd("Update mesh ");
