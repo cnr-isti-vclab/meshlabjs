@@ -5,4 +5,5 @@ A javascript client based mesh processing tool. Built using [vcg library](http:/
 
 [Working Document] (https://docs.google.com/document/d/10KDdoaH_o08_EGuHkqHYlQfGBlww_WYHDS1h0AdPvIc/edit?usp=sharing) with a bit of specs and planning.
 
+See Documentation in [Documentation Page] (http://cignoni.github.io/meshlabjs/jsDoc/)
 Documentation created with [JsDoc] (https://github.com/jsdoc3/jsdoc)
