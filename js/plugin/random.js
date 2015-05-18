@@ -1,27 +1,34 @@
-//Smooth Plugin
-function RandomPlugin () { }
-
-RandomPlugin.prototype = {
-    loadRandomPlugin : function () {
+/**
+ * @class RandomPlugin
+ * @name RandomPlugin
+ * @description Represent plugin RandomDisplacement with methods for add plugin in dat.Gui and method for Random mesh 
+ */
+function RandomPlugin () { 
     var RandomDisplacemnt;
     var dispAmount = 0.01;
     var rndGui = {
         dispAmount : 0.01,
         randomDisp : function() {         
-                var mlRender = new MeshLabJsRender();
-                var mesh = mlRender.arrThreeJsMeshObj[fileNameGlobal];
+                var mesh;
+                for (var i = 1; i < scene.children.length; i++){
+                    if(scene.children[i].name == fileNameGlobal){
+                        mesh = scene.children[i];
+                        break;
+                    }
+                }
+                console.log(mesh);
                 var statusVisible = mesh.visible;
+                var ptr = mesh.pointer;
                 scene.remove(mesh);
                 console.time("random time ");
-                Module.RandomDisplacement(currentPtr, dispAmount);
+                Module.RandomDisplacement(ptr, dispAmount);
                 console.timeEnd("random time ");
-                mlRender.arrThreeJsMeshObj[fileNameGlobal] = mlRender.createMesh(currentPtr,fileNameGlobal);
+                var mlRender = new MeshLabJsRender();
+                mesh = mlRender.createMesh(ptr,fileNameGlobal);
+                console.log(mesh);
                 if(!statusVisible)
                     mlRender.hideMeshByName(fileNameGlobal);
                 console.timeEnd("Update mesh ");
-                var mlGui = new MeshLabJsGui();
-                document.getElementById('infoMesh').value = 
-                    mlGui.arrInfoMeshOut[fileNameGlobal]+mlRender.arrVNFNMeshOut[fileNameGlobal];
                 mlRender.render();
         } //end smooth  
     }; 
@@ -34,5 +41,4 @@ RandomPlugin.prototype = {
     });
 
     folderRandom.add(rndGui,'randomDisp').name('Random Displacement');
-    }
-};
+}

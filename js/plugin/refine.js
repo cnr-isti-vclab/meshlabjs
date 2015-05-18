@@ -1,29 +1,35 @@
-//Refine Plugin
-function RefinePlugin () { }
-
-RefinePlugin.prototype = {
-    loadRefinePlugin : function () {
+/**
+ * @class RefinePlugin
+ * @name RefinePlugin
+ * @description Represent plugin Refine with methods for add plugin in dat.Gui and method for Refine mesh 
+ */
+function RefinePlugin () { 
     var Refine;
     var StepRefine = 1;
     var refGui = {
         stepRefine : 1,
         refine : function() { 
-                var mlRender = new MeshLabJsRender();
-                var mesh = mlRender.arrThreeJsMeshObj[fileNameGlobal];
+                var mesh;
+                for (var i = 1; i < scene.children.length; i++){
+                    if(scene.children[i].name == fileNameGlobal){
+                        mesh = scene.children[i];
+                        break;
+                    }
+                }
                 var statusVisible = mesh.visible;
+                var ptr = mesh.pointer;
                 scene.remove(mesh);
             	console.time("Refine time ");
-            	Refine = new Module.MyRefine(currentPtr);
+            	Refine = new Module.MyRefine(ptr);
             	Refine.myRefine(StepRefine);
             	console.timeEnd("Refine time ");
             	console.time("Update mesh ");
-                mlRender.arrThreeJsMeshObj[fileNameGlobal] = mlRender.createMesh(currentPtr,fileNameGlobal);
+                var mlRender = new MeshLabJsRender();
+                mesh = mlRender.createMesh(ptr,fileNameGlobal);
                 if(!statusVisible)
                     mlRender.hideMeshByName(fileNameGlobal);
                 console.timeEnd("Update mesh ");
-                var mlGui = new MeshLabJsGui();
-                document.getElementById('infoMesh').value = 
-                    mlGui.arrInfoMeshOut[fileNameGlobal] + mlRender.arrVNFNMeshOut[fileNameGlobal];
+                document.getElementById('infoMesh').value = mesh.infoMesh + mesh.VNFN;
                 mlRender.render();
 
         } //end refine  
@@ -37,5 +43,4 @@ RefinePlugin.prototype = {
     });
 
     folderRefine.add(refGui,'refine').name('Refine Mesh');
-    }
-};
+}
