@@ -58,8 +58,9 @@ MeshLabJsGui.prototype = {
 // RENDER CONTROLS _________________________________________________
 
         var rc = {
-            'wireframe': true,
+            'wireframe': false,
             'wfLineWidth': 1,
+            'wfcolor': '#fc1b1b',
             'alight': false,
             'acolor': '#111111',
             'dlight': false,
@@ -75,7 +76,10 @@ MeshLabJsGui.prototype = {
             'specular': '#ffffff',
             'Shininess': 100,
             'vertexdots': false,
-            'vdcolor' : '#a0a0a0'
+            'vdcolor': '#fc1b1b',
+            'vdsize': 1.0,
+            'hlight': false,
+            'hcolor': '#ffffff'
         };
 
         var renderControls = gui.addFolder('Render');
@@ -95,9 +99,23 @@ MeshLabJsGui.prototype = {
                     ambientLight.setColor(value);
                 });
 
+        //HEADLIGHT
+//        var headlightFolder = renderControls.addFolder('Headlight');
+//        headlightFolder.open();
+//
+//        headlightFolder.add(rc, 'alight').name('on / off')
+//                .onFinishChange(function (value) {
+//                    headlight.setOn(value);
+//                });
+//
+//        headlightFolder.addColor(rc, 'acolor').name('Light color')
+//                .onChange(function (value) {
+//                    headlight.setColor(value);
+//                });
+
         //DIRECTIONAL LIGHT
         var dlightFolder = renderControls.addFolder('Directional Light');
-        dlightFolder.open();
+        //dlightFolder.open();
 
         dlightFolder.add(rc, 'dlight').name('on / off')
                 .onFinishChange(function (value) {
@@ -125,42 +143,51 @@ MeshLabJsGui.prototype = {
                 });
 
         //MATERIAL
-        var meshFolder = renderControls.addFolder('Mesh');
-        meshFolder.open();
+        var materialFolder = renderControls.addFolder('Mesh material');
+        //materialFolder.open();
 
-        meshFolder.addColor(rc, 'color').name('Diffuse color')
+        materialFolder.addColor(rc, 'color').name('Diffuse color')
                 .onChange(function (value) {
                     material.setColor(value);
                 });
 
-        meshFolder.addColor(rc, 'emissive').name('Emissive color')
+        materialFolder.addColor(rc, 'emissive').name('Emissive color')
                 .onChange(function (value) {
                     material.setEmissive(value);
                 });
 
-        meshFolder.addColor(rc, 'specular').name('Specular color')
+        materialFolder.addColor(rc, 'specular').name('Specular color')
                 .onChange(function (value) {
                     material.setSpecular(value);
                 });
 
-        meshFolder.add(rc, 'wireframe').name('Wireframe')
-                .onFinishChange(function (value) {
-                    material.setWireframe(value);
-                });
-
-        meshFolder.add(rc, 'wfLineWidth', 1, 10, 0.5).name('Wf. line width')
-                .onChange(function (value) {
-                    material.setWireframeLineWidth(value);
-                });
-
-        meshFolder.add(rc, 'Shading').options({"Flat": 1, "Smooth": 2})
+        materialFolder.add(rc, 'Shading').options({"Flat": 1, "Smooth": 2})
                 .onChange(function (value) {
                     material.setShading(value);
                 });
 
-        meshFolder.add(rc, 'Shininess', 0, 100, 1)
+        materialFolder.add(rc, 'Shininess', 0, 100, 1)
                 .onChange(function (value) {
                     material.setShininess(value);
+                });
+
+        //Wireframe
+        var wireframeFolder = renderControls.addFolder('Wireframe');
+        wireframeFolder.open();
+
+        wireframeFolder.add(rc, 'wireframe').name('Show / hide')
+                .onFinishChange(function (value) {
+                    wireframe.setWireframe(value);
+                });
+
+        wireframeFolder.add(rc, 'wfLineWidth', 1, 10, 0.5).name('Line width')
+                .onChange(function (value) {
+                    setWireframeLineWidth(value);
+                });
+
+        wireframeFolder.addColor(rc, 'wfcolor').name('Color')
+                .onChange(function (value) {
+                    wireframe.setColor(value);
                 });
 
         //Vertex dots
@@ -169,14 +196,19 @@ MeshLabJsGui.prototype = {
 
         verticesFolder.add(rc, 'vertexdots').name("Show / hide")
                 .onChange(function (value) {
-                    new MeshLabJsRender().showVertexDots(value);
+                    vertexDots.setOn(value);
                 });
-                
-//        verticesFolder.addColor(rc, 'vdcolor').name('Vertex color')
-//                .onChange(function (value) {
-//                   
-//                });
-                
+
+        verticesFolder.addColor(rc, 'vdcolor').name('Vertex color')
+                .onChange(function (value) {
+                    vertexDots.setColor(value);
+                });
+
+        verticesFolder.add(rc, 'vdsize', 1, 10, 0.5).name('Vertex size')
+                .onChange(function (value) {
+                    vertexDots.setSize(value);
+                });
+
 //_______________________________________________ END RENDER CONTROLS
 
         folderFilter = gui.addFolder('Filters');

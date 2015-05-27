@@ -4,7 +4,8 @@
  * @description Represent Render Class with methods for rendering
  * @author maurizio.idini@gmail.com
  */
-function MeshLabJsRender(){}
+function MeshLabJsRender() {
+}
 MeshLabJsRender.prototype = {
     /**
      *	Call methods for inizialization rendering and eventlistener required
@@ -88,6 +89,47 @@ MeshLabJsRender.prototype = {
 
         }
 
+        function _Headlight(color) {
+            var flags = {
+                color: "#ffffff",
+                on: false,
+                intensity: 10,
+                distance: 100
+            };
+           
+            var _light = new THREE.PointLight(flags.color, flags.intensity, flags.distance);
+            
+                //_light.position.set( 50, 50, 50 );
+                
+            this.setColor = function (color) {
+//                _color = !color ? _DEF_COLOR : color;
+//
+//                scene.remove(_light);
+//
+//                if (_on) {
+//                    _light = new THREE.AmbientLight(color);
+//                    scene.add(_light);
+//                    renderer.render(scene, camera);
+//                }
+            };
+
+            this.isOn = function () {
+                return _on;
+            };
+
+            this.setOn = function (on) {
+                flags.on = on;
+                if (on) {                    
+                    scene.add(_light);
+                } else {
+                    scene.remove(_light);
+                }
+
+                renderer.render(scene, camera);
+            };
+
+        }
+
         function _DirectionalLight(color, intensity) {
             this.DEF_COLOR = 0xffffff;
             this.DEF_POS_X = 100;
@@ -163,7 +205,7 @@ MeshLabJsRender.prototype = {
                 emissive: '#7c7b7b',
                 shading: THREE.FlatShading,
                 shininess: 100,
-                wireframe: true, //make mesh transparent
+                wireframe: false, //make mesh transparent
                 wireframeLinewidth: 1
             };
 
@@ -231,16 +273,6 @@ MeshLabJsRender.prototype = {
                 mlRender.render();
             };
 
-            this.setWireframe = function (boolean) {
-                _material.wireframe = flags.wireframe = boolean;
-                renderer.render(scene, camera);
-            };
-
-            this.setWireframeLineWidth = function (value) {
-                _material.wireframeLinewidth = flags.wireframeLinewidth = value;
-                renderer.render(scene, camera);
-            };
-
             this.setShininess = function (value) {
                 _material.shininess = flags.shininess = value;
                 renderer.render(scene, camera);
@@ -248,44 +280,160 @@ MeshLabJsRender.prototype = {
 
         }
 
-        //Init material and lights to default values
-        ambientLight = new _AmbientLight();
-        directionalLight = new _DirectionalLight();
-        material = new _Material();
-    },
-    showVertexDots: function (on) {
-        if (on) {
-            scene.remove(mesh);
+        function _VertexDots() {
 
-            var radius = 0.1;
-            var mat = new THREE.MeshBasicMaterial({color: 0xa0a0a0});
-            var cube = new THREE.BoxGeometry(radius, radius, radius);
+            var obj3D;
 
-            vertices = new THREE.Object3D();
+            var flags = {
+                on: false,
+                color: '#fc1b1b',
+                size: 3.0
+            };
 
-            var x, y, z;
+            var build = function () {
+                var geometry = new THREE.BufferGeometry();
+                var numPoints = mesh.geometry.vertices.length;
 
-            for (var i = 0, m = mesh.geometry.vertices.length; i < m; i++) {
-                x = mesh.geometry.vertices[i].x;
-                y = mesh.geometry.vertices[i].y;
-                z = mesh.geometry.vertices[i].z;
+                var positions = new Float32Array(numPoints * 3);
+                var colors = new Float32Array(numPoints * 3);
 
-                vertex = new THREE.Mesh(cube.clone(), mat);
-                vertex.position.set(x, y, z);
-                vertices.add(vertex);
-            }
+                var color = new THREE.Color(flags.color);
+                var x, y, z, k = 0;
+                for (var i = 0; i < numPoints; i++) {
+                    x = mesh.geometry.vertices[i].x;
+                    y = mesh.geometry.vertices[i].y;
+                    z = mesh.geometry.vertices[i].z;
 
-            scene.add(vertices);
+                    positions[ 3 * k ] = x;
+                    positions[ 3 * k + 1 ] = y;
+                    positions[ 3 * k + 2 ] = z;
 
-            vertices.customInfo = "mesh_loaded";
+                    //var intensity = (y + 0.1) * 5;
+                    colors[ 3 * k ] = color.r;// * intensity;
+                    colors[ 3 * k + 1 ] = color.g;// * intensity;
+                    colors[ 3 * k + 2 ] = color.b;// * intensity;
+                    k++;
+                }
 
-            this.computeGlobalBBox();
-        } else {
-            scene.remove(vertices);
-            scene.add(mesh);
+                geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                var material = new THREE.PointCloudMaterial({size: flags.size, vertexColors: THREE.VertexColors, sizeAttenuation: false});
+                obj3D = new THREE.PointCloud(geometry, material);
+                obj3D.customInfo = "mesh_loaded";
+
+            };
+
+            this.setColor = function (color) {
+                flags.color = color;
+                scene.remove(obj3D);
+                obj3D = null;
+                if (flags.on) {
+                    this.setOn(false);
+                    this.setOn(true);
+                } else {
+                    build();
+                }
+            };
+
+            this.setOn = function (on) {
+                flags.on = on;
+                var mlRender = new MeshLabJsRender();
+
+                if (on) {
+
+                    if (!obj3D) {
+                        build();
+                    }
+
+                    scene.add(obj3D);
+                    mlRender.computeGlobalBBox();
+                } else {
+                    scene.remove(obj3D);
+                }
+                mlRender.render();
+            };
+
+            this.setSize = function (size) {
+                flags.size = size;
+                obj3D.material.size = size;
+                new MeshLabJsRender().render();
+            };
+
         }
 
-        this.render();
+        function _Wireframe() {
+            var obj3D;
+
+            var flags = {
+                on: false,
+                lineWidth: 1.0,
+                color: '#fc1b1b'
+            };
+
+            function build() {
+                var r = new MeshLabJsRender();
+                var geom = mesh.geometry.clone();
+                var mat = new THREE.MeshBasicMaterial({color: flags.color, wireframe: true});
+
+//                for(var i=0; i<geom.faces.length; i++) {
+//                    //geom.vertices[i].multiplyScalar(1.01);
+//                    var face = geom.faces[i];                    
+//                    geom.vertices[face.a].add(face.normal.multiplyScalar(0.1));
+//                    geom.vertices[face.b].add(face.normal.multiplyScalar(0.1));
+//                    geom.vertices[face.c].add(face.normal.multiplyScalar(0.1));
+//                }
+
+                obj3D = new THREE.Mesh(geom, mat);
+                obj3D.customInfo = "mesh_loaded";
+            }
+
+            this.setWireframe = function (on) {
+                flags.on = on;
+                var r = new MeshLabJsRender();
+                if (on) {
+
+                    if (!obj3D) {
+                        build();
+                    }
+
+                    scene.add(obj3D);
+                    r.computeGlobalBBox();
+                } else {
+                    scene.remove(obj3D);
+                }
+                r.render();
+                //renderer.render(scene, camera);
+            };
+
+            this.setColor = function (value) {
+                flags.color = value;
+                scene.remove(obj3D);
+                obj3D = null;
+                if (flags.on) {
+                    this.setWireframe(false);
+                    this.setWireframe(true);
+                } else {
+                    build();
+                }
+            };
+
+            this.setWireframeLineWidth = function (value) {
+                flags.lineWidth = value;
+                if (obj3D) {
+                    obj3D.material.wireframeLinewidth = value;
+                    renderer.render(scene, camera);
+                }
+            };
+        }
+
+        //Init material and lights to default values
+        ambientLight = new _AmbientLight();
+        headlight = new _Headlight();
+        directionalLight = new _DirectionalLight();
+        material = new _Material();
+        vertexDots = new _VertexDots();
+        wireframe = new _Wireframe();        
     },
     /**
      * Function for render scene
