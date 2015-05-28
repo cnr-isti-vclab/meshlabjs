@@ -206,38 +206,23 @@ MeshLabJsRender.prototype = {
 
             this.setColor = function (value) {
                 flags.color = value;
-                _material.color.setHex(value);
-
-                if (directionalLight.isOn()) {
-                    directionalLight.setOn(false);
-                    directionalLight.setOn(true);
-                } //else
-                //Affect mesh material only if light is on
+                _material.color = new THREE.Color(value);
+                mjr = new MeshLabJsRender();
+                mjr.render();
             };
 
             this.setEmissive = function (value) {
                 flags.emissive = value;
-                _material.emissive.setHex(value);
-                if (directionalLight.isOn()) {
-                    directionalLight.setOn(false);
-                    directionalLight.setOn(true);
-                } else {
-                    mjr = new MeshLabJsRender();
-                    scene.remove(mesh);
-                    mjr.createMesh(mesh.pointer, mesh.name);
-                    mjr.render();
-                }
-
+                _material.emissive = new THREE.Color(value);
+                mjr = new MeshLabJsRender();
+                mjr.render();
             };
 
             this.setSpecular = function (value) {
                 flags.specular = value;
-                _material.specular.setHex(value);
-                if (directionalLight.isOn()) {
-                    directionalLight.setOn(false);
-                    directionalLight.setOn(true);
-                } //else
-                //Affect mesh material only if light is on
+                _material.specular = new THREE.Color(value);
+                mjr = new MeshLabJsRender();
+                mjr.render();
             };
 
             this.setShading = function (value) {
@@ -381,7 +366,7 @@ MeshLabJsRender.prototype = {
                 } else {
                     scene.remove(obj3D);
                 }
-                r.render();                
+                r.render();
             };
 
             this.setColor = function (value) {
@@ -411,7 +396,7 @@ MeshLabJsRender.prototype = {
         //directionalLight = new _DirectionalLight();
         material = new _Material();
         vertexDots = new _VertexDots();
-        wireframe = new _Wireframe();        
+        wireframe = new _Wireframe();
     },
     /**
      * Function for render scene
