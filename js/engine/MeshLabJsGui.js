@@ -78,8 +78,9 @@ MeshLabJsGui.prototype = {
             'vertexdots': false,
             'vdcolor': '#fc1b1b',
             'vdsize': 1.0,
-            'hlight': false,
-            'hcolor': '#ffffff'
+            'hlight': true,
+            'hcolor': '#ffffff',
+            'hintensity': 0.5
         };
 
         var renderControls = gui.addFolder('Render');
@@ -100,47 +101,52 @@ MeshLabJsGui.prototype = {
                 });
 
         //HEADLIGHT
-//        var headlightFolder = renderControls.addFolder('Headlight');
-//        headlightFolder.open();
-//
-//        headlightFolder.add(rc, 'alight').name('on / off')
-//                .onFinishChange(function (value) {
-//                    headlight.setOn(value);
-//                });
-//
-//        headlightFolder.addColor(rc, 'acolor').name('Light color')
-//                .onChange(function (value) {
-//                    headlight.setColor(value);
-//                });
+        var headlightFolder = renderControls.addFolder('Headlight');
+        headlightFolder.open();
+
+        headlightFolder.add(rc, 'hlight').name('on / off')
+                .onFinishChange(function (value) {
+                    headlight.setOn(value);
+                });
+
+        headlightFolder.addColor(rc, 'hcolor').name('Light color')
+                .onChange(function (value) {
+                    headlight.setColor(value);
+                });
+
+        headlightFolder.add(rc, 'hintensity', 0.0, 20, 0.1).name('Intensity')
+                .onChange(function (value) {
+                    headlight.setIntensity(value);
+                });
 
         //DIRECTIONAL LIGHT
-        var dlightFolder = renderControls.addFolder('Directional Light');
-        //dlightFolder.open();
-
-        dlightFolder.add(rc, 'dlight').name('on / off')
-                .onFinishChange(function (value) {
-                    directionalLight.setOn(value);
-                });
-
-        dlightFolder.addColor(rc, 'dcolor').name('Light color')
-                .onChange(function (value) {
-                    directionalLight.setColor(value);
-                });
-
-        dlightFolder.add(rc, 'posx', -700, 700, 1).name('X position')
-                .onChange(function (value) {
-                    directionalLight.setPosX(value);
-                });
-
-        dlightFolder.add(rc, 'posy', -700, 700, 1).name('Y position')
-                .onChange(function (value) {
-                    directionalLight.setPosY(value);
-                });
-
-        dlightFolder.add(rc, 'posz', -700, 700, 1).name('Z position')
-                .onChange(function (value) {
-                    directionalLight.setPosZ(value);
-                });
+//        var dlightFolder = renderControls.addFolder('Directional Light');
+//        //dlightFolder.open();
+//
+//        dlightFolder.add(rc, 'dlight').name('on / off')
+//                .onFinishChange(function (value) {
+//                    directionalLight.setOn(value);
+//                });
+//
+//        dlightFolder.addColor(rc, 'dcolor').name('Light color')
+//                .onChange(function (value) {
+//                    directionalLight.setColor(value);
+//                });
+//
+//        dlightFolder.add(rc, 'posx', -700, 700, 1).name('X position')
+//                .onChange(function (value) {
+//                    directionalLight.setPosX(value);
+//                });
+//
+//        dlightFolder.add(rc, 'posy', -700, 700, 1).name('Y position')
+//                .onChange(function (value) {
+//                    directionalLight.setPosY(value);
+//                });
+//
+//        dlightFolder.add(rc, 'posz', -700, 700, 1).name('Z position')
+//                .onChange(function (value) {
+//                    directionalLight.setPosZ(value);
+//                });
 
         //MATERIAL
         var materialFolder = renderControls.addFolder('Mesh material');

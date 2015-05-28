@@ -92,39 +92,27 @@ MeshLabJsRender.prototype = {
         function _Headlight(color) {
             var flags = {
                 color: "#ffffff",
-                on: false,
-                intensity: 10,
-                distance: 100
-            };
-           
-            var _light = new THREE.PointLight(flags.color, flags.intensity, flags.distance);
-            
-                //_light.position.set( 50, 50, 50 );
-                
-            this.setColor = function (color) {
-//                _color = !color ? _DEF_COLOR : color;
-//
-//                scene.remove(_light);
-//
-//                if (_on) {
-//                    _light = new THREE.AmbientLight(color);
-//                    scene.add(_light);
-//                    renderer.render(scene, camera);
-//                }
+                on: true,
+                intensity: 0.5,
+                distance: 0
             };
 
-            this.isOn = function () {
-                return _on;
+            var _light = new THREE.PointLight(flags.color, flags.intensity, flags.distance);
+            camera.add(_light);
+
+            this.setIntensity = function (value) {
+                flags.intensity = _light.intensity = value;
+                renderer.render(scene, camera);
+            };
+
+            this.setColor = function (color) {
+                flags.intensity = color;
+                _light.color = new THREE.Color(color);
+                renderer.render(scene, camera);
             };
 
             this.setOn = function (on) {
-                flags.on = on;
-                if (on) {                    
-                    scene.add(_light);
-                } else {
-                    scene.remove(_light);
-                }
-
+                _light.intensity = on ? flags.intensity : 0;
                 renderer.render(scene, camera);
             };
 
@@ -376,14 +364,6 @@ MeshLabJsRender.prototype = {
                 var geom = mesh.geometry.clone();
                 var mat = new THREE.MeshBasicMaterial({color: flags.color, wireframe: true});
 
-//                for(var i=0; i<geom.faces.length; i++) {
-//                    //geom.vertices[i].multiplyScalar(1.01);
-//                    var face = geom.faces[i];                    
-//                    geom.vertices[face.a].add(face.normal.multiplyScalar(0.1));
-//                    geom.vertices[face.b].add(face.normal.multiplyScalar(0.1));
-//                    geom.vertices[face.c].add(face.normal.multiplyScalar(0.1));
-//                }
-
                 obj3D = new THREE.Mesh(geom, mat);
                 obj3D.customInfo = "mesh_loaded";
             }
@@ -396,14 +376,12 @@ MeshLabJsRender.prototype = {
                     if (!obj3D) {
                         build();
                     }
-
                     scene.add(obj3D);
                     r.computeGlobalBBox();
                 } else {
                     scene.remove(obj3D);
                 }
-                r.render();
-                //renderer.render(scene, camera);
+                r.render();                
             };
 
             this.setColor = function (value) {
@@ -430,7 +408,7 @@ MeshLabJsRender.prototype = {
         //Init material and lights to default values
         ambientLight = new _AmbientLight();
         headlight = new _Headlight();
-        directionalLight = new _DirectionalLight();
+        //directionalLight = new _DirectionalLight();
         material = new _Material();
         vertexDots = new _VertexDots();
         wireframe = new _Wireframe();        
