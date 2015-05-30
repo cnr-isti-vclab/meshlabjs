@@ -187,12 +187,12 @@ MeshLabJsRender.prototype = {
 
         function _Material() {
 
-            var flags = {
+            this.flags = {
                 specular: '#ffffff',
                 color: '#a0a0a0',
                 emissive: '#7c7b7b',
                 shading: THREE.FlatShading,
-                shininess: 100,
+                shininess: 50,
                 wireframe: false, //make mesh transparent
                 wireframeLinewidth: 1
             };
@@ -200,26 +200,26 @@ MeshLabJsRender.prototype = {
             var _material;
 
             this.build = function () {
-                _material = new THREE.MeshPhongMaterial(flags);
+                _material = new THREE.MeshPhongMaterial(this.flags);
                 return _material;
             };
 
             this.setColor = function (value) {
-                flags.color = value;
+                this.flags.color = value;
                 _material.color = new THREE.Color(value);
                 mjr = new MeshLabJsRender();
                 mjr.render();
             };
 
             this.setEmissive = function (value) {
-                flags.emissive = value;
+                this.flags.emissive = value;
                 _material.emissive = new THREE.Color(value);
                 mjr = new MeshLabJsRender();
                 mjr.render();
             };
 
             this.setSpecular = function (value) {
-                flags.specular = value;
+                this.flags.specular = value;
                 _material.specular = new THREE.Color(value);
                 mjr = new MeshLabJsRender();
                 mjr.render();
@@ -232,22 +232,22 @@ MeshLabJsRender.prototype = {
 
                 switch (value) {
                     case '1': //Flat
-                        flags.shading = THREE.FlatShading;
+                        this.flags.shading = THREE.FlatShading;
                         break;
                     case '2': //Smouth
-                        flags.shading = THREE.SmoothShading;
+                        this.flags.shading = THREE.SmoothShading;
                         break;
                     default:
-                        flags.shading = THREE.NoShading;
+                        this.flags.shading = THREE.NoShading;
                 }
 
-                _material.shading = flags.shading;
+                _material.shading = this.flags.shading;
                 mlRender.createMesh(mesh.pointer, mesh.name);
                 mlRender.render();
             };
 
             this.setShininess = function (value) {
-                _material.shininess = flags.shininess = value;
+                _material.shininess = this.flags.shininess = value;
                 renderer.render(scene, camera);
             };
 
@@ -341,13 +341,44 @@ MeshLabJsRender.prototype = {
             var flags = {
                 on: false,
                 lineWidth: 1.0,
-                color: '#fc1b1b'
+                color: '#08008c'
             };
 
             function build() {
-                var r = new MeshLabJsRender();
+
                 var geom = mesh.geometry.clone();
-                var mat = new THREE.MeshBasicMaterial({color: flags.color, wireframe: true});
+                //var mat = new THREE.MeshBasicMaterial({color: flags.color, wireframe: true});
+
+//                obj3D = new THREE.Mesh(geom, mat);
+//                obj3D.customInfo = "mesh_loaded";                
+                var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
+                var attrVal = attributes.center.value;
+
+                setupAttributes(geom, attrVal);
+
+                function setupAttributes(geometry, values) {
+                    for (var f = 0; f < geometry.faces.length; f++) {
+                        values[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+                    }
+                }
+
+                uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
+
+                uniforms.emissive.value = new THREE.Color(material.flags.emissive);
+                uniforms.specular.value = new THREE.Color(material.flags.spcular);
+                uniforms.shininess.value = material.flags.shininess;
+                uniforms.lineColor.value = new THREE.Color(flags.color);
+
+                var parameters = {
+                    fragmentShader: WIREFRAME.fragmentShader,
+                    vertexShader: WIREFRAME.vertexShader,
+                    uniforms: uniforms,
+                    attributes: attributes,
+                    lights: true, // set this flag and you have access to scene lights
+                    shading: THREE.FlatShading
+                };
+
+                var mat = new THREE.ShaderMaterial(parameters);
 
                 obj3D = new THREE.Mesh(geom, mat);
                 obj3D.customInfo = "mesh_loaded";
@@ -358,9 +389,9 @@ MeshLabJsRender.prototype = {
                 var r = new MeshLabJsRender();
                 if (on) {
 
-                    if (!obj3D) {
-                        build();
-                    }
+                    //  if (!obj3D) {
+                    build();
+                    // }
                     scene.add(obj3D);
                     r.computeGlobalBBox();
                 } else {
@@ -371,20 +402,16 @@ MeshLabJsRender.prototype = {
 
             this.setColor = function (value) {
                 flags.color = value;
-                scene.remove(obj3D);
-                obj3D = null;
-                if (flags.on) {
-                    this.setWireframe(false);
-                    this.setWireframe(true);
-                } else {
-                    build();
+                if (obj3D) {
+                    uniforms.lineColor.value = new THREE.Color(value);
+                    renderer.render(scene, camera);
                 }
             };
 
-            this.setWireframeLineWidth = function (value) {
+            this.setLineWidth = function (value) {
                 flags.lineWidth = value;
                 if (obj3D) {
-                    obj3D.material.wireframeLinewidth = value;
+                    uniforms.lineWidth.value = value;
                     renderer.render(scene, camera);
                 }
             };

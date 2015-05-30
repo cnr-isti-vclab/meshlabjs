@@ -60,7 +60,7 @@ MeshLabJsGui.prototype = {
         var rc = {
             'wireframe': false,
             'wfLineWidth': 1,
-            'wfcolor': '#fc1b1b',
+            'wfcolor': '#08008c',
             'alight': false,
             'acolor': '#111111',
             'dlight': false,
@@ -74,7 +74,7 @@ MeshLabJsGui.prototype = {
             'color': '#a0a0a0',
             'emissive': '#7c7b7b',
             'specular': '#ffffff',
-            'Shininess': 100,
+            'Shininess': 50,
             'vertexdots': false,
             'vdcolor': '#fc1b1b',
             'vdsize': 1.0,
@@ -188,7 +188,7 @@ MeshLabJsGui.prototype = {
 
         wireframeFolder.add(rc, 'wfLineWidth', 1, 10, 0.5).name('Line width')
                 .onChange(function (value) {
-                    setWireframeLineWidth(value);
+                    wireframe.setLineWidth(value);
                 });
 
         wireframeFolder.addColor(rc, 'wfcolor').name('Color')
