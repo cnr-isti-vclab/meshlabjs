@@ -96,7 +96,12 @@ MLJ.gui.PiP = function (x, y, id) {
 
 
     var kw, kh;
-    this.lock = function () {
+    this.lock = function (xCoord, yCoord) {
+
+        if (!xCoord && !yCoord) {
+            xCoord = yCoord = true;
+        }
+
         //Distance from window right edge
         kw = $(window).width() - (_$PiP.position().left + _$PiP.width());
         kh = $(window).height() - (_$PiP.position().top + _$PiP.height());
@@ -104,7 +109,13 @@ MLJ.gui.PiP = function (x, y, id) {
         $(window).resize(function () {
             var x = $(window).width() - kw - _$PiP.width();
             var y = $(window).height() - kh - _$PiP.height();
-            _$PiP.offset({left: x, top: y});
+
+            if (xCoord) {
+                _$PiP.offset({left: x});
+            }
+            if (yCoord) {
+                _$PiP.offset({top: y});
+            }
         });
     };
 
