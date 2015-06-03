@@ -59,106 +59,108 @@ table {
 
 html,body{
     width: 100%;
-    height: 100%;
-    /*background: linear-gradient( #00000f,  #8080ff);*/ 
+    height: 100%;    
     font-family: Segoe UI,Arial,sans-serif;
     overflow: hidden;
+    background: linear-gradient( #00000f,  #8080ff);
 }
 
-.table {
-    display: table;
-}
-
-.table .caption {
-    display: table-caption;
-}
-
-.table .row {
-    display: table-row;
-}
-
-.table .cell {
-    display: table-cell;
-}
-
-#content-wrapper {
-    width: 100%; 
-    height: 100%;    
+#tools-pane {
+    /*position: relative;*/
+    border-right: solid 1px white;    
+    width: 400px;
+    height: 100%;
+    background-color: black;
 }
 
 #top {    
     height:70px; 
     background-color: black;
-    border-bottom: solid 4px gainsboro;
+    /*border-bottom: solid 1px gainsboro;*/
     background-image: url('../../../../img/favicon.png');
     background-repeat: no-repeat;
     background-size: 60px auto;    
     background-position:15px 15px;
     line-height: 70px;    
+    text-align: center;
 }
 
-#top span {
-    margin-left: 100px;
+#top span {    
     color: white;
     font-size: 1.5em;    
 }
 
-#left {
-    /*    position: absolute;
-        border-right: solid 1px white;    */
-    background-color: red;
-    width: 400px;
+#tools-buttons {
+    padding: 10px;
+    background-color: black;
 }
 
-#left-content {
-    /*position: relative;*/
+#tools-buttons button:not(:last-child) {
+    margin-right:6px;
 }
 
-#right {
-    /*    position: absolute;
-        left: 401px;
-        right: 0px;
-        top: 0px;
-        bottom: 0px;
-        white-space: nowrap;    
-        overflow: hidden;*/
-    background: rgb(238,238,238);
-    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNlZWVlZWUiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNTE1MTUxIiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-    background: -moz-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%, rgba(81,81,81,1) 100%);
-    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(81,81,81,1)));
-    background: -webkit-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
-    background: -o-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
-    background: -ms-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
-    background: radial-gradient(ellipse at center,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#515151',GradientType=1 );
+#tools-buttons img, #rendering-btn img {
+    width: 24px;
+    height: 24px;
 }
 
-#right-content {
-    position: relative;
-}
-
-#tabs .ui-tabs-panel {
-    /*margin: 0px;*/
-    padding: 2px;
-}
 
 #search {    
     line-height: 50px;
-    background-color: #414141;
+    background-color: black;
     color: white;
-    text-align: right;
+    padding-bottom: 10px;
 }
 
-#search .ui-autocomplete-input{
-    padding: 10px;
+#search .ui-autocomplete-input{    
+    width:94%;    
+    padding: 10px 0;
     border-radius: 4px;
-    border: solid 1px gainsboro;    
-    margin-right: 5px;
+    border: solid 1px gainsboro;            
+    margin-left: 10px;
 }
 
-#tools-btn img, #rendering-btn img {
-    width: 24px;
-    height: 24px;
+#layers {
+    height: 80px;
+    overflow: auto;
+}
+
+
+#log {
+    height: 80px;
+    overflow: auto;
+}
+
+#info {    
+    overflow: auto;
+    width: 200px;
+    height: 100px;    
+    background-color: rgba(0,0,0,0.5);    
+    color: white;
+}
+
+#info p {
+    margin: 5px;
+}
+
+.display-field h3{    
+    padding: 5px;
+    color: white;
+    margin: 0 10px;
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+.display-field .df-title {
+    background-color: rgba(255,255,255,0.5);
+}
+.display-field .df-content {
+    color: white;
+    margin: 2px 5px 2px 10px;
+}
+
+.display-field p {
+    padding: 2px 0;
 }
 
 .checked {
