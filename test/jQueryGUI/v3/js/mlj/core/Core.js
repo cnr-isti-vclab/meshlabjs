@@ -116,8 +116,8 @@ MLJ.core.MeshFile = function (name, VN, vert, FN, face) {
         geometry.dynamic = true;
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-                
-        _threeMesh = new THREE.Mesh(geometry, material);        
+
+        _threeMesh = new THREE.Mesh(geometry, material);
     }
 
     this.getThreeMesh = function () {

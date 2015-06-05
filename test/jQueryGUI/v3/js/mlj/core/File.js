@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-MLJ.core.file = {
+MLJ.core.File = {
     ErrorCodes: {EXTENSION: 1}
 };
 
@@ -90,5 +90,5 @@ MLJ.core.file = {
             }//end else
         }; //end onloadend
     };
-}).call(MLJ.core.file);
+}).call(MLJ.core.File);
 

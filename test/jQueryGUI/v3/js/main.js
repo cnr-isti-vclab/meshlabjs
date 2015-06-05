@@ -38,7 +38,7 @@
             var files = $(this)[0].files;
 
             $(files).each(function (key, value) {
-                var mesh = MLJ.core.file.openMeshFile(value);
+                var mesh = MLJ.core.File.openMeshFile(value);
 
                 if (mesh === false) {
                     console.log(MLJ.getLastError().message);

@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-MLJ.core.scene = {};
+MLJ.core.Scene = {};
 
 (function () {
 
     //Contains all mesh in the scene
-    var layers = [];
+    var layers = new MLJ.util.AssociativeArray();
 
     var scene, camera, renderer;
 
@@ -41,7 +41,7 @@ MLJ.core.scene = {};
         controls.noPan = false;
         controls.staticMoving = true;
         controls.dynamicDampingFactor = 0.3;
-        controls.keys = [65, 83, 68];        
+        controls.keys = [65, 83, 68];
 
         //EVENT LISTENERS ___________________________________________________
         $('canvas')[0].addEventListener('touchmove', controls.update.bind(controls), false);
@@ -52,87 +52,89 @@ MLJ.core.scene = {};
         }, false);
 
         controls.addEventListener('change', function () {
-            MLJ.core.scene.update();
+            MLJ.core.Scene.update();
         });
 
         $(window).resize(function () {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            MLJ.core.scene.update();
-        });        
-        
+            MLJ.core.Scene.update();
+        });
+
         $(document).on(MLJ.core.Events.MESH_FILE_OPENED,
                 function (event, mesh) {
-                    MLJ.core.scene.addMesh(mesh);
+                    MLJ.core.Scene.addMesh(mesh);
                 });
     }
 
     function computeGlobalBBbox() {
         //MODIFICARE UTILIZZANDO L'ARRAY LAYERS_____________________________
-        for (var i = 0; i < scene.children.length; i++) {
-//            if (scene.children[i].customInfo == "mesh_loaded") {
-            if (scene.children[i] instanceof THREE.Mesh) {
-                if (scene.children[i].scaleFactor) {
-                    scene.children[i].position.x -= scene.children[i].offsetVec.x;
-                    scene.children[i].position.y -= scene.children[i].offsetVec.y;
-                    scene.children[i].position.z -= scene.children[i].offsetVec.z;
-                    var scaling = scene.children[i].scaleFactor;
-                    scene.children[i].scale.multiplyScalar(1 / scaling);
-                }
+        var ptr = layers.pointer();
+        var threeMesh;
+        while (ptr.hasNext()) {
+            threeMesh = ptr.next().getThreeMesh();
+            if (threeMesh.scaleFactor) {
+                threeMesh.position.x -= threeMesh.offsetVec.x;
+                threeMesh.position.y -= threeMesh.offsetVec.y;
+                threeMesh.position.z -= threeMesh.offsetVec.z;
+                var scaling = threeMesh.scaleFactor;
+                threeMesh.scale.multiplyScalar(1 / scaling);
             }
         }
+
+        var BBGlobal = new THREE.Box3();
+        ptr = layers.pointer();
+        while (ptr.hasNext()) {
+            threeMesh = ptr.next().getThreeMesh();
+            var bbox = new THREE.Box3().setFromObject(threeMesh);
+            BBGlobal.union(bbox);
+        }
+
+        ptr = layers.pointer();
+        while (ptr.hasNext()) {
+            threeMesh = ptr.next().getThreeMesh();
+            var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
+            threeMesh.scale.multiplyScalar(scaleFac);
+            threeMesh.scaleFactor = scaleFac;
+        }
+
         BBGlobal = new THREE.Box3();
-        for (var i = 0; i < scene.children.length; i++) {
-//            if (scene.children[i].customInfo == "mesh_loaded") {
-            if (scene.children[i] instanceof THREE.Mesh) {
-                var mesh = scene.children[i];
-                var bbox = new THREE.Box3().setFromObject(mesh);
-                BBGlobal.union(bbox);
-            }
+        ptr = layers.pointer();
+        while (ptr.hasNext()) {
+            threeMesh = ptr.next().getThreeMesh();
+            var bbox = new THREE.Box3().setFromObject(threeMesh);
+            BBGlobal.union(bbox);
         }
-        for (var i = 0; i < scene.children.length; i++) {
-//            if (scene.children[i].customInfo == "mesh_loaded") {
-            if (scene.children[i] instanceof THREE.Mesh) {
-                var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-                scene.children[i].scale.multiplyScalar(scaleFac);
-                scene.children[i].scaleFactor = scaleFac;
-            }
+
+        ptr = layers.pointer();
+        while (ptr.hasNext()) {
+            threeMesh = ptr.next().getThreeMesh();
+            var offset = new THREE.Vector3();
+            offset = BBGlobal.center().negate();
+            threeMesh.position.x += offset.x;
+            threeMesh.position.y += offset.y;
+            threeMesh.position.z += offset.z;
+            threeMesh.offsetVec = offset;
         }
-        BBGlobal = new THREE.Box3();
-        for (var i = 0; i < scene.children.length; i++) {
-//            if (scene.children[i].customInfo == "mesh_loaded") {
-            if (scene.children[i] instanceof THREE.Mesh) {
-                var mesh = scene.children[i];
-                var bbox = new THREE.Box3().setFromObject(mesh);
-                BBGlobal.union(bbox);
-            }
-        }
-        for (var i = 0; i < scene.children.length; i++) {
-//            if (scene.children[i].customInfo == "mesh_loaded") {
-            if (scene.children[i] instanceof THREE.Mesh) {
-                var offset = new THREE.Vector3();
-                offset = BBGlobal.center().negate();
-                scene.children[i].position.x += offset.x;
-                scene.children[i].position.y += offset.y;
-                scene.children[i].position.z += offset.z;
-                scene.children[i].offsetVec = offset;
-            }
-        }
+
     }
 
     this.addMesh = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
-            //Add new mesh to layers array
-            layers[meshFile.name] = meshFile;
-            var mesh = meshFile.getThreeMesh();
 
+            //Add new mesh to associative array layers
+            layers.set(meshFile.name, meshFile);
+
+            var mesh = meshFile.getThreeMesh();
             var box = new THREE.Box3().setFromObject(mesh);
             mesh.position = box.center();
             scene.add(mesh);
 
+            //Compute the global bounding box
             computeGlobalBBbox();
 
+            //render the scene
             this.update();
 
         } else {
@@ -148,5 +150,5 @@ MLJ.core.scene = {};
         initScene();
     });
 
-}).call(MLJ.core.scene);
+}).call(MLJ.core.Scene);
 
