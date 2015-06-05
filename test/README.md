@@ -74,3 +74,14 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	* Same as above, but in cpp source there is more elegant class 'MeshLabJs' instead of a set of function. Conseguently in JS functions are called by instance of 'Module.MeshLabJs' in a way similar to OOP.
 	**Status**: Complete
 
+* `Shaders` The folder contains exemples of shaders implementation using three.js
+	* `PhongShader` Simple exemple of a shader using phong illumination model. **Status**: Complete
+	* `Wireframe1.0` First test to create wireframe with shaders using Lambert illumination model. **Status**: Complete
+	* `Wireframe2.0` Same as above, but to dodecahedron on the left is applied the Phong illumination model. The dodecahedron on the right is the seame of `Wireframe1.0`. **Status**: Complete
+
+* `jQueryGUI` The folder contains the development steps to realize the graphic user interface of MeshLabJs and its code refactoring
+	* `v1` GUI first version.
+	* `v2` The GUI main widgets are almost all implemented. Initial phase of development of the new ad hoc library (`mlj`) to build and control MeshLabJs GUI.
+	* `v3` Varius improvements to `mlj` library. Now is possible to load multiple mesh file at the same time. 
+	
+	
