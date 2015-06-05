@@ -16,19 +16,25 @@ MLJ.core.Scene = {};
 
 //SCENE INITIALIZATION  ________________________________________________________
 
-    function initScene() {
+    function get3DSize() {
+        var _3D = $('#_3D');
 
-        var WIDTH = $('body').width();
-        var HEIGHT = $('body').height();
+        return {
+            width: _3D.width(),
+            height: _3D.height()
+        };
+    }
+
+    function initScene() {
+        var _3DSize = get3DSize();
 
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 1800);
+        camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         camera.position.z = 15;
         renderer = new THREE.WebGLRenderer({alpha: true});
         renderer.shadowMapEnabled = true;
-        // renderer.setClearColor(0x00000f, 1); //colore di sfondo del render
-        renderer.setSize(WIDTH, HEIGHT);
-        $('body').append(renderer.domElement);
+        renderer.setSize(_3DSize.width, _3DSize.height);
+        $('#_3D').append(renderer.domElement);
         scene.add(camera);
 
         //INIT CONTROLS  ___________________________________________________
@@ -56,9 +62,12 @@ MLJ.core.Scene = {};
         });
 
         $(window).resize(function () {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            var size = get3DSize();
+
+            camera.aspect = size.width / size.height;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(size.width, size.height);
+
             MLJ.core.Scene.update();
         });
 
@@ -69,7 +78,6 @@ MLJ.core.Scene = {};
     }
 
     function computeGlobalBBbox() {
-        //MODIFICARE UTILIZZANDO L'ARRAY LAYERS_____________________________
         var ptr = layers.pointer();
         var threeMesh;
         while (ptr.hasNext()) {

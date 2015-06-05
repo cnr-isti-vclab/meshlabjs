@@ -69,7 +69,7 @@ MLJ.gui.FileButton = function (id, title, text, imageSrc) {
     };
 
     this.multiple = function () {
-        _$file.attr("multiple","multiple");
+        _$file.attr("multiple", "multiple");
     };
 
     //Enable click event
@@ -153,12 +153,18 @@ MLJ.gui.PiP = function (x, y, id) {
 (function () {
 
     var _$pane = $('<div id="tools-pane"></div>');
+    var _$3D = $('<div id="_3D"></div>');
     var _widgets = [];
 
     function update() {
         for (var i = 0, m = _widgets.length; i < m; i++) {
             _$pane.append(_widgets[i]._refresh());
         }
+
+        _$3D.css({
+            width: $(window).width() - _$pane.outerWidth(),
+            left: _$pane.outerWidth()
+        });
     }
 
     this.addWidget = function (widget) {
@@ -170,12 +176,22 @@ MLJ.gui.PiP = function (x, y, id) {
     };
 
     this.makeGUI = function (title) {
+
         _$pane.append('<div id="top" ><span>' + title + '</span></div>');
-        $('body').append(_$pane);
+        $('body').append(_$3D).append(_$pane);
 
         for (var i = 0, m = _widgets.length; i < m; i++) {
             _$pane.append(_widgets[i]._build());
         }
+
+        _$3D.css({
+            position: "absolute",
+            width: $(window).width() - _$pane.outerWidth(),
+            left: _$pane.outerWidth(),
+            height: "100%",
+            top: 0
+        });
+
     };
 
     this.update = function () {

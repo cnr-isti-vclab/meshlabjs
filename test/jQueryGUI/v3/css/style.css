@@ -62,9 +62,15 @@ html,body{
     height: 100%;    
     font-family: Segoe UI,Arial,sans-serif;
     overflow: hidden;
+    /*background: red;*/
+}
+
+/* 3D (Contains canvas) _____________________________________________________ */
+#_3D {    
     background: linear-gradient( #00000f,  #8080ff);
 }
 
+/* TOOLS PANE _______________________________________________________________ */
 #tools-pane {
     position: absolute;
     border-right: solid 1px white;    
@@ -73,6 +79,7 @@ html,body{
     background-color: black;
 }
 
+/* TOP (MeshLabJs icon + title) _____________________________________________ */
 #top {    
     height:70px; 
     background-color: black;
@@ -90,6 +97,7 @@ html,body{
     font-size: 1.5em;    
 }
 
+/* SCENE BAR WIDGET (contains buttons :open, save, reload and snapshot) _____ */
 #tools-buttons {
     padding: 10px;
     background-color: black;
@@ -104,6 +112,7 @@ html,body{
     height: 24px;
 }
 
+/* SEARCH WIDGET ____________________________________________________________ */
 #search {    
     line-height: 50px;
     background-color: black;
@@ -119,20 +128,45 @@ html,body{
     margin-left: 10px;
 }
 
+/* LAYERS WIDGET ____________________________________________________________ */
 #layers {
     height: 80px;
     overflow: auto;
 }
 
+#layers .layer {
+    margin-top: 5px;
+}
+
+#layers .eye {
+    background-image: url('../../icons/IcoMoon-Free-master/PNG/48px/0207-eye.png');
+    background-size: 24px 24px;
+    width: 24px;
+    height: 24px;    
+    display: inline-block;
+    float: left;
+    background-color: rgba(255,255,255,0.7);
+    border-radius: 5px;
+}
+
+#layers .layer-name {
+    margin-left: 10px;
+    display: inline-block;
+    line-height: 24px;    
+    clear: left;
+}
+
+/* LOG WIDGET _______________________________________________________________ */
 #log {
     height: 80px;
     overflow: auto;
 }
 
+/* INFO WIDGET ______________________________________________________________ */
 #info {    
     overflow: auto;
-    width: 200px;
-    height: 100px;    
+    width: 250px;
+    height: 120px;    
     background-color: rgba(0,0,0,0.5);    
     color: white;
 }
@@ -141,6 +175,7 @@ html,body{
     margin: 5px;
 }
 
+/* DISPLAY FIELD CLASS (style used in log widget and info widget) ___________ */
 .display-field h3{    
     padding: 5px;
     color: white;

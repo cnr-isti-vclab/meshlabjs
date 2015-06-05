@@ -8,8 +8,6 @@ MLJ.gui.LayersPane = {};
 
 (function (gui) {
 
-    var _layers = [];
-
     var _$layersPane;
     var _$layers = $('<div id="layers" class="df-content"></div>');
 
@@ -25,7 +23,12 @@ MLJ.gui.LayersPane = {};
             });
 
     this.addLayer = function (name) {
-        _$layers.append("<p>" + name + "</p>");
+        var $layer = $('<div class="layer" name="' + name + '"></div>');
+        var $eye = $('<span class="eye"></span>');
+        var $name = $('<span class="layer-name">' + name + '</span>');
+        _$layers.append($layer).append($eye).append($name);
+        
+        
     };
 
     gui.addWidget(_widget);
