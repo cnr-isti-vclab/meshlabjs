@@ -39,11 +39,16 @@ MLJ.gui.LayersPane = {};
     }
 
     this.addLayer = function (name) {
-        var $layer = $('<div class="layer" name="' + name + '"></div>');
-        var $eye = $('<span class="eye"></span>');
-        var $name = $('<span class="layer-name">' + name + '</span>');
-        $layer.append($eye).append($name);
-        _$layers.append($layer);
+        var $wrap = $('<div class="entry"></div>').css(
+                {position: "relative", width:"100%"});
+        var $layer = $('<div class="layer" name="' + name + '">' + name + '</div>')
+                .css({position: "absolute"});
+        var $eye = $('<div class="eye show"></div>')
+                .css({position: "absolute"});
+//        var $name = $('<span class="layer-name">' + name + '</span>');
+//        $layer.append($name);
+        $wrap.append($eye).append($layer);
+        _$layers.append($wrap);
 
         select(name);
 
@@ -52,6 +57,16 @@ MLJ.gui.LayersPane = {};
                 select(name);
                 //Trigger LAYER_SELECTION_CHANGED event 
                 $(document).trigger(MLJ.events.Gui.LAYER_SELECTION_CHANGED, [name]);
+            }
+        });
+
+        $eye.click(function () {
+            if ($eye.hasClass("show")) {
+                $eye.removeClass("show").addClass("hide");
+                $(document).trigger(MLJ.events.Gui.HIDE_LAYER, [name]);
+            } else {
+                $eye.removeClass("hide").addClass("show");
+                $(document).trigger(MLJ.events.Gui.SHOW_LAYER, [name]);
             }
         });
     };

@@ -89,6 +89,20 @@ MLJ.core.Scene = {};
                     $(document).trigger(
                             MLJ.events.Scene.LAYER_SELECTED, [selectedLayer]);
                 });
+
+        $(document).on(MLJ.events.Gui.HIDE_LAYER,
+                function (event, layerName) {
+                    var layer = layers.getByKey(layerName);
+                    layer.getThreeMesh().visible = false;
+                    MLJ.core.Scene.render();
+                });
+
+        $(document).on(MLJ.events.Gui.SHOW_LAYER,
+                function (event, layerName) {
+                    var layer = layers.getByKey(layerName);
+                    layer.getThreeMesh().visible = true;
+                    MLJ.core.Scene.render();
+                });
     }
 
     function computeGlobalBBbox() {
