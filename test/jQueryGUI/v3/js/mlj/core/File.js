@@ -80,7 +80,7 @@ MLJ.core.File = {
 
                 //Trigger mesh opened event
                 $(document).trigger(
-                        MLJ.core.Events.MESH_FILE_OPENED,
+                        MLJ.events.File.MESH_FILE_OPENED,
                         [mf]);
 
                 FS.unlink(file.name);

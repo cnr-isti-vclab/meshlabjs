@@ -84,12 +84,26 @@
 
     function initEventHandlers() {
         //On new mesh added
-        $(document).on(MLJ.core.Events.MESH_FILE_OPENED,
+        $(document).on(MLJ.events.Scene.LAYER_ADDED,
                 function (event, mesh) {
-
                     //Add item to layers pane widget
                     MLJ.gui.LayersPane.addLayer(mesh.name);
 
+                    //Clear info area
+                    MLJ.gui.Info.clear();
+
+                    //Add mesh info to info widget
+                    MLJ.gui.Info.append("Current Mesh: " + mesh.name);
+                    MLJ.gui.Info.append("Vertices: " + mesh.VN);
+                    MLJ.gui.Info.append("Faces: " + mesh.FN);
+                });
+
+        $(document).on(MLJ.events.Scene.LAYER_SELECTED,
+                function (event, mesh) {
+                    
+                    //Clear info area
+                    MLJ.gui.Info.clear();
+                    
                     //Add mesh info to info widget
                     MLJ.gui.Info.append("Current Mesh: " + mesh.name);
                     MLJ.gui.Info.append("Vertices: " + mesh.VN);

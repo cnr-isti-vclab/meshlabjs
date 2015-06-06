@@ -20,6 +20,10 @@ MLJ.util.AssociativeArray = function () {
             return next;
         };
     };
+        
+    this.getByKey = function (key) {        
+        return values[key];
+    };
 
     this.length = keys.length;
 

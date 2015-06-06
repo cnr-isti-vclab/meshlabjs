@@ -22,11 +22,6 @@ var Module = {
 
 MLJ.core = {};
 
-MLJ.core.Events = {
-    MESH_FILE_OPENED: "meshFileOpened",
-    MESH_FILE_CLOSED: "meshFileClosed"
-};
-
 MLJ.core.PhongMaterial = function () {
 
     this.flags = {

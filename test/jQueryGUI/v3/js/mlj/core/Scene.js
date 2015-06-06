@@ -11,6 +11,9 @@ MLJ.core.Scene = {};
     //Contains all mesh in the scene
     var layers = new MLJ.util.AssociativeArray();
 
+    //Reference to selected layer (type MeshFile)
+    var selectedLayer;
+
     var scene, camera, renderer;
 
 
@@ -49,7 +52,8 @@ MLJ.core.Scene = {};
         controls.dynamicDampingFactor = 0.3;
         controls.keys = [65, 83, 68];
 
-        //EVENT LISTENERS ___________________________________________________
+        //EVENT HANDLERS _______________________________________________________
+
         $('canvas')[0].addEventListener('touchmove', controls.update.bind(controls), false);
         $('canvas')[0].addEventListener('mousemove', controls.update.bind(controls), false);
         $('canvas')[0].addEventListener('mousewheel', function () {
@@ -58,7 +62,7 @@ MLJ.core.Scene = {};
         }, false);
 
         controls.addEventListener('change', function () {
-            MLJ.core.Scene.update();
+            MLJ.core.Scene.render();
         });
 
         $(window).resize(function () {
@@ -68,12 +72,22 @@ MLJ.core.Scene = {};
             camera.updateProjectionMatrix();
             renderer.setSize(size.width, size.height);
 
-            MLJ.core.Scene.update();
+            MLJ.core.Scene.render();
         });
 
-        $(document).on(MLJ.core.Events.MESH_FILE_OPENED,
+        $(document).on(MLJ.events.File.MESH_FILE_OPENED,
                 function (event, mesh) {
                     MLJ.core.Scene.addMesh(mesh);
+
+                    $(document).trigger(
+                            MLJ.events.Scene.LAYER_ADDED, [mesh]);
+                });
+
+        $(document).on(MLJ.events.Gui.LAYER_SELECTION_CHANGED,
+                function (event, layerName) {
+                    selectedLayer = layers.getByKey(layerName);
+                    $(document).trigger(
+                            MLJ.events.Scene.LAYER_SELECTED, [selectedLayer]);
                 });
     }
 
@@ -134,23 +148,26 @@ MLJ.core.Scene = {};
             //Add new mesh to associative array layers
             layers.set(meshFile.name, meshFile);
 
+            //Set mesh position
             var mesh = meshFile.getThreeMesh();
             var box = new THREE.Box3().setFromObject(mesh);
             mesh.position = box.center();
             scene.add(mesh);
 
+            selectedLayer = meshFile;
+
             //Compute the global bounding box
             computeGlobalBBbox();
 
             //render the scene
-            this.update();
+            this.render();
 
         } else {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
         }
     };
 
-    this.update = function () {
+    this.render = function () {
         renderer.render(scene, camera);
     };
 

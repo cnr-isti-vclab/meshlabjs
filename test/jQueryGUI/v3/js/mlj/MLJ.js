@@ -11,6 +11,22 @@ MLJ.Error = function (errCode, message) {
     this.message = message;
 };
 
+MLJ.events = {
+    File: {
+        MESH_FILE_OPENED: "meshFileOpened",
+        MESH_FILE_CLOSED: "meshFileClosed"
+    },
+    Gui: {
+        LAYER_SELECTION_CHANGED: "layerSelectionChanged",
+        HIDE_LAYER: "hideLayer",
+        SHOW_LAYER: "showLayer"
+    },
+    Scene: {
+        LAYER_SELECTED: "layerSelected",
+        LAYER_ADDED: "layerAdded"
+    }
+};
+
 (function ($) {
 
     if (typeof $ === 'undefined') {
@@ -19,7 +35,7 @@ MLJ.Error = function (errCode, message) {
 
     var error;
 
-    this.setError = function (error) {        
+    this.setError = function (error) {
         this.error = error;
     };
 

@@ -33,6 +33,10 @@ MLJ.gui.Info = {};
                 return _PiP.jQuery();
             });
 
+    this.clear = function () {
+        _$info.empty();
+    };
+
     this.append = function (message) {
         _$info.append("<p>" + message + "</p>");
     };
