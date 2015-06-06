@@ -159,4 +159,3 @@ MLJ.core.Scene = {};
     });
 
 }).call(MLJ.core.Scene);
-

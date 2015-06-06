@@ -7,12 +7,15 @@
 MLJ.gui.Logo = {};
 
 (function (gui) {
+    var LOGO_WIDTH = 86;
+    var insets = 10;
     var _PiP;
     var _$dialog;
+    
     var _widget = new MLJ.gui.Widget(
             function () {//build function                 
                 _PiP = new gui.PiP(0, 0);
-                
+
                 var $logo = $('<img id="logo" src="../../../img/vcglogo200609_1024px.png">');
 
                 _$dialog = $('<div id="dialog" title="Dialog Title">About</div>').hide();
@@ -20,15 +23,27 @@ MLJ.gui.Logo = {};
 
                 $logo.load(function () {
                     _PiP.appendContent(this);
-                    $(this).width(86);
-                    _PiP.setX(410);
-                    _PiP.setY($(window).height() - 86);
-                    _PiP.lock(false, true);
+                    $(this).width(LOGO_WIDTH);
                 });
 
-                $($logo).css('cursor', 'pointer');
+                $logo.css('cursor', 'pointer');
 
-                $($logo).click(function () {
+                $(document).ready(function () {
+                    var x = $('#tools-pane').outerWidth() + insets;
+                    var y = $(window).height() - LOGO_WIDTH;
+                    _PiP.setX(x);
+                    _PiP.setY(y);
+                });
+
+                $(window).resize(function () {
+                    var $tp = $('#tools-pane');
+                    var newX = $tp.outerWidth() + $tp.offset().left + insets;
+                    var newY = $(window).height() - LOGO_WIDTH;
+                    _PiP.setX(newX);
+                    _PiP.setY(newY);
+                });
+
+                $logo.click(function () {
                     $('#dialog').dialog();
                 });
 
@@ -36,6 +51,6 @@ MLJ.gui.Logo = {};
             });
 
 
-    gui.addWidget(_widget);
+    gui.addWidget(_widget, true);
 
 }).call(MLJ.gui.Logo, MLJ.gui);

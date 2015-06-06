@@ -62,13 +62,11 @@ html,body{
     height: 100%;    
     font-family: Segoe UI,Arial,sans-serif;
     overflow: hidden;
-    /*background: red;*/
+     background: linear-gradient( #00000f,  #8080ff);
 }
 
 /* 3D (Contains canvas) _____________________________________________________ */
-#_3D {    
-    background: linear-gradient( #00000f,  #8080ff);
-}
+#_3D {}
 
 /* TOOLS PANE _______________________________________________________________ */
 #tools-pane {
@@ -166,7 +164,7 @@ html,body{
 #info {    
     overflow: auto;
     width: 250px;
-    height: 120px;    
+    height: 100px;    
     background-color: rgba(0,0,0,0.5);    
     color: white;
 }

@@ -16,15 +16,20 @@ MLJ.gui.Info = {};
                 _PiP.appendContent(_$info);
 
                 $(document).ready(function () {
-                    var ww = $(window).width();
-                    var wh = $(window).height();
-                    var pw = _$info.width();
-                    var ph = _$info.height();                    
-                    _PiP.setX(ww - pw);
-                    _PiP.setY(wh - ph);
-                    _PiP.lock();
+                    var x = $(window).width() - _$info.width();
+                    var y = $(window).height() - _$info.height();
+
+                    _PiP.setX(x);
+                    _PiP.setY(y);
                 });
-                
+
+                $(window).resize(function () {
+                    var newX = $(window).width() - _$info.width();
+                    var newY = $(window).height() - _$info.height();
+                    _PiP.setX(newX);
+                    _PiP.setY(newY);
+                });
+
                 return _PiP.jQuery();
             });
 
@@ -32,6 +37,6 @@ MLJ.gui.Info = {};
         _$info.append("<p>" + message + "</p>");
     };
 
-    gui.addWidget(_widget);
+    gui.addWidget(_widget, true);
 
 }).call(MLJ.gui.Info, MLJ.gui);

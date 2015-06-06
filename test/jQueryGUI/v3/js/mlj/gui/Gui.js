@@ -83,14 +83,12 @@ MLJ.gui.FileButton = function (id, title, text, imageSrc) {
 MLJ.extend(MLJ.gui.Button, MLJ.gui.FileButton);
 
 
-MLJ.gui.PiP = function (x, y, id) {
-    this.id = id;
-    var ids = !id ? "" : " id='" + id + "'";
+MLJ.gui.PiP = function (x, y) {
 
     var _$PiP;
 
     function init() {
-        _$PiP = $("<div" + ids + "></div>").css({
+        _$PiP = $("<div></div>").css({
             position: "absolute",
             top: y,
             left: x
@@ -122,72 +120,73 @@ MLJ.gui.PiP = function (x, y, id) {
         return _$PiP;
     };
 
-
-    var kw, kh;
-    this.lock = function (xCoord, yCoord) {
-
-        if (!xCoord && !yCoord) {
-            xCoord = yCoord = true;
-        }
-
-        //Distance from window right edge
-        kw = $(window).width() - (_$PiP.position().left + _$PiP.width());
-        kh = $(window).height() - (_$PiP.position().top + _$PiP.height());
-
-        $(window).resize(function () {
-            var x = $(window).width() - kw - _$PiP.width();
-            var y = $(window).height() - kh - _$PiP.height();
-
-            if (xCoord) {
-                _$PiP.offset({left: x});
-            }
-            if (yCoord) {
-                _$PiP.offset({top: y});
-            }
-        });
-    };
-
     init();
 };
 
 (function () {
-
+    var _widgets = [];
+    var _bodyWidgets = [];
     var _$pane = $('<div id="tools-pane"></div>');
     var _$3D = $('<div id="_3D"></div>');
-    var _widgets = [];
+
+    var _hideBtn = new MLJ.gui.PiP(0, 0);
+    _hideBtn.appendContent('<span class="ui-icon ui-icon-arrowthick-1-w"></span>');
+
+    _hideBtn.jQuery().css({
+//        width: 24,
+//        height: 24,
+        background: "rgba(255,255,255,0.4)",
+        borderRadius: 5
+    });
 
     function update() {
         for (var i = 0, m = _widgets.length; i < m; i++) {
-            _$pane.append(_widgets[i]._refresh());
+            _widgets[i]._refresh();
+        }
+
+        for (var i = 0, m = _bodyWidgets.length; i < m; i++) {
+            _bodyWidgets[i]._refresh();
         }
 
         _$3D.css({
-            width: $(window).width() - _$pane.outerWidth(),
-            left: _$pane.outerWidth()
+            width: $(window).width() - (_$pane.outerWidth() + _$pane.offset().left),
+            left: _$pane.outerWidth() + _$pane.offset().left
         });
+
+        _hideBtn.jQuery().css({left: _$pane.outerWidth() + _$pane.offset().left});
     }
 
-    this.addWidget = function (widget) {
+    this.addWidget = function (widget, body) {
         if (widget instanceof MLJ.gui.Widget) {
-            _widgets.push(widget);
+
+            if (body === true) {
+                _bodyWidgets.push(widget);
+            } else {
+                _widgets.push(widget);
+            }
         } else {
             console.error("The parameter must be an instance of MLJ.gui.Widget");
         }
     };
 
     this.makeGUI = function (title) {
-
         _$pane.append('<div id="top" ><span>' + title + '</span></div>');
-        $('body').append(_$3D).append(_$pane);
+        $('body').append(_$3D).append(_$pane).append(_hideBtn.jQuery());
+
+        _hideBtn.jQuery().offset({left: _$pane.outerWidth()});
 
         for (var i = 0, m = _widgets.length; i < m; i++) {
             _$pane.append(_widgets[i]._build());
         }
 
+        for (var i = 0, m = _bodyWidgets.length; i < m; i++) {
+            $('body').append(_bodyWidgets[i]._build());
+        }
+
         _$3D.css({
             position: "absolute",
-            width: $(window).width() - _$pane.outerWidth(),
-            left: _$pane.outerWidth(),
+            width: $(window).width() - (_$pane.outerWidth() + _$pane.offset().left),
+            left: _$pane.outerWidth() - _$pane.offset().left,
             height: "100%",
             top: 0
         });
@@ -202,14 +201,46 @@ MLJ.gui.PiP = function (x, y, id) {
         update();
     });
 
-//    _$pane.click(function () {        
-//        if (_$pane.is(":visible")) {
-//            _$pane.hide("slide", {direction: "left"}, 500);           
-//        } else {
-//            _$pane.show("slide", {direction: "left"}, 500);          
-//        }
-//    });
+    _hideBtn.jQuery().click(function () {
+        if (_$pane.is(":visible")) {
+            _$pane.animate({left: -_$pane.outerWidth()}, {
+                duration: 500,
+                start: function () {
+                    _hideBtn.jQuery().fadeOut();
+                },
+                step: function () {
+                    $(window).trigger('resize');
+                },
+                complete: function () {
+                    $(window).trigger('resize');
+                    _$pane.hide();
+                    _hideBtn.jQuery().children(0)
+                            .removeClass("ui-icon-arrowthick-1-w")
+                            .addClass("ui-icon-arrowthick-1-e");
+                    _hideBtn.jQuery().fadeIn();
 
+                }
+            });
 
+        } else {
+            _$pane.animate({left: 0}, {
+                duration: 500,
+                start: function () {
+                    _$pane.show();
+                    _hideBtn.jQuery().fadeOut();
+                },
+                step: function () {
+                    $(window).trigger('resize');
+                },
+                complete: function () {
+                    $(window).trigger('resize');
+                    _hideBtn.jQuery().children(0)
+                            .removeClass("ui-icon-arrowthick-1-e")
+                            .addClass("ui-icon-arrowthick-1-w");
+                    _hideBtn.jQuery().fadeIn();
+                }
+            });
+        }
+    });
 
 }).call(MLJ.gui);
