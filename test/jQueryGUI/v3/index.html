@@ -30,70 +30,22 @@
         <script src="js/mlj/core/Core.js"></script>
         <script src="js/mlj/core/Scene.js"></script>
         <script src="js/mlj/core/File.js"></script>
+        <script src="js/mlj/core/Plugin.js"></script>
+
+        <!--<script src="js/mlj/plugins/rendering/AmbientLight.js"></script>-->
+        <script src="js/mlj/plugins/filters/Smooth.js"></script>        
 
         <script src="js/main.js"></script>
 
         <script src="js/generated/MeshlabJs.js"></script>
-
+        
+       
     </head>
     <body>        
-        <script>
-            MLJ.gui.makeGUI("MeshLabJs v2.1");
+        <script>            
+            MLJ.core.Plugin.run();
+            MLJ.gui.makeGUI("MeshLabJs v3");            
         </script>
     </body>
 </html>
-
-<!--                              
-//        $("#light").append("<img src='../icons/light.png' />")
-//        .button({disabled: false}).tooltip().data("checked", 0)
-//        .on("click", function (event, ui) {
-//            var checked = $(this).data("checked") ^ 1;
-//            $(this).data("checked", checked);
-//            if (checked) {
-//                $(this).addClass("checked");
-//            } else {
-//                $(this).removeClass("checked");
-//            }
-//        });
-//$("#wireframe").append("<img src='../icons/wireframe.png' />")
-//        .button({disabled: false}).tooltip().data("checked", 0)
-//        .on("click", function (event, ui) {
-//            var checked = $(this).data("checked") ^ 1;
-//            $(this).data("checked", checked);
-//            if (checked) {
-//                $(this).addClass("checked");
-//            } else {
-//                $(this).removeClass("checked");
-//            }
-//        });
-//        < /script>
-//        < /div>
-//        < /div>
-//        < /div>-->
-
-<!--                <div style="height: 200px;">
-                    <div id="log">
-                        <h3>Log</h3>
-                        <div>
-                            <p>Mauris mauris ante, blandit et, ultrices a, suscipit eget.
-                                Integer ut neque. Vivamus nisi metus, molestie vel, gravida in,
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    $("#log").accordion({heightStyle: 'fill', collapsible: false});
-                </script>
-
-                <script>
-                    $("#accordion").accordion({heightStyle: 'fill'});
-                    $("#tabs").tabs({heightStyle: 'fill'});
-
-                    $(window).resize(function () {
-                        $('#left').height($(window).height());
-                        $('#tabs').tabs("refresh");
-                        $('#accordion').accordion("refresh");
-                    });
-                </script>                              -->
 

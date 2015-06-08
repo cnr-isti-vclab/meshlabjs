@@ -10,9 +10,32 @@ MLJ.gui.TabbedPane = {};
     var _tabs = [];
     var _$tabbedPane = $('<div id="tabbed-pane"></div>');
     var _$tabsBar = $('<ul id="tabs-bar"></ui>');
-    _$tabbedPane.append(_$tabsBar);
 
-    var _widget = new MLJ.gui.Widget(
+    //Accordion for filters pane
+    var _filtersAccord = new MLJ.gui.Accordion();
+    _filtersAccord.jQuery().attr('id', 'accordion-filters');
+
+    //Tool bar for rendering pane
+    var _renderingTb = new gui.ToolBar();
+    //Accordion for rendering pane
+    var _renderingAccord = new gui.Accordion();
+    _renderingAccord.jQuery().attr('id', 'accordion-rendering');
+
+    function init() {
+        _$tabbedPane.append(_$tabsBar);
+
+        var filterTab = new gui.Tab("Filters");
+        filterTab.appendContent(_filtersAccord.jQuery());
+
+        var renderingTab = new gui.Tab("Rendering");
+        renderingTab.appendContent(_renderingTb.jQuery())
+                .appendContent(_renderingAccord.jQuery());
+
+        gui.TabbedPane.addTab(filterTab, renderingTab);
+
+    }
+
+    var _widget = new gui.Widget(
             function () {//build function                
 
                 $(document).ready(function () {
@@ -23,11 +46,13 @@ MLJ.gui.TabbedPane = {};
                         _$tabbedPane.append(tab.jQueryTabContent());
                     }
                     $('#tabbed-pane').tabs({heightStyle: 'fill'});
+                    _filtersAccord.jQuery().accordion({heightStyle: 'content'});
+                    _renderingAccord.jQuery().accordion({heightStyle: 'content'});
                 });
-                
+
                 return _$tabbedPane;
             },
-            function() {
+            function () {
                 $('#tabbed-pane').tabs("refresh");
             });
 
@@ -42,6 +67,20 @@ MLJ.gui.TabbedPane = {};
             }
         }
     };
+
+    this.filtersAccordion = function () {
+        return _filtersAccord;
+    };
+
+    this.renderingAccordion = function () {
+        return _renderingAccord;
+    };
+
+    this.renderingToolbar = function () {
+        return _renderingTb;
+    };
+
+    init();
 
     gui.addWidget(_widget);
 

@@ -132,8 +132,7 @@ html,body{
     overflow: auto;
 }
 
-#layers .entry {
-    /*background-color: red;*/
+#layers .entry {    
     height: 24px;
     margin-top: 4px;
 }

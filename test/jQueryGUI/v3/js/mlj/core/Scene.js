@@ -9,13 +9,12 @@ MLJ.core.Scene = {};
 (function () {
 
     //Contains all mesh in the scene
-    var layers = new MLJ.util.AssociativeArray();
+    var _layers = new MLJ.util.AssociativeArray();
 
     //Reference to selected layer (type MeshFile)
-    var selectedLayer;
+    var _selectedLayer;
 
-    var scene, camera, renderer;
-
+    var _scene, _camera, _renderer;
 
 //SCENE INITIALIZATION  ________________________________________________________
 
@@ -31,18 +30,18 @@ MLJ.core.Scene = {};
     function initScene() {
         var _3DSize = get3DSize();
 
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-        camera.position.z = 15;
-        renderer = new THREE.WebGLRenderer({alpha: true});
-        renderer.shadowMapEnabled = true;
-        renderer.setSize(_3DSize.width, _3DSize.height);
-        $('#_3D').append(renderer.domElement);
-        scene.add(camera);
+        _scene = new THREE.Scene();
+        _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+        _camera.position.z = 15;
+        _renderer = new THREE.WebGLRenderer({alpha: true});
+        _renderer.shadowMapEnabled = true;
+        _renderer.setSize(_3DSize.width, _3DSize.height);
+        $('#_3D').append(_renderer.domElement);
+        _scene.add(_camera);
 
         //INIT CONTROLS  ___________________________________________________
         var container = document.getElementsByTagName('canvas')[0];
-        var controls = new THREE.TrackballControls(camera, container);
+        var controls = new THREE.TrackballControls(_camera, container);
         controls.rotateSpeed = 4.0;
         controls.zoomSpeed = 1.2;
         controls.panSpeed = 2.0;
@@ -51,6 +50,10 @@ MLJ.core.Scene = {};
         controls.staticMoving = true;
         controls.dynamicDampingFactor = 0.3;
         controls.keys = [65, 83, 68];
+
+        //INIT LIGHTS __________________________________________________________        
+        MLJ.core.Scene.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        MLJ.core.Scene.HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS _______________________________________________________
 
@@ -68,16 +71,16 @@ MLJ.core.Scene = {};
         $(window).resize(function () {
             var size = get3DSize();
 
-            camera.aspect = size.width / size.height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(size.width, size.height);
+            _camera.aspect = size.width / size.height;
+            _camera.updateProjectionMatrix();
+            _renderer.setSize(size.width, size.height);
 
             MLJ.core.Scene.render();
         });
 
         $(document).on(MLJ.events.File.MESH_FILE_OPENED,
                 function (event, mesh) {
-                    MLJ.core.Scene.addMesh(mesh);
+                    MLJ.core.Scene.addLayer(mesh);
 
                     $(document).trigger(
                             MLJ.events.Scene.LAYER_ADDED, [mesh]);
@@ -85,30 +88,31 @@ MLJ.core.Scene = {};
 
         $(document).on(MLJ.events.Gui.LAYER_SELECTION_CHANGED,
                 function (event, layerName) {
-                    selectedLayer = layers.getByKey(layerName);
+                    _selectedLayer = _layers.getByKey(layerName);
                     $(document).trigger(
-                            MLJ.events.Scene.LAYER_SELECTED, [selectedLayer]);
+                            MLJ.events.Scene.LAYER_SELECTED, [_selectedLayer]);
                 });
 
         $(document).on(MLJ.events.Gui.HIDE_LAYER,
                 function (event, layerName) {
-                    var layer = layers.getByKey(layerName);
+                    var layer = _layers.getByKey(layerName);
                     layer.getThreeMesh().visible = false;
                     MLJ.core.Scene.render();
                 });
 
         $(document).on(MLJ.events.Gui.SHOW_LAYER,
                 function (event, layerName) {
-                    var layer = layers.getByKey(layerName);
+                    var layer = _layers.getByKey(layerName);
                     layer.getThreeMesh().visible = true;
                     MLJ.core.Scene.render();
                 });
     }
 
     function computeGlobalBBbox() {
-        var ptr = layers.pointer();
+        var ptr = _layers.pointer();                
+        
         var threeMesh;
-        while (ptr.hasNext()) {
+        while (ptr.hasNext()) {            
             threeMesh = ptr.next().getThreeMesh();
             if (threeMesh.scaleFactor) {
                 threeMesh.position.x -= threeMesh.offsetVec.x;
@@ -120,14 +124,14 @@ MLJ.core.Scene = {};
         }
 
         var BBGlobal = new THREE.Box3();
-        ptr = layers.pointer();
+        ptr = _layers.pointer();
         while (ptr.hasNext()) {
             threeMesh = ptr.next().getThreeMesh();
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
 
-        ptr = layers.pointer();
+        ptr = _layers.pointer();
         while (ptr.hasNext()) {
             threeMesh = ptr.next().getThreeMesh();
             var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
@@ -136,14 +140,14 @@ MLJ.core.Scene = {};
         }
 
         BBGlobal = new THREE.Box3();
-        ptr = layers.pointer();
+        ptr = _layers.pointer();
         while (ptr.hasNext()) {
             threeMesh = ptr.next().getThreeMesh();
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
 
-        ptr = layers.pointer();
+        ptr = _layers.pointer();
         while (ptr.hasNext()) {
             threeMesh = ptr.next().getThreeMesh();
             var offset = new THREE.Vector3();
@@ -156,19 +160,19 @@ MLJ.core.Scene = {};
 
     }
 
-    this.addMesh = function (meshFile) {
+    this.addLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
-            //Add new mesh to associative array layers
-            layers.set(meshFile.name, meshFile);
-
+            //Add new mesh to associative array _layers            
+            _layers.set(meshFile.name, meshFile);                        
+            
             //Set mesh position
             var mesh = meshFile.getThreeMesh();
             var box = new THREE.Box3().setFromObject(mesh);
             mesh.position = box.center();
-            scene.add(mesh);
+            _scene.add(mesh);
 
-            selectedLayer = meshFile;
+            _selectedLayer = meshFile;
 
             //Compute the global bounding box
             computeGlobalBBbox();
@@ -181,8 +185,23 @@ MLJ.core.Scene = {};
         }
     };
 
+    this.getLayerByName = function (name) {
+        return _layers.getByKey(name);
+    };
+
+    this.removeLayerByName = function (name) {
+        //CONTROLLARE SE IL NAME E VALIDO *************************
+        var meshFile = this.getLayerByName(name);
+        _layers.remove(name);
+        _scene.remove(meshFile.getThreeMesh());        
+    };
+
+    this.getSelectedLayer = function () {
+        return _selectedLayer;
+    };
+
     this.render = function () {
-        renderer.render(scene, camera);
+        _renderer.render(_scene, _camera);
     };
 
     $(document).ready(function () {

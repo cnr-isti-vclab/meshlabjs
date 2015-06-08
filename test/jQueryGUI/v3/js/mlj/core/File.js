@@ -52,7 +52,7 @@ MLJ.core.File = {
         var fileReader = new FileReader();
         fileReader.readAsArrayBuffer(file);
         fileReader.onloadend = function (fileLoadedEvent) {
-            console.log("Read file", fileLoadedEvent.target.result.byteLength);
+            console.log("Read file " + file.name + " size " + fileLoadedEvent.target.result.byteLength + " bytes");
             console.timeEnd("Read mesh file");
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
@@ -62,21 +62,13 @@ MLJ.core.File = {
             var Opener = new Module.Opener();
             var resOpen = Opener.openMesh(file.name);
             if (resOpen != 0) {
-                alert("Ops! Error in Opening File.\nTry again.");
+                console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
             } else {
                 console.timeEnd("Parsing Mesh Time");
                 var ptrMesh = Opener.getMesh();
 
-                console.time("Getting Mesh Properties Time");
-                var meshProp = new Module.MeshLabJs(ptrMesh);
-                var mf = new MLJ.core.MeshFile(
-                        file.name,
-                        meshProp.getVertexNumber(),
-                        meshProp.getVertexVector(),
-                        meshProp.getFaceNumber(),
-                        meshProp.getFaceVector());
-                console.timeEnd("Getting Mesh Properties Time");
+                var mf = new MLJ.core.MeshFile(file.name, ptrMesh);
 
                 //Trigger mesh opened event
                 $(document).trigger(
@@ -90,5 +82,6 @@ MLJ.core.File = {
             }//end else
         }; //end onloadend
     };
+
 }).call(MLJ.core.File);
 

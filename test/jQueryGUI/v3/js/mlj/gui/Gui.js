@@ -4,16 +4,6 @@
  * and open the template in the editor.
  */
 
-//Console output redirecting ...
-
-//(function(){
-//    var oldLog = console.log;
-//    console.log = function (message) {
-//        MLJ.gui.Log.append(message);
-//        oldLog.apply(console, arguments);
-//    };
-//})();
-
 MLJ.gui = {};
 
 MLJ.gui.Widget = function (build, refresh) {
@@ -34,14 +24,72 @@ MLJ.gui.Layer = function (name, visible) {
     this.visible = visible;
 };
 
-MLJ.gui.Tab = function (name, content) {
+MLJ.gui.Tab = function (name) {
     this.name = name;
-    this.content = content;
+    var _$content = $('<div id="tab-' + name + '"></div>');
+
     this.jQueryTab = function () {
         return $('<li><a href="#tab-' + name + '"><span>' + name + '</span></a></li>');
     };
     this.jQueryTabContent = function () {
-        return $('<div id="tab-' + name + '">' + content + '</div>');
+        return _$content;
+    };
+
+    this.appendContent = function (content) {
+        _$content.append(content);
+        return this;
+    };
+};
+
+MLJ.gui.AccordionEntry = function (title) {
+    var _$content = $('<div></div>');
+    this.title = '<h3>' + title + '</h3>';
+    this.$content = _$content;
+
+    this.add = function (content) {
+        _$content.append(content);
+        return this;
+    };
+
+};
+
+MLJ.gui.Accordion = function () {
+    var _$accordion = $('<div></div>');
+    var _btn;
+
+    //entry type of accordion entry
+    this.addItem = function (entry) {
+        if (!(entry instanceof MLJ.gui.AccordionEntry)) {
+            console.error("The parameter must be an AccordionEntry instace.");
+            return;
+        }
+         _btn = new MLJ.gui.Button(entry.title+"-apply","apply","apply");
+         _btn.jQueryButton().css("float","right");
+         var s = $(entry.title).append(_btn.jQueryButton());         
+        _$accordion.append(s).append(entry.$content);
+    };
+
+    this.jQuery = function () {
+        return _$accordion;
+    };
+
+};
+
+MLJ.gui.ToolBar = function () {
+    var _$tb = $('<div id="tools-buttons"></div>');
+
+    this.jQuery = function () {
+        return _$tb;
+    };
+
+    this.addButton = function () {
+        for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof MLJ.gui.Button) {
+                _$tb.append(arguments[i].jQueryButton());
+            } else {
+                console.error("The parameter must be an instance of MLJ.gui.Button");
+            }
+        }
     };
 };
 
@@ -50,8 +98,10 @@ MLJ.gui.Button = function (id, title, text, imageSrc) {
     this.title = title;
     this.text = text;
     this.imageSrc = imageSrc;
-    this.$button = $('<button id="' + this.id + '" title="' + this.title + '"></button>');
-    this.$button.append('<img src="' + this.imageSrc + '"/>').button().tooltip();
+    this.$button = $('<button id="' + this.id + '" title="' + this.title + '">' + text + '</button>');
+    if (imageSrc) {
+        this.$button.append('<img src="' + this.imageSrc + '"/>').button().tooltip();
+    }
 };
 
 MLJ.gui.Button.prototype = {
@@ -133,8 +183,6 @@ MLJ.gui.PiP = function (x, y) {
     _hideBtn.appendContent('<span class="ui-icon ui-icon-arrowthick-1-w"></span>');
 
     _hideBtn.jQuery().css({
-//        width: 24,
-//        height: 24,
         background: "rgba(255,255,255,0.4)",
         borderRadius: 5
     });
@@ -170,6 +218,7 @@ MLJ.gui.PiP = function (x, y) {
     };
 
     this.makeGUI = function (title) {
+
         _$pane.append('<div id="top" ><span>' + title + '</span></div>');
         $('body').append(_$3D).append(_$pane).append(_hideBtn.jQuery());
 

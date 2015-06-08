@@ -22,6 +22,63 @@ var Module = {
 
 MLJ.core = {};
 
+MLJ.core.AmbientLight = function (scene, camera, renderer) {
+    var _on = false;
+
+    var _light = new THREE.AmbientLight();
+
+    this.setColor = function (color) {
+        _light.color = new THREE.Color(color);
+        renderer.render(scene, camera);
+    };
+
+    this.isOn = function () {
+        return _on;
+    };
+
+    this.setOn = function (on) {
+        if (on) {
+            scene.add(_light);
+            _on = true;
+        } else {
+            scene.remove(_light);
+            _on = false;
+        }
+
+        renderer.render(scene, camera);
+    };
+
+};
+
+MLJ.core.Headlight = function (scene, camera, renderer) {
+    var flags = {
+        color: "#ffffff",
+        on: true,
+        intensity: 0.5,
+        distance: 0
+    };
+
+    var _light = new THREE.PointLight(flags.color, flags.intensity, flags.distance);
+    camera.add(_light);
+
+    this.setIntensity = function (value) {
+        flags.intensity = _light.intensity = value;
+        renderer.render(scene, camera);
+    };
+
+    this.setColor = function (color) {
+        flags.intensity = color;
+        _light.color = new THREE.Color(color);
+        renderer.render(scene, camera);
+    };
+
+    this.setOn = function (on) {
+        _light.intensity = on ? flags.intensity : 0;
+        renderer.render(scene, camera);
+    };
+
+};
+
 MLJ.core.PhongMaterial = function () {
 
     this.flags = {
@@ -78,32 +135,37 @@ MLJ.core.PhongMaterial = function () {
 
 };
 
-MLJ.core.MeshFile = function (name, VN, vert, FN, face) {
+MLJ.core.MeshFile = function (name, ptrMesh) {    
     this.name = name;
-    this.VN = VN;
-    this.vert = vert;
-    this.FN = FN;
-    this.face = face;
+    this.ptrMesh = ptrMesh;
+    this.VN = this.vert = this.FN = this.face = null;
     this.material = new MLJ.core.PhongMaterial();
     var _threeMesh;
+    var thisObj = this;    
 
     function buildThreeMesh(material) {
+        var meshProp = new Module.MeshLabJs(ptrMesh);
+        thisObj.VN = meshProp.getVertexNumber();
+        thisObj.vert = meshProp.getVertexVector();
+        thisObj.FN = meshProp.getFaceNumber();
+        thisObj.face = meshProp.getFaceVector();
+
         var geometry = new THREE.Geometry();
         console.time("Time to create mesh: ");
-        for (var i = 0; i < VN * 3; i++) {
-            var v1 = Module.getValue(vert + parseInt(i * 4), 'float');
+        for (var i = 0; i < thisObj.VN * 3; i++) {
+            var v1 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
             i++;
-            var v2 = Module.getValue(vert + parseInt(i * 4), 'float');
+            var v2 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
             i++;
-            var v3 = Module.getValue(vert + parseInt(i * 4), 'float');
+            var v3 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
             geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
         }
-        for (var i = 0; i < FN * 3; i++) {
-            var a = Module.getValue(face + parseInt(i * 4), '*');
+        for (var i = 0; i < thisObj.FN * 3; i++) {
+            var a = Module.getValue(thisObj.face + parseInt(i * 4), '*');
             i++;
-            var b = Module.getValue(face + parseInt(i * 4), '*');
+            var b = Module.getValue(thisObj.face + parseInt(i * 4), '*');
             i++;
-            var c = Module.getValue(face + parseInt(i * 4), '*');
+            var c = Module.getValue(thisObj.face + parseInt(i * 4), '*');
             geometry.faces.push(new THREE.Face3(a, b, c));
         }
         console.timeEnd("Time to create mesh: ");
@@ -116,13 +178,75 @@ MLJ.core.MeshFile = function (name, VN, vert, FN, face) {
     }
 
     this.getThreeMesh = function () {
-        if (!_threeMesh) {
-            buildThreeMesh(this.material.build());
-        }
-
         return _threeMesh;
     };
+
+    this.updateThreeMesh = function () {
+        buildThreeMesh(this.material.build());
+    };
+
+    buildThreeMesh(this.material.build());
+
 };
 
-//(function (gui) {
-//}).call(MLJ.core, MLJ.gui);
+//MLJ.core.MeshFile = function (name, ptrMesh, VN, vert, FN, face) {
+//    this.name = name;
+//    this.ptrMesh = ptrMesh;
+//    this.VN = VN;
+//    this.vert = vert;
+//    this.FN = FN;
+//    this.face = face;
+//    this.material = new MLJ.core.PhongMaterial();
+//    var _threeMesh;
+//
+//    function buildThreeMesh(material) {
+//        var geometry = new THREE.Geometry();
+//        console.time("Time to create mesh: ");
+//        for (var i = 0; i < VN * 3; i++) {
+//            var v1 = Module.getValue(vert + parseInt(i * 4), 'float');
+//            i++;
+//            var v2 = Module.getValue(vert + parseInt(i * 4), 'float');
+//            i++;
+//            var v3 = Module.getValue(vert + parseInt(i * 4), 'float');
+//            geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
+//        }
+//        for (var i = 0; i < FN * 3; i++) {
+//            var a = Module.getValue(face + parseInt(i * 4), '*');
+//            i++;
+//            var b = Module.getValue(face + parseInt(i * 4), '*');
+//            i++;
+//            var c = Module.getValue(face + parseInt(i * 4), '*');
+//            geometry.faces.push(new THREE.Face3(a, b, c));
+//        }
+//        console.timeEnd("Time to create mesh: ");
+//
+//        geometry.dynamic = true;
+//        geometry.computeFaceNormals();
+//        geometry.computeVertexNormals();
+//
+//        _threeMesh = new THREE.Mesh(geometry, material);
+//    }
+//
+//    this.getThreeMesh = function () {
+//        if (!_threeMesh) {
+//            buildThreeMesh(this.material.build());
+//        }
+//
+//        return _threeMesh;
+//    };
+//
+//    this.updateThreeMesh = function () {
+//        var meshProp = new Module.MeshLabJs(this.ptrMesh);
+//        _threeMesh = new MLJ.core.MeshFile(
+//                this.name,
+//                this.ptrMesh,
+//                meshProp.getVertexNumber(),
+//                meshProp.getVertexVector(),
+//                meshProp.getFaceNumber(),
+//                meshProp.getFaceVector());
+//    };
+//    
+//};
+
+//(function () {
+//}).call(MLJ.core);

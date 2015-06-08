@@ -7,29 +7,14 @@
 MLJ.gui.SceneBar = {};
 
 (function (gui) {
-    var _buttons = [];
-    var _$toolsBtns;
+    var _toolBar = new gui.ToolBar();
 
     var _widget = new MLJ.gui.Widget(
             function () {//build function
-
-                _$toolsBtns = $('<div id="tools-buttons"></div>');
-
-                for (var i = 0; i < _buttons.length; i++) {
-                    _$toolsBtns.append(_buttons[i].jQueryButton());
-                }
-
-                return _$toolsBtns;
+                return _toolBar.jQuery();
             });
-
     this.addButton = function () {
-        for (var i = 0; i < arguments.length; i++) {
-            if (arguments[i] instanceof gui.Button) {
-                _buttons.push(arguments[i]);
-            } else {
-                console.error("The parameter must be an instance of MLJ.gui.Button");
-            }
-        }
+        _toolBar.addButton.apply(undefined, arguments);
     };
 
     gui.addWidget(_widget);

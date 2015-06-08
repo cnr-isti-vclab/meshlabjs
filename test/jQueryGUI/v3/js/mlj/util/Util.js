@@ -20,14 +20,17 @@ MLJ.util.AssociativeArray = function () {
             return next;
         };
     };
-        
-    this.getByKey = function (key) {        
+
+    this.getByKey = function (key) {
         return values[key];
     };
 
-    this.length = keys.length;
+    this.size = function () {
+        return keys.length;
+    };
 
     this.set = function (key, value) {
+
         //if key not exists
         if (!values[key]) {
             keys.push(key);
@@ -36,9 +39,8 @@ MLJ.util.AssociativeArray = function () {
         values[key] = value;
     };
 
-    //DA TESTARE ************************************
     this.remove = function (key) {
-        values.splice(key, 1);
+        delete values[key];
         for (var i = 0, m = keys.length; i < m; i++) {
             if (keys[i] === key) {
                 keys.splice(i, 1);
@@ -52,6 +54,3 @@ MLJ.util.AssociativeArray = function () {
         return new _pointer();
     };
 };
-
-//(function () {
-//}).call(MLJ.util);

@@ -45,8 +45,6 @@ MLJ.gui.LayersPane = {};
                 .css({position: "absolute"});
         var $eye = $('<div class="eye show"></div>')
                 .css({position: "absolute"});
-//        var $name = $('<span class="layer-name">' + name + '</span>');
-//        $layer.append($name);
         $wrap.append($eye).append($layer);
         _$layers.append($wrap);
 

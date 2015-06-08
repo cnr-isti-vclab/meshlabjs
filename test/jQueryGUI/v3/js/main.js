@@ -74,14 +74,6 @@
         gui.SearchTool.addTag.apply(null, tags);
     }
 
-    function initTabbedPane() {
-        var filterTab = new gui.Tab("Filters",
-                "<p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br><p>Contenuto filtri</p><br>");
-        var renderingTab = new gui.Tab("Rendering", "<p>Contenuto Rendering</p>");
-
-        gui.TabbedPane.addTab(filterTab, renderingTab);
-    }
-
     function initEventHandlers() {
         //On new mesh added
         $(document).on(MLJ.events.Scene.LAYER_ADDED,
@@ -100,10 +92,10 @@
 
         $(document).on(MLJ.events.Scene.LAYER_SELECTED,
                 function (event, mesh) {
-                    
+
                     //Clear info area
                     MLJ.gui.Info.clear();
-                    
+
                     //Add mesh info to info widget
                     MLJ.gui.Info.append("Current Mesh: " + mesh.name);
                     MLJ.gui.Info.append("Vertices: " + mesh.VN);
@@ -114,7 +106,6 @@
 
     initSceneBar();
     initSearchTool();
-    initTabbedPane();
 
     initEventHandlers();
 

@@ -6,6 +6,31 @@
 
 MLJ.gui.Log = {};
 
+//Console output redirecting ...
+//(function () {
+//
+//    var _log = console.log, _warn = console.warn, _error = console.error;
+//
+//    console.log = function (message, args) {
+//        var m = args ? message + " " + args : message;
+//        MLJ.gui.Log.append(m);
+//        _log.apply(console, arguments);
+//    };
+//
+//    console.warn = function (message, args) {
+//        var m = args ? message + " " + args : message;
+//        MLJ.gui.Log.append(m);
+//        _warn.apply(console, arguments);
+//    };
+//
+//    console.error = function (message, args) {
+//        var m = args ? message + " " + args : message;
+//        MLJ.gui.Log.append(m);
+//        _error.apply(console, arguments);
+//    };
+//
+//})();
+
 (function (gui) {
     var _$logPane;
     var _$log = $('<div id="log" class="df-content"></div>');
