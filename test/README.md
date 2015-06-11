@@ -82,6 +82,7 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 * `jQueryGUI` The folder contains the development steps to realize the graphic user interface of MeshLabJs and its code refactoring
 	* `v1` GUI first version.
 	* `v2` The GUI main widgets are almost all implemented. Initial phase of development of the new ad hoc library (`mlj`) to build and control MeshLabJs GUI.
-	* `v3` Varius improvements to `mlj` library. Now is possible to load multiple mesh file at the same time. 
+	* `v3` Varius improvements to `mlj` library. Now is possible to load multiple mesh file at the same time.
+	* `elements` Contains demos of common graphic elements of MeshLabJs. These elements are implemented like abstractions of jQueryUI widget.
 	
 	
