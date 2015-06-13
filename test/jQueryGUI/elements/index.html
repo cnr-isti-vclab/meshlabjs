@@ -12,7 +12,8 @@
         <script src="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.js"></script>                        
 
         <script src="js/mlj/MLJ.js"></script>
-        <script src="js/mlj/gui/jQUIObject.js"></script>
+        <script src="js/mlj/gui/Gui.js"></script>
+        <script src="js/mlj/gui/Component.js"></script>
 
     </head>
     <body>        
@@ -20,7 +21,7 @@
         <script>
             var build = MLJ.gui.build;
 
-            var toolbar = MLJ.gui.Grid("<div>Grid function test</div>", build.toolbar()
+            var toolbar = MLJ.gui.component.Grid("<div>Grid function test</div>", build.toolbar()
                     .addButton(
                             build.button.button("Button 1"),
                             build.button.button("Button 2")));
@@ -31,22 +32,21 @@
                             build.button.button("Button1", "Tooltip1"),
                             build.button.button("Button2", "Tooltip2")
                             )
-                    .appendContent(MLJ.gui.Grid("Spinne + slider", MLJ.gui.Grid(
+                    .appendContent(MLJ.gui.component.Grid("Spinner + slider", MLJ.gui.component.Grid(
                             build.spinner(), build.slider())))
-                    .appendContent(MLJ.gui.Grid("Slider", build.slider())))
+                    .appendContent(MLJ.gui.component.Grid("Slider", build.slider())))
 
                     .addEntry(build.accordion.entry("Entry2")
                             .addHeaderButton(
                                     build.button.button("Button3", "Tooltip3"),
                                     build.button.button("Button4", "Tooltip4")
                                     )
-                            .appendContent(MLJ.gui.Grid("Slider + spinner", MLJ.gui.Grid(
+                            .appendContent(MLJ.gui.component.Grid("Slider + spinner", MLJ.gui.component.Grid(
                                     build.slider(), build.spinner())))
-                            .appendContent(MLJ.gui.Grid("Slider", build.slider())));
+                            .appendContent(MLJ.gui.component.Grid("Slider", build.slider())));
 
             $('#test').append(toolbar, accordion.$);
 
         </script>
     </body>
 </html>
-

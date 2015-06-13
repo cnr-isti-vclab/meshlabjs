@@ -83,6 +83,7 @@ Each sample should be as minimal as possible showing the strict necessary for fu
 	* `v1` GUI first version.
 	* `v2` The GUI main widgets are almost all implemented. Initial phase of development of the new ad hoc library (`mlj`) to build and control MeshLabJs GUI.
 	* `v3` Varius improvements to `mlj` library. Now is possible to load multiple mesh file at the same time.
+	* `v4` Graphics restyling and graphics features added. Now is possible to resize the tools pane, the widgets (layers, tabbed pane and log) are wrapped inside a split pane and can be resized. The files structure of `mlj` library was modified to meet logical dependencies.
 	* `elements` Contains demos of common graphic elements of MeshLabJs. These elements are implemented like abstractions of jQueryUI widget.
 	
 	
