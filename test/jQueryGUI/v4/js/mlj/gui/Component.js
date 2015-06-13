@@ -50,14 +50,6 @@ MLJ.gui.component.Component.prototype = {
     }
 };
 
-////////////////////////////////////////////
-
-//MLJ.gui.component.Layer = function (name, visible) {
-//    this.name = name;
-//    this.visible = visible;
-//};
-////////////////////////////////////////////////
-
 // GRID ________________________________________________________________________
 MLJ.gui.component.Grid = function () {
     var $table = $('<div></div>')
@@ -327,6 +319,19 @@ MLJ.gui.component.Pane = function (title, flags) {
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Pane);
 
+//LABEL
+MLJ.gui.component.Label = function (text) {
+    var _html = "<label></label>";
+    this._make = function () {
+        this.$.append(text);
+    };
+
+    MLJ.gui.component.Component.call(this, _html);
+
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Label);
+
 // ACCORDION ___________________________________________________________________
 
 MLJ.gui.component.Accordion = function (flags) {
@@ -411,9 +416,16 @@ MLJ.gui.component.Spinner = function (flags) {
     };
     this._make = function () {
         this.$.append(_$spinner);
-        _$spinner.spinner();
+
+        //set default value if it exists
+        var defval = this.flag("defval");
+        if (defval) {
+            _$spinner.attr("value", defval);
+        }
+
+        _$spinner.spinner(flags);
     };
-    MLJ.gui.component.Component.call(this, _html);
+    MLJ.gui.component.Component.call(this, _html, flags);
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Spinner);

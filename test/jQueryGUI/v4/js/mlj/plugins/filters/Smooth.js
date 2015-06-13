@@ -1,56 +1,61 @@
 
-(function (plugin, gui, scene, file) {
+(function (plugin, gui, scene) {
 
-    //TODO Check if plugin is defined ...
     var filter = new plugin.Filter("Smooth");
+    var DEFAULT_STEP = 1;
+    var _step = DEFAULT_STEP;
 
-    function smooth() {
-        var meshFile = scene.getSelectedLayer();
+    function _smooth(meshFile, step) {
+
+        var visible = meshFile.getThreeMesh().visible;
         scene.removeLayerByName(meshFile.name);
         console.time("Smooth time ");
-        Module.Smooth(meshFile.ptrMesh, 1);
+        Module.Smooth(meshFile.ptrMesh, step);
         console.timeEnd("Smooth time ");
         console.time("Update mesh ");
-        meshFile.updateThreeMesh();        
-//        if (!statusVisible)
-//            mlRender.hideMeshByName(fileNameGlobal);
+        meshFile.updateThreeMesh();
+        meshFile.getThreeMesh().visible = visible;
         console.timeEnd("Update mesh ");
         scene.addLayer(meshFile);
-
     }
 
-    filter._main = function (accordion) {
+    function _smoothSelected() {
+        var meshFile = scene.getSelectedLayer();
+        _smooth(meshFile, _step);
+    }
 
-        var $label = $('<label for="smooth-spinner">Smooth step:</label>');
-        $label.css({marginRight: "10px"});
-        var $spinner = $('<input id="smooth-spinner">');
-        $spinner.css({width: "25px"});
+    function _smoothAll() {
+        var ptr = scene.getLayers().pointer();
+        while (ptr.hasNext()) {
+            _smooth(ptr.next(), _step);
+        }
+    }
 
-        var $btn = (new gui.Button("smooth-btn", "Smooth mesh", "Apply")).jQueryButton();
-        $btn.css({marginLeft: "5px"});
+    filter._main = function (accordEntry) {
 
-        var ent = new gui.AccordionEntry("Smooth");
-        ent.add($label).add($spinner).add($btn);
+        var apply = gui.build.button.Button("Apply", "Apply to selected mesh");
+        var applyAll = gui.build.button.Button("Apply all", "Apply to all mesh in the scene");
+        accordEntry.addHeaderButton(apply, applyAll);
 
-        accordion.addItem(ent);
+        var spinner = gui.build.Spinner({max: 5, min: 1, defval: DEFAULT_STEP});
 
-        $btn.click(function () {
-            smooth();
+        accordEntry.appendContent(
+                gui.component.Grid("Step", spinner));
+
+        apply.onClick(function () {
+            _smoothSelected();
         });
+
+        applyAll.onClick(function () {
+            _smoothAll();
+        });
+
+        spinner.onChange(function (event) {
+            _step = parseInt(event.target.value);
+        });
+
     };
-
-    $(window).load(function () {
-        $('#smooth-spinner').spinner({
-            max: 5,
-            min: 1
-        });
-
-        $('#smooth-spinner').spinner("value", 1);
-
-        $("#smooth-btn").button();
-
-    });
 
     plugin.install(filter);
 
-})(MLJ.core.Plugin, MLJ.gui, MLJ.core.Scene, MLJ.core.File);
+})(MLJ.core.plugin, MLJ.gui, MLJ.core.Scene);

@@ -199,6 +199,10 @@ MLJ.core.Scene = {};
     this.getSelectedLayer = function () {
         return _selectedLayer;
     };
+    
+    this.getLayers = function () {
+        return _layers;
+    };
 
     this.render = function () {
         _renderer.render(_scene, _camera);

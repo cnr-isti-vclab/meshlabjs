@@ -24,35 +24,38 @@ MLJ.gui.getWidget = function (name) {
 
 MLJ.gui.build = {
     button: {
-        button: function (txt, tooltip, img) {
+        Button: function (txt, tooltip, img) {
             return new MLJ.gui.component.Button(txt, tooltip, img);
         },
-        file: function (txt, tooltip, img) {
+        File: function (txt, tooltip, img) {
             return new MLJ.gui.component.FileButton(txt, tooltip, img);
         }
     },
     accordion: {
-        accordion: function (flags) {
+        Accordion: function (flags) {
             return new MLJ.gui.component.Accordion(flags);
         },
-        entry: function (title) {
+        Entry: function (title) {
             return new MLJ.gui.component.AccordionEntry(title);
         }
     },
-    spinner: function (flags) {
+    Spinner: function (flags) {
         return new MLJ.gui.component.Spinner(flags);
     },
-    slider: function (flags) {
+    Slider: function (flags) {
         return new MLJ.gui.component.Slider(flags);
     },
-    toolbar: function () {
+    ToolBar: function () {
         return new MLJ.gui.component.ToolBar();
     },
     PiP: function () {
         return new MLJ.gui.component.PiP();
     },
-    pane: function (title, flags) {
+    Pane: function (title, flags) {
         return new MLJ.gui.component.Pane(title, flags);
+    },
+    Label: function (text) {
+        return new MLJ.gui.component.Label(text);
     }
 };
 

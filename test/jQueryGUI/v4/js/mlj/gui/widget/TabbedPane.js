@@ -46,7 +46,7 @@
             _$tabbedPane.append(_$tabsBar);
 
             var filterTab = new Tab("Filters");
-//        filterTab.appendContent(_filtersAccord.$);
+            filterTab.appendContent(_filtersAccord.$);
 
             var renderingTab = new Tab("Rendering");
 //        renderingTab.appendContent(_renderingTb.$)
@@ -55,7 +55,7 @@
             _tabs.push(filterTab, renderingTab);
         }
 
-        this._make = function () {//build function                
+        this._make = function () {//build function                            
             $(window).ready(function () {
                 var tab;
                 for (var i = 0, m = _tabs.length; i < m; i++) {
@@ -85,15 +85,15 @@
 //            }
 //        };
 
-        this.filtersAccordion = function () {
+        this.getFiltersAccord = function () {
             return _filtersAccord;
         };
 
-        this.renderingAccordion = function () {
+        this.getRendAccord = function () {
             return _renderingAccord;
         };
 
-        this.renderingToolbar = function () {
+        this.getRendToolBar = function () {
             return _renderingTb;
         };
 

@@ -61,13 +61,14 @@ Stefano Gabriele <br>\
             });
 
             $logo.click(function () {
-                $('#dialog').dialog({draggable: false, modal: true});
+                $('#dialog').dialog(
+                        {draggable: false, modal: true, resizable: false});
             });
 
             return _PiP.$;
         };
     };
-    
+
     MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.Logo);
 
     //Install widget

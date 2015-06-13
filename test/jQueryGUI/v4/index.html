@@ -25,7 +25,6 @@
         <script src="js/mlj/gui/widget/Log.js"></script>
         <script src="js/mlj/gui/widget/Logo.js"></script>        
         <script src="js/mlj/gui/widget/Info.js"></script>
-        <script src="js/mlj/MeshLabJS.js"></script>
 
         <script src="js/mlj/util/Util.js"></script>        
 
@@ -33,23 +32,17 @@
         <script src="js/mlj/core/Scene.js"></script>
         <script src="js/mlj/core/File.js"></script>
 
-        <!--<script src="js/mlj/core/Plugin.js"></script>-->
+        <script src="js/mlj/core/Plugin.js"></script>        
+        <script src="js/mlj/plugins/filters/Smooth.js"></script>        
 
-        <!--<script src="js/mlj/plugins/rendering/AmbientLight.js"></script>-->
-        <!--        <script src="js/mlj/plugins/filters/Smooth.js"></script>        
-        
-                <script src="js/main.js"></script>
-        
-        -->
         <script src="js/generated/MeshlabJs.js"></script>
+
+        <script src="js/MeshLabJS.js"></script>
 
     </head>
     <body>        
         <script>
-            var m = new MLJ.gui.widget.SceneBar();
-
-
-//            MLJ.core.Plugin.run();
+            MLJ.core.plugin.run();
             MLJ.gui.makeGUI("MeshLabJS");
         </script>
     </body>

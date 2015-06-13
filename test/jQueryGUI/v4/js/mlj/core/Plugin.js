@@ -1,16 +1,16 @@
-
-MLJ.core.PluginTypes = {
-    FILTER: 0,
-    RENDERING: 1
+MLJ.core.plugin = {
+    types: {
+        FILTER: 0,
+        RENDERING: 1
+    }
 };
 
-
-MLJ.core.Plugin = function (type, name) {
+MLJ.core.plugin.Plugin = function (type, name) {
     this.type = type;
     this.name = name;
 };
 
-MLJ.core.Plugin.prototype = {
+MLJ.core.plugin.Plugin.prototype = {
     getName: function () {
         return this.name;
     },
@@ -19,20 +19,19 @@ MLJ.core.Plugin.prototype = {
     }
 };
 
-MLJ.core.Plugin.Filter = function () {
-    MLJ.core.Plugin.call(MLJ.core.Plugin.FILTER);
+MLJ.core.plugin.Filter = function (name) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name);
 };
 
-MLJ.core.Plugin.Rendering = function () {
-    MLJ.core.Plugin.call(MLJ.core.Plugin.RENDERING, name);
+MLJ.core.plugin.Rendering = function (name) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name);
 };
 
 //Pseudo inheritance
-MLJ.extend(MLJ.core.Plugin, MLJ.core.Plugin.Filter);
-MLJ.extend(MLJ.core.Plugin, MLJ.core.Plugin.Rendering);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
-
-(function () {
+(function (widget) {
 
     var _plugins = new MLJ.util.AssociativeArray();
 
@@ -40,7 +39,7 @@ MLJ.extend(MLJ.core.Plugin, MLJ.core.Plugin.Rendering);
         var plugin;
         for (var i = 0; i < arguments.length; i++) {
             plugin = arguments[i];
-            if (plugin instanceof MLJ.core.Plugin) {
+            if (plugin instanceof MLJ.core.plugin.Plugin) {
                 _plugins.set(plugin.getName(), plugin);
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
@@ -51,17 +50,18 @@ MLJ.extend(MLJ.core.Plugin, MLJ.core.Plugin.Rendering);
     this.run = function () {
         var ptr = _plugins.pointer();
 
-        var plugin;
+        var plugin, entry;
         while (ptr.hasNext()) {
             plugin = ptr.next();
-            if (plugin instanceof MLJ.core.Plugin.Filter) {
-                plugin._main(MLJ.gui.TabbedPane.filtersAccordion());
-            } else if (plugin instanceof MLJ.core.Plugin.Rendering) {
-                plugin._main(MLJ.gui.TabbedPane.renderingToolbar(),
-                        MLJ.gui.TabbedPane.renderingAccordion());
+            entry = new MLJ.gui.build.accordion.Entry(plugin.getName());
+            if (plugin instanceof MLJ.core.plugin.Filter) {
+                widget.TabbedPane.getFiltersAccord().addEntry(entry);
+                plugin._main(entry);
+            } else if (plugin instanceof MLJ.core.plugin.Rendering) {
+                widget.TabbedPane.getRendAccord().addEntry(entry);
+                plugin._main(widget.TabbedPane.getRendToolBar(), entry);
             }//else nothing to do
-
         }
     };
 
-}).call(MLJ.core.Plugin);
+}).call(MLJ.core.plugin, MLJ.widget);//MLJ.widget contains GUI running widgets

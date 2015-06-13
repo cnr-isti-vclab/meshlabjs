@@ -214,6 +214,8 @@ html,body{
     margin-right:2px;
 }
 
+/* MeshLabJs global styles __________________________________________________ */
+
 .ui-resizable-s { 
     cursor: s-resize;                                 
     left: 0; 
@@ -228,4 +230,12 @@ html,body{
     background-color: black;
     opacity: 0.5;
     visibility:  visible;
+}
+
+.ui-tabs .ui-tabs-panel {
+    padding: 0.5em 0;
+}
+
+.ui-accordion-header .mlj-button {
+    margin-left: 5px; 
 }

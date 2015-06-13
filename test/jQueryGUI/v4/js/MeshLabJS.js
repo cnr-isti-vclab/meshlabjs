@@ -6,6 +6,10 @@
 
 (function (widget) {
 
+    if (typeof widget === 'undefined') {
+        console.error("MLJ.gui.widget module needed.");
+    }
+
     var _$wrapper = $('<div></div>')
             .css({
                 display: "table",
@@ -71,7 +75,7 @@
         var $wrap = $("<div/>").css({});
         var $pos1 = $("<div/>").css({height: "30%"}).addClass("mlj-resiz1");
         var $pos2 = $("<div/>").css({height: "50%"}).addClass("mlj-resiz2");
-        var $pos3 = $("<div/>").css({height: "20%",position:"relative"}).addClass("mlj-resiz3");
+        var $pos3 = $("<div/>").css({height: "20%", position: "relative"}).addClass("mlj-resiz3");
         $wrap.append($pos1, $pos2, $pos3);
         _$pane.append($wrap);
         splitPane("mlj-resiz1");
@@ -82,7 +86,7 @@
         $(window).ready(function () {
             $wrap.height($(window).height() - $wrap.offset().top);
         });
-        
+
         $pos1.append(MLJ.gui.getWidget("LayersPane")._make());
         $pos2.append(MLJ.gui.getWidget("TabbedPane")._make());
         $pos3.append(MLJ.gui.getWidget("Log")._make());
@@ -130,9 +134,9 @@
             $(".mlj-resiz2").height($(window).height() - (
                     $('.mlj-resiz1').height() + $('.mlj-resiz3').height()));
         }
-        
+
         MLJ.gui.getWidget("TabbedPane")._refresh();
-        
+
         _$3D.css({
             width: $(window).width() - (_$pane.outerWidth() + _$pane.offset().left),
             left: _$pane.outerWidth() + _$pane.offset().left
@@ -196,4 +200,4 @@
         }
     });
 
-}).call(MLJ.gui, MLJ.widget);
+}).call(MLJ.gui, MLJ.gui.widget);
