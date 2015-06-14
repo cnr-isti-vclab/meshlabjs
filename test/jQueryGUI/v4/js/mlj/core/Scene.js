@@ -185,17 +185,22 @@ MLJ.core.Scene = {};
         }
     };
 
-    this.updateLayer = function (meshFile) {        
+    this.updateLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
             
-            _scene.remove(meshFile.getThreeMesh());
+            var threeMesh = meshFile.getThreeMesh();
             
+            _scene.remove(threeMesh);
+
+            var oldVisibleVal = threeMesh.visible;
+
             meshFile.updateThreeMesh();
-                       
+
             //Set mesh position
             var mesh = meshFile.getThreeMesh();
             var box = new THREE.Box3().setFromObject(mesh);
             mesh.position = box.center();
+            mesh.visible = oldVisibleVal;
             _scene.add(mesh);
 
             //Compute the global bounding box
@@ -203,10 +208,10 @@ MLJ.core.Scene = {};
 
             //render the scene
             this.render();
-            
+
             $(document).trigger(
-                MLJ.events.Scene.LAYER_UPDATED,
-                [meshFile]);
+                    MLJ.events.Scene.LAYER_UPDATED,
+                    [meshFile]);
 
         } else {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
