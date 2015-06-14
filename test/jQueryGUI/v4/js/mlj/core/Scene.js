@@ -73,8 +73,8 @@ MLJ.core.Scene = {};
 
             _camera.aspect = size.width / size.height;
             _camera.updateProjectionMatrix();
-            _renderer.setSize(size.width, size.height);            
-            
+            _renderer.setSize(size.width, size.height);
+
             MLJ.core.Scene.render();
         });
 
@@ -109,10 +109,10 @@ MLJ.core.Scene = {};
     }
 
     function computeGlobalBBbox() {
-        var ptr = _layers.pointer();                
-        
+        var ptr = _layers.pointer();
+
         var threeMesh;
-        while (ptr.hasNext()) {            
+        while (ptr.hasNext()) {
             threeMesh = ptr.next().getThreeMesh();
             if (threeMesh.scaleFactor) {
                 threeMesh.position.x -= threeMesh.offsetVec.x;
@@ -164,8 +164,8 @@ MLJ.core.Scene = {};
         if (meshFile instanceof MLJ.core.MeshFile) {
 
             //Add new mesh to associative array _layers            
-            _layers.set(meshFile.name, meshFile);                        
-            
+            _layers.set(meshFile.name, meshFile);
+
             //Set mesh position
             var mesh = meshFile.getThreeMesh();
             var box = new THREE.Box3().setFromObject(mesh);
@@ -185,6 +185,34 @@ MLJ.core.Scene = {};
         }
     };
 
+    this.updateLayer = function (meshFile) {        
+        if (meshFile instanceof MLJ.core.MeshFile) {
+            
+            _scene.remove(meshFile.getThreeMesh());
+            
+            meshFile.updateThreeMesh();
+                       
+            //Set mesh position
+            var mesh = meshFile.getThreeMesh();
+            var box = new THREE.Box3().setFromObject(mesh);
+            mesh.position = box.center();
+            _scene.add(mesh);
+
+            //Compute the global bounding box
+            computeGlobalBBbox();
+
+            //render the scene
+            this.render();
+            
+            $(document).trigger(
+                MLJ.events.Scene.LAYER_UPDATED,
+                [meshFile]);
+
+        } else {
+            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+        }
+    };
+
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
     };
@@ -193,13 +221,13 @@ MLJ.core.Scene = {};
         //CONTROLLARE SE IL NAME E VALIDO *************************
         var meshFile = this.getLayerByName(name);
         _layers.remove(name);
-        _scene.remove(meshFile.getThreeMesh());        
+        _scene.remove(meshFile.getThreeMesh());
     };
 
     this.getSelectedLayer = function () {
         return _selectedLayer;
     };
-    
+
     this.getLayers = function () {
         return _layers;
     };

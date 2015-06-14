@@ -143,50 +143,68 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     this.VN = this.vert = this.FN = this.face = null;
     this.material = new MLJ.core.PhongMaterial();
     var _threeMesh;
-    var thisObj = this;
+    var _this = this;
 
-    function buildThreeMesh(material) {
+    function buildMeshGeometry() {
         var meshProp = new Module.MeshLabJs(ptrMesh);
-        thisObj.VN = meshProp.getVertexNumber();
-        thisObj.vert = meshProp.getVertexVector();
-        thisObj.FN = meshProp.getFaceNumber();
-        thisObj.face = meshProp.getFaceVector();
+        _this.VN = meshProp.getVertexNumber();
+        _this.vert = meshProp.getVertexVector();
+        _this.FN = meshProp.getFaceNumber();
+        _this.face = meshProp.getFaceVector();
 
         var geometry = new THREE.Geometry();
-        console.time("Time to create mesh: ");
-        for (var i = 0; i < thisObj.VN * 3; i++) {
-            var v1 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
+        for (var i = 0; i < _this.VN * 3; i++) {
+            var v1 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
             i++;
-            var v2 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
+            var v2 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
             i++;
-            var v3 = Module.getValue(thisObj.vert + parseInt(i * 4), 'float');
+            var v3 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
             geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
         }
-        for (var i = 0; i < thisObj.FN * 3; i++) {
-            var a = Module.getValue(thisObj.face + parseInt(i * 4), '*');
+        for (var i = 0; i < _this.FN * 3; i++) {
+            var a = Module.getValue(_this.face + parseInt(i * 4), '*');
             i++;
-            var b = Module.getValue(thisObj.face + parseInt(i * 4), '*');
+            var b = Module.getValue(_this.face + parseInt(i * 4), '*');
             i++;
-            var c = Module.getValue(thisObj.face + parseInt(i * 4), '*');
+            var c = Module.getValue(_this.face + parseInt(i * 4), '*');
             geometry.faces.push(new THREE.Face3(a, b, c));
         }
-        console.timeEnd("Time to create mesh: ");
 
         geometry.dynamic = true;
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
 
-        _threeMesh = new THREE.Mesh(geometry, material);
+        return geometry;
+    }
+
+    function buildThreeMesh(material) {
+        console.time("Time to create mesh: ");
+        _threeMesh = new THREE.Mesh(buildMeshGeometry(), material);
+        console.timeEnd("Time to create mesh: ");
     }
 
     this.getThreeMesh = function () {
         return _threeMesh;
     };
 
+    this.u2 = function () {
+        buildThreeMesh(this.material.build());
+        $(document).trigger(
+                MLJ.events.File.MESH_FILE_UPDATED,
+                [_this]);
+    };
+
     this.updateThreeMesh = function () {
         buildThreeMesh(this.material.build());
+
+//        var geometry = buildMeshGeometry();
+//        _threeMesh.geometry.vertices = geometry.vertices;
+//        _threeMesh.geometry.faces = geometry.faces;
+//        _threeMesh.geometry.verticesNeedUpdate = true;
+//        _threeMesh.geometry.elementsNeedUpdate = true;
+//        _threeMesh.geometry.normalsNeedUpdate = true;
+//
     };
 
     buildThreeMesh(this.material.build());
-
 };

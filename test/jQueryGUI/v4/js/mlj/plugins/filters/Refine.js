@@ -1,28 +1,29 @@
 
 (function (plugin, gui, scene) {
 
-    var filter = new plugin.Filter("Smooth");
+    var filter = new plugin.Filter("Refine");
     var DEFAULT_STEP = 1;
     var _step = DEFAULT_STEP;
 
-    function _smooth(meshFile, step) {
-        console.time("Smooth time");
-        Module.Smooth(meshFile.ptrMesh, step);
-        console.timeEnd("Smooth time");
-        console.time("Update mesh");
+    function _refine(meshFile, step) {
+        console.time("Refine time ");
+        var refine = new Module.MyRefine(meshFile.ptrMesh);
+        refine.myRefine(step);
+        console.timeEnd("Refine time ");
+        console.time("Update mesh ");
         scene.updateLayer(meshFile);
-        console.timeEnd("Update mesh");
+        console.timeEnd("Update mesh ");
     }
 
-    function _smoothSelected() {
+    function _refineSelected() {
         var meshFile = scene.getSelectedLayer();
-        _smooth(meshFile, _step);
+        _refine(meshFile, _step);
     }
 
-    function _smoothAll() {
+    function _refineAll() {
         var ptr = scene.getLayers().pointer();
         while (ptr.hasNext()) {
-            _smooth(ptr.next(), _step);
+            _refine(ptr.next(), _step);
         }
     }
 
@@ -38,11 +39,11 @@
                 gui.component.Grid(gui.build.Label("Step"), spinner));
 
         apply.onClick(function () {
-            _smoothSelected();
+            _refineSelected();
         });
 
         applyAll.onClick(function () {
-            _smoothAll();
+            _refineAll();
         });
 
         spinner.onChange(function (event) {

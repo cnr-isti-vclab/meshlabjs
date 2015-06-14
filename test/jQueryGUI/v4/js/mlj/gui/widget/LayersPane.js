@@ -62,12 +62,28 @@
                         infoWidg.append("Faces: " + mesh.FN);
 
                     });
+
+            $(document).on(MLJ.events.Scene.LAYER_UPDATED,
+                    function (event, mesh) {
+                        //UPDATE INFO                        
+                        if (_selectedName === mesh.name) {
+                            var infoWidg = MLJ.gui.getWidget("Info");
+                            //Clear info area
+                            infoWidg.clear();
+
+                            //Add mesh info to info widget
+                            infoWidg.append("Current Mesh: " + mesh.name);
+                            infoWidg.append("Vertices: " + mesh.VN);
+                            infoWidg.append("Faces: " + mesh.FN);
+                        }
+
+                    });
         }
 
         this._make = function (containment) {//build function 
             initEventHandlers();
 //            _$wrapper.append(_$layers,_$title);
-            
+
             return _$layers;
         };
 
