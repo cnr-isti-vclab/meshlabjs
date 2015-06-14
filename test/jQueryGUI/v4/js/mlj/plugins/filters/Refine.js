@@ -6,13 +6,13 @@
     var _step = DEFAULT_STEP;
 
     function _refine(meshFile, step) {
-        console.time("Refine time ");
+        console.time("Refine time");
         var refine = new Module.MyRefine(meshFile.ptrMesh);
         refine.myRefine(step);
-        console.timeEnd("Refine time ");
-        console.time("Update mesh ");
+        console.timeEnd("Refine time");
+        console.time("Update mesh");
         scene.updateLayer(meshFile);
-        console.timeEnd("Update mesh ");
+        console.timeEnd("Update mesh");
     }
 
     function _refineSelected() {
