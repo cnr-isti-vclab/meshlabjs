@@ -13,7 +13,11 @@
         var _$tabsBar = $('<ul id="mlj-tabs-bar"></ui>');
 
         //Accordion for filters pane
-        var _filtersAccord = new component.Accordion({heightStyle: 'content'});
+        var _filtersAccord = new component.Accordion({
+            heightStyle: 'content', 
+            collapsible: true,
+            active: false
+        });
         _filtersAccord.$.attr('id', 'accordion-filters');
 
         //Tool bar for rendering pane
