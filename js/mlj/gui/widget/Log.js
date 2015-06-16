@@ -15,7 +15,7 @@
 
         console.log = function (message, args) {
             var m = args ? message + " " + args : message;
-            _this.append(m);           
+            _this.append(m);
             _log.apply(console, arguments);
         };
 
@@ -31,7 +31,9 @@
             _error.apply(console, arguments);
         };
 
-        var _$log = $('<textarea/>').attr("spellcheck", false);
+        var _$log = $('<textarea/>')
+                .attr("spellcheck", false)
+                .attr("readonly", "readonly");
 
         this._make = function () {
             var $wrap = $('<div/>').attr("id", "mlj-log-widget");
@@ -41,6 +43,7 @@
 
         this.append = function (message) {
             _$log.append(message + "\n");
+            _$log.scrollTop(_$log[0].scrollHeight - _$log.height());
         };
     };
 
