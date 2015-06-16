@@ -259,14 +259,28 @@ html,body{
     background-color: green;
 }
 
-.mlj-color-picker {
-    margin:0;
-    padding:0;
-    border:0;
+.mlj-color-picker {    
+    height: 20px;    
+    display: table;   
+    border: darkgray thin solid;
+    border-radius: 2px;
+}
+
+.mlj-picker {        
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
     width:70px;
-    height:20px;
-    border-right:20px solid green;
-    line-height:20px;    
+    display: table-cell;
+    border: none;
+    padding: 4px;
+}
+
+.mlj-picker-preview {    
+    width:22px;    
+    background-color: red;
+    display: table-cell;
+    border-left: solid 1px darkgray;    
 }
 
 .colpick {

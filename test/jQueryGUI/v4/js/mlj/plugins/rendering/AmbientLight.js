@@ -6,23 +6,26 @@
     plug._main = function (toolbar, accordEntry) {
         var light = gui.build.button.Toggle("", "on/off", "../icons/light.png");
         toolbar.addButton(light);
-        
-//        console.log(scene._AmbientLight);
-        
-        var color = gui.build.ColorPicker({
-            onChange: function (hsb, hex) {
-                scene._AmbientLight.setColor('#' + hex);
-            }            
-        });        
 
-        accordEntry.appendContent(
-                gui.component.Grid(
-                        gui.build.Label("Color"),
-                        color));
+        $(document).on(MLJ.events.Scene.SCENE_READY, function () {
 
 
-        light.onToggle(function (on) {
-            scene._AmbientLight.setOn(on);
+            var color = gui.build.ColorPicker({
+                onChange: function (hsb, hex) {
+                    scene.lights.AmbientLight.setColor('#' + hex);
+                },
+                color: scene.lights.AmbientLight.DEFAULT_COLOR
+            });
+
+            accordEntry.appendContent(
+                    gui.component.Grid(
+                            gui.build.Label("Color"),
+                            color));
+
+
+            light.onToggle(function (on) {
+                scene.lights.AmbientLight.setOn(on);
+            });
         });
 
     };

@@ -141,25 +141,29 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.PiP);
 
 // Color Picker ________________________________________________________________
 MLJ.gui.component.ColorPicker = function (flags) {
-    var _html = '<input type="text" class="mlj-color-picker">'; 
-    var _this = this;       
-        
-    this._make = function () {
+//    var _html = '<input type="text" class="mlj-color-picker">';
+    var _html = '<div class="mlj-color-picker"></div>';
+    var _$picker = $('<input type="text"/>').addClass("mlj-picker");
+    var _$preview = $('<div/>').addClass("mlj-picker-preview");
+    var _this = this;
 
+    this._make = function () {
+        _this.$.append(_$picker, _$preview);
         _this.$.uniqueId();
         var id = _this.$.attr("id");
 
         $(window).ready(function () {
-
-           _col =  $('#' + id).colpick({
+            $('#' + id).find(".mlj-picker").colpick({
                 layout: 'hex',
                 submit: 0,
+                color: flags.color,
                 colorScheme: 'dark',
                 onChange: function (hsb, hex, rgb, el, bySetColor) {
-                    $(el).css('border-color', '#' + hex);
+//                    $(el).css('border-color', '#' + hex);
+                    _$preview.css('background-color', '#' + hex);
                     // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
                     if (!bySetColor)
-                        $(el).val(hex);
+                        $(el).val("#" + hex);
 
                     if (jQuery.isFunction(flags.onChange)) {
                         flags.onChange(hsb, hex, rgb, el, bySetColor);
@@ -168,7 +172,8 @@ MLJ.gui.component.ColorPicker = function (flags) {
                 }
             }).keyup(function () {
                 $(this).colpickSetColor(this.value);
-            });
+            }).val(flags.color);
+            _$preview.css('background-color', flags.color);
         });
     };
 

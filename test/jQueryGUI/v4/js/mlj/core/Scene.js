@@ -15,7 +15,7 @@ MLJ.core.Scene = {};
     var _selectedLayer;
 
     var _scene, _camera, _renderer;
-
+    var _this = this;
 //SCENE INITIALIZATION  ________________________________________________________
 
     function get3DSize() {
@@ -52,8 +52,8 @@ MLJ.core.Scene = {};
         controls.keys = [65, 83, 68];
 
         //INIT LIGHTS __________________________________________________________        
-        MLJ.core.Scene._AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        MLJ.core.Scene._HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        _this.lights.HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS _______________________________________________________
 
@@ -160,6 +160,11 @@ MLJ.core.Scene = {};
 
     }
 
+    this.lights = {
+        AmbientLight: null,
+        HeadLight: null
+    };
+
     this.addLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
@@ -187,9 +192,9 @@ MLJ.core.Scene = {};
 
     this.updateLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
-            
+
             var threeMesh = meshFile.getThreeMesh();
-            
+
             _scene.remove(threeMesh);
 
             var oldVisibleVal = threeMesh.visible;
@@ -241,8 +246,9 @@ MLJ.core.Scene = {};
         _renderer.render(_scene, _camera);
     };
 
-    $(document).ready(function () {
+    $(window).ready(function () {
         initScene();
+        $(document).trigger(MLJ.events.Scene.SCENE_READY);
     });
 
 }).call(MLJ.core.Scene);

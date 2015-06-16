@@ -14,7 +14,7 @@ MLJ.Error = function (errCode, message) {
 MLJ.events = {
     File: {
         MESH_FILE_OPENED: "meshFileOpened",
-        MESH_FILE_CLOSED: "meshFileClosed",        
+        MESH_FILE_CLOSED: "meshFileClosed",
     },
     Gui: {
         LAYER_SELECTION_CHANGED: "layerSelectionChanged",
@@ -22,6 +22,7 @@ MLJ.events = {
         SHOW_LAYER: "showLayer"
     },
     Scene: {
+        SCENE_READY: "sceneReady",
         LAYER_SELECTED: "layerSelected",
         LAYER_ADDED: "layerAdded",
         LAYER_UPDATED: "layerUpdated"
