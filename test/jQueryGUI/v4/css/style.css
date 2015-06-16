@@ -137,6 +137,7 @@ html,body{
 #mlj-layers .mlj-layers-entry {    
     height: 24px;
 /*    margin-top: 4px; */
+    position: relative;
 }
 
 #mlj-layers .mlj-layer {       
@@ -145,7 +146,7 @@ html,body{
     left: 30px;
     right: 0;
     height: 100%;    
-    line-height: 12px;    
+    line-height: 24px;    
 }
 
 #mlj-layers .mlj-layer.selected {
@@ -160,11 +161,13 @@ html,body{
 }
 
 #mlj-layers .mlj-eye {
-    height: 16px;
-    width: 16px;
+    height: 24px;
+    width: 24px;
     margin-left: 5px;
     background-size: 16px 16px;
-    background-color: rgba(255,255,255,0.7);        
+    background-color: rgba(255,255,255,0.7); 
+    background-repeat: no-repeat;
+    background-position: center;
     border-radius: 2px;    
 }
 
