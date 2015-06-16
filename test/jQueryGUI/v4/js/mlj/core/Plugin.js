@@ -31,7 +31,8 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
         var entry = new MLJ.gui.build.accordion.Entry(_this.getName());
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
-        var apply = MLJ.gui.build.button.Button("Apply", "Apply ");
+        var apply = MLJ.gui.build.button.Button("", "Apply to selected layer"
+                , "../icons/IcoMoon-Free-master/PNG/48px/0285-play3.png");
         entry.addHeaderButton(apply);
 
         apply.onClick(function () {
@@ -40,7 +41,8 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
         });
 
         if (_this.singleArity === false) {
-            var applyAll = MLJ.gui.build.button.Button("Apply all", "Apply to");
+            var applyAll = MLJ.gui.build.button.Button("", "Apply to all visible layers",
+            "../icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png");
             entry.addHeaderButton(applyAll);
 
             applyAll.onClick(function () {
