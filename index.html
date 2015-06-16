@@ -1,46 +1,57 @@
 <!doctype html>
-<html lang="en-us">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link href="css/style.css" rel="stylesheet">     
-    <link rel="icon" href="img/favicon.png" type="image/x-icon"/>
-    <!-- PreProcessing information ... -->
-    <script src="js/include/dat.gui.min.js"></script>
-    <script src="js/include/three.min.js"></script>
-    <script src="js/include/TrackballControls.js"></script> 
-    <script src="js/include/jquery-1.11.2.min.js"></script>
-    <script src="js/include/FileSaver.min.js"></script>
-    <title>MeshLabJs</title>      
-</head>
-<body onload="MeshLabJsLoader()">
-<div id="inputFile">   
-    <input type="file" id="files" name="files[]" value="tetra.off" style="visibility:hidden;"/>
-    <br>
-    <output id="list"></output>
-</div>
-<div id='divTextArea'>
-    <textarea id="infoMesh" ></textarea>
-    <textarea id="log" ></textarea>
-</div>
-<div id="openedMesh" class="mesh-controls">
-    <table id="field">
-        <tr>
-            <td>Opened Mesh</td>
-        </tr>
-    </table>
-</div>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>MeshLabJs V4 demo</title>
+        <link rel="icon" href="img/favicon.png" type="image/x-icon"/>             
+        <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+        <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
+        <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">       
+        <link rel="stylesheet" href="css/style.css">
+        <script src="js/include/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>        
+        <script src="js/include/jquery-ui-1.11.4.custom/jquery-ui.js"></script>
 
-</body>
-    <!-- Post-processing page ... -->
-    <script src="js/engine/MeshLabJsLoader.js"></script>
-    <script src="js/engine/MeshLabJsRender.js"></script>
-    <script src="js/shaders/WireframeShader.js"></script>
-    <script src="js/engine/MeshLabJsGui.js"></script> 
-    <script src="js/generated/MeshlabJs.js"></script>
+        <script src="js/include/colpick/js/colpick.js"></script>
+        <link rel="stylesheet" href="js/include/colpick/css/colpick.css">
 
-    <!-- Import Plugin -->
-    <script src="js/plugin/refine.js"></script>
-    <script src="js/plugin/smooth.js"></script>   
-    <script src="js/plugin/random.js"></script>
+        <script src="js/include/three.min.js"></script>
+        <script src="js/include/TrackballControls.js"></script>
+
+        <script src="js/mlj/MLJ.js"></script>
+        <script src="js/mlj/gui/Gui.js"></script>
+        <script src="js/mlj/gui/Component.js"></script>
+        <script src="js/mlj/gui/widget/Widget.js"></script>
+        <script src="js/mlj/gui/widget/SceneBar.js"></script>
+        <script src="js/mlj/gui/widget/SearchTool.js"></script>
+        <script src="js/mlj/gui/widget/LayersPane.js"></script>
+        <script src="js/mlj/gui/widget/TabbedPane.js"></script>
+        <script src="js/mlj/gui/widget/Log.js"></script>
+        <script src="js/mlj/gui/widget/Logo.js"></script>        
+        <script src="js/mlj/gui/widget/Info.js"></script>
+
+        <script src="js/mlj/util/Util.js"></script>        
+
+        <script src="js/mlj/core/Core.js"></script>
+        <script src="js/mlj/core/Scene.js"></script>
+        <script src="js/mlj/core/File.js"></script>
+
+        <script src="js/mlj/core/Plugin.js"></script>     
+        <script src="js/mlj/plugins/filters/Smooth.js"></script> 
+        <script src="js/mlj/plugins/filters/Refine.js"></script>
+        <script src="js/mlj/plugins/filters/Random.js"></script>
+
+        <script src="js/mlj/plugins/rendering/AmbientLight.js"></script> 
+
+        <script src="js/generated/MeshlabJs.js"></script>
+
+        <script src="js/MeshLabJS.js"></script>
+
+    </head>
+    <body>        
+        <script>
+            MLJ.core.plugin.run();
+            MLJ.gui.makeGUI("MeshLabJS");
+        </script>
+    </body>
 </html>
+
