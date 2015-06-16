@@ -105,26 +105,25 @@
 
     function splitPane(cl) {
         var sum, minH;
-        $("." + cl).resizable(
-                {
+        $("." + cl).resizable({
 //                    autoHide: true,
-                    handles: 's',
-                    start: function (e, ui) {
-                        var divTwo = ui.element.next();
-                        sum = ui.element.height() + divTwo.height();
-                        minH = parseInt(divTwo.css("min-height"), 10);
-                    },
-                    resize: function (e, ui) {
-                        var divTwo = ui.element.next();
-                        var remainingSpace = sum - ui.element.height();
-                        if (remainingSpace >= minH) {
-                            divTwo.height(remainingSpace);
-                        } else {
-                            ui.element.height(sum - minH);
-                            divTwo.height(minH);
-                        }
-                    }
-                });
+            handles: 's',
+            start: function (e, ui) {
+                var divTwo = ui.element.next();
+                sum = ui.element.height() + divTwo.height();
+                minH = parseInt(divTwo.css("min-height"), 10);
+            },
+            resize: function (e, ui) {
+                var divTwo = ui.element.next();
+                var remainingSpace = sum - ui.element.height();
+                if (remainingSpace >= minH) {
+                    divTwo.height(remainingSpace);
+                } else {
+                    ui.element.height(sum - minH);
+                    divTwo.height(minH);
+                }
+            }
+        });
     }
 
     $(window).resize(function (event) {

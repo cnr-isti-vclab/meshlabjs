@@ -7,15 +7,15 @@
 (function (component) {
 
     MLJ.gui.widget.Log = function () {
-        
+
         var _this = this;
-        
+
         //Console output redirecting ...
         var _log = console.log, _warn = console.warn, _error = console.error;
-        
+
         console.log = function (message, args) {
             var m = args ? message + " " + args : message;
-           _this.append(m);
+            _this.append(m);           
             _log.apply(console, arguments);
         };
 
@@ -27,20 +27,20 @@
 
         console.error = function (message, args) {
             var m = args ? message + " " + args : message;
-           _this.append(m);
+            _this.append(m);
             _error.apply(console, arguments);
         };
 
-        var _$log = $('<textarea/>').attr("spellcheck",false);
+        var _$log = $('<textarea/>').attr("spellcheck", false);
 
         this._make = function () {
-            _$log.attr("id", "mlj-log-widget");
-            return _$log;
-
+            var $wrap = $('<div/>').attr("id", "mlj-log-widget");
+            $wrap.append(_$log);
+            return $wrap;
         };
 
         this.append = function (message) {
-            _$log.append(message+"\n");
+            _$log.append(message + "\n");
         };
     };
 

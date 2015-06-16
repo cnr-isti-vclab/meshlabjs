@@ -7,7 +7,7 @@
         var light = gui.build.button.Toggle("", "on/off", "../icons/light.png");
         toolbar.addButton(light);
         
-        console.log(scene._AmbientLight);
+//        console.log(scene._AmbientLight);
         
         var color = gui.build.ColorPicker({
             onChange: function (hsb, hex) {
