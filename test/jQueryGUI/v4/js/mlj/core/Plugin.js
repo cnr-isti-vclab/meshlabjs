@@ -45,8 +45,12 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
 
             applyAll.onClick(function () {
                 var ptr = MLJ.core.Scene.getLayers().pointer();
+                var layer;
                 while (ptr.hasNext()) {
-                    _this._applyTo(ptr.next());
+                    layer = ptr.next();
+                    if (layer.getThreeMesh().visible) {
+                        _this._applyTo(layer);
+                    }
                 }
             });
         }

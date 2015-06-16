@@ -188,13 +188,6 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         return _threeMesh;
     };
 
-    this.u2 = function () {
-        buildThreeMesh(this.material.build());
-        $(document).trigger(
-                MLJ.events.File.MESH_FILE_UPDATED,
-                [_this]);
-    };
-
     this.updateThreeMesh = function () {
         buildThreeMesh(this.material.build());
 
