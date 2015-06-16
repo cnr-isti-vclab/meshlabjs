@@ -101,7 +101,7 @@ html,body{
 }
 
 /* SEARCH WIDGET ____________________________________________________________ */
-#mlj-search {                
+#mlj-search-widget {                
     background-color: gainsboro;          
     padding: 5px;    
 }
@@ -111,14 +111,14 @@ html,body{
     width: 100%;
 }
 
-#mlj-search .ui-autocomplete-input {    
+#mlj-search-widget .ui-autocomplete-input {    
     padding: 5px;
     display: table-cell;
     vertical-align: top;
     width: 89%;    
 }
 
-#mlj-search .mlj-button { 
+#mlj-search-widget .mlj-button { 
     height: 100%;    
     display: table-cell;   
     padding: 0 3px;       
@@ -184,7 +184,8 @@ html,body{
     width: 100%;
     height: 100%;
     padding: 5px 0px;
-    max-width: 100%;
+    min-width: 100%;    
+    /*min-height: 100%;*/
     background-color: rgba(0,0,0,0.5);
     color: white;
     border: none;
@@ -239,4 +240,22 @@ html,body{
 
 .ui-accordion-header .mlj-button {
     margin-left: 5px; 
+}
+
+.mlj-toggle-on {
+    background-color: green;
+}
+
+.mlj-color-picker {
+    margin:0;
+    padding:0;
+    border:0;
+    width:70px;
+    height:20px;
+    border-right:20px solid green;
+    line-height:20px;    
+}
+
+.colpick {
+    z-index: 999;
 }

@@ -8,7 +8,7 @@
     
     MLJ.gui.widget.SearchTool = function () {
         var _elements = new Object();
-        var _$searchTool = $('<div id="mlj-search"></div>');
+        var _$searchTool = $('<div id="mlj-search-widget"></div>');
         var _$wrapper = $('<div id="mlj-search-wrapper"></div>');
         var _$input = $('<input placeholder="Search">');
         var _$searchButton = new component.Button("", "Search",

@@ -72,17 +72,17 @@
         _$pane.append(MLJ.gui.getWidget("SceneBar")._make());
         _$pane.append(MLJ.gui.getWidget("SearchTool")._make());
 
-        var $wrap = $("<div/>").css({});
+        var $wrap = $("<div/>").attr("id", "mlj-split-pane");
         var $pos1 = $("<div/>").css({height: "30%"}).addClass("mlj-resiz1");
         var $pos2 = $("<div/>").css({height: "50%"}).addClass("mlj-resiz2");
-        var $pos3 = $("<div/>").css({height: "20%", position: "relative"}).addClass("mlj-resiz3");
+        var $pos3 = $("<div/>").css({height: "20%"}).addClass("mlj-resiz3");
         $wrap.append($pos1, $pos2, $pos3);
         _$pane.append($wrap);
         splitPane("mlj-resiz1");
         splitPane("mlj-resiz2");
 
         //Init split pane height on window ready
-        //splitPane.height = window.height - (sceneBar.height+searchTool.height) 
+        //splitPane.height = window.height - (sceneBar.height+searchTool.height)
         $(window).ready(function () {
             $wrap.height($(window).height() - $wrap.offset().top);
         });
@@ -127,11 +127,11 @@
                 });
     }
 
-
     $(window).resize(function (event) {
+        var h = $(window).outerHeight() - $('#mlj-split-pane').position().top;
 
         if (!$(event.target).hasClass('ui-resizable')) {
-            $(".mlj-resiz2").height($(window).height() - (
+            $(".mlj-resiz2").height(h - (
                     $('.mlj-resiz1').height() + $('.mlj-resiz3').height()));
         }
 

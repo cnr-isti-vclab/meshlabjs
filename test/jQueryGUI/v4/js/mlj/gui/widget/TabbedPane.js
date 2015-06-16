@@ -14,7 +14,7 @@
 
         //Accordion for filters pane
         var _filtersAccord = new component.Accordion({
-            heightStyle: 'content', 
+            heightStyle: 'content',
             collapsible: true,
             active: false
         });
@@ -23,7 +23,11 @@
         //Tool bar for rendering pane
         var _renderingTb = new component.ToolBar();
         //Accordion for rendering pane
-        var _renderingAccord = new component.Accordion({heightStyle: 'content'});
+        var _renderingAccord = new component.Accordion({
+            heightStyle: 'content',
+            collapsible: true,
+            active: false
+        });
         _renderingAccord.$.attr('id', 'accordion-rendering');
 
         var _this = this;
@@ -53,8 +57,8 @@
             filterTab.appendContent(_filtersAccord.$);
 
             var renderingTab = new Tab("Rendering");
-//        renderingTab.appendContent(_renderingTb.$)
-//                .appendContent(_renderingAccord.$);
+            renderingTab.appendContent(_renderingTb.$)
+                    .appendContent(_renderingAccord.$);
 
             _tabs.push(filterTab, renderingTab);
         }

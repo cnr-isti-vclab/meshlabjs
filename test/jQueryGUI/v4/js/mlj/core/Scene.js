@@ -52,8 +52,8 @@ MLJ.core.Scene = {};
         controls.keys = [65, 83, 68];
 
         //INIT LIGHTS __________________________________________________________        
-        MLJ.core.Scene.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        MLJ.core.Scene.HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+        MLJ.core.Scene._AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        MLJ.core.Scene._HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS _______________________________________________________
 

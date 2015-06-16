@@ -18,8 +18,9 @@ MLJ.gui.component.Component = function (html, flags) {
     }
 
     this.flag = function (name, value) {
-        //get
-        if (!value) {
+
+        //get                
+        if (value === "undefined") {
             return _flags[name];
         }
         //set
@@ -138,25 +139,59 @@ MLJ.gui.component.PiP = function (x, y) {
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.PiP);
 
-// BUTTONS _____________________________________________________________________
+// Color Picker ________________________________________________________________
+MLJ.gui.component.ColorPicker = function (flags) {
+    var _html = '<input type="text" class="mlj-color-picker">'; 
+    var _this = this;       
+        
+    this._make = function () {
 
+        _this.$.uniqueId();
+        var id = _this.$.attr("id");
+
+        $(window).ready(function () {
+
+           _col =  $('#' + id).colpick({
+                layout: 'hex',
+                submit: 0,
+                colorScheme: 'dark',
+                onChange: function (hsb, hex, rgb, el, bySetColor) {
+                    $(el).css('border-color', '#' + hex);
+                    // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
+                    if (!bySetColor)
+                        $(el).val(hex);
+
+                    if (jQuery.isFunction(flags.onChange)) {
+                        flags.onChange(hsb, hex, rgb, el, bySetColor);
+                    }
+
+                }
+            }).keyup(function () {
+                $(this).colpickSetColor(this.value);
+            });
+        });
+    };
+
+    MLJ.gui.component.Component.call(this, _html);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ColorPicker);
+
+// BUTTON _____________________________________________________________________
 MLJ.gui.component.Button = function (txt, label, imgSrc) {
     var _html = '<button class="mlj-button"></button>';
-    var flags = {
-        text: txt,
-        tooltip: label,
-        img: imgSrc
-    };
+
     this.onClick = function (foo) {
         $(this.$.click(function (event) {
             foo(event);
         }));
     };
+
     this._make = function () {
         if (txt) {
-            this.$.append(flags.text);
+            this.$.append(txt);
             //Build jQuery button
-            //this.$.button();
+//            this.$.button();
         }
 
         if (label) {
@@ -167,10 +202,12 @@ MLJ.gui.component.Button = function (txt, label, imgSrc) {
             this.$.append('<img src="' + imgSrc + '" />');
         }
     };
-    MLJ.gui.component.Component.call(this, _html, flags);
+    MLJ.gui.component.Component.call(this, _html);
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Button);
+
+// FILE BUTTON _________________________________________________________________
 
 MLJ.gui.component.FileButton = function (txt, label, imgSrc) {
     MLJ.gui.component.Button.call(this, txt, label, imgSrc);
@@ -191,9 +228,55 @@ MLJ.gui.component.FileButton = function (txt, label, imgSrc) {
         }));
     };
 };
-////Pseudo inheritance
+
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
 
+// TOGGLE BUTTON _______________________________________________________________
+
+MLJ.gui.component.ToggleButton = function (txt, label, imgSrc) {
+    MLJ.gui.component.Button.call(this, txt, label, imgSrc);
+
+    var _on = 0;
+    var _this = this;
+
+    this.toggle = function () {
+        _on ^= 1;
+        if (_on) {
+            _this.$.addClass("mlj-toggle-on");
+        } else {
+            _this.$.removeClass("mlj-toggle-on");
+        }
+    };
+
+    this.onToggle = function (foo) {
+        _this.$.click(function () {
+            foo(_on);
+        });
+    };
+
+    this.$.click(function () {
+        _this.toggle();
+    });
+
+};
+
+MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
+
+// TEXT FIELD __________________________________________________________________
+
+MLJ.gui.component.TextField = function (txt) {
+    var _html = $('<input type="text" class="mlj-text-field"/>')
+            .attr("value", txt);
+
+    var _this = this;
+    this.disabled = function () {
+        _this.$.attr("disabled", "disabled");
+    };
+
+    MLJ.gui.component.Component.call(this, _html);
+};
+
+MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.TextField);
 
 // Tool Bar ____________________________________________________________________
 
@@ -215,60 +298,6 @@ MLJ.gui.component.ToolBar = function () {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ToolBar);
-
-
-// Split Pane __________________________________________________________________
-
-//MLJ.gui.component.SplitPane = function (flags) {
-//    var _html = '<div class="split-pane"></div>';
-//    var _p1, _p2;
-//    var _this = this;
-////    this.set = function (title1, rp1, title2, rp2) {
-////        _this.$.uniqueId();
-////        var id = _this.$.attr("id");
-////        _rp1 = new MLJ.gui.component.ResizablePane(title1, {containment: "#" + id, handles: "s"}, true).appendContent(rp1);
-////        _rp2 = new MLJ.gui.component.ResizablePane(title2, {}).appendContent(rp2);
-////        _this.$.append(_rp1.$, _rp2.$);
-////    };
-//
-//    this._make = function () {
-//
-//        _this.$.uniqueId();
-//        var id = _this.$.attr("id");
-//
-//        if (!_p1) {
-//            _p1 = new MLJ.gui.component.Pane("Title 1",
-//                    {
-//                        containment: "#" + id,
-//                        handles: "s", resizable: true
-//                    });
-//        }
-//
-//        if (!_p2) {
-//            _p2 = new MLJ.gui.component.Pane("Title 2");
-//        }
-//
-//        _this.$.append(_p1.$, _p2.$);
-//
-////        this.$.css({height: "100%", width: "100%"});
-//
-//        _p1.onResize(function () {
-//            var h = _this.$.height() - _p1.$.height();
-//            _p2.getContent().height(h);
-//        });
-//
-//        $(window).ready(function () {
-//            _p2.$.height(_this.$.height() - _p1.$.height());
-//        });
-//
-//    };
-//
-//    MLJ.gui.component.Component.call(this, _html, flags);
-//
-//};
-//
-//MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.SplitPane);
-
 
 // Pane ________________________________________________________________________
 

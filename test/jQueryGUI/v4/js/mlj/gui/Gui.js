@@ -29,6 +29,9 @@ MLJ.gui.build = {
         },
         File: function (txt, tooltip, img) {
             return new MLJ.gui.component.FileButton(txt, tooltip, img);
+        },
+        Toggle: function (txt, tooltip, img) {
+            return new MLJ.gui.component.ToggleButton(txt, tooltip, img);
         }
     },
     accordion: {
@@ -56,7 +59,14 @@ MLJ.gui.build = {
     },
     Label: function (text) {
         return new MLJ.gui.component.Label(text);
+    },
+    TextField: function (text) {
+        return new MLJ.gui.component.TextField(text);
+    },
+    ColorPicker: function (flags) {
+        return new MLJ.gui.component.ColorPicker(flags);
     }
+
 };
 
 

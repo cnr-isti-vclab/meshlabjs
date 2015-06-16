@@ -54,6 +54,7 @@
         }
 
         this._make = function () {
+            _toolBar.$.attr("id", "mlj-scenebar-widget");
             return _toolBar.$;
         };
 

@@ -25,9 +25,10 @@ var Module = {
 MLJ.core = {};
 
 MLJ.core.AmbientLight = function (scene, camera, renderer) {
+    this.DEFAULT_COLOR = "#ffffff";
+    
     var _on = false;
-
-    var _light = new THREE.AmbientLight();
+    var _light = new THREE.AmbientLight(this.DEFAULT_COLOR);    
 
     this.setColor = function (color) {
         _light.color = new THREE.Color(color);
