@@ -3,7 +3,7 @@
 
     var plug = new plugin.Rendering("Ambient Light");
 
-    plug._main = function (toolbar, accordEntry) {
+    plug._init = function (toolbar, accordEntry) {
         var light = gui.build.button.Toggle("", "on/off", "../icons/light.png");
         toolbar.addButton(light);
 

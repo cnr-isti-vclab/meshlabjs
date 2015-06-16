@@ -12,7 +12,7 @@ MLJ.gui.component.Component = function (html, flags) {
     this.$ = $(html);
 
     function init() {
-        if (!flags) {
+        if (flags === undefined) {
             _flags = {};
         }
     }
@@ -20,7 +20,7 @@ MLJ.gui.component.Component = function (html, flags) {
     this.flag = function (name, value) {
 
         //get                
-        if (value === "undefined") {
+        if (value === undefined) {
             return _flags[name];
         }
         //set
@@ -448,10 +448,10 @@ MLJ.gui.component.Spinner = function (flags) {
     this.getValue = function () {
         return _$spinner("value");
     };
+
     this._make = function () {
         this.$.append(_$spinner);
 
-        //set default value if it exists
         var defval = this.flag("defval");
         if (defval) {
             _$spinner.attr("value", defval);

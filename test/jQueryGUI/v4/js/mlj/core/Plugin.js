@@ -5,33 +5,72 @@ MLJ.core.plugin = {
     }
 };
 
-MLJ.core.plugin.Plugin = function (type, name) {
+MLJ.core.plugin.Plugin = function (type, name, singleArity) {
     this.type = type;
     this.name = name;
+    this.singleArity = singleArity;
 };
 
 MLJ.core.plugin.Plugin.prototype = {
     getName: function () {
         return this.name;
     },
-    //Function to extends
+    _init: function () {
+    },
+    _applyTo: function (meshFile) {
+    },
     _main: function () {
     }
 };
 
-MLJ.core.plugin.Filter = function (name) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name);
+MLJ.core.plugin.Filter = function (name, singleArity) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, singleArity);
+    var _this = this;
+
+    this._main = function () {
+        var entry = new MLJ.gui.build.accordion.Entry(_this.getName());
+        MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
+
+        var apply = MLJ.gui.build.button.Button("Apply", "Apply ");
+        entry.addHeaderButton(apply);
+
+        apply.onClick(function () {
+            var meshFile = MLJ.core.Scene.getSelectedLayer();
+            _this._applyTo(meshFile);
+        });
+
+        if (_this.singleArity === false) {
+            var applyAll = MLJ.gui.build.button.Button("Apply all", "Apply to");
+            entry.addHeaderButton(applyAll);
+
+            applyAll.onClick(function () {
+                var ptr = MLJ.core.Scene.getLayers().pointer();
+                while (ptr.hasNext()) {
+                    _this._applyTo(ptr.next());
+                }
+            });
+        }
+
+        _this._init(entry);
+    };
 };
 
-MLJ.core.plugin.Rendering = function (name) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name);
+MLJ.core.plugin.Rendering = function (name, singleArity) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name, singleArity);
+    var _this = this;
+
+    this._main = function () {
+        var entry = new MLJ.gui.build.accordion.Entry(_this.getName());
+        MLJ.widget.TabbedPane.getRendAccord().addEntry(entry);
+        _this._init(MLJ.widget.TabbedPane.getRendToolBar(), entry);
+    };
 };
 
 //Pseudo inheritance
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
-(function (widget) {
+(function (widget, gui) {
 
     var _plugins = new MLJ.util.AssociativeArray();
 
@@ -49,19 +88,9 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
     this.run = function () {
         var ptr = _plugins.pointer();
-
-        var plugin, entry;
         while (ptr.hasNext()) {
-            plugin = ptr.next();
-            entry = new MLJ.gui.build.accordion.Entry(plugin.getName());
-            if (plugin instanceof MLJ.core.plugin.Filter) {
-                widget.TabbedPane.getFiltersAccord().addEntry(entry);
-                plugin._main(entry);
-            } else if (plugin instanceof MLJ.core.plugin.Rendering) {
-                widget.TabbedPane.getRendAccord().addEntry(entry);
-                plugin._main(widget.TabbedPane.getRendToolBar(), entry);
-            }//else nothing to do
+            ptr.next()._main();
         }
     };
 
-}).call(MLJ.core.plugin, MLJ.widget);//MLJ.widget contains GUI running widgets
+}).call(MLJ.core.plugin, MLJ.widget, MLJ.gui);//MLJ.widget contains GUI running widgets
