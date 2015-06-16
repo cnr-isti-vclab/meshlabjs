@@ -136,7 +136,7 @@ html,body{
 
 #mlj-layers .mlj-layers-entry {    
     height: 24px;
-    margin-top: 4px;
+/*    margin-top: 4px; */
 }
 
 #mlj-layers .mlj-layer {       
@@ -149,8 +149,9 @@ html,body{
 }
 
 #mlj-layers .mlj-layer.selected {
-    font-weight: bold;
-    color: green;
+ /*   font-weight: bold;
+    color: green; */
+    background-color: gainsboro;
 }
 
 #mlj-layers .mlj-layer:hover {
@@ -193,7 +194,7 @@ html,body{
 /* INFO WIDGET ______________________________________________________________ */
 #mlj-info {    
     /*overflow: auto;*/
-    width: 250px;
+    width: 450px;
     height: 100px;    
     background-color: rgba(0,0,0,0.5);    
     color: white;
