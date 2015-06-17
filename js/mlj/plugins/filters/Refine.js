@@ -1,26 +1,23 @@
 
-(function (plugin, gui, scene) {
+(function (plugin, scene) {
 
-    var filter = new plugin.Filter("Refine",false);
-    var DEFAULT_STEP = 1;
-    var _step = DEFAULT_STEP;
+    var filter = new plugin.Filter("Refine", false);
 
-    filter._init = function (accordEntry) {
-        var spinner = gui.build.Spinner({max: 5, min: 1, defval: DEFAULT_STEP});
+    var spinner;
+    filter._init = function (builder) {
 
-        accordEntry.appendContent(
-                gui.component.Grid(gui.build.Label("Step"), spinner));
-
-        spinner.onChange(function (event) {
-            _step = parseInt(event.target.value);
+        spinner = builder.Integer({
+            max: 5, min: 1, step: 1, defval: 1,
+            label: "Step",
+            tooltip: "Amount of refinement steps"
         });
-    };
 
+    };
 
     filter._applyTo = function (meshFile) {
         console.time("Refine time");
         var refine = new Module.MyRefine(meshFile.ptrMesh);
-        refine.myRefine(_step);
+        refine.myRefine(spinner.getValue());
         console.timeEnd("Refine time");
         console.time("Update mesh");
         scene.updateLayer(meshFile);
@@ -29,4 +26,4 @@
 
     plugin.install(filter);
 
-})(MLJ.core.plugin, MLJ.gui, MLJ.core.Scene);
+})(MLJ.core.plugin, MLJ.core.Scene);

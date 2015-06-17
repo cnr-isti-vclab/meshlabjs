@@ -354,13 +354,24 @@ MLJ.gui.component.Pane = function (title, flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Pane);
 
 //LABEL
-MLJ.gui.component.Label = function (text) {
+MLJ.gui.component.Label = function (flags) {
     var _html = "<label></label>";
     this._make = function () {
-        this.$.append(text);
+
+        var label = this.flag("label");
+        if (label === undefined) {
+            label = "Lebel";
+        }
+        this.$.append(label);
+
+        var tooltip = this.flag("tooltip");
+        if (tooltip !== undefined) {
+            this.$.attr("title", tooltip);
+            this.$.tooltip();
+        }
     };
 
-    MLJ.gui.component.Component.call(this, _html);
+    MLJ.gui.component.Component.call(this, _html, flags);
 
 };
 
@@ -393,13 +404,13 @@ MLJ.gui.component.Accordion = function (flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Accordion);
 
 MLJ.gui.component.AccordionEntry = function (title) {
-    if (!title) {
+    if (title === undefined) {
         title = "Title";
     }
     this.$title = $('<h3></h3>').css("position", "relative");
     this.$content = $('<div></div>');
     var _$headerWrapp = $("<div></div>").css({display: "table", width: "100%"});
-    var _$title = $('<div>' + title + '</div>').css({display: "table-cell"});
+    var _$title = $('<div/>').append(title).css({display: "table-cell"});
     var _$btnWrapp = $('<div></div>').css({display: "table-cell", textAlign: "right"});
     _$headerWrapp.append(_$title, _$btnWrapp);
     this.$title.append(_$headerWrapp);
@@ -445,8 +456,9 @@ MLJ.gui.component.Spinner = function (flags) {
             callback(event, ui);
         });
     };
+
     this.getValue = function () {
-        return _$spinner("value");
+        return _$spinner.val();
     };
 
     this._make = function () {
@@ -459,6 +471,7 @@ MLJ.gui.component.Spinner = function (flags) {
 
         _$spinner.spinner(flags);
     };
+
     MLJ.gui.component.Component.call(this, _html, flags);
 };
 

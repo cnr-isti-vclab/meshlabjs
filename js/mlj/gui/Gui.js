@@ -68,5 +68,3 @@ MLJ.gui.build = {
     }
 
 };
-
-

@@ -27,8 +27,22 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, singleArity);
     var _this = this;
 
+    var entry = new MLJ.gui.build.accordion.Entry(name);
+
+    var filterBuilder = {
+        Float: function (flags) {
+            var float = new MLJ.gui.MLWidget.Float(flags);
+            entry.appendContent(float._make());
+            return float;
+        },
+        Integer: function (flags) {
+            var integer = new MLJ.gui.MLWidget.Integer(flags);
+            entry.appendContent(integer._make());
+            return integer;
+        }
+    };
+
     this._main = function () {
-        var entry = new MLJ.gui.build.accordion.Entry(_this.getName());
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
         var apply = MLJ.gui.build.button.Button("", "Apply to selected layer"
@@ -42,7 +56,7 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
 
         if (_this.singleArity === false) {
             var applyAll = MLJ.gui.build.button.Button("", "Apply to all visible layers",
-            "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png");
+                    "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png");
             entry.addHeaderButton(applyAll);
 
             applyAll.onClick(function () {
@@ -57,7 +71,7 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
             });
         }
 
-        _this._init(entry);
+        _this._init(filterBuilder);
     };
 };
 
@@ -72,7 +86,6 @@ MLJ.core.plugin.Rendering = function (name, singleArity) {
     };
 };
 
-//Pseudo inheritance
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
