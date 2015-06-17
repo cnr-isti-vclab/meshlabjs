@@ -4,7 +4,7 @@
     var filter = new plugin.Filter("Smooth", false);
     var stepWidget;
     var weightWidget;
-    
+
     filter._init = function (builder) {
 
         stepWidget = builder.Integer({
@@ -13,16 +13,16 @@
             tooltip: "Number of iteration of the smoothing algorithm"
         });
 
-/*        weightWidget = builder.Bool({
+        weightWidget = builder.Bool({
             defval: false,
             label: "Cotangent Weights",
             tooltip: "Use cotangent weighting scheme during relaxation."
         });
-*/
+
     };
 
     filter._applyTo = function (meshFile) {
-        Module.Smooth(meshFile.ptrMesh, stepWidget.getValue(),false);
+        Module.Smooth(meshFile.ptrMesh, stepWidget.getValue(), weightWidget.getValue());
         scene.updateLayer(meshFile);
     };
 

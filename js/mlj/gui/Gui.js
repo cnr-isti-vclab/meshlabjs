@@ -65,6 +65,9 @@ MLJ.gui.build = {
     },
     ColorPicker: function (flags) {
         return new MLJ.gui.component.ColorPicker(flags);
+    },
+    Checkbox: function (checked) {
+        return new MLJ.gui.component.Checkbox(checked);
     }
 
 };

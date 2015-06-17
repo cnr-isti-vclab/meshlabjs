@@ -39,6 +39,11 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
             var integer = new MLJ.gui.MLWidget.Integer(flags);
             entry.appendContent(integer._make());
             return integer;
+        },
+        Bool: function (flags) {
+            var bool = new MLJ.gui.MLWidget.Bool(flags);
+            entry.appendContent(bool._make());
+            return bool;
         }
     };
 

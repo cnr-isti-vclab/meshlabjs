@@ -267,6 +267,44 @@ MLJ.gui.component.ToggleButton = function (txt, label, imgSrc) {
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
 
+// CHECKBOX ____________________________________________________________________
+
+MLJ.gui.component.Checkbox = function (checked) {
+    var _html = '<input type="checkbox" />';
+
+
+    this._make = function () {
+        if (jQuery.type(checked) !== "boolean") {
+            checked = false;
+        }
+
+        this.checked(checked);
+    };
+
+    this.onChange = function (foo) {
+        this.$.change(function (event) {
+            foo(event);
+        });
+    };
+
+    this.checked = function (boolean) {
+        //Get
+        if (boolean === undefined) {
+            return this.$.prop('checked');
+        }
+
+        //Set
+        if (jQuery.type(boolean) !== "boolean") {
+            boolean = false;
+        }
+        this.$.prop("checked", boolean);
+    };
+
+    MLJ.gui.component.Component.call(this, _html);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Checkbox);
+
 // TEXT FIELD __________________________________________________________________
 
 MLJ.gui.component.TextField = function (txt) {
