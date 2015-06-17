@@ -6,3 +6,7 @@ sources/FilterTest.pro.user
 sources/.qmake.stash
 
 sources/FilterTest
+
+/nbproject/private/
+/nbproject/project.properties
+/nbproject/project.xml
