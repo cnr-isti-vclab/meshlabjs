@@ -1,13 +1,10 @@
-#include <stdlib.h>
-#include <emscripten.h>
-#include <emscripten/bind.h>
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/refine.h>
 #include <vcg/complex/algorithms/refine_loop.h>
 
 using namespace vcg;
 using namespace std;
-using namespace emscripten;
+// using namespace emscripten;
 
 class MyRefine {
 
@@ -30,11 +27,13 @@ void refinement(int step)
     printf("Refinement time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
     }
 };
-
+#ifdef __EMSCRIPTEN__
 //Binding code
+using namespace emscripten;
 EMSCRIPTEN_BINDINGS(MyRefine) {
   class_<MyRefine>("MyRefine")
     .constructor<uintptr_t>()
     .function("myRefine", &MyRefine::refinement)
     ;
 }
+#endif
