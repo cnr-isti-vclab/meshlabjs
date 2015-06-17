@@ -2,25 +2,28 @@
 (function (plugin, scene) {
 
     var filter = new plugin.Filter("Smooth", false);
-
-    var spinner;
+    var stepWidget;
+    var weightWidget;
+    
     filter._init = function (builder) {
 
-        spinner = builder.Integer({
-            max: 5, min: 1, step: 1, defval: 1,
+        stepWidget = builder.Integer({
+            min: 1, step: 1, defval: 1,
             label: "Step",
-            tooltip: "Amount of smooth steps"
+            tooltip: "Number of iteration of the smoothing algorithm"
         });
 
+/*        weightWidget = builder.Bool({
+            defval: false,
+            label: "Cotangent Weights",
+            tooltip: "Use cotangent weighting scheme during relaxation."
+        });
+*/
     };
 
     filter._applyTo = function (meshFile) {
-        console.time("Smooth time");
-        Module.Smooth(meshFile.ptrMesh, spinner.getValue());
-        console.timeEnd("Smooth time");
-        console.time("Update mesh");
+        Module.Smooth(meshFile.ptrMesh, stepWidget.getValue(),false);
         scene.updateLayer(meshFile);
-        console.timeEnd("Update mesh");
     };
 
     plugin.install(filter);

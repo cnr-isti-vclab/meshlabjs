@@ -24,11 +24,11 @@
                     <br>\
                     <a href="http://vcg.isti.cnr.it/%7Ecignoni">Paolo Cignoni</a> <br>\
                     <a href="http://vcg.isti.cnr.it"> Visual Computing Lab</a> <br>\
-                    <a href="http://www.isti.cnr.it"> ISTI - Italian National Research Council</a><br><br> \
+                    <a href="http://www.isti.cnr.it"> ISTI - CNR</a><br><br> \
 <b>MeshLabJS</b> is a web-based mesh processing system for \
 cleaning, filtering, editing and rendering of unstructured 3D triangular meshes. \
-The system is heavily inspired on desktop version of <a href="http://meshlab.sf.net">MeshLab</a>.<br> \
-MeshLabJS for the mesh processing tasks relies on the \
+This program is heavily inspired on the original desktop system <a href="http://meshlab.sf.net">MeshLab</a>.<br> \
+Like the original one, MeshLabJS for the mesh processing tasks relies on the \
 <a href="http://vcg.sf.net">VCG</a> C++ library compiled to asm.js using emscripten \
 <br>\
 <br><b>Authors</b> (in first commit order)<br>\
@@ -62,7 +62,7 @@ Stefano Gabriele <br>\
 
             $logo.click(function () {
                 $('#dialog').dialog(
-                        {draggable: false, modal: true, resizable: false});
+                        {draggable: false, width: 500, modal: true, resizable: false});
             });
 
             return _PiP.$;
