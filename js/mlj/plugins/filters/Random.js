@@ -19,12 +19,8 @@
     };
 
     filter._applyTo = function (meshFile) {
-        console.time("Random time");
         Module.RandomDisplacement(meshFile.ptrMesh, spinner.getValue());
-        console.timeEnd("Random time");
-        console.time("Update mesh ");
         scene.updateLayer(meshFile);
-        console.timeEnd("Update mesh ");
     };
 
     plugin.install(filter);

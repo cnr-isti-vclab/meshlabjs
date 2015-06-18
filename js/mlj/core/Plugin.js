@@ -80,7 +80,10 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
 
         apply.onClick(function () {
             var meshFile = MLJ.core.Scene.getSelectedLayer();
+            var t0 = performance.now();
             _this._applyTo(meshFile);
+            var t1 = performance.now();
+            MLJ.widget.Log.append(name + " exectution time " + (t1 - t0) + " ms");
         });
 
         if (_this.singleArity === false) {
