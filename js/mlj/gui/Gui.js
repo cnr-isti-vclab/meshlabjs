@@ -69,8 +69,11 @@ MLJ.gui.build = {
     CheckBox: function (checked) {
         return new MLJ.gui.component.CheckBox(checked);
     },
-    ComboBox: function (checked) {
-        return new MLJ.gui.component.ComboBox(checked);
+    ComboBox: function (flags) {
+        return new MLJ.gui.component.ComboBox(flags);
+    },
+    ButtonSet: function (flags) {
+        return new MLJ.gui.component.ButtonSet(flags);
     }
 
 };

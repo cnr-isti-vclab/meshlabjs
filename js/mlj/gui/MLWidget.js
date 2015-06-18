@@ -56,15 +56,17 @@ MLJ.gui.MLWidget.Bool = function (flags) {
 MLJ.extend(MLJ.gui.MLWidget.Number, MLJ.gui.MLWidget.Bool);
 
 MLJ.gui.MLWidget.Choice = function (flags) {
-    this.combobox = MLJ.gui.build.ComboBox(flags);
+    this.choice = flags.options.length > 3
+            ? MLJ.gui.build.ComboBox(flags)
+            : MLJ.gui.build.ButtonSet(flags);
     this.label = MLJ.gui.build.Label(flags);
 
     this._make = function () {
-        return MLJ.gui.component.Grid(this.label, this.combobox);
+        return MLJ.gui.component.Grid(this.label, this.choice);
     };
 
     this.getSelected = function () {
-        return this.combobox.getSelected();
+        return this.choice.getSelected();
     };
 
     MLJ.gui.MLWidget.call(this);

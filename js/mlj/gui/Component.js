@@ -322,32 +322,71 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.TextField);
 
 // Combobox ____________________________________________________________________
 
+MLJ.gui.component.ButtonSet = function (flags) {
+    var _html = '<div></div>';
+    var _this = this;
+
+    this._make = function () {
+        var options = _this.flag("options");
+
+        _this.$.uniqueId();
+        var groupId = this.$.attr("id");
+
+        var $input, $label;
+        $(options).each(function (key, option) {
+            $input = $('<input type="radio"/>')
+                    .attr("id", option.value)
+                    .attr("name", groupId);
+            $label = $('<label for="' + option.value + '"></label>')
+                    .append(option.content);
+
+            if (option.selected === true) {
+                $input.attr("checked", "checked");
+            }
+
+            _this.$.append($input, $label);
+
+        });
+
+        this.$.buttonset();
+
+    };
+
+    this.getSelected = function () {
+        return this.$.find(":checked").attr("id");
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ButtonSet);
+
+// Combobox ____________________________________________________________________
+
 MLJ.gui.component.ComboBox = function (flags) {
-    var _html = $('<select></select>');
+    var _html = '<select></select>';
     var _this = this;
 
     this._make = function () {
         var options = _this.flag("options");
 
         $(options).each(function (key, option) {
-            _this.addOption(option.value, option.content, option.selected);
+            var $option = $("<option/>")
+                    .attr("value", option.value)
+                    .append(option.content);
+            if (option.selected === true) {
+                $option.attr("selected", "selected");
+            }
+            _this.$.append($option);
         });
 
         _this.$.selectmenu({width: "100%"})
                 .selectmenu("menuWidget")
                 .addClass("overflow");
     };
-    
-    this.getSelected = function() {
+
+    this.getSelected = function () {
         return this.$.find(":selected").text();
-    };
-    
-    this.addOption = function (value, content, selected) {
-        var $option = $("<option/>").attr("value", value).append(content);
-        if (selected === true) {
-            $option.attr("selected", "selected");
-        }
-        _this.$.append($option);
     };
 
     MLJ.gui.component.Component.call(this, _html, flags);
