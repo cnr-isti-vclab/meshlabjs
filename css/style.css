@@ -114,35 +114,13 @@ html,body{
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
-#mlj-search-widget input {                    
-    /*background-color: gainsboro;*/          
-    /*padding: 5px;*/    
+#mlj-search-widget input { 
     width: 100%;    
     padding: 5px;   
-      -webkit-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
-
-/*#mlj-search-wrapper {                              
-    display: table;
-    width: 100%;
-}*/
-
-/*#mlj-search-widget .ui-autocomplete-input {    
-    padding: 5px;
-    display: table-cell;
-    vertical-align: top;
-    width: 89%;    
-}*/
-
-/*#mlj-search-widget .mlj-button { 
-    height: 100%;    
-    display: table-cell;   
-    padding: 0 3px;       
-    height: 29px;        
-}*/
-
 
 
 /* LAYERS WIDGET ____________________________________________________________ */

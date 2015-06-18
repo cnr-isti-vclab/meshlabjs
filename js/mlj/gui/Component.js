@@ -269,9 +269,8 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
 
 // CHECKBOX ____________________________________________________________________
 
-MLJ.gui.component.Checkbox = function (checked) {
+MLJ.gui.component.CheckBox = function (checked) {
     var _html = '<input type="checkbox" />';
-
 
     this._make = function () {
         if (jQuery.type(checked) !== "boolean") {
@@ -303,7 +302,7 @@ MLJ.gui.component.Checkbox = function (checked) {
     MLJ.gui.component.Component.call(this, _html);
 };
 
-MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Checkbox);
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.CheckBox);
 
 // TEXT FIELD __________________________________________________________________
 
@@ -320,6 +319,41 @@ MLJ.gui.component.TextField = function (txt) {
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.TextField);
+
+// Combobox ____________________________________________________________________
+
+MLJ.gui.component.ComboBox = function (flags) {
+    var _html = $('<select></select>');
+    var _this = this;
+
+    this._make = function () {
+        var options = _this.flag("options");
+
+        $(options).each(function (key, option) {
+            _this.addOption(option.value, option.content, option.selected);
+        });
+
+        _this.$.selectmenu({width: "100%"})
+                .selectmenu("menuWidget")
+                .addClass("overflow");
+    };
+    
+    this.getSelected = function() {
+        return this.$.find(":selected").text();
+    };
+    
+    this.addOption = function (value, content, selected) {
+        var $option = $("<option/>").attr("value", value).append(content);
+        if (selected === true) {
+            $option.attr("selected", "selected");
+        }
+        _this.$.append($option);
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ComboBox);
 
 // Tool Bar ____________________________________________________________________
 
@@ -407,7 +441,7 @@ MLJ.gui.component.Label = function (flags) {
             this.$.attr("title", tooltip);
             this.$.tooltip({
                 content: function () {
-                      return $(this).prop('title');
+                    return $(this).prop('title');
                 }
             });
         }

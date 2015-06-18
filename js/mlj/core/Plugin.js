@@ -68,6 +68,11 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
             var bool = new MLJ.gui.MLWidget.Bool(flags);
             entry.appendContent(bool._make());
             return bool;
+        },
+        Choice: function (flags) {
+            var choice = new MLJ.gui.MLWidget.Choice(flags);
+            entry.appendContent(choice._make());
+            return choice;
         }
     };
 
