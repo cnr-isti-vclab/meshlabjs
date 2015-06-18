@@ -83,7 +83,7 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
             var t0 = performance.now();
             _this._applyTo(meshFile);
             var t1 = performance.now();
-            MLJ.widget.Log.append(name + " exectution time " + (t1 - t0) + " ms");
+            MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
         });
 
         if (_this.singleArity === false) {
