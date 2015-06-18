@@ -4,19 +4,24 @@
 using namespace vcg;
 using namespace std;
 
-void SmoothPlugin(uintptr_t _meshPtr, int step, bool useLaplacianWeights)
+void LaplacianSmooth(uintptr_t _meshPtr, int step, bool useLaplacianWeights)
 {
     MyMesh &m = * ((MyMesh*) _meshPtr);
-    int t2=clock();
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::Smooth<MyMesh>::VertexCoordLaplacian(m, step, false, useLaplacianWeights);
     tri::UpdateNormal<MyMesh>::PerVertexPerFace(m);
-    int t3=clock();
-    printf("Smooth time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
+}
+void TaubinSmooth(uintptr_t _meshPtr, int step, float lambda, float mu)
+{
+    MyMesh &m = * ((MyMesh*) _meshPtr);
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::Smooth<MyMesh>::VertexCoordTaubin(m,step,lambda,mu,false);
+    tri::UpdateNormal<MyMesh>::PerVertexPerFace(m);
 }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(MLPlugins) {
-    emscripten::function("Smooth", &SmoothPlugin);
+    emscripten::function("LaplacianSmooth", &LaplacianSmooth);
+    emscripten::function("TaubinSmooth", &TaubinSmooth);
 }
 #endif
