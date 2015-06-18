@@ -405,7 +405,11 @@ MLJ.gui.component.Label = function (flags) {
         var tooltip = this.flag("tooltip");
         if (tooltip !== undefined) {
             this.$.attr("title", tooltip);
-            this.$.tooltip();
+            this.$.tooltip({
+                content: function () {
+                      return $(this).prop('title');
+                }
+            });
         }
     };
 
@@ -446,7 +450,7 @@ MLJ.gui.component.Accordion = function (flags) {
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Accordion);
 
-MLJ.gui.component.AccordionEntry = function (flags) {    
+MLJ.gui.component.AccordionEntry = function (flags) {
     this.$title = $('<h3></h3>').css("position", "relative");
     this.$content = $('<div></div>');
     var _$headerWrapp = $("<div></div>").css({display: "table", width: "100%"});
