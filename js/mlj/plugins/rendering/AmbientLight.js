@@ -9,7 +9,6 @@
 
         $(document).on(MLJ.events.Scene.SCENE_READY, function () {
 
-
             var color = gui.build.ColorPicker({
                 onChange: function (hsb, hex) {
                     scene.lights.AmbientLight.setColor('#' + hex);
@@ -21,7 +20,6 @@
                     gui.component.Grid(
                             gui.build.Label("Color"),
                             color));
-
 
             light.onToggle(function (on) {
                 scene.lights.AmbientLight.setOn(on);

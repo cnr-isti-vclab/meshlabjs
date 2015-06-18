@@ -1,8 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 (function (widget) {
 
@@ -70,7 +65,7 @@
         $('body').append(_$3D, _$wrapper, makeTitle(title));
 
         _$pane.append(MLJ.gui.getWidget("SceneBar")._make());
-        _$pane.append(MLJ.gui.getWidget("SearchTool")._make());
+//        _$pane.append(MLJ.gui.getWidget("SearchTool")._make());
 
         var $wrap = $("<div/>").attr("id", "mlj-split-pane");
         var $pos1 = $("<div/>").css({height: "30%"}).addClass("mlj-resiz1");

@@ -28,9 +28,7 @@
             collapsible: true,
             active: false
         });
-        _renderingAccord.$.attr('id', 'accordion-rendering');
-
-        var _this = this;
+        _renderingAccord.$.attr('id', 'accordion-rendering');        
 
         function Tab(name) {
             this.name = name;
@@ -54,6 +52,7 @@
             _$tabbedPane.append(_$tabsBar);
 
             var filterTab = new Tab("Filters");
+            filterTab.appendContent(MLJ.gui.getWidget("SearchTool")._make());
             filterTab.appendContent(_filtersAccord.$);
 
             var renderingTab = new Tab("Rendering");

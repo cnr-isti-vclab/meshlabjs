@@ -29,6 +29,18 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
 
     var entry = new MLJ.gui.build.accordion.Entry(name);
 
+    $(document).on("mljSearchSelect", function (ev, select) {
+        for (var i = 0, m = select.length; i < m; i++) {
+            if (select.indexOf(name) !== -1) {
+                entry.show();
+            } else {
+                entry.hide();
+            }
+        }
+        
+        MLJ.widget.TabbedPane.getFiltersAccord().refresh();
+    });
+
     var filterBuilder = {
         Float: function (flags) {
             var float = new MLJ.gui.MLWidget.Float(flags);
@@ -100,10 +112,12 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
     this.install = function () {
         var plugin;
+        var search = MLJ.gui.getWidget("SearchTool");
         for (var i = 0; i < arguments.length; i++) {
             plugin = arguments[i];
             if (plugin instanceof MLJ.core.plugin.Plugin) {
                 _plugins.set(plugin.getName(), plugin);
+                search.addItem(plugin.getName());
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
             }

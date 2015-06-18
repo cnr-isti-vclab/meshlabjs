@@ -1,64 +1,33 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
-(function (component) {
-    
+(function () {
+
     MLJ.gui.widget.SearchTool = function () {
-        var _elements = new Object();
+        var _elements = [];
         var _$searchTool = $('<div id="mlj-search-widget"></div>');
-        var _$wrapper = $('<div id="mlj-search-wrapper"></div>');
         var _$input = $('<input placeholder="Search">');
-        var _$searchButton = new component.Button("", "Search",
-                "img/icons/IcoMoon-Free-master/PNG/48px/0135-search.png");
+
+        function refresh(select) {
+            $(document).trigger("mljSearchSelect", [select]);
+        }
 
         this._make = function () {//build function 
-            _$wrapper.append(_$input, _$searchButton.$);
-            _$searchTool.append(_$wrapper);
+            _$searchTool.append(_$input);
+            var select;
+            _$input.keyup(function () {
+                var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex($(this).val()), "i");
 
-            $(window).ready(function () {
-
-                var tags = [];
-
-                $.each(_elements, function (key, value) {
-                    tags.push(key);
+                select = $.grep(_elements, function (item) {
+                    return matcher.test(item);
                 });
 
-                _$input.autocomplete({
-                    source: function (request, response) {
-                        var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex(request.term), "i");
-                        response($.grep(tags, function (item) {
-                            return matcher.test(item);
-                        }));
-                    },
-                    select: function (event, ui) {
-                        //Execute function handler
-                        _elements[ui.item.value]();
-                    }
-                });
+                refresh(select);
             });
 
             return _$searchTool;
         };
 
-
-        this.addSearchElement = function (tag, handler) {
-
-            //Check for duplicated tags.
-            if (_elements[tag]) {
-                console.error("Duplicated tag name.");
-                return;
-            }
-
-            if (jQuery.isFunction(handler)) {
-                console.error("Handler must be a function.");
-                return;
-            }
-
-            _elements[tag] = handler;
-
+        this.addItem = function (tag) {
+            _elements.push(tag);
             return this;
         };
 
@@ -70,4 +39,4 @@
     //Install widget
     MLJ.gui.installWidget("SearchTool", new MLJ.gui.widget.SearchTool());
 
-})(MLJ.gui.component);
+})();

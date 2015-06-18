@@ -435,6 +435,11 @@ MLJ.gui.component.Accordion = function (flags) {
     this._make = function () {
         this.$.accordion(flags);
     };
+
+    this.refresh = function () {
+        this.$.accordion("refresh");
+    };
+
     MLJ.gui.component.Component.call(this, _html);
 
 };
@@ -452,6 +457,16 @@ MLJ.gui.component.AccordionEntry = function (title) {
     var _$btnWrapp = $('<div></div>').css({display: "table-cell", textAlign: "right"});
     _$headerWrapp.append(_$title, _$btnWrapp);
     this.$title.append(_$headerWrapp);
+
+    this.show = function () {
+        this.$title.show();
+        this.$content.show();
+    };
+
+    this.hide = function () {
+        this.$title.hide();
+        this.$content.hide();
+    };
 
     this.appendContent = function () {
         var content;
