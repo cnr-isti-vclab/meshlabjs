@@ -10,12 +10,23 @@
             $(document).trigger("mljSearchSelect", [select]);
         }
 
+        function arrayUnique(array) {
+            var a = array.concat();
+            for (var i = 0; i < a.length; ++i) {
+                for (var j = i + 1; j < a.length; ++j) {
+                    if (a[i] === a[j])
+                        a.splice(j--, 1);
+                }
+            }
+
+            return a;
+        }
+
         this._make = function () {//build function 
             _$searchTool.append(_$input);
             var select;
             _$input.keyup(function () {
-                var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex($(this).val()), "i");
-
+                var matcher = new RegExp("(^)" + $.ui.autocomplete.escapeRegex($(this).val()), "i");                
                 select = $.grep(_elements, function (item) {
                     return matcher.test(item);
                 });
@@ -27,7 +38,9 @@
         };
 
         this.addItem = function (tag) {
-            _elements.push(tag);
+            var split = tag.split(" ");
+            // Merges both arrays and gets unique items
+            _elements = arrayUnique(_elements.concat(split));
             return this;
         };
 

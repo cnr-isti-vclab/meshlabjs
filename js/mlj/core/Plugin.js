@@ -35,12 +35,19 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
             });
 
     $(document).on("mljSearchSelect", function (ev, select) {
+        var found = false;
+
         for (var i = 0, m = select.length; i < m; i++) {
-            if (select.indexOf(name) !== -1) {
+
+            if (name.includes(select[i])) {
                 entry.show();
-            } else {
-                entry.hide();
+                found = true;
+                //exit from for cycle
+                i = select.length;
             }
+        }
+        if (!found) {
+            entry.hide();
         }
 
         MLJ.widget.TabbedPane.getFiltersAccord().refresh();
