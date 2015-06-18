@@ -42,9 +42,10 @@
             save.onClick(function () {
                 console.log("Save button clicked");
             });
-
+            
             reload.onClick(function () {
-                console.log("Reload button clicked");
+                var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
+                MLJ.core.File.reloadMeshFileByName(name);
             });
 
             snapshot.onClick(function () {

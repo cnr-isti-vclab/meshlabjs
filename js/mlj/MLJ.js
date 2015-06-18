@@ -14,6 +14,7 @@ MLJ.Error = function (errCode, message) {
 MLJ.events = {
     File: {
         MESH_FILE_OPENED: "meshFileOpened",
+        MESH_FILE_RELOADED: "meshFileReloaded",
         MESH_FILE_CLOSED: "meshFileClosed"
     },
     Gui: {

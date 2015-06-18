@@ -5,7 +5,8 @@
  */
 
 MLJ.core.File = {
-    ErrorCodes: {EXTENSION: 1}
+    ErrorCodes: {EXTENSION: 1},
+    openedList: new MLJ.util.AssociativeArray()
 };
 
 (function () {
@@ -24,13 +25,16 @@ MLJ.core.File = {
         return false;
     }
 
-    this.openMeshFile = function (file) {
+    function loadFile(file, onLoaded) {
         console.time("Read mesh file");
 
         if (!(file instanceof File)) {
             console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
-            return;
+            onLoaded(false);
         }
+
+        //Add file to opened list
+        MLJ.core.File.openedList.set(file.name, file);
 
         //Extract file extension
         var pointPos = file.name.lastIndexOf('.');
@@ -45,7 +49,7 @@ MLJ.core.File = {
 
             MLJ.setError(err);
 
-            return false;
+            onLoaded(false);
         }
 
         //Read file
@@ -64,23 +68,52 @@ MLJ.core.File = {
             if (resOpen != 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
-            } else {
-                console.timeEnd("Parsing Mesh Time");
-                var ptrMesh = Opener.getMesh();
 
-                var mf = new MLJ.core.MeshFile(file.name, ptrMesh);
+                onLoaded(false);
+            }
 
+            console.timeEnd("Parsing Mesh Time");
+            var ptrMesh = Opener.getMesh();
+
+            var mf = new MLJ.core.MeshFile(file.name, ptrMesh);
+
+            FS.unlink(file.name);
+
+            onLoaded(true, mf);
+
+        }; //end onloadend
+    }
+
+    this.reloadMeshFileByName = function (name) {
+        var file = MLJ.core.File.openedList.getByKey(name);
+
+        if (file === undefined) {
+            console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
+            return false;
+        }
+
+        loadFile(file, function (loaded, meshFile) {
+            if (loaded) {
+                //Trigger mesh opened event
+                $(document).trigger(
+                        MLJ.events.File.MESH_FILE_RELOADED,
+                        [meshFile]);
+            }
+            //else error in file reading
+        });
+    };
+
+    this.openMeshFile = function (file) {
+        loadFile(file, function (loaded, meshFile) {
+            if (loaded) {
                 //Trigger mesh opened event
                 $(document).trigger(
                         MLJ.events.File.MESH_FILE_OPENED,
-                        [mf]);
+                        [meshFile]);
+            }
+            //else error in file reading
+        });
 
-                FS.unlink(file.name);
-
-                return mf;
-
-            }//end else
-        }; //end onloadend
     };
 
 }).call(MLJ.core.File);

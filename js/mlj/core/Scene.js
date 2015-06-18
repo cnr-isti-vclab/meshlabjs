@@ -86,6 +86,14 @@ MLJ.core.Scene = {};
                             MLJ.events.Scene.LAYER_ADDED, [mesh]);
                 });
 
+        $(document).on(MLJ.events.File.MESH_FILE_RELOADED,
+                function (event, mesh) {
+                    MLJ.core.Scene.reloadLayer(mesh);
+
+                    $(document).trigger(
+                            MLJ.events.Scene.LAYER_UPDATED, [mesh]);
+                });
+
         $(document).on(MLJ.events.Gui.LAYER_SELECTION_CHANGED,
                 function (event, layerName) {
                     _selectedLayer = _layers.getByKey(layerName);
@@ -163,6 +171,15 @@ MLJ.core.Scene = {};
     this.lights = {
         AmbientLight: null,
         HeadLight: null
+    };
+
+    this.reloadSelectedLayer = function () {
+
+    };
+
+    this.reloadLayer = function (meshFile) {
+        MLJ.core.Scene.removeLayerByName(meshFile.name);
+        MLJ.core.Scene.addLayer(meshFile);
     };
 
     this.addLayer = function (meshFile) {
