@@ -5,9 +5,10 @@ MLJ.core.plugin = {
     }
 };
 
-MLJ.core.plugin.Plugin = function (type, name, singleArity) {
+MLJ.core.plugin.Plugin = function (type, name, tooltip, singleArity) {
     this.type = type;
     this.name = name;
+    this.tooltip = tooltip;
     this.singleArity = singleArity;
 };
 
@@ -23,11 +24,15 @@ MLJ.core.plugin.Plugin.prototype = {
     }
 };
 
-MLJ.core.plugin.Filter = function (name, singleArity) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, singleArity);
+MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, tooltip, singleArity);
     var _this = this;
 
-    var entry = new MLJ.gui.build.accordion.Entry(name);
+    var entry = new MLJ.gui.build.accordion.Entry(
+            {
+                label: name,
+                tooltip: tooltip
+            });
 
     $(document).on("mljSearchSelect", function (ev, select) {
         for (var i = 0, m = select.length; i < m; i++) {
@@ -37,7 +42,7 @@ MLJ.core.plugin.Filter = function (name, singleArity) {
                 entry.hide();
             }
         }
-        
+
         MLJ.widget.TabbedPane.getFiltersAccord().refresh();
     });
 

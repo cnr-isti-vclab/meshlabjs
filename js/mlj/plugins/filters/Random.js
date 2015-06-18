@@ -1,12 +1,15 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter("Random Displacement", false);
+    var filter = new plugin.Filter(
+            "Random Displacement",
+            null,
+            false);
 
     var spinner;
-    
+
     filter._init = function (builder) {
-        
+
         spinner = builder.Float({
             max: 0.1, min: 0.01, step: 0.01, defval: 0.01,
             label: "Displacement",

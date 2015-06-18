@@ -38,8 +38,8 @@ MLJ.gui.build = {
         Accordion: function (flags) {
             return new MLJ.gui.component.Accordion(flags);
         },
-        Entry: function (title) {
-            return new MLJ.gui.component.AccordionEntry(title);
+        Entry: function (flags) {
+            return new MLJ.gui.component.AccordionEntry(flags);
         }
     },
     Spinner: function (flags) {
@@ -57,8 +57,8 @@ MLJ.gui.build = {
     Pane: function (title, flags) {
         return new MLJ.gui.component.Pane(title, flags);
     },
-    Label: function (text) {
-        return new MLJ.gui.component.Label(text);
+    Label: function (flags) {
+        return new MLJ.gui.component.Label(flags);
     },
     TextField: function (text) {
         return new MLJ.gui.component.TextField(text);

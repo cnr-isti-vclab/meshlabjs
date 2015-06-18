@@ -1,7 +1,10 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter("Smooth", false);
+    var filter = new plugin.Filter("Smooth",
+            null,
+            false);
+
     var stepWidget;
     var weightWidget;
 

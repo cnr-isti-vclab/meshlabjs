@@ -2,8 +2,9 @@
 (function (plugin, scene) {
 
     var filter = new plugin.Filter(
-        "Refine", 
-        "Apply a subdvision surface refinement step, using various approach (midpoint/loop)" , false);
+            "Refine",
+            "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",
+            false);
 
     var spinner;
     filter._init = function (builder) {
