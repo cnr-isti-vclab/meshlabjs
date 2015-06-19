@@ -75,7 +75,7 @@ MLJ.core.Scene = {};
 
         //INIT LIGHTS __________________________________________________________        
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        _this.lights.HeadLight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS _______________________________________________________
 
@@ -202,11 +202,7 @@ MLJ.core.Scene = {};
 
     this.lights = {
         AmbientLight: null,
-        HeadLight: null
-    };
-
-    this.reloadSelectedLayer = function () {
-
+        Headlight: null
     };
 
     this.reloadLayer = function (meshFile) {

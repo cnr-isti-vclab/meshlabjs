@@ -238,10 +238,11 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
 
 // TOGGLE BUTTON _______________________________________________________________
 
-MLJ.gui.component.ToggleButton = function (txt, label, imgSrc) {
+MLJ.gui.component.ToggleButton = function (txt, label, imgSrc, on) {
     MLJ.gui.component.Button.call(this, txt, label, imgSrc);
 
-    var _on = 0;
+    var _on = 0; //false
+
     var _this = this;
 
     this.toggle = function () {
@@ -262,6 +263,12 @@ MLJ.gui.component.ToggleButton = function (txt, label, imgSrc) {
     this.$.click(function () {
         _this.toggle();
     });
+
+
+    //init    
+    if (on) {
+        _this.toggle();
+    }
 
 };
 
@@ -595,8 +602,21 @@ MLJ.gui.component.AccordionEntry = function (flags) {
 MLJ.gui.component.Spinner = function (flags) {
     var _html = '<div></div>';
     var _$spinner = $('<input>').css({width: "100%"});
+
     this.onChange = function (callback) {
         _$spinner.on("spinchange", function (event, ui) {
+            callback(event, ui);
+        });
+    };
+
+    this.onSpin = function (callback) {
+        _$spinner.on("spin", function (event, ui) {
+            callback(event, ui);
+        });
+    };
+    
+    this.onSpinStop = function (callback) {
+        _$spinner.on("spinstop", function (event, ui) {
             callback(event, ui);
         });
     };

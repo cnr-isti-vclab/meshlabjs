@@ -8,9 +8,14 @@ MLJ.gui.MLWidget.prototype = {
 MLJ.gui.MLWidget.Number = function (flags) {
     this.spinner = MLJ.gui.build.Spinner(flags);
     this.label = MLJ.gui.build.Label(flags);
+    var _this = this;
 
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.spinner);
+    };
+
+    this._onChange = function (foo) {
+        this.spinner.onSpinStop(foo);
     };
 
     MLJ.gui.MLWidget.call(this);
@@ -20,8 +25,17 @@ MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Number);
 
 MLJ.gui.MLWidget.Float = function (flags) {
     MLJ.gui.MLWidget.Number.call(this, flags);
+
+    var _this = this;
+
     this.getValue = function () {
         return parseFloat(this.spinner.getValue());
+    };
+
+    this.onChange = function (foo) {
+        _this._onChange(function () {
+            foo(_this.getValue());
+        });
     };
 
 };
@@ -30,8 +44,17 @@ MLJ.extend(MLJ.gui.MLWidget.Number, MLJ.gui.MLWidget.Float);
 
 MLJ.gui.MLWidget.Integer = function (flags) {
     MLJ.gui.MLWidget.Number.call(this, flags);
+
+    var _this = this;
+
     this.getValue = function () {
         return parseInt(this.spinner.getValue());
+    };
+
+    this.onChange = function (foo) {
+        _this._onChange(function () {
+            foo(_this.getValue());
+        });
     };
 
 };
@@ -64,11 +87,11 @@ MLJ.gui.MLWidget.Choice = function (flags) {
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.choice);
     };
-    
+
     this.getContent = function () {
         return this.choice.getSelectedContent();
     };
-    
+
     this.getValue = function () {
         return this.choice.getSelectedValue();
     };
@@ -77,3 +100,23 @@ MLJ.gui.MLWidget.Choice = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Choice);
+
+MLJ.gui.MLWidget.Color = function (flags) {
+
+    this.color = MLJ.gui.build.ColorPicker({
+        onChange: function (hsb, hex) {
+            flags.onChange(hex);
+        },
+        color: flags.color
+    });
+
+    this.label = MLJ.gui.build.Label(flags);
+
+    this._make = function () {
+        return MLJ.gui.component.Grid(this.label, this.color);
+    };
+
+    MLJ.gui.MLWidget.call(this);
+};
+
+MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Color);

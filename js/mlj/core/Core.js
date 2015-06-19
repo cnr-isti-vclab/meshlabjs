@@ -22,13 +22,35 @@ var Module = {
     }
 };
 
-MLJ.core = {};
+MLJ.core = {
+    defaults: {
+        AmbientLight: {
+            color: "#ffffff",
+            on: false
+        },
+        Headlight: {
+            color: "#ffffff",
+            on: true,
+            intensity: 0.5,
+            distance: 0
+        },
+        PhongMaterial: {
+            specular: '#ffffff',
+            color: '#a0a0a0',
+            emissive: '#7c7b7b',
+            shading: THREE.FlatShading,
+            shininess: 50,
+            wireframe: false, //make mesh transparent            
+        }
+    }
+};
 
 MLJ.core.AmbientLight = function (scene, camera, renderer) {
-    this.DEFAULT_COLOR = "#ffffff";
-    
-    var _on = false;
-    var _light = new THREE.AmbientLight(this.DEFAULT_COLOR);    
+
+    var _on = MLJ.core.defaults.AmbientLight.on;
+
+    var _light = new THREE.AmbientLight(
+            MLJ.core.defaults.AmbientLight.color);
 
     this.setColor = function (color) {
         _light.color = new THREE.Color(color);
@@ -51,69 +73,64 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
         renderer.render(scene, camera);
     };
 
+    //Init
+    this.setOn(_on);
 };
 
 MLJ.core.Headlight = function (scene, camera, renderer) {
-    var flags = {
-        color: "#ffffff",
-        on: true,
-        intensity: 0.5,
-        distance: 0
-    };
+    var _on = MLJ.core.defaults.Headlight.on;
 
-    var _light = new THREE.PointLight(flags.color, flags.intensity, flags.distance);
-    camera.add(_light);
+    var _light = new THREE.PointLight(
+            MLJ.core.defaults.Headlight.color,
+            MLJ.core.defaults.Headlight.intensity,
+            MLJ.core.defaults.Headlight.distance);
 
     this.setIntensity = function (value) {
-        flags.intensity = _light.intensity = value;
+        _light.intensity = value;
         renderer.render(scene, camera);
     };
 
     this.setColor = function (color) {
-        flags.intensity = color;
         _light.color = new THREE.Color(color);
         renderer.render(scene, camera);
     };
 
     this.setOn = function (on) {
-        _light.intensity = on ? flags.intensity : 0;
+        if (on) {
+            camera.add(_light);
+        } else {
+            camera.remove(_light);
+        }
         renderer.render(scene, camera);
     };
+
+    //Init light
+    this.setOn(_on);
 
 };
 
 MLJ.core.PhongMaterial = function () {
 
-    this.flags = {
-        specular: '#ffffff',
-        color: '#a0a0a0',
-        emissive: '#7c7b7b',
-        shading: THREE.FlatShading,
-        shininess: 50,
-        wireframe: true, //make mesh transparent
-        wireframeLinewidth: 1
-    };
-
     var _material;
 
     this.build = function () {
-        _material = new THREE.MeshPhongMaterial(this.flags);
+        _material = new THREE.MeshPhongMaterial(MLJ.core.defaults.PhongMaterial);
         return _material;
     };
 
     this.setColor = function (value) {
-        this.flags.color = value;
         _material.color = new THREE.Color(value);
+        MLJ.core.Scene.render();
     };
 
     this.setEmissive = function (value) {
-        this.flags.emissive = value;
         _material.emissive = new THREE.Color(value);
+        MLJ.core.Scene.render();
     };
 
     this.setSpecular = function (value) {
-        this.flags.specular = value;
         _material.specular = new THREE.Color(value);
+        MLJ.core.Scene.render();
     };
 
     this.setShading = function (value) {
@@ -133,7 +150,8 @@ MLJ.core.PhongMaterial = function () {
     };
 
     this.setShininess = function (value) {
-        _material.shininess = this.flags.shininess = value;
+        _material.shininess = value;
+        MLJ.core.Scene.render();
     };
 
 };

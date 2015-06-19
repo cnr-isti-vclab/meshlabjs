@@ -45,11 +45,19 @@ MLJ.core.plugin.GUIBuilder = function (entry) {
         entry.appendContent(choice._make());
         return choice;
     };
+    this.Color = function (flags) {
+        var color = new MLJ.gui.MLWidget.Color(flags);
+        entry.appendContent(color._make());
+        return color;
+    };
 };
 
 MLJ.core.plugin.ToolBarBuilder = function (tb) {
-    this.Toggle = function (flags) {
-        var toggle = MLJ.gui.build.button.Toggle("", flags.tooltip, flags.icon);
+    this.Toggle = function (flags) {        
+        var toggle = MLJ.gui.build.button.Toggle("",
+                flags.tooltip,
+                flags.icon,
+                flags.on);
         tb.addButton(toggle);
         return toggle;
     };
@@ -126,13 +134,13 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
 MLJ.core.plugin.Rendering = function (name, tooltip) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name);
     var _this = this;
+    var entry = new MLJ.gui.build.accordion.Entry(
+            {label: name, tooltip: tooltip});
+
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(entry);
     var tbBuilder = new MLJ.core.plugin.ToolBarBuilder(
             MLJ.widget.TabbedPane.getRendToolBar()
             );
-
-    var entry = new MLJ.gui.build.accordion.Entry(
-            {label: name, tooltip: tooltip});
 
     this._main = function () {
         MLJ.widget.TabbedPane.getRendAccord().addEntry(entry);

@@ -1,38 +1,32 @@
 
-(function (plugin, gui, scene) {
+(function (plugin, core, scene) {
 
     var plug = new plugin.Rendering(
             "Ambient Light",
-            "Prova Tooltip");
+            "Modify ambient light parameters");
 
     plug._init = function (tbBuilder, guiBuilder) {
-        tbBuilder.Toggle({
-            tooltip: "on/off",
-            icon: "img/icons/light.png"
+        var light = tbBuilder.Toggle({
+            tooltip: "Ambient light on/off",
+            icon: "img/icons/light.png",
+            on: core.defaults.AmbientLight.on
         });
-        
-//
-//        $(document).on(MLJ.events.Scene.SCENE_READY, function () {
-//
-//            var color = gui.build.ColorPicker({
-//                onChange: function (hsb, hex) {
-//                    scene.lights.AmbientLight.setColor('#' + hex);
-//                },
-//                color: scene.lights.AmbientLight.DEFAULT_COLOR
-//            });
-//
-//            accordEntry.appendContent(
-//                    gui.component.Grid(
-//                            gui.build.Label("Color"),
-//                            color));
-//
-//            light.onToggle(function (on) {
-//                scene.lights.AmbientLight.setOn(on);
-//            });
-//        });
+
+        guiBuilder.Color({
+            label: "Color",
+            tooltip: "Ambient light color",
+            color: core.defaults.AmbientLight.color,
+            onChange: function (hex) {
+                scene.lights.AmbientLight.setColor('#' + hex);
+            }
+        });
+
+        light.onToggle(function (on) {
+            scene.lights.AmbientLight.setOn(on);
+        });
 
     };
 
     plugin.install(plug);
 
-})(MLJ.core.plugin, MLJ.gui, MLJ.core.Scene);
+})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

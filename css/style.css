@@ -221,8 +221,10 @@ html,body{
     border-bottom: darkgray thin solid; 
 }
 
-.mjs-toolbar button:not(:last-child) {
+.mjs-toolbar button {
     margin-right:2px;
+    border: solid thin darkgray;
+    border-radius: 2px;
 }
 
 /* MeshLabJs global styles __________________________________________________ */
@@ -252,7 +254,16 @@ html,body{
 }
 
 .mlj-toggle-on {
-    background-color: green;
+    background: rgb(169,219,128);
+    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNhOWRiODAiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNzdhZDYyIiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+    background: -moz-radial-gradient(center, ellipse cover,  rgba(169,219,128,1) 0%, rgba(119,173,98,1) 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(169,219,128,1)), color-stop(100%,rgba(119,173,98,1)));
+    background: -webkit-radial-gradient(center, ellipse cover,  rgba(169,219,128,1) 0%,rgba(119,173,98,1) 100%);
+    background: -o-radial-gradient(center, ellipse cover,  rgba(169,219,128,1) 0%,rgba(119,173,98,1) 100%);
+    background: -ms-radial-gradient(center, ellipse cover,  rgba(169,219,128,1) 0%,rgba(119,173,98,1) 100%);
+    background: radial-gradient(ellipse at center,  rgba(169,219,128,1) 0%,rgba(119,173,98,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', endColorstr='#77ad62',GradientType=1 );
+    border: solid thin green;
 }
 
 .mlj-color-picker {    

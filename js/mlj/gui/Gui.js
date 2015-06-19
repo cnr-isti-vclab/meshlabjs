@@ -30,8 +30,8 @@ MLJ.gui.build = {
         File: function (txt, tooltip, img) {
             return new MLJ.gui.component.FileButton(txt, tooltip, img);
         },
-        Toggle: function (txt, tooltip, img) {
-            return new MLJ.gui.component.ToggleButton(txt, tooltip, img);
+        Toggle: function (txt, tooltip, img, on) {
+            return new MLJ.gui.component.ToggleButton(txt, tooltip, img, on);
         }
     },
     accordion: {
