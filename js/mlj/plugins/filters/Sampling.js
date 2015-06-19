@@ -18,10 +18,10 @@
 
     };
 
-    MontecarloSamplingFilter._applyTo = function (meshFile) {
-        // Qualcosa qui per mettere il nome del nuovo layer???
+    MontecarloSamplingFilter._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.File.createCppMeshFile("Montecarlo Samples");        
         Module.MontecarloSampling(basemeshFile.ptrMesh, newmeshFile.ptrMesh, sampleNumMCWidget.getValue());
-        scene.updateLayer(meshFile);
+        scene.updateLayer(newmeshFile);
     };
 
     plugin.install(MontecarloSamplingFilter);
@@ -45,15 +45,15 @@
         });
         
         radiusWidget = builder.Float({
-            min: 0.0, step: 0.1, defval: 0,
+            min: 0.0, step: 0.1, defval: 0.0,
             label: "Radius",
             tooltip: "If not zero this parameter override the previous parameter to allow exact radius specification"
         });
     };
 
-    PoissonDiskSamplingFilter._applyTo = function (basemeshFile, newmeshfile) {
-        // Qualcosa qui per mettere il nome del nuovo layer???
-        Module.PoissonSampling(basemeshFile.ptrMesh, newmeshFile.ptrMesh, sampleNumPDWidget.getValue(),radiusWidget.getValue,0);
+    PoissonDiskSamplingFilter._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.File.createCppMeshFile("Poisson Disk Samples");        
+        Module.PoissonDiskSampling(basemeshFile.ptrMesh, newmeshFile.ptrMesh, sampleNumPDWidget.getValue(),radiusWidget.getValue(),0);
         scene.updateLayer(newmeshFile);
     };
 
