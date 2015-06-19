@@ -49,10 +49,10 @@
         });
     };
 
-    SphereFilter._applyTo = function (meshFile) {
-        /// qualcosa qui per dire il nome e la nuova mesh?
-        Module.CreateSphere(meshFile.ptrMesh, stepWidget.getValue());
-        scene.updateLayer(meshFile);
+    SphereFilter._applyTo = function () {
+        var mf = MLJ.core.File.createCppMeshFile("Sphere " + counter++);        
+        Module.CreateSphere(mf.ptrMesh, stepWidget.getValue());        
+        scene.updateLayer(mf); 
     };
 
     plugin.install(SphereFilter);
