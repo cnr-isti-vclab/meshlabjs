@@ -103,6 +103,18 @@ MLJ.core.File = {
         });
     };
 
+    this.createCppMeshFile = function (name) {
+        var Opener = new Module.Opener();
+        var ptrMesh = Opener.getMesh();
+        var mf = new MLJ.core.MeshFile(name, ptrMesh);
+
+        $(document).trigger(
+                MLJ.events.File.MESH_FILE_OPENED,
+                [mf]);
+                
+        return mf;
+    };
+
     this.openMeshFile = function (file) {
         loadFile(file, function (loaded, meshFile) {
             if (loaded) {

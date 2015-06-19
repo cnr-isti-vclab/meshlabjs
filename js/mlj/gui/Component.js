@@ -351,8 +351,12 @@ MLJ.gui.component.ButtonSet = function (flags) {
         this.$.buttonset();
 
     };
+    
+     this.getSelectedContent = function () {
+        return null;
+    };
 
-    this.getSelected = function () {
+    this.getSelectedValue = function () {
         return this.$.find(":checked").attr("id");
     };
 
@@ -385,8 +389,12 @@ MLJ.gui.component.ComboBox = function (flags) {
                 .addClass("overflow");
     };
 
-    this.getSelected = function () {
+    this.getSelectedContent = function () {
         return this.$.find(":selected").text();
+    };
+
+    this.getSelectedValue = function () {
+        return this.$.find(":selected").val();
     };
 
     MLJ.gui.component.Component.call(this, _html, flags);
@@ -519,10 +527,10 @@ MLJ.gui.component.Accordion = function (flags) {
 
         return {index: active, header: text};
     };
-            
+
     this.refresh = function () {
         this.$.accordion({active: false}).accordion("refresh");
-    };  
+    };
 
     MLJ.gui.component.Component.call(this, _html);
 

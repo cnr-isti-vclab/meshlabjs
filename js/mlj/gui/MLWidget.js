@@ -64,9 +64,13 @@ MLJ.gui.MLWidget.Choice = function (flags) {
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.choice);
     };
-
-    this.getSelected = function () {
-        return this.choice.getSelected();
+    
+    this.getContent = function () {
+        return this.choice.getSelectedContent();
+    };
+    
+    this.getValue = function () {
+        return this.choice.getSelectedValue();
     };
 
     MLJ.gui.MLWidget.call(this);

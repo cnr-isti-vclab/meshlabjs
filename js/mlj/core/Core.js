@@ -171,7 +171,7 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
             geometry.faces.push(new THREE.Face3(a, b, c));
         }
 
-        geometry.dynamic = true;
+//        geometry.dynamic = true;
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
 
