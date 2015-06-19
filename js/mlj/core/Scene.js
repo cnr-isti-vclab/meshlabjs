@@ -190,6 +190,16 @@ MLJ.core.Scene = {};
 
     }
 
+    function disposeMesh(mesh) {
+        _scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+
+        if (mesh.texture) {
+            mesh.texture.dispose();
+        }
+    }
+
     this.lights = {
         AmbientLight: null,
         HeadLight: null
@@ -234,7 +244,8 @@ MLJ.core.Scene = {};
 
             var threeMesh = meshFile.getThreeMesh();
 
-            _scene.remove(threeMesh);
+            //Remove mesh and free memory
+            disposeMesh(threeMesh);
 
             var oldVisibleVal = threeMesh.visible;
 
@@ -270,7 +281,7 @@ MLJ.core.Scene = {};
         //CONTROLLARE SE IL NAME E VALIDO *************************
         var meshFile = this.getLayerByName(name);
         _layers.remove(name);
-        _scene.remove(meshFile.getThreeMesh());
+        disposeMesh(meshFile.getThreeMesh());
     };
 
     this.getSelectedLayer = function () {

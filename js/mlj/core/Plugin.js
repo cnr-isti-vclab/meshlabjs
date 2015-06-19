@@ -46,12 +46,12 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
                 i = select.length;
             }
         }
+
         if (!found) {
             entry.hide();
         }
 
         MLJ.widget.TabbedPane.getFiltersAccord().refresh();
-
     });
 
     var filterBuilder = {
@@ -100,12 +100,15 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
             applyAll.onClick(function () {
                 var ptr = MLJ.core.Scene.getLayers().pointer();
                 var layer;
+                var t0 = performance.now();
                 while (ptr.hasNext()) {
                     layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer);
                     }
                 }
+                var t1 = performance.now();
+                MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
             });
         }
 
