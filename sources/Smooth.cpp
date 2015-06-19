@@ -20,7 +20,7 @@ void TaubinSmooth(uintptr_t _meshPtr, int step, float lambda, float mu)
 }
 
 #ifdef __EMSCRIPTEN__
-EMSCRIPTEN_BINDINGS(MLPlugins) {
+EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("LaplacianSmooth", &LaplacianSmooth);
     emscripten::function("TaubinSmooth", &TaubinSmooth);
 }

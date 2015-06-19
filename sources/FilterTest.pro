@@ -6,5 +6,6 @@ TEMPLATE = app
 CONFIG -= app_bundle
 
 #TARGET = filtertest
-SOURCES += Refine.cpp Smooth.cpp FilterTest.cpp Random.cpp
+SOURCES += Refine.cpp Smooth.cpp FilterTest.cpp Random.cpp Create.cpp Sampling.cpp
+
 HEADERS += mesh_def.h
