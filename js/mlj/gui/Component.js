@@ -513,9 +513,16 @@ MLJ.gui.component.Accordion = function (flags) {
         this.$.accordion(flags);
     };
 
-    this.refresh = function () {
-        this.$.accordion("refresh");
+    this.getActiveInfo = function () {
+        var active = this.$.accordion("option", "active");
+        var text = this.$.find("h3").eq(active).text();
+
+        return {index: active, header: text};
     };
+            
+    this.refresh = function () {
+        this.$.accordion({active: false}).accordion("refresh");
+    };  
 
     MLJ.gui.component.Component.call(this, _html);
 

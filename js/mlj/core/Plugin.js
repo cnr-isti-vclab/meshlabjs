@@ -51,6 +51,7 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
         }
 
         MLJ.widget.TabbedPane.getFiltersAccord().refresh();
+
     });
 
     var filterBuilder = {
