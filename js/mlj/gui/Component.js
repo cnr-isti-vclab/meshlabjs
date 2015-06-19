@@ -351,9 +351,10 @@ MLJ.gui.component.ButtonSet = function (flags) {
         this.$.buttonset();
 
     };
-    
-     this.getSelectedContent = function () {
-        return null;
+
+    this.getSelectedContent = function () {
+        var id = this.$.find(":checked").attr("id");
+        return $("[for=" + id + "]").find("span").text();
     };
 
     this.getSelectedValue = function () {

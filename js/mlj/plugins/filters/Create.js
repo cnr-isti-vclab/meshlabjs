@@ -1,8 +1,6 @@
 
 (function (plugin, scene) {
 
-    var counter = 0;
-
     var PlatonicFilter = new plugin.Filter("Create Platonic Solid",
             "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
             false);
@@ -26,7 +24,7 @@
     };
 
     PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent() + " " + counter++);
+        var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent());
         Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));
         scene.updateLayer(mf);
     };
@@ -50,9 +48,9 @@
     };
 
     SphereFilter._applyTo = function () {
-        var mf = MLJ.core.File.createCppMeshFile("Sphere " + counter++);        
-        Module.CreateSphere(mf.ptrMesh, stepWidget.getValue());        
-        scene.updateLayer(mf); 
+        var mf = MLJ.core.File.createCppMeshFile("Sphere");
+        Module.CreateSphere(mf.ptrMesh, stepWidget.getValue());
+        scene.updateLayer(mf);
     };
 
     plugin.install(SphereFilter);

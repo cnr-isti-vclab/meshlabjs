@@ -24,15 +24,45 @@ MLJ.core.plugin.Plugin.prototype = {
     }
 };
 
+MLJ.core.plugin.GUIBuilder = function (entry) {
+    this.Float = function (flags) {
+        var float = new MLJ.gui.MLWidget.Float(flags);
+        entry.appendContent(float._make());
+        return float;
+    };
+    this.Integer = function (flags) {
+        var integer = new MLJ.gui.MLWidget.Integer(flags);
+        entry.appendContent(integer._make());
+        return integer;
+    };
+    this.Bool = function (flags) {
+        var bool = new MLJ.gui.MLWidget.Bool(flags);
+        entry.appendContent(bool._make());
+        return bool;
+    };
+    this.Choice = function (flags) {
+        var choice = new MLJ.gui.MLWidget.Choice(flags);
+        entry.appendContent(choice._make());
+        return choice;
+    };
+};
+
+MLJ.core.plugin.ToolBarBuilder = function (tb) {
+    this.Toggle = function (flags) {
+        var toggle = MLJ.gui.build.button.Toggle("", flags.tooltip, flags.icon);
+        tb.addButton(toggle);
+        return toggle;
+    };
+};
+
 MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, tooltip, singleArity);
     var _this = this;
 
     var entry = new MLJ.gui.build.accordion.Entry(
-            {
-                label: name,
-                tooltip: tooltip
-            });
+            {label: name, tooltip: tooltip});
+
+    var filterBuilder = new MLJ.core.plugin.GUIBuilder(entry);
 
     $(document).on("mljSearchSelect", function (ev, select) {
         var found = false;
@@ -53,29 +83,6 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
 
         MLJ.widget.TabbedPane.getFiltersAccord().refresh();
     });
-
-    var filterBuilder = {
-        Float: function (flags) {
-            var float = new MLJ.gui.MLWidget.Float(flags);
-            entry.appendContent(float._make());
-            return float;
-        },
-        Integer: function (flags) {
-            var integer = new MLJ.gui.MLWidget.Integer(flags);
-            entry.appendContent(integer._make());
-            return integer;
-        },
-        Bool: function (flags) {
-            var bool = new MLJ.gui.MLWidget.Bool(flags);
-            entry.appendContent(bool._make());
-            return bool;
-        },
-        Choice: function (flags) {
-            var choice = new MLJ.gui.MLWidget.Choice(flags);
-            entry.appendContent(choice._make());
-            return choice;
-        }
-    };
 
     this._main = function () {
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
@@ -116,14 +123,20 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
     };
 };
 
-MLJ.core.plugin.Rendering = function (name, singleArity) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name, singleArity);
+MLJ.core.plugin.Rendering = function (name, tooltip) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name);
     var _this = this;
+    var guiBuilder = new MLJ.core.plugin.GUIBuilder(entry);
+    var tbBuilder = new MLJ.core.plugin.ToolBarBuilder(
+            MLJ.widget.TabbedPane.getRendToolBar()
+            );
+
+    var entry = new MLJ.gui.build.accordion.Entry(
+            {label: name, tooltip: tooltip});
 
     this._main = function () {
-        var entry = new MLJ.gui.build.accordion.Entry(_this.getName());
         MLJ.widget.TabbedPane.getRendAccord().addEntry(entry);
-        _this._init(MLJ.widget.TabbedPane.getRendToolBar(), entry);
+        _this._init(tbBuilder, guiBuilder);
     };
 };
 

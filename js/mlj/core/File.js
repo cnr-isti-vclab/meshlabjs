@@ -11,6 +11,8 @@ MLJ.core.File = {
 
 (function () {
 
+    var nameList = new MLJ.util.AssociativeArray();
+
     function isExtensionValid(extension) {
 
         switch (extension) {
@@ -104,6 +106,16 @@ MLJ.core.File = {
     };
 
     this.createCppMeshFile = function (name) {
+
+        var nameAmount = nameList.getByKey(name);
+        if (nameAmount === undefined) {
+            nameList.set(name, 0);
+        } else {
+            nameAmount++;
+            nameList.set(name, nameAmount);
+            name += " " + nameAmount;
+        }
+
         var Opener = new Module.Opener();
         var ptrMesh = Opener.getMesh();
         var mf = new MLJ.core.MeshFile(name, ptrMesh);
@@ -111,7 +123,7 @@ MLJ.core.File = {
         $(document).trigger(
                 MLJ.events.File.MESH_FILE_OPENED,
                 [mf]);
-                
+
         return mf;
     };
 
