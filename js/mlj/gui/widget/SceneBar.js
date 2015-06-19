@@ -29,20 +29,13 @@
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
-                $(input.files).each(function (key, value) {
-                    var mesh = MLJ.core.File.openMeshFile(value);
-
-                    if (mesh === false) {
-                        console.log(MLJ.getLastError().message);
-                    }
-
-                });
+                MLJ.core.File.openMeshFiles(input.files);
             });
 
             save.onClick(function () {
                 console.log("Save button clicked");
             });
-            
+
             reload.onClick(function () {
                 var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
                 MLJ.core.File.reloadMeshFileByName(name);

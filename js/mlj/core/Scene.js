@@ -16,7 +16,8 @@ MLJ.core.Scene = {};
 
     var _scene, _camera, _renderer;
     var _this = this;
-//SCENE INITIALIZATION  ________________________________________________________
+
+    //SCENE INITIALIZATION  ________________________________________________________
 
     function get3DSize() {
         var _3D = $('#_3D');
@@ -25,6 +26,27 @@ MLJ.core.Scene = {};
             width: _3D.width(),
             height: _3D.height()
         };
+    }
+
+    function initDragAndDrop() {
+        function FileDragHandler(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var files = e.target.files || e.dataTransfer.files;
+            MLJ.core.File.openMeshFiles(files);
+        }
+
+        function FileDragHover(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
+        $(window).ready(function () {
+            var ddd = document.getElementById("_3D");
+            ddd.addEventListener("dragover", FileDragHover, false);
+            ddd.addEventListener("dragleave", FileDragHover, false);
+            ddd.addEventListener("drop", FileDragHandler, false);
+        });
     }
 
     function initScene() {
@@ -39,7 +61,7 @@ MLJ.core.Scene = {};
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
 
-        //INIT CONTROLS  ___________________________________________________
+        //INIT CONTROLS  _______________________________________________________
         var container = document.getElementsByTagName('canvas')[0];
         var controls = new THREE.TrackballControls(_camera, container);
         controls.rotateSpeed = 4.0;
@@ -265,6 +287,7 @@ MLJ.core.Scene = {};
 
     $(window).ready(function () {
         initScene();
+        initDragAndDrop();
         $(document).trigger(MLJ.events.Scene.SCENE_READY);
     });
 

@@ -116,5 +116,20 @@ MLJ.core.File = {
 
     };
 
-}).call(MLJ.core.File);
+    this.openMeshFiles = function (fileList) {
+        if (!(fileList instanceof FileList)) {
+            console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
+            return;
+        }
 
+        $(fileList).each(function (key, value) {
+            var mesh = MLJ.core.File.openMeshFile(value);
+
+            if (mesh === false) {
+                console.log(MLJ.getLastError().message);
+            }
+        });
+    };
+
+
+}).call(MLJ.core.File);
