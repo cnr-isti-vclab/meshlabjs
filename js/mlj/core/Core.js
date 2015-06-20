@@ -190,8 +190,8 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         }
 
 //        geometry.dynamic = true;
-        geometry.computeFaceNormals();
-        geometry.computeVertexNormals();
+//        geometry.computeFaceNormals();
+//        geometry.computeVertexNormals();
 
         return geometry;
     }
@@ -207,6 +207,18 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     };
 
     this.updateThreeMesh = function () {
+        
+        //Free memory
+        _threeMesh.geometry.dispose();
+        _threeMesh.material.dispose();
+
+        if (_threeMesh.texture) {
+            _threeMesh.texture.dispose();
+        }
+
+        _threeMesh = null;
+        
+        //Rebuild mesh
         buildThreeMesh(this.material.build());
 
 //        var geometry = buildMeshGeometry();
@@ -216,6 +228,23 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
 //        _threeMesh.geometry.elementsNeedUpdate = true;
 //        _threeMesh.geometry.normalsNeedUpdate = true;
 //
+    };
+
+    this.dispose = function () {
+        _threeMesh.geometry.dispose();
+        _threeMesh.material.dispose();
+
+        if (_threeMesh.texture) {
+            _threeMesh.texture.dispose();
+        }
+
+        _threeMesh = null;
+
+        _this.name = name;
+        _this.ptrMesh = ptrMesh;
+        _this.VN = _this.vert = _this.FN = _this.face = null;
+        _this.material = null;
+        _this = null;
     };
 
     buildThreeMesh(this.material.build());
