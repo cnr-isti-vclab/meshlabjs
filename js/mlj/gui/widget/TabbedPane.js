@@ -12,6 +12,16 @@
         var _$tabbedPane = $('<div id="mlj-tabbed-pane"></div>');
         var _$tabsBar = $('<ul id="mlj-tabs-bar"></ui>');
 
+        var _$filterWrapp = $('<div/>').css({
+            overflow: "auto",
+            width: "100%"
+        });
+
+        var _$rendWrapp = $('<div/>').css({
+            overflow: "auto",
+            width: "100%"
+        });
+
         //Accordion for filters pane
         var _filtersAccord = new component.Accordion({
             heightStyle: 'content',
@@ -28,7 +38,7 @@
             collapsible: true,
             active: false
         });
-        _renderingAccord.$.attr('id', 'accordion-rendering');        
+        _renderingAccord.$.attr('id', 'accordion-rendering');
 
         function Tab(name) {
             this.name = name;
@@ -48,18 +58,42 @@
             };
         }
 
+        function resize() {
+            _$tabbedPane.outerHeight(_$tabbedPane.parent().height());
+
+            $("#tab-Filters").outerHeight(
+                    _$tabbedPane.height() - _$tabsBar.outerHeight());
+
+            _$filterWrapp.outerHeight($("#tab-Filters").height()
+                    - $('#mlj-search-widget').height());
+
+            $("#tab-Rendering").outerHeight(
+                    _$tabbedPane.height() - _$tabsBar.outerHeight());
+
+            _$rendWrapp.outerHeight($("#tab-Rendering").height()
+                    - _renderingTb.$.height());
+        }
+
         function init() {
             _$tabbedPane.append(_$tabsBar);
 
             var filterTab = new Tab("Filters");
-            filterTab.appendContent(MLJ.gui.getWidget("SearchTool")._make());
-            filterTab.appendContent(_filtersAccord.$);
+            filterTab
+                    .appendContent(MLJ.gui.getWidget("SearchTool")._make())
+                    .appendContent(_$filterWrapp);
+            _$filterWrapp.append(_filtersAccord.$);
 
             var renderingTab = new Tab("Rendering");
-            renderingTab.appendContent(_renderingTb.$)
-                    .appendContent(_renderingAccord.$);
+            renderingTab
+                    .appendContent(_renderingTb.$)
+                    .appendContent(_$rendWrapp);
+            _$rendWrapp.append(_renderingAccord.$);
 
             _tabs.push(filterTab, renderingTab);
+
+            _$tabbedPane.on('tabsactivate', function (event, ui) {
+                resize();
+            });
         }
 
         this._make = function () {//build function                            
@@ -68,9 +102,16 @@
                 for (var i = 0, m = _tabs.length; i < m; i++) {
                     tab = _tabs[i];
                     _$tabsBar.append(tab.$tab);
-                    _$tabbedPane.append(tab.$content);
+                    _$tabbedPane.append(tab.$content());
                 }
-                _$tabbedPane.tabs({heightStyle: 'fill'});
+
+                _$tabbedPane.tabs();
+
+                resize();
+            });
+
+            $(window).resize(function () {
+                resize();
             });
 
             return _$tabbedPane;
@@ -79,18 +120,6 @@
         this._refresh = function () {
             _$tabbedPane.tabs("refresh");
         };
-
-//        this.addTab = function (name, content) {
-//            var tab;
-//            for (var i = 0; i < arguments.length; i++) {
-//                tab = arguments[i];
-//                if (tab instanceof gui.Tab) {
-//                    _tabs.push(tab);
-//                } else {
-//                    console.error("The parameter must be an instance of MLJ.gui.Button");
-//                }
-//            }
-//        };
 
         this.getFiltersAccord = function () {
             return _filtersAccord;

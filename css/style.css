@@ -218,7 +218,7 @@ html,body{
 .mjs-toolbar {
     padding: 6px 5px;
     background-color: gainsboro;
-    border-bottom: darkgray thin solid; 
+    border-bottom: darkgray thin solid;    
 }
 
 .mjs-toolbar button {
