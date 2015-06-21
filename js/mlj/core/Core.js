@@ -116,30 +116,30 @@ MLJ.core.PhongMaterial = function (flags) {
             : flags;
 
     this.threeMaterial = null;
-    
+
     var _this = this;
-    
-    this.build = function () {                
+
+    this.build = function () {
         _this.threeMaterial = new THREE.MeshPhongMaterial(this.flags);
     };
 
     this.setColor = function (value) {
-        _this.threeMaterial.color = new THREE.Color(value);
+        this.flags.color = _this.threeMaterial.color = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
     this.setEmissive = function (value) {
-        _this.threeMaterial.emissive = new THREE.Color(value);
+        this.flags.emissive = _this.threeMaterial.emissive = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
     this.setSpecular = function (value) {
-        _this.threeMaterial.specular = new THREE.Color(value);
+        this.flags.specular = _this.threeMaterial.specular = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
     this.setShininess = function (value) {
-        _this.threeMaterial.shininess = value;
+        this.flags.shininess = _this.threeMaterial.shininess = value;
         MLJ.core.Scene.render();
     };
 
@@ -149,6 +149,7 @@ MLJ.core.PhongMaterial = function (flags) {
 
     this.dispose = function () {
         _this.threeMaterial.dispose();
+        this.flags = null;
     };
 
     //Init
@@ -169,8 +170,8 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         _this.VN = meshProp.getVertexNumber();
         _this.vert = meshProp.getVertexVector();
         _this.FN = meshProp.getFaceNumber();
-        _this.face = meshProp.getFaceVector();                
-        
+        _this.face = meshProp.getFaceVector();
+
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
             var v1 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
@@ -195,7 +196,7 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     }
 
     function buildThreeMesh() {
-        console.time("Time to create mesh: ");        
+        console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh(buildMeshGeometry(),
                 _this.material.threeMaterial);
         console.timeEnd("Time to create mesh: ");
