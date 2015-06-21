@@ -112,7 +112,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
 MLJ.core.PhongMaterial = function (flags) {
 
     this.flags = flags === undefined
-            ? MLJ.core.defaults.PhongMaterial
+            ? $.extend(true, {}, MLJ.core.defaults.PhongMaterial)
             : flags;
 
     this.threeMaterial = null;
@@ -149,7 +149,7 @@ MLJ.core.PhongMaterial = function (flags) {
 
     this.dispose = function () {
         _this.threeMaterial.dispose();
-        this.flags = null;
+        this.threeMaterial = this.flags = _this = null;
     };
 
     //Init
@@ -244,7 +244,7 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
 
     this.dispose = function () {
         _this.threeMesh.geometry.dispose();
-        _this.threeMesh.material.dispose();
+        _this.material.dispose();
 
         if (_this.threeMesh.texture) {
             _this.threeMesh.texture.dispose();

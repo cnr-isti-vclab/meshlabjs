@@ -11,20 +11,33 @@
 
         function init() {
 
-            var open = new component.FileButton("", "Open mesh file",
-                    "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png");
+            var open = new component.FileButton({
+                tooltip: "Open mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png",                
+            });
+                        
 
-            open.multiple();
+            var save = new component.Button({
+                tooltip: "Save mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png",                
+            });
+            
+            MLJ.gui.makeResponsiveToScene(save);
+            
+            var reload = new component.Button({
+                tooltip: "Reload mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png",                
+            });
+            
+            MLJ.gui.makeResponsiveToScene(reload);
 
-            var save = new component.Button("", "Save mesh file",
-                    "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png");
-
-            var reload = new component.Button("", "Reload mesh file",
-                    "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png");
-
-            var snapshot = new component.Button("", "Take snapshot",
-                    "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png");
-
+            var snapshot = new component.Button({
+                tooltip: "Take snapshot",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png",
+            });
+            
+            MLJ.gui.makeResponsiveToScene(snapshot);
+            
             _toolBar.addButton(open, save, reload, snapshot);
 
             // SCENE BAR EVENT HANDLERS

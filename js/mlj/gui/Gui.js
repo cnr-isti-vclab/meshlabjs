@@ -22,16 +22,31 @@ MLJ.gui.getWidget = function (name) {
     }
 };
 
+MLJ.gui.makeResponsiveToScene = function (widget) {
+
+    $(window).ready(function () {
+        widget.disabled(true);
+    });
+
+    $(document).on(MLJ.events.Scene.LAYER_ADDED, function (ev, layer, layersNum) {
+        if (layersNum > 0) {
+            widget.disabled(false);
+        } else {
+            widget.disabled(true);
+        }
+    });
+};
+
 MLJ.gui.build = {
     button: {
-        Button: function (txt, tooltip, img) {
-            return new MLJ.gui.component.Button(txt, tooltip, img);
+        Button: function (flags) {
+            return new MLJ.gui.component.Button(flags);
         },
-        File: function (txt, tooltip, img) {
-            return new MLJ.gui.component.FileButton(txt, tooltip, img);
+        File: function (flags) {
+            return new MLJ.gui.component.FileButton(flags);
         },
-        Toggle: function (txt, tooltip, img, on) {
-            return new MLJ.gui.component.ToggleButton(txt, tooltip, img, on);
+        Toggle: function (flags) {
+            return new MLJ.gui.component.ToggleButton(flags);
         }
     },
     accordion: {

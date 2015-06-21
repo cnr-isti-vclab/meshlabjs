@@ -223,7 +223,7 @@ MLJ.core.Scene = {};
 
             if (!reloaded) {
                 $(document).trigger(
-                        MLJ.events.Scene.LAYER_ADDED, [meshFile]);
+                        MLJ.events.Scene.LAYER_ADDED, [meshFile, _layers.size()]);
             }
 
         } else {

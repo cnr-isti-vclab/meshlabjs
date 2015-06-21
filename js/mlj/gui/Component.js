@@ -183,8 +183,8 @@ MLJ.gui.component.ColorPicker = function (flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ColorPicker);
 
 // BUTTON _____________________________________________________________________
-MLJ.gui.component.Button = function (txt, label, imgSrc) {
-    var _html = '<button class="mlj-button"></button>';
+MLJ.gui.component.Button = function (flags) {
+    var _html = '<button></button>';
 
     this.onClick = function (foo) {
         $(this.$.click(function (event) {
@@ -193,35 +193,45 @@ MLJ.gui.component.Button = function (txt, label, imgSrc) {
     };
 
     this._make = function () {
-        if (txt) {
-            this.$.append(txt);
-            //Build jQuery button
-//            this.$.button();
+        var label = this.flag("label");
+        if (label !== undefined) {
+            this.$.append(label);
         }
 
-        if (label) {
-            this.$.attr("title", label).tooltip();
+        var tooltip = this.flag("tooltip");
+        if (tooltip !== undefined) {
+            this.$.attr("title", tooltip).tooltip();
         }
 
-        if (imgSrc) {
-            this.$.append('<img src="' + imgSrc + '" />');
+        var img = this.flag("icon");
+        if (img !== undefined) {
+            this.$.append('<img src="' + img + '" />');
         }
+
+        var disabled = this.flag("disabled");
+        this.$.button({disabled: disabled});
     };
-    MLJ.gui.component.Component.call(this, _html);
+
+    this.disabled = function (bool) {
+        this.$.button({disabled: bool});
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Button);
 
 // FILE BUTTON _________________________________________________________________
 
-MLJ.gui.component.FileButton = function (txt, label, imgSrc) {
-    MLJ.gui.component.Button.call(this, txt, label, imgSrc);
+MLJ.gui.component.FileButton = function (flags) {
+    MLJ.gui.component.Button.call(this, flags);
 
     var _$file = $('<input type="file" />');
 
-    this.multiple = function () {
+    if (this.flag("multiple")) {
         _$file.attr("multiple", "multiple");
-    };
+    }
+
     //Enable click event
     this.$.click(function () {
         _$file.click();
@@ -238,10 +248,12 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
 
 // TOGGLE BUTTON _______________________________________________________________
 
-MLJ.gui.component.ToggleButton = function (txt, label, imgSrc, on) {
-    MLJ.gui.component.Button.call(this, txt, label, imgSrc);
+MLJ.gui.component.ToggleButton = function (flags) {
+    MLJ.gui.component.Button.call(this, flags);
 
-    var _on = 0; //false
+    var _on = this.flag("on") !== undefined
+            ? this.flag("on") ^ 1
+            : 0;
 
     var _this = this;
 
@@ -264,12 +276,8 @@ MLJ.gui.component.ToggleButton = function (txt, label, imgSrc, on) {
         _this.toggle();
     });
 
-
-    //init    
-    if (on) {
-        _this.toggle();
-    }
-
+    //init        
+    _this.toggle();
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
@@ -344,8 +352,8 @@ MLJ.gui.component.ButtonSet = function (flags) {
             $input = $('<input type="radio"/>')
 //                    .attr("id", option.value)
                     .attr("name", groupId)
-                    .data("value",option.value);
-                    
+                    .data("value", option.value);
+
 
             $input.uniqueId();
             uId = $input.attr("id");
@@ -374,7 +382,7 @@ MLJ.gui.component.ButtonSet = function (flags) {
         return this.$.find(":checked").date("value");
     };
 
-    this.onChange = function (foo) {                
+    this.onChange = function (foo) {
         _this.$.find(":input").change(function () {
             foo($(this).data("value"));
         });

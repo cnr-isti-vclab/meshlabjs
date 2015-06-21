@@ -53,17 +53,14 @@ MLJ.core.plugin.GUIBuilder = function (entry) {
 };
 
 MLJ.core.plugin.ToolBarBuilder = function (tb) {
-    this.Toggle = function (flags) {        
-        var toggle = MLJ.gui.build.button.Toggle("",
-                flags.tooltip,
-                flags.icon,
-                flags.on);
+    this.Toggle = function (flags) {
+        var toggle = MLJ.gui.build.button.Toggle(flags);
         tb.addButton(toggle);
         return toggle;
     };
 };
 
-MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
+MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, tooltip, singleArity);
     var _this = this;
 
@@ -95,8 +92,11 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
     this._main = function () {
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
-        var apply = MLJ.gui.build.button.Button("", "Apply to selected layer"
-                , "img/icons/IcoMoon-Free-master/PNG/48px/0285-play3.png");
+        var apply = MLJ.gui.build.button.Button({
+            tooltip: "Apply to selected layer",
+            icon: "img/icons/IcoMoon-Free-master/PNG/48px/0285-play3.png",            
+        });
+
         entry.addHeaderButton(apply);
 
         apply.onClick(function () {
@@ -107,10 +107,20 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity) {
             MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
         });
 
+        if (responsive !== false) {
+            MLJ.gui.makeResponsiveToScene(apply);
+        }
+
         if (_this.singleArity === false) {
-            var applyAll = MLJ.gui.build.button.Button("", "Apply to all visible layers",
-                    "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png");
+            var applyAll = MLJ.gui.build.button.Button({
+                tooltip: "Apply to all visible layers",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png",                
+            });
             entry.addHeaderButton(applyAll);
+
+            if (responsive !== false) {
+                MLJ.gui.makeResponsiveToScene(applyAll);
+            }
 
             applyAll.onClick(function () {
                 var ptr = MLJ.core.Scene.getLayers().pointer();

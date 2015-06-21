@@ -3,7 +3,7 @@
 
     var PlatonicFilter = new plugin.Filter("Create Platonic Solid",
             "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
-            false);
+            false, false);
 
     var choiceWidget;
 
@@ -25,7 +25,7 @@
 
     PlatonicFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent());
-        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));        
+        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
 
@@ -34,7 +34,7 @@
 
     var SphereFilter = new plugin.Filter("Create Sphere ",
             "Create a sphere with the desired level of subdivision",
-            false);
+            false, false);
 
     var stepWidget;
 
