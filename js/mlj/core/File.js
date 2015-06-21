@@ -105,7 +105,7 @@ MLJ.core.File = {
         });
     };
 
-    this.createCppMeshFile = function (name) {
+    this.createCppMeshFile = function (name, builder) {
 
         var nameAmount = nameList.getByKey(name);
         if (nameAmount === undefined) {
@@ -120,10 +120,8 @@ MLJ.core.File = {
         var ptrMesh = Opener.getMesh();
         var mf = new MLJ.core.MeshFile(name, ptrMesh);
 
-        $(document).trigger(
-                MLJ.events.File.MESH_FILE_OPENED,
-                [mf]);
-
+        //Indicates that the mesh is created by c++
+        mf.cpp = true;
         return mf;
     };
 

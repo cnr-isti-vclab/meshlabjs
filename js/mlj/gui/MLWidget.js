@@ -84,6 +84,8 @@ MLJ.gui.MLWidget.Choice = function (flags) {
             : MLJ.gui.build.ButtonSet(flags);
     this.label = MLJ.gui.build.Label(flags);
 
+    var _this = this;
+
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.choice);
     };
@@ -94,6 +96,14 @@ MLJ.gui.MLWidget.Choice = function (flags) {
 
     this.getValue = function () {
         return this.choice.getSelectedValue();
+    };
+
+    this.onChange = function (foo) {
+        $(window).ready(function () {
+            _this.choice.onChange(function (val) {                
+                foo(val);
+            });
+        });
     };
 
     MLJ.gui.MLWidget.call(this);

@@ -103,9 +103,6 @@ MLJ.core.Scene = {};
         $(document).on(MLJ.events.File.MESH_FILE_OPENED,
                 function (event, mesh) {
                     MLJ.core.Scene.addLayer(mesh);
-
-                    $(document).trigger(
-                            MLJ.events.Scene.LAYER_ADDED, [mesh]);
                 });
 
         $(document).on(MLJ.events.File.MESH_FILE_RELOADED,
@@ -197,14 +194,18 @@ MLJ.core.Scene = {};
 
     this.reloadLayer = function (meshFile) {
         MLJ.core.Scene.removeLayerByName(meshFile.name);
-        MLJ.core.Scene.addLayer(meshFile);
+        MLJ.core.Scene.addLayer(meshFile, true);
     };
 
-    this.addLayer = function (meshFile) {
+    this.addLayer = function (meshFile, reloaded) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
             //Add new mesh to associative array _layers            
             _layers.set(meshFile.name, meshFile);
+
+            if (meshFile.cpp === true) {
+                meshFile.updateThreeMesh();
+            }
 
             //Set mesh position
             var mesh = meshFile.getThreeMesh();
@@ -220,6 +221,11 @@ MLJ.core.Scene = {};
             //render the scene
             this.render();
 
+            if (!reloaded) {
+                $(document).trigger(
+                        MLJ.events.Scene.LAYER_ADDED, [meshFile]);
+            }
+
         } else {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
         }
@@ -228,24 +234,12 @@ MLJ.core.Scene = {};
     this.updateLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
-            var threeMesh = meshFile.getThreeMesh();
-
-            //Remove mesh and free memory            
-            _scene.remove(threeMesh);
-
-            var oldVisibleVal = threeMesh.visible;
+            if (_layers.getByKey(meshFile.name) === undefined) {
+                console.warn("Trying to update a mesh not in the scene.");
+                return;
+            }
 
             meshFile.updateThreeMesh();
-
-            //Set mesh position
-            var mesh = meshFile.getThreeMesh();
-            var box = new THREE.Box3().setFromObject(mesh);
-            mesh.position = box.center();
-            mesh.visible = oldVisibleVal;
-            _scene.add(mesh);
-
-            //Compute the global bounding box
-            computeGlobalBBbox();
 
             //render the scene
             this.render();
@@ -265,7 +259,7 @@ MLJ.core.Scene = {};
 
     this.removeLayerByName = function (name) {
         var meshFile = this.getLayerByName(name);
-        
+
         if (meshFile !== undefined) {
             _layers.remove(name);
 

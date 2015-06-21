@@ -40,7 +40,7 @@ MLJ.core = {
             emissive: '#7c7b7b',
             shading: THREE.FlatShading,
             shininess: 50,
-            wireframe: false, //make mesh transparent            
+            wireframe: false //make mesh transparent            
         }
     }
 };
@@ -109,59 +109,59 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
 
 };
 
-MLJ.core.PhongMaterial = function () {
+MLJ.core.PhongMaterial = function (flags) {
 
-    var _material;
+    this.flags = flags === undefined
+            ? MLJ.core.defaults.PhongMaterial
+            : flags;
 
-    this.build = function () {
-        _material = new THREE.MeshPhongMaterial(MLJ.core.defaults.PhongMaterial);
-        return _material;
+    this.threeMaterial = null;
+    
+    var _this = this;
+    
+    this.build = function () {                
+        _this.threeMaterial = new THREE.MeshPhongMaterial(this.flags);
     };
 
     this.setColor = function (value) {
-        _material.color = new THREE.Color(value);
+        _this.threeMaterial.color = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
     this.setEmissive = function (value) {
-        _material.emissive = new THREE.Color(value);
+        _this.threeMaterial.emissive = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
     this.setSpecular = function (value) {
-        _material.specular = new THREE.Color(value);
+        _this.threeMaterial.specular = new THREE.Color(value);
         MLJ.core.Scene.render();
-    };
-
-    this.setShading = function (value) {
-
-        switch (value) {
-            case '1': //Flat
-                this.flags.shading = THREE.FlatShading;
-                break;
-            case '2': //Smouth
-                this.flags.shading = THREE.SmoothShading;
-                break;
-            default:
-                this.flags.shading = THREE.NoShading;
-        }
-
-        _material.shading = this.flags.shading;
     };
 
     this.setShininess = function (value) {
-        _material.shininess = value;
+        _this.threeMaterial.shininess = value;
         MLJ.core.Scene.render();
     };
 
+    this.needUpdate = function () {
+        _this.threeMaterial.needUpdate = true;
+    };
+
+    this.dispose = function () {
+        _this.threeMaterial.dispose();
+    };
+
+    //Init
+    this.build();
 };
+
 
 MLJ.core.MeshFile = function (name, ptrMesh) {
     this.name = name;
     this.ptrMesh = ptrMesh;
     this.VN = this.vert = this.FN = this.face = null;
     this.material = new MLJ.core.PhongMaterial();
-    var _threeMesh;
+    this.threeMesh = null;
     var _this = this;
 
     function buildMeshGeometry() {
@@ -169,8 +169,8 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         _this.VN = meshProp.getVertexNumber();
         _this.vert = meshProp.getVertexVector();
         _this.FN = meshProp.getFaceNumber();
-        _this.face = meshProp.getFaceVector();
-
+        _this.face = meshProp.getFaceVector();                
+        
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
             var v1 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
@@ -189,63 +189,69 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
             geometry.faces.push(new THREE.Face3(a, b, c));
         }
 
-//        geometry.dynamic = true;
-//        geometry.computeFaceNormals();
-//        geometry.computeVertexNormals();
+        geometry.dynamic = true;
 
         return geometry;
     }
 
-    function buildThreeMesh(material) {
-        console.time("Time to create mesh: ");
-        _threeMesh = new THREE.Mesh(buildMeshGeometry(), material);
+    function buildThreeMesh() {
+        console.time("Time to create mesh: ");        
+        _this.threeMesh = new THREE.Mesh(buildMeshGeometry(),
+                _this.material.threeMaterial);
         console.timeEnd("Time to create mesh: ");
     }
 
+    function geometryNeedUpdate() {
+        _this.threeMesh.geometry.computeFaceNormals();
+        _this.threeMesh.geometry.computeVertexNormals();
+        _this.threeMesh.geometry.verticesNeedUpdate = true;
+        _this.threeMesh.geometry.elementsNeedUpdate = true;
+        _this.threeMesh.geometry.normalsNeedUpdate = true;
+    }
+
+    this.setShading = function (value) {
+
+        //Set material shading flag
+        this.material.flags.shading = value;
+
+        //Rebuild material
+        this.material.build();
+
+        //Change mesh old material with new one
+        _this.threeMesh.material = this.material.threeMaterial;
+
+        //Update geometry
+        geometryNeedUpdate();
+
+        MLJ.core.Scene.render();
+    };
+
     this.getThreeMesh = function () {
-        return _threeMesh;
+        return this.threeMesh;
     };
 
     this.updateThreeMesh = function () {
-        
+
         //Free memory
-        _threeMesh.geometry.dispose();
-        _threeMesh.material.dispose();
+        _this.threeMesh.geometry.dispose();
 
-        if (_threeMesh.texture) {
-            _threeMesh.texture.dispose();
-        }
+        //Rebuild mesh geometry
+        this.threeMesh.geometry = buildMeshGeometry();
 
-        _threeMesh = null;
-        
-        //Rebuild mesh
-        buildThreeMesh(this.material.build());
-
-//        var geometry = buildMeshGeometry();
-//        _threeMesh.geometry.vertices = geometry.vertices;
-//        _threeMesh.geometry.faces = geometry.faces;
-//        _threeMesh.geometry.verticesNeedUpdate = true;
-//        _threeMesh.geometry.elementsNeedUpdate = true;
-//        _threeMesh.geometry.normalsNeedUpdate = true;
-//
+        geometryNeedUpdate();
     };
 
     this.dispose = function () {
-        _threeMesh.geometry.dispose();
-        _threeMesh.material.dispose();
+        _this.threeMesh.geometry.dispose();
+        _this.threeMesh.material.dispose();
 
-        if (_threeMesh.texture) {
-            _threeMesh.texture.dispose();
+        if (_this.threeMesh.texture) {
+            _this.threeMesh.texture.dispose();
         }
 
-        _threeMesh = null;
-
-        _this.name = name;
-        _this.ptrMesh = ptrMesh;
-        _this.VN = _this.vert = _this.FN = _this.face = null;
-        _this.material = null;
-        _this = null;
+        _this.threeMesh = _this.name = _this.ptrMesh = _this.VN = _this.vert =
+                _this.FN = _this.face = _this.material = _this = null;
     };
 
-    buildThreeMesh(this.material.build());
+    buildThreeMesh();
 };

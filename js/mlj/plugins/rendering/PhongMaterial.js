@@ -8,11 +8,6 @@
     var shininessWidget;
 
     plug._init = function (tbBuilder, guiBuilder) {
-//        var light = tbBuilder.Toggle({
-//            tooltip: "Headlight on/off",
-//            icon: "img/icons/light.png",
-//            on: core.defaults.Headlight.on
-//        });
 
         guiBuilder.Color({
             label: "Specular",
@@ -44,6 +39,16 @@
             }
         });
 
+        var shadingWidget = guiBuilder.Choice({
+            label: "Shading",
+            tooltip: "How the triangles of a curved surface are rendered: as a smooth surface, as flat separate facets, or no shading at all",
+            options: [
+                {content: "Flat", value: THREE.FlatShading, selected: true},
+                {content: "Smooth", value: THREE.SmoothShading}
+//                {content: "None", value: THREE.NoShading}
+            ]
+        });
+
         shininessWidget = guiBuilder.Integer({
             label: "Shininess",
             tooltip: "How shiny the specular highlight is. A higher value gives a sharper highlight",
@@ -51,14 +56,16 @@
             defval: core.defaults.PhongMaterial.shininess
         });
 
-//        light.onToggle(function (on) {
-//            scene.lights.Headlight.setOn(on);
-//        });
-//
         shininessWidget.onChange(function (val) {
             var meshFile = scene.getSelectedLayer();
             meshFile.material.setShininess(val);
         });
+        
+        shadingWidget.onChange(function(val) {
+            var meshFile = scene.getSelectedLayer();
+            meshFile.setShading(val);
+            //IMPOSTARE VALORE DI DEFOULT
+        });                    
 
     };
 

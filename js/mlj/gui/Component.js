@@ -339,12 +339,18 @@ MLJ.gui.component.ButtonSet = function (flags) {
         _this.$.uniqueId();
         var groupId = this.$.attr("id");
 
-        var $input, $label;
+        var $input, $label, uId;
         $(options).each(function (key, option) {
             $input = $('<input type="radio"/>')
-                    .attr("id", option.value)
-                    .attr("name", groupId);
-            $label = $('<label for="' + option.value + '"></label>')
+//                    .attr("id", option.value)
+                    .attr("name", groupId)
+                    .data("value",option.value);
+                    
+
+            $input.uniqueId();
+            uId = $input.attr("id");
+
+            $label = $('<label for="' + uId + '"></label>')
                     .append(option.content);
 
             if (option.selected === true) {
@@ -355,7 +361,7 @@ MLJ.gui.component.ButtonSet = function (flags) {
 
         });
 
-        this.$.buttonset();
+        _this.$.buttonset();
 
     };
 
@@ -365,7 +371,13 @@ MLJ.gui.component.ButtonSet = function (flags) {
     };
 
     this.getSelectedValue = function () {
-        return this.$.find(":checked").attr("id");
+        return this.$.find(":checked").date("value");
+    };
+
+    this.onChange = function (foo) {                
+        _this.$.find(":input").change(function () {
+            foo($(this).data("value"));
+        });
     };
 
     MLJ.gui.component.Component.call(this, _html, flags);
@@ -403,6 +415,12 @@ MLJ.gui.component.ComboBox = function (flags) {
 
     this.getSelectedValue = function () {
         return this.$.find(":selected").val();
+    };
+
+    this.onChange = function (foo) {
+        _this.$.on("selectmenuchange", function (event, ui) {
+            foo(event, ui);
+        });
     };
 
     MLJ.gui.component.Component.call(this, _html, flags);
@@ -614,7 +632,7 @@ MLJ.gui.component.Spinner = function (flags) {
             callback(event, ui);
         });
     };
-    
+
     this.onSpinStop = function (callback) {
         _$spinner.on("spinstop", function (event, ui) {
             callback(event, ui);

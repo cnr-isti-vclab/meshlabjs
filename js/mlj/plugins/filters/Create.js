@@ -25,8 +25,8 @@
 
     PlatonicFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent());
-        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));
-        scene.updateLayer(mf);
+        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));        
+        scene.addLayer(mf);
     };
 
     plugin.install(PlatonicFilter);
@@ -50,7 +50,7 @@
     SphereFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Sphere");
         Module.CreateSphere(mf.ptrMesh, stepWidget.getValue());
-        scene.updateLayer(mf);
+        scene.addLayer(mf);
     };
 
     plugin.install(SphereFilter);
