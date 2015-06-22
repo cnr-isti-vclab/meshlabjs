@@ -113,21 +113,21 @@ MLJ.core.Scene = {};
                             MLJ.events.Scene.LAYER_UPDATED, [mesh]);
                 });
 
-        $(document).on(MLJ.events.Gui.LAYER_SELECTION_CHANGED,
+        $(document).on(MLJ.events.Scene.SELECT_LAYER,
                 function (event, layerName) {
                     _selectedLayer = _layers.getByKey(layerName);
                     $(document).trigger(
                             MLJ.events.Scene.LAYER_SELECTED, [_selectedLayer]);
                 });
 
-        $(document).on(MLJ.events.Gui.HIDE_LAYER,
+        $(document).on(MLJ.events.Scene.HIDE_LAYER,
                 function (event, layerName) {
                     var layer = _layers.getByKey(layerName);
                     layer.getThreeMesh().visible = false;
                     MLJ.core.Scene.render();
                 });
 
-        $(document).on(MLJ.events.Gui.SHOW_LAYER,
+        $(document).on(MLJ.events.Scene.SHOW_LAYER,
                 function (event, layerName) {
                     var layer = _layers.getByKey(layerName);
                     layer.getThreeMesh().visible = true;

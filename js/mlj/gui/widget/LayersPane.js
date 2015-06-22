@@ -120,19 +120,18 @@
 
             $layer.click(function () {
                 if ($layer.attr("name") !== _selectedName) {
-                    select(name);
-                    //Trigger LAYER_SELECTION_CHANGED event 
-                    $(document).trigger(MLJ.events.Gui.LAYER_SELECTION_CHANGED, [name]);
+                    select(name);                    
+                    $(document).trigger(MLJ.events.Scene.SELECT_LAYER, [name]);
                 }
             });
 
             $eye.click(function () {
                 if ($eye.hasClass("show")) {
                     $eye.removeClass("show").addClass("hide");
-                    $(document).trigger(MLJ.events.Gui.HIDE_LAYER, [name]);
+                    $(document).trigger(MLJ.events.Scene.HIDE_LAYER, [name]);
                 } else {
                     $eye.removeClass("hide").addClass("show");
-                    $(document).trigger(MLJ.events.Gui.SHOW_LAYER, [name]);
+                    $(document).trigger(MLJ.events.Scene.SHOW_LAYER, [name]);
                 }
             });
         };

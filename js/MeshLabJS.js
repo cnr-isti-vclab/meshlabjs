@@ -1,3 +1,31 @@
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Creates and manages MeshLabJS GUI.
+ * @author Stefano Gabriele / stefano_gabriele@yahoo.it  
+ */
+
 
 (function (widget) {
 
@@ -19,13 +47,7 @@
                 verticalAlign: "middle"
             });
 
-    var _$hideBtn = $('<span class="ui-icon ui-icon-arrowthick-1-w"></span>')
-            .css({
-//                borderRadius: 20,
-//                padding:"2px",
-//                textAlign:"center",
-//                backgroundColor:"rgba(0,0,0,0.2)"
-            });
+    var _$hideBtn = $('<span class="ui-icon ui-icon-arrowthick-1-w"></span>');
 
     var _$pane = $('<div id="mlj-tools-pane"></div>')
             .css({
