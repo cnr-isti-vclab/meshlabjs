@@ -21,7 +21,10 @@
 
     var _$hideBtn = $('<span class="ui-icon ui-icon-arrowthick-1-w"></span>')
             .css({
-                borderRadius: 5
+//                borderRadius: 20,
+//                padding:"2px",
+//                textAlign:"center",
+//                backgroundColor:"rgba(0,0,0,0.2)"
             });
 
     var _$pane = $('<div id="mlj-tools-pane"></div>')
@@ -65,7 +68,6 @@
         $('body').append(_$3D, _$wrapper, makeTitle(title));
 
         _$pane.append(MLJ.gui.getWidget("SceneBar")._make());
-//        _$pane.append(MLJ.gui.getWidget("SearchTool")._make());
 
         var $wrap = $("<div/>").attr("id", "mlj-split-pane");
         var $pos1 = $("<div/>").css({height: "30%"}).addClass("mlj-resiz1");
@@ -76,8 +78,7 @@
         splitPane("mlj-resiz1");
         splitPane("mlj-resiz2");
 
-        //Init split pane height on window ready
-        //splitPane.height = window.height - (sceneBar.height+searchTool.height)
+        //Init split pane height on window ready        
         $(window).ready(function () {
             $wrap.height($(window).height() - $wrap.offset().top);
         });
@@ -101,7 +102,6 @@
     function splitPane(cl) {
         var sum, minH;
         $("." + cl).resizable({
-//                    autoHide: true,
             handles: 's',
             start: function (e, ui) {
                 var divTwo = ui.element.next();

@@ -13,27 +13,28 @@
 
             var open = new component.FileButton({
                 tooltip: "Open mesh file",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png",                
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png",
+                multiple: true
             });
                         
 
             var save = new component.Button({
                 tooltip: "Save mesh file",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png",                
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png"
             });
             
             MLJ.gui.makeResponsiveToScene(save);
             
             var reload = new component.Button({
                 tooltip: "Reload mesh file",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png",                
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png"
             });
             
             MLJ.gui.makeResponsiveToScene(reload);
 
             var snapshot = new component.Button({
                 tooltip: "Take snapshot",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png"
             });
             
             MLJ.gui.makeResponsiveToScene(snapshot);
