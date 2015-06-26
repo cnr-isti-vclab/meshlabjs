@@ -22,11 +22,10 @@
  */
 
 /**
- * @file The file defines Emscripten Module object, MLJ.core namspace, the basic
- * classes to manage File, MeshFile, Lights, Material and Scene.
+ * @file The file defines Emscripten Module object, MLJ.core namspace and the basic 
+ * classes used to create a Scene
  * @author Stefano Gabriele
  */
-
 
 /**
  * @global
@@ -55,52 +54,88 @@ var Module = {
 
 
 /**
- * MLJ.core namspace ....
+ * MLJ.core namspace
  * @namespace MLJ.core
  * @memberOf MLJ
  * @author Stefano Gabriele
  */
 MLJ.core = {
+    /**
+     * Enum for defaults
+     * @readonly
+     * @enum {Object}
+     * @memberOf MLJ.core     
+     * @author Stefano Gabriele
+     */
     defaults: {
+        /** AmbientLight defaults */
         AmbientLight: {
             color: "#ffffff",
             on: false
         },
+        /** Headlight defaults */
         Headlight: {
             color: "#ffffff",
             on: true,
             intensity: 0.5,
             distance: 0
         },
+        /** PhongMaterial defaults */
         PhongMaterial: {
             specular: '#ffffff',
             color: '#a0a0a0',
             emissive: '#7c7b7b',
             shading: THREE.FlatShading,
             shininess: 50,
-            wireframe: false //make mesh transparent            
+            wireframe: false
         }
     }
 };
 
+/**         
+ * @class Creates a new Ambient light
+ * @param {THREE.Scene} scene The scene object
+ * @param {THREE.Camera} camera The camera object
+ * @param {THREE.WebGLRenderer} renderer The renderer object
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele 
+ */
 MLJ.core.AmbientLight = function (scene, camera, renderer) {
 
     var _on = MLJ.core.defaults.AmbientLight.on;
 
     var _light = new THREE.AmbientLight(
             MLJ.core.defaults.AmbientLight.color);
-
+    
+    /**
+     * Sets the ambient light color
+     * @param {Object} color Can be a hexadecimal or a CSS-style string for example,
+     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setColor = function (color) {
         _light.color = new THREE.Color(color);
         renderer.render(scene, camera);
     };
-
+    
+    /**
+     * Returns <code>true</code> if this ambient light is on
+     * @returns {Boolean} <code>true</code> if this ambient light is on, 
+     * <code>false</code> otherwise
+     * @author Stefano Gabriele     
+     */
     this.isOn = function () {
         return _on;
     };
-
+    
+    /**
+     * Sets this ambient light on/off
+     * @param {Boolean} on If <code>true</code>, this ambient light is enabled; 
+     * otherwise this ambient light is disabled
+     * @author Stefano Gabriele
+     */
     this.setOn = function (on) {
-        if (on) {
+        if (on === true) {
             scene.add(_light);
             _on = true;
         } else {
@@ -115,6 +150,15 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
     this.setOn(_on);
 };
 
+
+/**         
+ * @class Creates a new Headlight
+ * @param {THREE.Scene} scene The scene object
+ * @param {THREE.Camera} camera The camera object
+ * @param {THREE.WebGLRenderer} renderer The renderer object
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele 
+ */
 MLJ.core.Headlight = function (scene, camera, renderer) {
     var _on = MLJ.core.defaults.Headlight.on;
 
@@ -122,17 +166,34 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
             MLJ.core.defaults.Headlight.color,
             MLJ.core.defaults.Headlight.intensity,
             MLJ.core.defaults.Headlight.distance);
-
+    
+    /**
+     * Sets the intensity of the headlight
+     * @param {Float} Numeric value of the light's strength/intensity
+     * @author Stefano Gabriele     
+     */
     this.setIntensity = function (value) {
         _light.intensity = value;
         renderer.render(scene, camera);
     };
-
+    
+    /**
+     * Sets the headlight color
+     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
+     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setColor = function (color) {
         _light.color = new THREE.Color(color);
         renderer.render(scene, camera);
     };
-
+    
+    /**
+     * Sets this headlight on/off
+     * @param {Boolean} on If <code>true</code>, this headlight is enabled; 
+     * otherwise this headlight is disabled
+     * @author Stefano Gabriele
+     */
     this.setOn = function (on) {
         if (on) {
             camera.add(_light);
@@ -142,59 +203,137 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
         renderer.render(scene, camera);
     };
 
-    //Init light
+    //Init
     this.setOn(_on);
 
 };
 
-MLJ.core.PhongMaterial = function (flags) {
-
-    this.flags = flags === undefined
-            ? $.extend(true, {}, MLJ.core.defaults.PhongMaterial)
-            : flags;
-
-    this.threeMaterial = null;
-
+/**         
+ * @class Creates a new PhongMaterial 
+ * @param {Object} parameters The initial paramters of the material
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele 
+ * @example
+ * var material = new PhongMaterial({
+ *    specular: '#ffffff',
+ *    color: '#a0a0a0',
+ *    emissive: '#7c7b7b',
+ *    shading: THREE.FlatShading,
+ *    shininess: 50, 
+ * });
+ */
+MLJ.core.PhongMaterial = function (parameters) {
+    
     var _this = this;
-
+    
+    /**     
+     * Contains this Phong material paramters
+     * @type Object
+     * @author Stefano Gabriele
+     */
+    this.parameters = parameters === undefined
+            ? $.extend(true, {}, MLJ.core.defaults.PhongMaterial)
+            : parameters;
+    
+    /**     
+     * Contains this THREE.MeshPhongMaterial. Note that if <code>this.build()</code>
+     * function is not invoked, <code>this.threeMaterial = null</code>
+     * @type THREE.MeshPhongMaterial
+     * @author Stefano Gabriele
+     */
+    this.threeMaterial = null;   
+    
+    /**     
+     * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
+     * @author Stefano Gabriele
+     */
     this.build = function () {
-        _this.threeMaterial = new THREE.MeshPhongMaterial(this.flags);
+        _this.threeMaterial = new THREE.MeshPhongMaterial(this.parameters);
     };
-
+    
+    /**
+     * Sets the diffuse color of the material
+     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
+     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setColor = function (value) {
-        this.flags.color = _this.threeMaterial.color = new THREE.Color(value);
+        this.parameters.color = _this.threeMaterial.color = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
-
+    
+    /**
+     * Sets the Emissive (light) color of the material, essentially a solid color unaffected by other lighting
+     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
+     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setEmissive = function (value) {
-        this.flags.emissive = _this.threeMaterial.emissive = new THREE.Color(value);
+        this.parameters.emissive = _this.threeMaterial.emissive = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
+    /**
+     * Sets the headlight color
+     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setSpecular = function (value) {
-        this.flags.specular = _this.threeMaterial.specular = new THREE.Color(value);
+        this.parameters.specular = _this.threeMaterial.specular = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
 
+    /**
+     * Sets the specular color of the material, i.e., how shiny the material is 
+     * and the color of its shine. Setting this the same color as the diffuse 
+     * value (times some intensity) makes the material more metallic-looking; 
+     * setting this to some gray makes the material look more plastic
+     * @param {Object} color Can be a hexadecimal or a CSS-style string 
+     * for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+     * @author Stefano Gabriele     
+     */
     this.setShininess = function (value) {
-        this.flags.shininess = _this.threeMaterial.shininess = value;
+        this.parameters.shininess = _this.threeMaterial.shininess = value;
         MLJ.core.Scene.render();
     };
-
+    
+    /**
+     * Indicates that this material need update
+     * @author Stefano Gabriele     
+     */
     this.needUpdate = function () {
         _this.threeMaterial.needUpdate = true;
     };
-
+    
+    /**
+     * Removes the object from memory
+     * @author Stefano Gabriele     
+     */
     this.dispose = function () {
         _this.threeMaterial.dispose();
-        this.threeMaterial = this.flags = _this = null;
+        this.threeMaterial = this.parameters = _this = null;
     };
 
     //Init
     this.build();
 };
 
-
+/**         
+ * @class Creates a new MeshFile 
+ * @param {String} name The name of the mesh file
+ * @param {uintptr_t} ptrMesh the pointer returned from a c++ function call
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele 
+ * @example
+ * var Opener = new Module.Opener();
+ * var resOpen = Opener.openMesh(file.name);
+ * if (resOpen != 0) {
+ *      // error in opening ...
+ * } else {
+ *      var ptrMesh = Opener.getMesh(); 
+ *      var mf = new MLJ.core.MeshFile(file.name, ptrMesh); 
+ * } 
+ */
 MLJ.core.MeshFile = function (name, ptrMesh) {
     this.name = name;
     this.ptrMesh = ptrMesh;
@@ -247,11 +386,17 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         _this.threeMesh.geometry.computeFaceNormals();
         _this.threeMesh.geometry.computeVertexNormals();
     }
+    
+    /**
+     * Sets the mesh shading: Smooth, Flat, None
+     * @param {Number} shading The shading type: <code>THREE.FlatShading (default), 
+     * THREE.SmoothShading, THREE.NoShading</code>
+     * @author Stefano Gabriele 
+     */
+    this.setShading = function (shading) {
 
-    this.setShading = function (value) {
-
-        //Set material shading flag
-        this.material.flags.shading = value;
+        //Set material shading parameter
+        this.material.flags.shading = shading;
 
         //Rebuild material
         this.material.build();
@@ -264,11 +409,20 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
 
         MLJ.core.Scene.render();
     };
-
+    
+    /**
+     * Returns this THREE.Mesh object
+     * @returns {THREE.Mesh} this THREE.Mesh object
+     * @author Stefano Gabriele     
+     */
     this.getThreeMesh = function () {
         return this.threeMesh;
     };
 
+    /**
+     * Update (rebuild) this THREE.Mesh geometry
+     * @author Stefano Gabriele        
+     */
     this.updateThreeMesh = function () {
 
         //Free memory
@@ -279,7 +433,11 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
 
         geometryNeedUpdate();
     };
-
+    
+    /**
+     * Removes the object from memory
+     * @author Stefano Gabriele     
+     */
     this.dispose = function () {
         _this.threeMesh.geometry.dispose();
         _this.material.dispose();

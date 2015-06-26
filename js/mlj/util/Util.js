@@ -38,10 +38,10 @@ MLJ.util = {};
  * @class Create an Associative array 
  * @memberOf MLJ.util
  * @author Stefano Gabriele  
- * @example <caption>Usage exemple:</caption>  
+ * @example <caption>Usage example:</caption>  
  * var aa = new MLJ.util.AssociativeArray();
  * aa.set("key1", obj1);
- * aa.set("key3", obj2);
+ * aa.set("key2", obj2);
  * var iter = aa.iterator();
  * var obj;
  * while(iter.hasNext()) {
