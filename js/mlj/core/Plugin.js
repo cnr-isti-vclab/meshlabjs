@@ -5,11 +5,11 @@ MLJ.core.plugin = {
     }
 };
 
-MLJ.core.plugin.Plugin = function (type, name, tooltip, singleArity) {
+MLJ.core.plugin.Plugin = function (type, name, tooltip, arity) {
     this.type = type;
     this.name = name;
     this.tooltip = tooltip;
-    this.singleArity = singleArity;
+    this.arity = arity;
 };
 
 MLJ.core.plugin.Plugin.prototype = {
@@ -60,12 +60,19 @@ MLJ.core.plugin.ToolBarBuilder = function (tb) {
     };
 };
 
-MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER, name, tooltip, singleArity);
+MLJ.core.plugin.Filter = function (parameters) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER
+            , parameters.name, parameters.tooltip, parameters.arity);
     var _this = this;
 
     var entry = new MLJ.gui.build.accordion.Entry(
-            {label: name, tooltip: tooltip});
+            {label: parameters.name, tooltip: parameters.tooltip});
+
+    //Test if arity is number and is integer
+    if (!(Math.floor(parameters.arity) === parameters.arity &&
+            jQuery.isNumeric(parameters.arity))) {
+        parameters.arity = 1;
+    }
 
     var filterBuilder = new MLJ.core.plugin.GUIBuilder(entry);
 
@@ -74,7 +81,7 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
 
         for (var i = 0, m = select.length; i < m; i++) {
 
-            if (name.includes(select[i])) {
+            if (parameters.name.includes(select[i])) {
                 entry.show();
                 found = true;
                 //exit from for cycle
@@ -94,7 +101,7 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
 
         var apply = MLJ.gui.build.button.Button({
             tooltip: "Apply to selected layer",
-            icon: "img/icons/IcoMoon-Free-master/PNG/48px/0285-play3.png",            
+            icon: "img/icons/IcoMoon-Free-master/PNG/48px/0285-play3.png",
         });
 
         entry.addHeaderButton(apply);
@@ -107,20 +114,18 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
             MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
         });
 
-        if (responsive !== false) {
+        if (parameters.arity > 0) {
             MLJ.gui.makeResponsiveToScene(apply);
         }
 
-        if (_this.singleArity === false) {
+        if (parameters.arity > 1) {
             var applyAll = MLJ.gui.build.button.Button({
                 tooltip: "Apply to all visible layers",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png",                
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png",
             });
             entry.addHeaderButton(applyAll);
-
-            if (responsive !== false) {
-                MLJ.gui.makeResponsiveToScene(applyAll);
-            }
+            
+            MLJ.gui.makeResponsiveToScene(applyAll);
 
             applyAll.onClick(function () {
                 var ptr = MLJ.core.Scene.getLayers().iterator();

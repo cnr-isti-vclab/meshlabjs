@@ -1,9 +1,11 @@
 
 (function (plugin, scene) {
 
-    var PlatonicFilter = new plugin.Filter("Create Platonic Solid",
-            "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
-            false, false);
+    var PlatonicFilter = new plugin.Filter({
+        name: "Create Platonic Solid",
+        tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
+        arity: 0
+    });
 
     var choiceWidget;
 
@@ -32,9 +34,10 @@
     plugin.install(PlatonicFilter);
 
 
-    var SphereFilter = new plugin.Filter("Create Sphere ",
-            "Create a sphere with the desired level of subdivision",
-            false, false);
+    var SphereFilter = new plugin.Filter({
+        name: "Create Sphere ",
+        tooltip: "Create a sphere with the desired level of subdivision",
+        arity: 0});
 
     var stepWidget;
 

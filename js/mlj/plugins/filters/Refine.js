@@ -1,10 +1,11 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter(
-            "Refine",
-            "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",
-            false);
+    var filter = new plugin.Filter({
+        name: "Refine",
+        tooltip: "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",
+        arity: 2
+    });
 
     var spinner;
     filter._init = function (builder) {

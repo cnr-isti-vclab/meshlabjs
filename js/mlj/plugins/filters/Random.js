@@ -1,10 +1,11 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter(
-            "Random Displacement",
-            null,
-            false);
+    var filter = new plugin.Filter({
+            name:"Random Displacement",
+            tooltip:null,
+            arity:2
+        });
 
     var spinner;
 

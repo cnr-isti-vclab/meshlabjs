@@ -1,10 +1,11 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter(
-            "QuadricSimplification",
-            "Simplify (decimate) a mesh according to a edge collapse strategy",
-            false);
+    var filter = new plugin.Filter({
+        name: "QuadricSimplification",
+        tooltip: "Simplify (decimate) a mesh according to a edge collapse strategy",
+        arity: 2
+    });
 
     var ratioW;
 
@@ -19,7 +20,7 @@
     };
 
     filter._applyTo = function (meshFile) {
-        Module.QuadricSimplification(meshFile.ptrMesh, ratioW.getValue(),0,true);
+        Module.QuadricSimplification(meshFile.ptrMesh, ratioW.getValue(), 0, true);
         scene.updateLayer(meshFile);
     };
 

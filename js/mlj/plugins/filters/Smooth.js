@@ -1,9 +1,11 @@
 
 (function (plugin, scene) {
 
-    var LaplacianSmoothFilter = new plugin.Filter("Laplacian Smooth",
-            "Perform Geometric Laplacian Smoothing on the vertices of the mesh",
-            false);
+    var LaplacianSmoothFilter = new plugin.Filter({
+        name: "Laplacian Smooth",
+        tooltip: "Perform Geometric Laplacian Smoothing on the vertices of the mesh",
+        arity: 2
+    });
 
     var stepLWidget, weightWidget;
 
@@ -29,15 +31,17 @@
     };
 
     plugin.install(LaplacianSmoothFilter);
-    
-    
-    var TaubinSmoothFilter = new plugin.Filter("Taubin Smooth",
-            "The &lambda;-&mu; Taubin smoothing, it make two steps of smoothing, forth and back, for each iteration. Based on:<br>"+
-            "Gabriel Taubin,<br><b><a href=https://scholar.google.com/scholar?q=A+signal+processing+approach+to+fair+surface+design >"+
-                                               " A signal processing approach to fair surface design<\a></b><br>Siggraph 1995",
-            false);
 
-    var stepTWidget,lambdaWidget,muWidget;
+
+    var TaubinSmoothFilter = new plugin.Filter({
+        name: "Taubin Smooth",
+        tooltip: "The &lambda;-&mu; Taubin smoothing, it make two steps of smoothing, forth and back, for each iteration. Based on:<br>" +
+                "Gabriel Taubin,<br><b><a href=https://scholar.google.com/scholar?q=A+signal+processing+approach+to+fair+surface+design >" +
+                " A signal processing approach to fair surface design<\a></b><br>Siggraph 1995",
+        arity: false
+    });
+
+    var stepTWidget, lambdaWidget, muWidget;
 
     TaubinSmoothFilter._init = function (builder) {
 
@@ -46,7 +50,7 @@
             label: "Iteration",
             tooltip: "Number of iteration of the smoothing algorithm"
         });
-        
+
         lambdaWidget = builder.Float({
             max: 1, min: 0.0, step: 0.1, defval: 0.330,
             label: "lambda",
@@ -67,6 +71,6 @@
     };
 
     plugin.install(TaubinSmoothFilter);
-    
+
 
 })(MLJ.core.plugin, MLJ.core.Scene);
