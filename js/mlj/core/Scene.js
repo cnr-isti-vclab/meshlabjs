@@ -136,11 +136,11 @@ MLJ.core.Scene = {};
     }
 
     function computeGlobalBBbox() {
-        var ptr = _layers.pointer();
+        var iter = _layers.iterator();
 
         var threeMesh;
-        while (ptr.hasNext()) {
-            threeMesh = ptr.next().getThreeMesh();
+        while (iter.hasNext()) {
+            threeMesh = iter.next().getThreeMesh();
             if (threeMesh.scaleFactor) {
                 threeMesh.position.x -= threeMesh.offsetVec.x;
                 threeMesh.position.y -= threeMesh.offsetVec.y;
@@ -151,32 +151,32 @@ MLJ.core.Scene = {};
         }
 
         var BBGlobal = new THREE.Box3();
-        ptr = _layers.pointer();
-        while (ptr.hasNext()) {
-            threeMesh = ptr.next().getThreeMesh();
+        iter = _layers.iterator();
+        while (iter.hasNext()) {
+            threeMesh = iter.next().getThreeMesh();
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
 
-        ptr = _layers.pointer();
-        while (ptr.hasNext()) {
-            threeMesh = ptr.next().getThreeMesh();
+        iter = _layers.iterator();
+        while (iter.hasNext()) {
+            threeMesh = iter.next().getThreeMesh();
             var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
             threeMesh.scale.multiplyScalar(scaleFac);
             threeMesh.scaleFactor = scaleFac;
         }
 
         BBGlobal = new THREE.Box3();
-        ptr = _layers.pointer();
-        while (ptr.hasNext()) {
-            threeMesh = ptr.next().getThreeMesh();
+        iter = _layers.iterator();
+        while (iter.hasNext()) {
+            threeMesh = iter.next().getThreeMesh();
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
 
-        ptr = _layers.pointer();
-        while (ptr.hasNext()) {
-            threeMesh = ptr.next().getThreeMesh();
+        iter = _layers.iterator();
+        while (iter.hasNext()) {
+            threeMesh = iter.next().getThreeMesh();
             var offset = new THREE.Vector3();
             offset = BBGlobal.center().negate();
             threeMesh.position.x += offset.x;

@@ -47,24 +47,25 @@ MLJ.util.AssociativeArray = function () {
     var values = [];
 
     /**         
-     * @class Create a new _pointer
+     * @class Create a new _Iterator
      * @private     
      * @author Stefano Gabriele  
      */
-    var _pointer = function () {
+    var _Iterator = function () {
         var _ind = 0;
         
         /**
-         * 
-         * @returns {Boolean}
+         * Returns true if the iteration has more elements.
+         * @returns {Boolean} <code>true</code> if the iteration has more elements,
+         * <code>false</code> otherwise.
          */
         this.hasNext = function () {
             return _ind < keys.length;
         };
         
         /**
-         * Returns the pointed Object and move the pointer to next Object
-         * @returns {Object} The pointed Object
+         * Returns the next element in the iteration.
+         * @returns {Object} the next element in the iteration
          */
         this.next = function () {
             var next = values[keys[_ind]];
@@ -131,10 +132,10 @@ MLJ.util.AssociativeArray = function () {
     };
 
     /**
-     * Returns a pointer to the first element of the associative array
-     * @returns {MLJ.util.AssociativeArray._pointer}
+     * Returns an iterator over the elements in this array.
+     * @returns {MLJ.util.AssociativeArray._Iterator}
      */
-    this.pointer = function () {
-        return new _pointer();
+    this.iterator = function () {
+        return new _Iterator();
     };
 };

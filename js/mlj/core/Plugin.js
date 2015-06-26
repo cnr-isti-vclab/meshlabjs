@@ -123,7 +123,7 @@ MLJ.core.plugin.Filter = function (name, tooltip, singleArity, responsive) {
             }
 
             applyAll.onClick(function () {
-                var ptr = MLJ.core.Scene.getLayers().pointer();
+                var ptr = MLJ.core.Scene.getLayers().iterator();
                 var layer;
                 var t0 = performance.now();
                 while (ptr.hasNext()) {
@@ -180,7 +180,7 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
     };
 
     this.run = function () {
-        var ptr = _plugins.pointer();
+        var ptr = _plugins.iterator();
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
