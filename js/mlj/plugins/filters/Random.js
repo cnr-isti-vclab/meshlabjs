@@ -4,7 +4,7 @@
     var filter = new plugin.Filter({
             name:"Random Displacement",
             tooltip:null,
-            arity:2
+            arity:1
         });
 
     var spinner;

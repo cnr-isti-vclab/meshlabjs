@@ -101,7 +101,7 @@ MLJ.core.plugin.Filter = function (parameters) {
 
         var apply = MLJ.gui.build.button.Button({
             tooltip: "Apply to selected layer",
-            icon: "img/icons/IcoMoon-Free-master/PNG/48px/0285-play3.png",
+            icon: "img/icons/apply.png",
         });
 
         entry.addHeaderButton(apply);
@@ -118,10 +118,10 @@ MLJ.core.plugin.Filter = function (parameters) {
             MLJ.gui.makeResponsiveToScene(apply);
         }
 
-        if (parameters.arity > 1) {
+        if (parameters.arity === 1) {
             var applyAll = MLJ.gui.build.button.Button({
                 tooltip: "Apply to all visible layers",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0289-forward3.png",
+                icon: "img/icons/apply_all.png",
             });
             entry.addHeaderButton(applyAll);
             

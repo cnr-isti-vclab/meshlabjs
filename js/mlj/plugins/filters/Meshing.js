@@ -4,7 +4,7 @@
     var filter = new plugin.Filter({
         name: "QuadricSimplification",
         tooltip: "Simplify (decimate) a mesh according to a edge collapse strategy",
-        arity: 2
+        arity: 1
     });
 
     var ratioW;

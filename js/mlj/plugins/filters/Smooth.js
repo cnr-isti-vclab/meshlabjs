@@ -4,7 +4,7 @@
     var LaplacianSmoothFilter = new plugin.Filter({
         name: "Laplacian Smooth",
         tooltip: "Perform Geometric Laplacian Smoothing on the vertices of the mesh",
-        arity: 2
+        arity: 1
     });
 
     var stepLWidget, weightWidget;
@@ -38,7 +38,7 @@
         tooltip: "The &lambda;-&mu; Taubin smoothing, it make two steps of smoothing, forth and back, for each iteration. Based on:<br>" +
                 "Gabriel Taubin,<br><b><a href=https://scholar.google.com/scholar?q=A+signal+processing+approach+to+fair+surface+design >" +
                 " A signal processing approach to fair surface design<\a></b><br>Siggraph 1995",
-        arity: 2
+        arity: 1
     });
 
     var stepTWidget, lambdaWidget, muWidget;
