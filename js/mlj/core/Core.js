@@ -203,11 +203,11 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     }
 
     function geometryNeedUpdate() {
-        _this.threeMesh.geometry.computeFaceNormals();
-        _this.threeMesh.geometry.computeVertexNormals();
         _this.threeMesh.geometry.verticesNeedUpdate = true;
         _this.threeMesh.geometry.elementsNeedUpdate = true;
         _this.threeMesh.geometry.normalsNeedUpdate = true;
+        _this.threeMesh.geometry.computeFaceNormals();
+        _this.threeMesh.geometry.computeVertexNormals();
     }
 
     this.setShading = function (value) {
