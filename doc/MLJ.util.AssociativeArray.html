@@ -34,7 +34,7 @@
         AssociativeArray
         </h2>
         
-            <div class="class-description">Create an Associative Array</div>
+            <div class="class-description">Create an Associative array</div>
         
     
 </header>
@@ -102,7 +102,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line42">line 42</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -127,6 +127,21 @@
 
 
 
+    <h5>Example</h5>
+    
+        <p class="code-caption">Usage exemple:</p>
+    
+    <pre class="prettyprint"><code>var aa = new MLJ.util.AssociativeArray();
+aa.set("key1", obj1);
+aa.set("key3", obj2);
+var iter = aa.iterator();
+var obj;
+while(iter.hasNext()) {
+   obj = iter.next();
+   //do something with obj
+}</code></pre>
+
+
 
     
     </div>
@@ -135,6 +150,13 @@
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="MLJ.util.AssociativeArray-_Iterator.html">_Iterator</a></dt>
+            <dd></dd>
+        </dl>
     
 
      
@@ -158,8 +180,8 @@
 
 
 <div class="description">
-    Returns the value to which the specified key is mapped, or <code>undefined</code> 
-if this array contains no mapping for the key.
+    Returns the value to which the specified key is mapped, or 
+<code>undefined</code> if this array contains no mapping for the key
 </div>
 
 
@@ -259,7 +281,7 @@ if this array contains no mapping for the key.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line85">line 85</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line95">line 95</a>
     </li></ul></dd>
     
 
@@ -286,8 +308,8 @@ if this array contains no mapping for the key.
 
         
 <div class="param-desc">
-    the value to which the specified key is mapped, or <code>undefined</code> 
-if this array contains no mapping for the key
+    the value to which the specified key is mapped, or 
+<code>undefined</code> if this array contains no mapping for the key
 </div>
 
 
@@ -308,7 +330,7 @@ if this array contains no mapping for the key
 
 
 <div class="description">
-    Returns an iterator over the elements in this array.
+    Returns an iterator over the elements in this array
 </div>
 
 
@@ -352,7 +374,7 @@ if this array contains no mapping for the key
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line138">line 138</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line147">line 147</a>
     </li></ul></dd>
     
 
@@ -401,14 +423,14 @@ if this array contains no mapping for the key
 
     
 
-    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(key)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(key)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
 
     
 
 
 
 <div class="description">
-    Removes an Associative Array entry
+    Removes an element from this associative array
 </div>
 
 
@@ -450,7 +472,7 @@ if this array contains no mapping for the key
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">String</span>
 
 
             
@@ -460,7 +482,7 @@ if this array contains no mapping for the key
 
             
 
-            <td class="description last">The key of the element</td>
+            <td class="description last">The key whose mapping is to be removed from the array</td>
         </tr>
 
     
@@ -501,7 +523,7 @@ if this array contains no mapping for the key
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line121">line 121</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -528,7 +550,8 @@ if this array contains no mapping for the key
 
         
 <div class="param-desc">
-    true if element was removed, false otherwise
+    <code>true</code> if element was removed, 
+<code>false</code> otherwise
 </div>
 
 
@@ -539,7 +562,7 @@ if this array contains no mapping for the key
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type">Boolean</span>
 
 
     </dd>
@@ -561,9 +584,8 @@ if this array contains no mapping for the key
 
 
 <div class="description">
-    Insert an object into associative array. Note that if the array already 
-contains an object with the key equals to new key, this object will 
-be replaced with the last inserted object
+    Inserts an element in this associative array. Note that if the array 
+previously contained a mapping for the key, the old value is replaced
 </div>
 
 
@@ -605,7 +627,7 @@ be replaced with the last inserted object
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">String</span>
 
 
             
@@ -615,7 +637,7 @@ be replaced with the last inserted object
 
             
 
-            <td class="description last">The key of the object to insert</td>
+            <td class="description last">The key with which the specified value is to be associated</td>
         </tr>
 
     
@@ -628,7 +650,7 @@ be replaced with the last inserted object
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">Object</span>
 
 
             
@@ -638,7 +660,7 @@ be replaced with the last inserted object
 
             
 
-            <td class="description last">The object to insert</td>
+            <td class="description last">The value to be associated with the specified key</td>
         </tr>
 
     
@@ -686,7 +708,7 @@ be replaced with the last inserted object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line106">line 106</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -717,7 +739,7 @@ be replaced with the last inserted object
 
     
 
-    <h4 class="name" id="size"><span class="type-signature"></span>size<span class="signature">()</span><span class="type-signature"> &rarr; {integer}</span></h4>
+    <h4 class="name" id="size"><span class="type-signature"></span>size<span class="signature">()</span><span class="type-signature"> &rarr; {Integer}</span></h4>
 
     
 
@@ -775,7 +797,7 @@ be replaced with the last inserted object
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line94">line 94</a>
+        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line104">line 104</a>
     </li></ul></dd>
     
 
@@ -813,7 +835,7 @@ be replaced with the last inserted object
     </dt>
     <dd>
         
-<span class="param-type">integer</span>
+<span class="param-type">Integer</span>
 
 
     </dd>
@@ -839,13 +861,13 @@ be replaced with the last inserted object
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.Error.html">Error</a></li><li><a href="MLJ.util.AssociativeArray.html">AssociativeArray</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.html">core</a></li><li><a href="MLJ.events.html">events</a></li><li><a href="MLJ.util.html">util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extend">extend</a></li><li><a href="global.html#getLastError">getLastError</a></li><li><a href="global.html#Module">Module</a></li><li><a href="global.html#setError">setError</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.Error.html">Error</a></li><li><a href="MLJ.util.AssociativeArray.html">AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">_Iterator</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.html">core</a></li><li><a href="MLJ.events.html">events</a></li><li><a href="MLJ.util.html">util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extend">extend</a></li><li><a href="global.html#getLastError">getLastError</a></li><li><a href="global.html#Module">Module</a></li><li><a href="global.html#setError">setError</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Fri Jun 26 2015 11:52:56 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Fri Jun 26 2015 13:17:12 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -38,7 +38,7 @@ var MLJ = {VERSION: "1.0"};
  * @param {number} errorCode The error code number
  * @param {string} message The error message
  * @memberOf MLJ
- * @author Stefano Gabriele  
+ * @author Stefano Gabriele   
  */
 MLJ.Error = function (errorCode, message) {
     this.code = errorCode;
@@ -46,7 +46,7 @@ MLJ.Error = function (errorCode, message) {
 };
 
 /**
- * Namespace for MLJ events.
+ * Namespace for MLJ events
  * @namespace MLJ.events         
  * @memberOf MLJ
  * @author Stefano Gabriele
@@ -54,10 +54,10 @@ MLJ.Error = function (errorCode, message) {
  MLJ.events = {
 
     /**
-     * Enum for file envent.
+     * Enum for File envent
      * @readonly
      * @enum {string}
-     * @memberOf MLJ.events
+     * @memberOf MLJ.events     
      * @author Stefano Gabriele
      */
     File: {
@@ -104,7 +104,7 @@ MLJ.Error = function (errorCode, message) {
     
     /** @function
      *  @param {MLJ.Error} error The error to set 
-     *  @description Set an error.
+     *  @description Set an error
      *  @author Stefano Gabriele
      */
     this.setError = function (error) {        
@@ -112,8 +112,8 @@ MLJ.Error = function (errorCode, message) {
     };    
     
     /** @function
-     *  @return {MLJ.Error} The last error.
-     *  @description Get last error.
+     *  @return {MLJ.Error} The last error
+     *  @description Get last error
      *  @author Stefano Gabriele
      */    
     this.getLastError = function () {
@@ -122,9 +122,9 @@ MLJ.Error = function (errorCode, message) {
     
     /**
      * @function
-     * @param {class} base The class to extend
+     * @param {class} base The superclass
      * @param {class} sub The subclass
-     * @description Utility function used to inherit from a superclass.
+     * @description Utility function used to inherit from a superclass
      */
     this.extend = function (base, sub) {
         // Avoid instantiating the base class just to setup inheritance

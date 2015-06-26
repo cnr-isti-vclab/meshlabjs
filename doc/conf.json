@@ -19,6 +19,7 @@
         "template": "templates/default",
         "encoding": "utf8",
         "destination": "./",
-        "recurse": true        
+        "recurse": true,
+        "access": "all"
     }
 }

@@ -35,9 +35,19 @@
 MLJ.util = {};
 
 /**         
- * @class Create an Associative Array 
+ * @class Create an Associative array 
  * @memberOf MLJ.util
  * @author Stefano Gabriele  
+ * @example <caption>Usage exemple:</caption>  
+ * var aa = new MLJ.util.AssociativeArray();
+ * aa.set("key1", obj1);
+ * aa.set("key3", obj2);
+ * var iter = aa.iterator();
+ * var obj;
+ * while(iter.hasNext()) {
+ *    obj = iter.next();
+ *    //do something with obj
+ * }
  */
 MLJ.util.AssociativeArray = function () {
 
@@ -53,18 +63,18 @@ MLJ.util.AssociativeArray = function () {
      */
     var _Iterator = function () {
         var _ind = 0;
-        
+
         /**
-         * Returns true if the iteration has more elements.
+         * Returns true if the iteration has more elements
          * @returns {Boolean} <code>true</code> if the iteration has more elements,
-         * <code>false</code> otherwise.
+         * <code>false</code> otherwise
          */
         this.hasNext = function () {
             return _ind < keys.length;
         };
-        
+
         /**
-         * Returns the next element in the iteration.
+         * Returns the next element in the iteration
          * @returns {Object} the next element in the iteration
          */
         this.next = function () {
@@ -75,11 +85,11 @@ MLJ.util.AssociativeArray = function () {
     };
 
     /**
-     * Returns the value to which the specified key is mapped, or <code>undefined</code> 
-     * if this array contains no mapping for the key.  
+     * Returns the value to which the specified key is mapped, or 
+     * <code>undefined</code> if this array contains no mapping for the key
      * @param {string} key the key whose associated value is to be returned
-     * @returns the value to which the specified key is mapped, or <code>undefined</code> 
-     * if this array contains no mapping for the key
+     * @returns the value to which the specified key is mapped, or 
+     * <code>undefined</code> if this array contains no mapping for the key
      * @author Stefano Gabriele  
      */
     this.getByKey = function (key) {
@@ -88,7 +98,7 @@ MLJ.util.AssociativeArray = function () {
 
     /**
      * Returns the number of elements in this array     
-     * @returns {integer} The number of elements in this array
+     * @returns {Integer} The number of elements in this array
      * @author Stefano Gabriele  
      */
     this.size = function () {
@@ -96,15 +106,13 @@ MLJ.util.AssociativeArray = function () {
     };
 
     /**
-     * Insert an object into associative array. Note that if the array already 
-     * contains an object with the key equals to new key, this object will 
-     * be replaced with the last inserted object
-     * @param {string} key The key of the object to insert
-     * @param {object} value The object to insert
+     * Inserts an element in this associative array. Note that if the array 
+     * previously contained a mapping for the key, the old value is replaced
+     * @param {String} key The key with which the specified value is to be associated
+     * @param {Object} value The value to be associated with the specified key
      * @author Stefano Gabriele  
      */
     this.set = function (key, value) {
-
         //if key not exists
         if (!values[key]) {
             keys.push(key);
@@ -114,9 +122,10 @@ MLJ.util.AssociativeArray = function () {
     };
 
     /**
-     * Removes an Associative Array entry          
-     * @param {string} key The key of the element 
-     * @returns {boolean} true if element was removed, false otherwise
+     * Removes an element from this associative array          
+     * @param {String} key The key whose mapping is to be removed from the array
+     * @returns {Boolean} <code>true</code> if element was removed, 
+     * <code>false</code> otherwise
      */
     this.remove = function (key) {
         delete values[key];
@@ -132,7 +141,7 @@ MLJ.util.AssociativeArray = function () {
     };
 
     /**
-     * Returns an iterator over the elements in this array.
+     * Returns an iterator over the elements in this array
      * @returns {MLJ.util.AssociativeArray._Iterator}
      */
     this.iterator = function () {
