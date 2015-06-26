@@ -21,10 +21,10 @@
             var $sel = _$layers.find("[class*='selected']");
             $sel.each(function (key, value) {
                 $(value).removeClass("selected");
-            });
+            });                        
 
             //Just one
-            $sel = _$layers.find("[name*='" + name + "']");
+            $sel = _$layers.find("[name='" + name + "']");
             $sel.each(function (key, value) {
                 $sel = $(value).addClass("selected");
                 _selectedName = name;
@@ -99,15 +99,15 @@
             return _selectedName;
         };
 
-        this._make = function (containment) {//build function 
+        this._make = function () {//build function 
             initEventHandlers();
 //            _$wrapper.append(_$layers,_$title);
 
             return _$layers;
         };
 
-        this.addLayer = function (name) {
-
+        this.addLayer = function (name) {            
+            
             var $wrap = $('<div class="mlj-layers-entry"></div>')
                     .css({position: "relative", width: "100%"});
             var $layer = $('<div class="mlj-layer" name="' + name + '">' + name + '</div>')
