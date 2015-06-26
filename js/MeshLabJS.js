@@ -93,7 +93,8 @@
 
         var $wrap = $("<div/>").attr("id", "mlj-split-pane");
         var $pos1 = $("<div/>").css({height: "30%"}).addClass("mlj-resiz1");
-        var $pos2 = $("<div/>").css({height: "50%"}).addClass("mlj-resiz2");
+        var $pos2 = $("<div/>").css({height: "50%", minHeight: "150px"})
+                .addClass("mlj-resiz2");
         var $pos3 = $("<div/>").css({height: "20%"}).addClass("mlj-resiz3");
         $wrap.append($pos1, $pos2, $pos3);
         _$pane.append($wrap);
