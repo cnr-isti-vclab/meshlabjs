@@ -24,6 +24,24 @@ void CreateSphere(uintptr_t _m, int refinement)
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
+void CreatePluginTEST()
+{
+  for(int i=0;i<5;++i)
+  {
+    MyMesh m;
+    CreatePlatonic(uintptr_t(&m),i);
+    assert(IsWaterTight(m));
+  }
+
+  for(int i=0;i<5;++i)
+  {
+  MyMesh m;
+  CreateSphere(uintptr_t(&m),i);
+  assert(IsWaterTight(m));
+  }
+
+}
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {

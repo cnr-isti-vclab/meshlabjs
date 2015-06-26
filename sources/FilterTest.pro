@@ -9,4 +9,5 @@ CONFIG -= app_bundle
 SOURCES += Refine.cpp Smooth.cpp FilterTest.cpp Random.cpp Create.cpp Sampling.cpp \
     Meshing.cpp
 
-HEADERS += mesh_def.h
+HEADERS += mesh_def.h \
+    FilterTest.h

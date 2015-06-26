@@ -4,36 +4,23 @@
 
 using namespace vcg;
 using namespace std;
-// using namespace emscripten;
 
-class MyRefine {
-
-public:
-
-MyMesh *m;
-MyRefine(uintptr_t _m){
-    m = (MyMesh*) _m;
-}
-void refinement(int step)
+void RefineMesh(uintptr_t _baseM, int step)
 {
-    int t2=clock();
-    tri::UpdateTopology<MyMesh>::FaceFace(*m);
-    tri::EdgeLen<MyMesh,float> edgePred(0);
-    tri::MidPoint<MyMesh> midFun(m);
-    for(int i=0;i<step;i++)
-        tri::RefineE(*m,midFun,edgePred);
-    int t3=clock();
-    printf("Refined mesh %i vert - %i face \n",m->VN(),m->FN());
-    printf("Refinement time %5.2f\n",float(t3-t2)/CLOCKS_PER_SEC);
-    }
-};
+  MyMesh &m = *((MyMesh*) _baseM);
+
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::EdgeLen<MyMesh,float> edgePred(0);
+  tri::MidPoint<MyMesh> midFun(&m);
+  for(int i=0;i<step;i++)
+    tri::RefineE(m,midFun,edgePred);
+  printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
+}
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 using namespace emscripten;
-EMSCRIPTEN_BINDINGS(MyRefine) {
-  class_<MyRefine>("MyRefine")
-    .constructor<uintptr_t>()
-    .function("myRefine", &MyRefine::refinement)
-    ;
+EMSCRIPTEN_BINDINGS(MLRefinePlugin) {
+  emscripten::function("RefineMesh", &RefineMesh);
 }
 #endif
