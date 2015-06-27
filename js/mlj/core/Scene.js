@@ -33,7 +33,7 @@ MLJ.core.Scene = {};
             e.stopPropagation();
             e.preventDefault();
             var files = e.target.files || e.dataTransfer.files;
-            MLJ.core.File.openMeshFiles(files);
+            MLJ.core.File.openMeshFile(files);
         }
 
         function FileDragHover(e) {

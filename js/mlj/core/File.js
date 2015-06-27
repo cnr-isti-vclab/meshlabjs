@@ -147,32 +147,18 @@ MLJ.core.File = {
     };
 
     this.openMeshFile = function (file) {
-        loadFile(file, function (loaded, meshFile) {
-            if (loaded) {
-                //Trigger mesh opened event
-                $(document).trigger(
-                        MLJ.events.File.MESH_FILE_OPENED,
-                        [meshFile]);
-            }
-            //else error in file reading
-        });
-
-    };
-
-    this.openMeshFiles = function (fileList) {
-        if (!(fileList instanceof FileList)) {
-            console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
-            return;
-        }
-
-        $(fileList).each(function (key, value) {
-            var mesh = MLJ.core.File.openMeshFile(value);
-
-            if (mesh === false) {
-                console.log(MLJ.getLastError().message);
-            }
+        $(file).each(function (key, value) {
+            loadFile(value, function (loaded, meshFile) {
+                if (loaded) {
+                    //Trigger mesh opened event
+                    $(document).trigger(
+                            MLJ.events.File.MESH_FILE_OPENED,
+                            [meshFile]);
+                } else {//else error in file reading
+                    console.log(MLJ.getLastError().message);
+                }
+            });
         });
     };
-
 
 }).call(MLJ.core.File);

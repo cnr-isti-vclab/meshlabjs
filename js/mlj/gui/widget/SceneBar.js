@@ -43,7 +43,7 @@
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
-                MLJ.core.File.openMeshFiles(input.files);
+                MLJ.core.File.openMeshFile(input.files);
             });
 
             save.onClick(function () {
