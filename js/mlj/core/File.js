@@ -27,7 +27,7 @@
  */
 
 /**
- * MLJ.core.File namspace
+ * MLJ.core.File namespace
  * @namespace MLJ.core.File
  * @memberOf MLJ.core
  * @author Stefano Gabriele

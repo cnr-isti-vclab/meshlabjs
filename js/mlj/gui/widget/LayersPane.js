@@ -8,11 +8,7 @@
 
     MLJ.gui.widget.LayersPane = function () {
 
-        var _layersPane;
-//        var _$wrapper = $('<div></div>').css({height: "100%"});
         var _$layers = $('<div id="mlj-layers" class="ui-widget-content"></div>');
-//        var _$title = $('<h3 class="ui-widget-header">Layers</h3>')
-//                .css({position:"absolute",top:0, right:0, left:0});
 
         var _selectedName;
 
@@ -21,7 +17,7 @@
             var $sel = _$layers.find("[class*='selected']");
             $sel.each(function (key, value) {
                 $(value).removeClass("selected");
-            });                        
+            });
 
             //Just one
             $sel = _$layers.find("[name='" + name + "']");
@@ -33,7 +29,7 @@
 
         function initEventHandlers() {
             //On new mesh added
-            $(document).on(MLJ.events.Scene.LAYER_ADDED,
+            $(document).on("SceneLayerAdded",
                     function (event, mesh) {
                         //Add item to layers pane widget
                         MLJ.widget.LayersPane.addLayer(mesh.name);
@@ -48,22 +44,7 @@
                         infoWidg.append("Faces: " + mesh.FN);
                     });
 
-            $(document).on(MLJ.events.Scene.LAYER_REMOVED,
-                    function (event, mesh) {
-                        //Add item to layers pane widget
-                        MLJ.widget.LayersPane.addLayer(mesh.name);
-
-                        var infoWidg = MLJ.gui.getWidget("Info");
-                        //Clear info area
-                        infoWidg.clear();
-
-                        //Add mesh info to info widget
-                        infoWidg.append("Current Mesh: " + mesh.name);
-                        infoWidg.append("Vertices: " + mesh.VN);
-                        infoWidg.append("Faces: " + mesh.FN);
-                    });
-
-            $(document).on(MLJ.events.Scene.LAYER_SELECTED,
+            $(document).on("SceneLayerSelected",
                     function (event, mesh) {
 
                         var infoWidg = MLJ.gui.getWidget("Info");
@@ -78,7 +59,7 @@
 
                     });
 
-            $(document).on(MLJ.events.Scene.LAYER_UPDATED,
+            $(document).on("SceneLayerUpdated",
                     function (event, mesh) {
                         //UPDATE INFO                        
                         if (_selectedName === mesh.name) {
@@ -101,13 +82,11 @@
 
         this._make = function () {//build function 
             initEventHandlers();
-//            _$wrapper.append(_$layers,_$title);
-
             return _$layers;
         };
 
-        this.addLayer = function (name) {            
-            
+        this.addLayer = function (name) {
+
             var $wrap = $('<div class="mlj-layers-entry"></div>')
                     .css({position: "relative", width: "100%"});
             var $layer = $('<div class="mlj-layer" name="' + name + '">' + name + '</div>')
@@ -120,18 +99,18 @@
 
             $layer.click(function () {
                 if ($layer.attr("name") !== _selectedName) {
-                    select(name);                    
-                    $(document).trigger(MLJ.events.Scene.SELECT_LAYER, [name]);
+                    select(name);
+                    MLJ.core.Scene.selectLayerByName(name);
                 }
             });
 
             $eye.click(function () {
                 if ($eye.hasClass("show")) {
                     $eye.removeClass("show").addClass("hide");
-                    $(document).trigger(MLJ.events.Scene.HIDE_LAYER, [name]);
+                    MLJ.core.Scene.setLayerVisible(name, false);
                 } else {
                     $eye.removeClass("hide").addClass("show");
-                    $(document).trigger(MLJ.events.Scene.SHOW_LAYER, [name]);
+                    MLJ.core.Scene.setLayerVisible(name, true);
                 }
             });
         };

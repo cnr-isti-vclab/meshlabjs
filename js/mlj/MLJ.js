@@ -22,7 +22,7 @@
  */
 
 /**
- * @file Base library file, defines MLJ namespace
+ * @file Base library file, defines MLJ namespace and some global functions
  * @author Stefano Gabriele
  */
 
@@ -45,39 +45,6 @@ var MLJ = {
 MLJ.Error = function (errorCode, message) {
     this.code = errorCode;
     this.message = message;
-};
-
-/**
- * Namespace for MLJ events
- * @namespace MLJ.events         
- * @memberOf MLJ
- * @author Stefano Gabriele
- */
- MLJ.events = {
-  
-    /**
-     * Enum for Scene envents
-     * @readonly
-     * @enum {string}
-     * @memberOf MLJ.events
-     * @author Stefano Gabriele
-     */
-    Scene: {
-        /** Triggered when a layer must be selected */
-        SELECT_LAYER: "selectLayer",
-        /** Triggered when a layer must be hidden */
-        HIDE_LAYER: "hideLayer",
-        /** Triggered when a layer must be shown */
-        SHOW_LAYER: "showLayer",
-        /** Triggered when the scene is ready */
-        SCENE_READY: "sceneReady",
-        /** Triggered when a layer is selected */
-        LAYER_SELECTED: "layerSelected",
-        /** Triggered when a layer is added */
-        LAYER_ADDED: "layerAdded",
-        /** Triggered when a layer is updated */
-        LAYER_UPDATED: "layerUpdated"
-    }
 };
 
 (function ($) {

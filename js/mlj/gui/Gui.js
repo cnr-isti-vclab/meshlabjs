@@ -28,7 +28,7 @@ MLJ.gui.makeResponsiveToScene = function (widget) {
         widget.disabled(true);
     });
 
-    $(document).on(MLJ.events.Scene.LAYER_ADDED, function (ev, layer, layersNum) {
+    $(document).on("SceneLayerAdded", function (ev, layer, layersNum) {
         if (layersNum > 0) {
             widget.disabled(false);
         } else {
