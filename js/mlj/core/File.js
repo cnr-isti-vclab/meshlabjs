@@ -25,13 +25,21 @@
  * @file Defines the functions to manage files
  * @author Stefano Gabriele
  */
+
+/**
+ * MLJ.core.File namspace
+ * @namespace MLJ.core.File
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele
+ */
 MLJ.core.File = {
-    ErrorCodes: {EXTENSION: 1},
-    openedList: new MLJ.util.AssociativeArray()
+    ErrorCodes: {
+        EXTENSION: 1
+    }
 };
 
 (function () {
-
+    var _openedList = new MLJ.util.AssociativeArray();
     var nameList = new MLJ.util.AssociativeArray();
 
     function isExtensionValid(extension) {
@@ -57,7 +65,7 @@ MLJ.core.File = {
         }
 
         //Add file to opened list
-        MLJ.core.File.openedList.set(file.name, file);
+        _openedList.set(file.name, file);
 
         //Extract file extension
         var pointPos = file.name.lastIndexOf('.');
@@ -88,7 +96,7 @@ MLJ.core.File = {
             console.time("Parsing Mesh Time");
             var Opener = new Module.Opener();
             var resOpen = Opener.openMesh(file.name);
-            if (resOpen != 0) {
+            if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
 
@@ -107,8 +115,15 @@ MLJ.core.File = {
         }; //end onloadend
     }
 
+    /**
+     * Reloads a mesh file by name
+     * @param {String} name The name of the mesh file needs to be reloaded
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileReloaded
+     * @author Stefano Gabriele
+     */
     this.reloadMeshFileByName = function (name) {
-        var file = MLJ.core.File.openedList.getByKey(name);
+        var file = _openedList.getByKey(name);
 
         if (file === undefined) {
             console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
@@ -117,12 +132,25 @@ MLJ.core.File = {
 
         loadFile(file, function (loaded, meshFile) {
             if (loaded) {
-                //Trigger mesh opened event
-                $(document).trigger(
-                        MLJ.events.File.MESH_FILE_RELOADED,
-                        [meshFile]);
+
+                /**
+                 *  Triggered when a mesh file is reloaded
+                 *  @event MLJ.core.File#MeshFileReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                 *  @example
+                 *  <caption>Event Interception:</caption>
+                 *  $(document).on("MeshFileReloaded",
+                 *      function (event, meshFile) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("MeshFileReloaded", [meshFile]);
+            } else {
+                //else error in file reading
+                console.log(MLJ.getLastError().message);
             }
-            //else error in file reading
         });
     };
 
@@ -146,14 +174,31 @@ MLJ.core.File = {
         return mf;
     };
 
+    /**
+     * Opens a mesh file or a list of mesh files     
+     * @param {(File | FileList)} file A single mesh file or a list of mesh files
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileOpened
+     * @author Stefano Gabriele
+     */
     this.openMeshFile = function (file) {
         $(file).each(function (key, value) {
             loadFile(value, function (loaded, meshFile) {
                 if (loaded) {
-                    //Trigger mesh opened event
-                    $(document).trigger(
-                            MLJ.events.File.MESH_FILE_OPENED,
-                            [meshFile]);
+                    /**
+                     *  Triggered when a mash file is opened
+                     *  @event MLJ.core.File#MeshFileOpened
+                     *  @type {Object}
+                     *  @property {MLJ.core.MeshFile} meshFile The opened mesh file
+                     *  @example
+                     *  <caption>Event Interception:</caption>
+                     *  $(document).on("MeshFileOpened",
+                     *      function (event, meshFile) {
+                     *          //do something
+                     *      }
+                     *  );
+                     */
+                    $(document).trigger("MeshFileOpened", [meshFile]);
                 } else {//else error in file reading
                     console.log(MLJ.getLastError().message);
                 }

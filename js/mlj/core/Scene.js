@@ -100,12 +100,13 @@ MLJ.core.Scene = {};
             MLJ.core.Scene.render();
         });
 
-        $(document).on(MLJ.events.File.MESH_FILE_OPENED,
+        $(document).on("MeshFileOpened",
                 function (event, mesh) {
+                    console.log(event);
                     MLJ.core.Scene.addLayer(mesh);
                 });
 
-        $(document).on(MLJ.events.File.MESH_FILE_RELOADED,
+        $(document).on("MeshFileReloaded",
                 function (event, mesh) {
                     MLJ.core.Scene.reloadLayer(mesh);
 

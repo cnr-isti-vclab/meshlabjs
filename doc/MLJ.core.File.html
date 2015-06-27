@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Headlight</title>
+    <title>JSDoc: Namespace: File</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Headlight</h1>
+    <h1 class="page-title">Namespace: File</h1>
 
     
 
@@ -31,10 +31,8 @@
         <h2>
             <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.core.html">.core</a>.</span>
         
-        Headlight
+        File
         </h2>
-        
-            <div class="class-description">Creates a new Headlight</div>
         
     
 </header>
@@ -43,122 +41,10 @@
     <div class="container-overview">
     
         
-
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="Headlight"><span class="type-signature"></span>new Headlight<span class="signature">(scene, camera, renderer)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
+            <div class="description">MLJ.core.File namspace</div>
         
 
         
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>scene</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">THREE.Scene</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The scene object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>camera</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">THREE.Camera</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The camera object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>renderer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">THREE.WebGLRenderer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The renderer object</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
 
 
 <dl class="details">
@@ -197,7 +83,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line162">line 162</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -209,20 +95,7 @@
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
     
     </div>
 
@@ -246,14 +119,14 @@
 
     
 
-    <h4 class="name" id="setColor"><span class="type-signature"></span>setColor<span class="signature">(color)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".this.openMeshFile"><span class="type-signature">(static) </span>this.openMeshFile<span class="signature">(file)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Sets the headlight color
+    Opens a mesh file or a list of mesh files
 </div>
 
 
@@ -289,123 +162,297 @@
 
         <tr>
             
-                <td class="name"><code>color</code></td>
+                <td class="name"><code>file</code></td>
             
 
             <td class="type">
             
                 
+<span class="param-type">File</span>
+|
+
+<span class="param-type">FileList</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A single mesh file or a list of mesh files</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line184">line 184</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.reloadMeshFileByName"><span class="type-signature">(static) </span>this.reloadMeshFileByName<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Reloads a mesh file by name
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The name of the mesh file needs to be reloaded</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line125">line 125</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="event:MeshFileOpened">MeshFileOpened</h4>
+
+    
+
+
+
+<div class="description">
+    Triggered when a mash file is opened
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
 <span class="param-type">Object</span>
 
 
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Can be a hexadecimal or a CSS-style string for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"</td>
-        </tr>
-
-    
-    </tbody>
-</table>
+        </li>
+    </ul>
 
 
 
 
 
 
-<dl class="details">
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line186">line 186</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="setIntensity"><span class="type-signature"></span>setIntensity<span class="signature">(Numeric)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Sets the intensity of the headlight
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="props">
     <thead>
     <tr>
         
@@ -427,13 +474,13 @@
 
         <tr>
             
-                <td class="name"><code>Numeric</code></td>
+                <td class="name"><code>meshFile</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Float</span>
+<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
 
 
             
@@ -443,14 +490,12 @@
 
             
 
-            <td class="description last">value of the light's strength/intensity</td>
+            <td class="description last">The opened mesh file</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -474,13 +519,6 @@
     
 
     
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
 
     
 
@@ -491,7 +529,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line175">line 175</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -516,34 +554,56 @@
 
 
 
+    <h5>Example</h5>
+    
+        <p class="code-caption">Event Interception:</p>
+    
+    <pre class="prettyprint"><code> $(document).on("MeshFileOpened",     function (event, meshFile) {         //do something     } );</code></pre>
+
+
 
         
             
 
     
 
-    <h4 class="name" id="setOn"><span class="type-signature"></span>setOn<span class="signature">(on)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="event:MeshFileReloaded">MeshFileReloaded</h4>
 
     
 
 
 
 <div class="description">
-    Sets this headlight on/off
+    Triggered when a mesh file is reloaded
 </div>
 
 
 
 
 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
 
 
 
 
-    <h5>Parameters:</h5>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
     
 
-<table class="params">
+<table class="props">
     <thead>
     <tr>
         
@@ -565,13 +625,13 @@
 
         <tr>
             
-                <td class="name"><code>on</code></td>
+                <td class="name"><code>meshFile</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
 
 
             
@@ -581,14 +641,12 @@
 
             
 
-            <td class="description last">If <code>true</code>, this headlight is enabled; otherwise this headlight is disabled</td>
+            <td class="description last">The reloaded mesh file</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -612,13 +670,6 @@
     
 
     
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
 
     
 
@@ -629,7 +680,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line197">line 197</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line136">line 136</a>
     </li></ul></dd>
     
 
@@ -654,12 +705,15 @@
 
 
 
+    <h5>Example</h5>
+    
+        <p class="code-caption">Event Interception:</p>
+    
+    <pre class="prettyprint"><code> $(document).on("MeshFileReloaded",     function (event, meshFile) {         //do something     } );</code></pre>
+
+
 
         
-    
-
-    
-
     
 </article>
 

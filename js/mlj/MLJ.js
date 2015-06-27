@@ -22,16 +22,18 @@
  */
 
 /**
- * @file Base library file, defines MLJ namespace, errors and events
+ * @file Base library file, defines MLJ namespace
  * @author Stefano Gabriele
  */
 
 /**
- * MLJ namespace.
+ * MLJ namespace
  * @namespace MLJ
  * @author Stefano Gabriele
  */
-var MLJ = {VERSION: "1.0"};
+var MLJ = {
+    VERSION: "1.0"
+};
 
 /**         
  * @class Create a MLJ error
@@ -52,25 +54,9 @@ MLJ.Error = function (errorCode, message) {
  * @author Stefano Gabriele
  */
  MLJ.events = {
-
+  
     /**
-     * Enum for File envent
-     * @readonly
-     * @enum {string}
-     * @memberOf MLJ.events     
-     * @author Stefano Gabriele
-     */
-    File: {
-        /** Triggered when a mesh file is opened */
-        MESH_FILE_OPENED: "meshFileOpened",
-        /** Triggered when a mesh file is reloaded */
-        MESH_FILE_RELOADED: "meshFileReloaded",
-        /** Triggered when a mesh file is closed */
-        MESH_FILE_CLOSED: "meshFileClosed"
-    },
-    
-    /**
-     * Enum for Scene envent.
+     * Enum for Scene envents
      * @readonly
      * @enum {string}
      * @memberOf MLJ.events

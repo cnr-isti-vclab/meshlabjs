@@ -53,13 +53,21 @@
  * @file Defines the functions to manage files
  * @author Stefano Gabriele
  */
+
+/**
+ * MLJ.core.File namspace
+ * @namespace MLJ.core.File
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele
+ */
 MLJ.core.File = {
-    ErrorCodes: {EXTENSION: 1},
-    openedList: new MLJ.util.AssociativeArray()
+    ErrorCodes: {
+        EXTENSION: 1
+    }
 };
 
 (function () {
-
+    var _openedList = new MLJ.util.AssociativeArray();
     var nameList = new MLJ.util.AssociativeArray();
 
     function isExtensionValid(extension) {
@@ -85,7 +93,7 @@ MLJ.core.File = {
         }
 
         //Add file to opened list
-        MLJ.core.File.openedList.set(file.name, file);
+        _openedList.set(file.name, file);
 
         //Extract file extension
         var pointPos = file.name.lastIndexOf('.');
@@ -116,7 +124,7 @@ MLJ.core.File = {
             console.time("Parsing Mesh Time");
             var Opener = new Module.Opener();
             var resOpen = Opener.openMesh(file.name);
-            if (resOpen != 0) {
+            if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
 
@@ -135,8 +143,15 @@ MLJ.core.File = {
         }; //end onloadend
     }
 
+    /**
+     * Reloads a mesh file by name
+     * @param {String} name The name of the mesh file needs to be reloaded
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileReloaded
+     * @author Stefano Gabriele
+     */
     this.reloadMeshFileByName = function (name) {
-        var file = MLJ.core.File.openedList.getByKey(name);
+        var file = _openedList.getByKey(name);
 
         if (file === undefined) {
             console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
@@ -145,12 +160,25 @@ MLJ.core.File = {
 
         loadFile(file, function (loaded, meshFile) {
             if (loaded) {
-                //Trigger mesh opened event
-                $(document).trigger(
-                        MLJ.events.File.MESH_FILE_RELOADED,
-                        [meshFile]);
+
+                /**
+                 *  Triggered when a mesh file is reloaded
+                 *  @event MLJ.core.File#MeshFileReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                 *  @example
+                 *  &lt;caption>Event Interception:&lt;/caption>
+                 *  $(document).on("MeshFileReloaded",
+                 *      function (event, meshFile) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("MeshFileReloaded", [meshFile]);
+            } else {
+                //else error in file reading
+                console.log(MLJ.getLastError().message);
             }
-            //else error in file reading
         });
     };
 
@@ -174,34 +202,37 @@ MLJ.core.File = {
         return mf;
     };
 
+    /**
+     * Opens a mesh file or a list of mesh files     
+     * @param {(File | FileList)} file A single mesh file or a list of mesh files
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileOpened
+     * @author Stefano Gabriele
+     */
     this.openMeshFile = function (file) {
-        loadFile(file, function (loaded, meshFile) {
-            if (loaded) {
-                //Trigger mesh opened event
-                $(document).trigger(
-                        MLJ.events.File.MESH_FILE_OPENED,
-                        [meshFile]);
-            }
-            //else error in file reading
-        });
-
-    };
-
-    this.openMeshFiles = function (fileList) {
-        if (!(fileList instanceof FileList)) {
-            console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
-            return;
-        }
-
-        $(fileList).each(function (key, value) {
-            var mesh = MLJ.core.File.openMeshFile(value);
-
-            if (mesh === false) {
-                console.log(MLJ.getLastError().message);
-            }
+        $(file).each(function (key, value) {
+            loadFile(value, function (loaded, meshFile) {
+                if (loaded) {
+                    /**
+                     *  Triggered when a mash file is opened
+                     *  @event MLJ.core.File#MeshFileOpened
+                     *  @type {Object}
+                     *  @property {MLJ.core.MeshFile} meshFile The opened mesh file
+                     *  @example
+                     *  &lt;caption>Event Interception:&lt;/caption>
+                     *  $(document).on("MeshFileOpened",
+                     *      function (event, meshFile) {
+                     *          //do something
+                     *      }
+                     *  );
+                     */
+                    $(document).trigger("MeshFileOpened", [meshFile]);
+                } else {//else error in file reading
+                    console.log(MLJ.getLastError().message);
+                }
+            });
         });
     };
-
 
 }).call(MLJ.core.File);
 </code></pre>
@@ -214,13 +245,13 @@ MLJ.core.File = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MeshFile</a></li><li><a href="MLJ.core.PhongMaterial.html">PhongMaterial</a></li><li><a href="MLJ.Error.html">Error</a></li><li><a href="MLJ.util.AssociativeArray.html">AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">_Iterator</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.html">core</a></li><li><a href="MLJ.events.html">events</a></li><li><a href="MLJ.util.html">util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extend">extend</a></li><li><a href="global.html#getLastError">getLastError</a></li><li><a href="global.html#Module">Module</a></li><li><a href="global.html#setError">setError</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MeshFile</a></li><li><a href="MLJ.core.PhongMaterial.html">PhongMaterial</a></li><li><a href="MLJ.Error.html">Error</a></li><li><a href="MLJ.util.AssociativeArray.html">AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MeshFileReloaded</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.html">core</a></li><li><a href="MLJ.core.File.html">File</a></li><li><a href="MLJ.events.html">events</a></li><li><a href="MLJ.util.html">util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extend">extend</a></li><li><a href="global.html#getLastError">getLastError</a></li><li><a href="global.html#Module">Module</a></li><li><a href="global.html#setError">setError</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Fri Jun 26 2015 17:12:33 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Jun 27 2015 16:11:39 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
