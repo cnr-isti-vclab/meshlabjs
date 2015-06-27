@@ -134,7 +134,9 @@ MLJ.core.Scene = {};
 
         $(document).on("MeshFileReloaded",
                 function (event, meshFile) {
-                    MLJ.core.Scene.reloadLayer(meshFile);
+//                    MLJ.core.Scene.reloadLayer(meshFile);
+                    MLJ.core.Scene.removeLayerByName(meshFile.name);
+                    _addLayer(meshFile, true);
                     /**
                      *  Triggered when a layer is updated
                      *  @event MLJ.core.Scene#SceneLayerUpdated
@@ -150,28 +152,16 @@ MLJ.core.Scene = {};
                      */
                     $(document).trigger("SceneLayerUpdated", [meshFile]);
                 });
-
-//        $(document).on(MLJ.events.Scene.SELECT_LAYER,
-//                function (event, layerName) {
-//                    _selectedLayer = _layers.getByKey(layerName);
-//                    /**
-//                     *  Triggered when a layer is selected
-//                     *  @event MLJ.core.Scene#SceneLayerSelected
-//                     *  @type {Object}
-//                     *  @property {MLJ.core.MeshFile} meshFile The selected mesh file
-//                     *  @example
-//                     *  <caption>Event Interception:</caption>
-//                     *  $(document).on("SceneLayerSelected",
-//                     *      function (event, meshFile) {
-//                     *          //do something
-//                     *      }
-//                     *  );
-//                     */
-//                    $(document).trigger("SceneLayerSelected", [_selectedLayer]);
-//                });
     }
 
-    function computeGlobalBBbox() {
+    /* Compute global bounding box and translate and scale every object in proportion 
+     * of global bounding box. First translate every object into original position, 
+     * then scale all by reciprocal value of scale factor (note that scale factor 
+     * and original position are stored into mesh object). Then it computes 
+     * global bbox, scale every object, recalculate global bbox and finally
+     * translate every object in a right position.
+     */
+    function _computeGlobalBBbox() {
         var iter = _layers.iterator();
 
         var threeMesh;
@@ -223,42 +213,7 @@ MLJ.core.Scene = {};
 
     }
 
-    this.lights = {
-        AmbientLight: null,
-        Headlight: null
-    };
-
-    this.selectLayerByName = function (layerName) {      
-            _selectedLayer = _layers.getByKey(layerName);
-            /**
-             *  Triggered when a layer is selected
-             *  @event MLJ.core.Scene#SceneLayerSelected
-             *  @type {Object}
-             *  @property {MLJ.core.MeshFile} meshFile The selected mesh file
-             *  @example
-             *  <caption>Event Interception:</caption>
-             *  $(document).on("SceneLayerSelected",
-             *      function (event, meshFile) {
-             *          //do something
-             *      }
-             *  );
-             */
-            $(document).trigger("SceneLayerSelected", [_selectedLayer]);
-    };
-    
-
-    this.setLayerVisible = function (layerName, visible) {
-        var layer = _layers.getByKey(layerName);
-        layer.getThreeMesh().visible = visible;
-        MLJ.core.Scene.render();
-    };
-
-    this.reloadLayer = function (meshFile) {
-        MLJ.core.Scene.removeLayerByName(meshFile.name);
-        MLJ.core.Scene.addLayer(meshFile, true);
-    };
-
-    this.addLayer = function (meshFile, reloaded) {
+    function _addLayer(meshFile, reloaded) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
             //Add new mesh to associative array _layers            
@@ -277,10 +232,10 @@ MLJ.core.Scene = {};
             _selectedLayer = meshFile;
 
             //Compute the global bounding box
-            computeGlobalBBbox();
+            _computeGlobalBBbox();
 
             //render the scene
-            this.render();
+            _this.render();
 
             if (!reloaded) {
                 /**
@@ -303,8 +258,73 @@ MLJ.core.Scene = {};
         } else {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
         }
+    }
+
+    this.lights = {
+        AmbientLight: null,
+        Headlight: null
     };
 
+    /**
+     * Selects the layer with the name <code>layerName</code>
+     * @param {String} layerName The name of the layer
+     * @memberOf MLJ.core.Scene     
+     * @author Stefano Gabriele
+     */
+    this.selectLayerByName = function (layerName) {
+        _selectedLayer = _layers.getByKey(layerName);
+        /**
+         *  Triggered when a layer is selected
+         *  @event MLJ.core.Scene#SceneLayerSelected
+         *  @type {Object}
+         *  @property {MLJ.core.MeshFile} meshFile The selected mesh file
+         *  @example
+         *  <caption>Event Interception:</caption>
+         *  $(document).on("SceneLayerSelected",
+         *      function (event, meshFile) {
+         *          //do something
+         *      }
+         *  );
+         */
+        $(document).trigger("SceneLayerSelected", [_selectedLayer]);
+    };
+
+    /**
+     * Sets the visibility of layer with the name <code>layerName</code>
+     * @param {String} layerName The name of the layer
+     * @param {Boolean} visible <code>true</code> if the layers must be visible,
+     * <code>false</code> otherwise
+     * @memberOf MLJ.core.Scene     
+     * @author Stefano Gabriele
+     */
+    this.setLayerVisible = function (layerName, visible) {
+        var layer = _layers.getByKey(layerName);
+        layer.getThreeMesh().visible = visible;
+        MLJ.core.Scene.render();
+    };
+
+    /**
+     * Adds a new layer in the scene
+     * @param {MLJ.core.MeshFile} meshFile The mesh file to add
+     * @memberOf MLJ.core.Scene     
+     * @author Stefano Gabriele
+     */
+    this.addLayer = function (meshFile) {
+        _addLayer(meshFile, false);
+    };
+
+    /**
+     * Updates a layer. This function should be called if the <code>meshFile</code>
+     * geometry or properties was modified.
+     * @param {MLJ.core.MeshFile} meshFile The mesh file corresponding to the level
+     * @memberOf MLJ.core.Scene
+     * @author Stefano Gabriele
+     * @example
+     * //Apply Laplacian smooth filter
+     * Module.LaplacianSmooth(meshFile.ptrMesh, 1, false);
+     * //The filter has changed mesh geometry ...
+     * scene.updateLayer(meshFile);
+     */
     this.updateLayer = function (meshFile) {
         if (meshFile instanceof MLJ.core.MeshFile) {
 
@@ -325,11 +345,25 @@ MLJ.core.Scene = {};
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
         }
     };
-
+    
+    /**
+     * Returns the layer corresponding to the given name
+     * @param {String} name The name of the layer     
+     * @memberOf MLJ.core.Scene
+     * @return {MLJ.core.MeshFile} The layer corresponding to the given name
+     * @author Stefano Gabriele     
+     */
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
     };
-
+    
+    
+    /**
+     * Removes the layer corresponding to the given name
+     * @param {String} name The name of the layer which must be removed  
+     * @memberOf MLJ.core.Scene     
+     * @author Stefano Gabriele     
+     */    
     this.removeLayerByName = function (name) {
         var meshFile = this.getLayerByName(name);
 
@@ -340,19 +374,37 @@ MLJ.core.Scene = {};
             meshFile.dispose();
         }
     };
-
+    
+    /**
+     * Returns the currently selected layer     
+     * @returns {MLJ.core.MeshFile} The currently selected layer
+     * @memberOf MLJ.core.Scene
+     * @author Stefano Gabriele     
+     */   
     this.getSelectedLayer = function () {
         return _selectedLayer;
     };
-
+    
+    /**
+     * Returns the layers list
+     * @returns {MLJ.util.AssociativeArray} The layers list
+     * @memberOf MLJ.core.Scene
+     * @author Stefano Gabriele     
+     */ 
     this.getLayers = function () {
         return _layers;
     };
-
+    
+    /**
+     * Renders the scene
+     * @memberOf MLJ.core.Scene
+     * @author Stefano Gabriele     
+     */ 
     this.render = function () {
         _renderer.render(_scene, _camera);
     };
-
+    
+    //INIT
     $(window).ready(function () {
         initScene();
         initDragAndDrop();

@@ -22,7 +22,7 @@
  */
 
 /**
- * @file The file defines Emscripten Module object, MLJ.core namspace and the basic 
+ * @file Defines Emscripten Module object, MLJ.core namspace and the basic 
  * classes used to create a Scene
  * @author Stefano Gabriele
  */

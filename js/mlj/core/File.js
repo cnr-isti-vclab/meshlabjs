@@ -153,8 +153,15 @@ MLJ.core.File = {
             }
         });
     };
-
-    this.createCppMeshFile = function (name, builder) {
+    
+    /**
+     * Creates a new mesh file using the c++ functions bound to JavaScript
+     * @param {String} name The name of the new mesh file
+     * @memberOf MLJ.core.File
+     * @returns {MLJ.core.MeshFile} The new mesh file
+     * @author Stefano Gabriele
+     */
+    this.createCppMeshFile = function (name) {
 
         var nameAmount = nameList.getByKey(name);
         if (nameAmount === undefined) {
