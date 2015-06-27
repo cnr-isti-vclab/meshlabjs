@@ -256,7 +256,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
             : 0;
 
     var _this = this;
-
+    
     this.toggle = function () {
         _on ^= 1;
         if (_on) {
@@ -268,7 +268,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
 
     this.onToggle = function (foo) {
         _this.$.click(function () {
-            foo(_on);
+            foo(_on === 1);
         });
     };
 
@@ -277,7 +277,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
     });
 
     //init        
-    _this.toggle();
+    _this.toggle();        
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
@@ -459,48 +459,31 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ToolBar);
 
 // Pane ________________________________________________________________________
 
-MLJ.gui.component.Pane = function (title, flags) {
+MLJ.gui.component.Pane = function () {
 
-    var _html = '<div class="mlj-pane"></div>';
-    var _$resWrap = $('<div class="mlj-content-wrapper"></div>');
-    var _$title = $('<h3 class="ui-widget-header">' + title + '</h3>');
-    var _$content = $('<div class="mlj-content ui-widget-content"></div>');
-
-    this.getContent = function () {
-        return _$content;
-    };
+    var _html = '<div class="mlj-pane ui-widget-content"></div>';
 
     this._make = function () {
-        _$resWrap.append(_$content);
-        this.$.append(_$title, _$resWrap);
-        if (this.flag("resizable")) {
-            _$resWrap.resizable(flags);
-        }
-        _$content.css({
-            position: "relative",
-            height: "100%",
-            overflow: "auto"
-        });
-    };
 
-    this.onResize = function (foo) {
-        _$resWrap.on("resize", function (event, ui) {
-            foo(event, ui);
+        this.$.css({
+            height: "100%",
+            width:"100%",            
+            overflow: "auto"
         });
     };
 
     this.appendContent = function () {
         for (var i = 0; i < arguments.length; i++) {
             if (arguments[i] instanceof MLJ.gui.component.Component) {
-                _$content.append(arguments[i].$);
+                this.$.append(arguments[i].$);
             } else {
-                _$content.append(arguments[i]);
+                this.$.append(arguments[i]);
             }
         }
         return this;
     };
 
-    MLJ.gui.component.Component.call(this, _html, flags);
+    MLJ.gui.component.Component.call(this, _html);
 
 };
 

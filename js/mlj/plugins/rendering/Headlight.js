@@ -1,18 +1,22 @@
 
 (function (plugin, core, scene) {
 
-    var plug = new plugin.Rendering(
-            "Headlight",
-            "Modify headlight paramters");
+    var plug = new plugin.Rendering({
+        name: "Headlight",
+        button: {
+            type: "toggle",
+            tooltip: "Headlight on/off",
+            icon: "img/icons/light.png",
+            on: core.defaults.Headlight.on,
+            onToggle: function (on) {
+                scene.lights.Headlight.setOn(on);
+            }
+        }
+    });
 
     var intensityWidget;
 
-    plug._init = function (tbBuilder, guiBuilder) {
-        var light = tbBuilder.Toggle({
-            tooltip: "Headlight on/off",
-            icon: "img/icons/light.png",
-            on: core.defaults.Headlight.on
-        });
+    plug._init = function (guiBuilder) {
 
         guiBuilder.Color({
             label: "Color",
@@ -28,10 +32,6 @@
             tooltip: "Headlight intensity",
             min: 0, max: 30, step: 0.1,
             defval: core.defaults.Headlight.intensity
-        });
-
-        light.onToggle(function (on) {
-            scene.lights.Headlight.setOn(on);
         });
 
         intensityWidget.onChange(function (val) {

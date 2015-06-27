@@ -1,16 +1,20 @@
 
 (function (plugin, core, scene) {
 
-    var plug = new plugin.Rendering(
-            "Ambient Light",
-            "Modify ambient light parameters");
-
-    plug._init = function (tbBuilder, guiBuilder) {
-        var light = tbBuilder.Toggle({
+    var plug = new plugin.Rendering({
+        name: "Ambient Light",
+        button: {
+            type: "toggle",
             tooltip: "Ambient light on/off",
             icon: "img/icons/light.png",
-            on: core.defaults.AmbientLight.on
-        });
+            on: core.defaults.AmbientLight.on,
+            onToggle: function(on) {                
+                scene.lights.AmbientLight.setOn(on);
+            }
+        }        
+    });
+
+    plug._init = function (guiBuilder) {      
 
         guiBuilder.Color({
             label: "Color",
@@ -19,10 +23,6 @@
             onChange: function (hex) {
                 scene.lights.AmbientLight.setColor('#' + hex);
             }
-        });
-
-        light.onToggle(function (on) {
-            scene.lights.AmbientLight.setOn(on);
         });
 
     };

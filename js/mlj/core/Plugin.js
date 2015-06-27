@@ -5,11 +5,9 @@ MLJ.core.plugin = {
     }
 };
 
-MLJ.core.plugin.Plugin = function (type, name, tooltip, arity) {
+MLJ.core.plugin.Plugin = function (type, name) {
     this.type = type;
     this.name = name;
-    this.tooltip = tooltip;
-    this.arity = arity;
 };
 
 MLJ.core.plugin.Plugin.prototype = {
@@ -52,10 +50,17 @@ MLJ.core.plugin.GUIBuilder = function (entry) {
     };
 };
 
-MLJ.core.plugin.ToolBarBuilder = function (tb) {
+MLJ.core.plugin.RenderingBarBuilder = function (tb) {
     this.Toggle = function (flags) {
         var toggle = MLJ.gui.build.button.Toggle(flags);
         tb.addButton(toggle);
+
+        if (flags.onToggle !== undefined) {
+            toggle.onToggle(function (on) {
+                flags.onToggle(on);                
+            });
+        }
+
         return toggle;
     };
 };
@@ -124,7 +129,7 @@ MLJ.core.plugin.Filter = function (parameters) {
                 icon: "img/icons/apply_all.png",
             });
             entry.addHeaderButton(applyAll);
-            
+
             MLJ.gui.makeResponsiveToScene(applyAll);
 
             applyAll.onClick(function () {
@@ -146,21 +151,50 @@ MLJ.core.plugin.Filter = function (parameters) {
     };
 };
 
-MLJ.core.plugin.Rendering = function (name, tooltip) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING, name);
+MLJ.core.plugin.Rendering = function (parameters) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING,
+            parameters.name);
     var _this = this;
-    var entry = new MLJ.gui.build.accordion.Entry(
-            {label: name, tooltip: tooltip});
 
-    var guiBuilder = new MLJ.core.plugin.GUIBuilder(entry);
-    var tbBuilder = new MLJ.core.plugin.ToolBarBuilder(
-            MLJ.widget.TabbedPane.getRendToolBar()
-            );
+    var pane = MLJ.gui.build.Pane();
+    var UID = MLJ.gui.generateUID();
+    pane.$.css("position", "absolute").attr("id", UID);
+
+    var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
+    var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
+            MLJ.widget.TabbedPane.getRendToolBar());
+    var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
+
+    if (parameters.button.type === "toggle") {
+        var btn = tbBuilder.Toggle(parameters.button);
+
+        $(document).ready(function () {
+            $(this).on("contextmenu", function (e) {
+                if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        btn.$.focus(function (ev) {
+            ev.preventDefault();
+
+            renderingPane.children().each(function (key, val) {
+                if ($(val).attr("id") === UID) {
+                    $(val).fadeIn();
+                } else {
+                    $(val).fadeOut();
+                }
+            });
+
+        });
+    }
 
     this._main = function () {
-        MLJ.widget.TabbedPane.getRendAccord().addEntry(entry);
-        _this._init(tbBuilder, guiBuilder);
+        _this._init(guiBuilder);
+        renderingPane.append(pane.$);
     };
+
 };
 
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);

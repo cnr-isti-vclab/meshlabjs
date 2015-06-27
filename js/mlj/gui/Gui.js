@@ -37,6 +37,7 @@ MLJ.gui.makeResponsiveToScene = function (widget) {
     });
 };
 
+
 MLJ.gui.build = {
     button: {
         Button: function (flags) {
@@ -69,8 +70,8 @@ MLJ.gui.build = {
     PiP: function () {
         return new MLJ.gui.component.PiP();
     },
-    Pane: function (title, flags) {
-        return new MLJ.gui.component.Pane(title, flags);
+    Pane: function () {
+        return new MLJ.gui.component.Pane();
     },
     Label: function (flags) {
         return new MLJ.gui.component.Label(flags);
@@ -92,3 +93,13 @@ MLJ.gui.build = {
     }
 
 };
+
+(function () {
+
+    var _counter = 0;
+
+    this.generateUID = function () {
+        return "mlj-uid-" + _counter++;
+    };
+
+}).call(MLJ.gui);
