@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: _Iterator</title>
+    <title>JSDoc: Class: Filter</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: _Iterator</h1>
+    <h1 class="page-title">Class: Filter</h1>
 
     
 
@@ -29,12 +29,12 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.util.html">.util</a><a href="MLJ.util.AssociativeArray.html">.AssociativeArray</a>~</span>
+            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.core.html">.core</a><a href="MLJ.core.plugin.html">.plugin</a>.</span>
         
-        _Iterator
+        Filter
         </h2>
         
-            <div class="class-description">Create a new _Iterator</div>
+            <div class="class-description">Creates a new filter</div>
         
     
 </header>
@@ -48,7 +48,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="_Iterator"><span class="type-signature">(private) </span>new _Iterator<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Filter"><span class="type-signature"></span>new Filter<span class="signature">(parameters)</span><span class="type-signature"></span></h4>
 
     
 
@@ -60,6 +60,55 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>parameters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object contains the initialization parameters to create filter plugin<br><code> paramters = {<br>&nbsp name: //the name of filter<br> &nbsp tooltip: //the filter description shown if mouse pointer is over its name<br>&nbsp arity: //An integer:<br>&nbsp&nbsp&nbsp&nbsp //0 for a creation filter<br>&nbsp&nbsp&nbsp&nbsp //1 for a generic filter <br>&nbsp&nbsp&nbsp&nbsp //>1 if the filter doesn't use the current mesh but defines its own meshes<br>}</code></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -102,7 +151,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line64">line 64</a>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line200">line 200</a>
     </li></ul></dd>
     
 
@@ -125,6 +174,13 @@
 
 
 
+
+
+    <h5>Example</h5>
+    
+        <p class="code-caption">Refine Filter</p>
+    
+    <pre class="prettyprint"><code>(function (plugin, scene) {     var filter = new plugin.Filter({         name: "Refine",         tooltip: "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",         arity: 1     });     var iterWdg;     filter._init = function (builder) {         iterWdg = builder.Integer({             max: 5, min: 1, step: 1, defval: 1,             label: "Step",             tooltip: "How many refinement iterations are applied to the mesh"         });     };     filter._applyTo = function (meshFile) {         Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue());         scene.updateLayer(meshFile);     };     plugin.install(filter);})(MLJ.core.plugin, MLJ.core.Scene);</code></pre>
 
 
 
@@ -143,219 +199,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="hasNext"><span class="type-signature"></span>hasNext<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns true if the iteration has more elements
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line72">line 72</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <code>true</code> if the iteration has more elements,
-<code>false</code> otherwise
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Boolean</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="next"><span class="type-signature"></span>next<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the next element in the iteration
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util_Util.js.html">util/Util.js</a>, <a href="util_Util.js.html#line80">line 80</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the next element in the iteration
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
     
 
     

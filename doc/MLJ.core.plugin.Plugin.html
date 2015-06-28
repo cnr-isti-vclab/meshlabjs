@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Headlight</title>
+    <title>JSDoc: Class: Plugin</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Headlight</h1>
+    <h1 class="page-title">Class: Plugin</h1>
 
     
 
@@ -29,12 +29,12 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.core.html">.core</a>.</span>
+            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.core.html">.core</a><a href="MLJ.core.plugin.html">.plugin</a>.</span>
         
-        Headlight
+        Plugin
         </h2>
         
-            <div class="class-description">Creates a new Headlight</div>
+            <div class="class-description">Defines a generic plugin</div>
         
     
 </header>
@@ -48,7 +48,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Headlight"><span class="type-signature"></span>new Headlight<span class="signature">(scene, camera, renderer)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Plugin"><span class="type-signature"></span>new Plugin<span class="signature">(type, name)</span><span class="type-signature"></span></h4>
 
     
 
@@ -87,13 +87,13 @@
 
         <tr>
             
-                <td class="name"><code>scene</code></td>
+                <td class="name"><code>type</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">THREE.Scene</span>
+<span class="param-type">Integer</span>
 
 
             
@@ -103,20 +103,20 @@
 
             
 
-            <td class="description last">The scene object</td>
+            <td class="description last">The type of plugin, i.e. <code>MLJ.core.plugin.type.FILTER</code>or <code>MLJ.core.plugin.type.RENDERING</code></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>camera</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">THREE.Camera</span>
+<span class="param-type">String</span>
 
 
             
@@ -126,30 +126,7 @@
 
             
 
-            <td class="description last">The camera object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>renderer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">THREE.WebGLRenderer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The renderer object</td>
+            <td class="description last">The name of plugin</td>
         </tr>
 
     
@@ -197,7 +174,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line162">line 162</a>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line59">line 59</a>
     </li></ul></dd>
     
 
@@ -246,14 +223,14 @@
 
     
 
-    <h4 class="name" id="setColor"><span class="type-signature"></span>setColor<span class="signature">(color)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_applyTo"><span class="type-signature">(abstract) </span>_applyTo<span class="signature">(meshFile)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Sets the headlight color
+    This abstract function is the right place where define the code that willbe executed after that apply or apply to all visible buttons was clicked
 </div>
 
 
@@ -289,13 +266,13 @@
 
         <tr>
             
-                <td class="name"><code>color</code></td>
+                <td class="name"><code>meshFile</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
 
 
             
@@ -305,7 +282,7 @@
 
             
 
-            <td class="description last">Can be a hexadecimal or a CSS-style string for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"</td>
+            <td class="description last">The mesh file that should be affectedby the code defined in this function</td>
         </tr>
 
     
@@ -353,7 +330,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line186">line 186</a>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line91">line 91</a>
     </li></ul></dd>
     
 
@@ -384,14 +361,14 @@
 
     
 
-    <h4 class="name" id="setIntensity"><span class="type-signature"></span>setIntensity<span class="signature">(Numeric)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_init"><span class="type-signature">(abstract) </span>_init<span class="signature">(guiBuilder)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Sets the intensity of the headlight
+    This abstract function is the right place where define the plugin GUI and its initialization stuff
 </div>
 
 
@@ -427,13 +404,13 @@
 
         <tr>
             
-                <td class="name"><code>Numeric</code></td>
+                <td class="name"><code>guiBuilder</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Float</span>
+<span class="param-type"><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></span>
 
 
             
@@ -443,7 +420,7 @@
 
             
 
-            <td class="description last">value of the light's strength/intensity</td>
+            <td class="description last">The object that provides useful function to build the GUI quickly</td>
         </tr>
 
     
@@ -491,7 +468,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line175">line 175</a>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -522,14 +499,14 @@
 
     
 
-    <h4 class="name" id="setOn"><span class="type-signature"></span>setOn<span class="signature">(on)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_main"><span class="type-signature">(abstract) </span>_main<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Sets this headlight on/off
+    This abstract function represents the main entry point for the plugin execution
 </div>
 
 
@@ -538,55 +515,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>on</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If <code>true</code>, this headlight is enabled; otherwise this headlight is disabled</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -629,7 +557,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Core.js.html">core/Core.js</a>, <a href="core_Core.js.html#line197">line 197</a>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line98">line 98</a>
     </li></ul></dd>
     
 
@@ -652,6 +580,117 @@
 
 
 
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getName"><span class="type-signature"></span>getName<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Returns the name of plugin
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line70">line 70</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The name of plugin
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 

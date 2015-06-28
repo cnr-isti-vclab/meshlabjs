@@ -58,6 +58,7 @@ MLJ.Error = function (errorCode, message) {
     /** @function
      *  @param {MLJ.Error} error The error to set 
      *  @description Set an error
+     *  @memberOf MLJ
      *  @author Stefano Gabriele
      */
     this.setError = function (error) {        
@@ -67,6 +68,7 @@ MLJ.Error = function (errorCode, message) {
     /** @function
      *  @return {MLJ.Error} The last error
      *  @description Get last error
+     *  @memberOf MLJ
      *  @author Stefano Gabriele
      */    
     this.getLastError = function () {
@@ -77,6 +79,7 @@ MLJ.Error = function (errorCode, message) {
      * @function
      * @param {class} base The superclass
      * @param {class} sub The subclass
+     * @memberOf MLJ
      * @description Utility function used to inherit from a superclass
      */
     this.extend = function (base, sub) {
