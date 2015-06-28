@@ -95,8 +95,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.13048"
-     inkscape:cx="282.10088"
-     inkscape:cy="366.96093"
+     inkscape:cx="505.19247"
+     inkscape:cy="222.00801"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -131,7 +131,8 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Background"
-     style="display:none;filter:url(#filter5272)">
+     style="display:inline;filter:url(#filter5272)"
+     sodipodi:insensitive="true">
     <rect
        y="332.36221"
        x="80"
@@ -260,7 +261,9 @@
        width="160"
        height="159.99998"
        x="-560"
-       y="932.36218" />
+       y="932.36218"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
     <rect
        transform="scale(-1,1)"
        y="932.36218"
@@ -291,7 +294,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline;opacity:0.95">
+     style="display:inline;opacity:1">
     <path
        style="fill:#6c5353;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 510,757.3622 25,25 0,70 -25,-25 z"
@@ -2524,7 +2527,8 @@ QmCC
     </g>
     <g
        id="g4545"
-       transform="translate(159,-39.999978)">
+       transform="translate(159,-39.999978)"
+       style="">
       <path
          sodipodi:nodetypes="cc"
          inkscape:connector-curvature="0"
@@ -2726,7 +2730,8 @@ QmCC
     </g>
     <g
        transform="translate(159,-240.00002)"
-       id="g4613">
+       id="g4613"
+       style="">
       <path
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 456,592.3622 55,5"
@@ -2970,7 +2975,7 @@ QmCC
     <g
        inkscape:export-ydpi="36"
        inkscape:export-xdpi="36"
-       style="stroke-width:3.22636843;stroke-miterlimit:4;stroke-dasharray:none;"
+       style="stroke-width:3.22636843;stroke-miterlimit:4;stroke-dasharray:none"
        transform="matrix(1.9002413,0,0,1.8199768,-333.99042,-693.32488)"
        id="g4816">
       <path
@@ -3174,6 +3179,60 @@ QmCC
        style="fill:#ff0000;fill-rule:evenodd;stroke:#ff0000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:transform-center-x="13.57032"
        inkscape:transform-center-y="-7.376057"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       style="opacity:1;fill:#0033ff;fill-opacity:0.72380954;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5300"
+       width="20"
+       height="54.000023"
+       x="420"
+       y="1015.3622"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       y="990.36218"
+       x="440"
+       height="79.000023"
+       width="20"
+       id="rect5302"
+       style="opacity:1;fill:#00fff0;fill-opacity:0.72380954;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       style="opacity:1;fill:#00ff33;fill-opacity:0.72380954;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5304"
+       width="20"
+       height="107.00002"
+       x="460"
+       y="962.36218"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       y="985.36224"
+       x="480"
+       height="84"
+       width="20"
+       id="rect5306"
+       style="opacity:1;fill:#f0ff00;fill-opacity:0.72380952;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       style="opacity:1;fill:#ff0000;fill-opacity:0.72380952;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5308"
+       width="20"
+       height="107.00002"
+       x="520"
+       y="962.36218"
+       inkscape:export-xdpi="36"
+       inkscape:export-ydpi="36" />
+    <rect
+       y="1010.3622"
+       x="500"
+       height="59.000023"
+       width="20"
+       id="rect5310"
+       style="opacity:1;fill:#ffa000;fill-opacity:0.72380954;stroke:#000000;stroke-width:6.00000048;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        inkscape:export-xdpi="36"
        inkscape:export-ydpi="36" />
   </g>
