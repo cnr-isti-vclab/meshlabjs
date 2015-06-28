@@ -8,8 +8,7 @@ MLJ.gui.MLWidget.prototype = {
 MLJ.gui.MLWidget.Number = function (flags) {
     this.spinner = MLJ.gui.build.Spinner(flags);
     this.label = MLJ.gui.build.Label(flags);
-    var _this = this;
-
+    
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.spinner);
     };

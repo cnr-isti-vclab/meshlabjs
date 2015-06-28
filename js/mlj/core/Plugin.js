@@ -137,7 +137,7 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 
 MLJ.core.plugin.RenderingBarBuilder = function (tb) {
     this.Toggle = function (flags) {
-        var toggle = MLJ.gui.build.button.Toggle(flags);
+        var toggle = MLJ.gui.build.ToggleButton(flags);
         tb.addButton(toggle);
 
         if (flags.onToggle !== undefined) {
@@ -202,7 +202,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             , parameters.name, parameters.tooltip, parameters.arity);
     var _this = this;
 
-    var entry = new MLJ.gui.build.accordion.Entry(
+    var entry = new MLJ.gui.build.AccordionEntry(
             {label: parameters.name, tooltip: parameters.tooltip});
 
     //Test if arity is number and is integer
@@ -236,7 +236,7 @@ MLJ.core.plugin.Filter = function (parameters) {
     this._main = function () {
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
-        var apply = MLJ.gui.build.button.Button({
+        var apply = MLJ.gui.build.Button({
             tooltip: "Apply to selected layer",
             icon: "img/icons/apply.png",
         });
@@ -252,17 +252,17 @@ MLJ.core.plugin.Filter = function (parameters) {
         });
 
         if (parameters.arity > 0) {
-            MLJ.gui.makeResponsiveToScene(apply);
+            MLJ.gui.disabledOnSceneEmpty(apply);
         }
 
         if (parameters.arity === 1) {
-            var applyAll = MLJ.gui.build.button.Button({
+            var applyAll = MLJ.gui.build.Button({
                 tooltip: "Apply to all visible layers",
                 icon: "img/icons/apply_all.png",
             });
             entry.addHeaderButton(applyAll);
 
-            MLJ.gui.makeResponsiveToScene(applyAll);
+            MLJ.gui.disabledOnSceneEmpty(applyAll);
 
             applyAll.onClick(function () {
                 var ptr = MLJ.core.Scene.getLayers().iterator();

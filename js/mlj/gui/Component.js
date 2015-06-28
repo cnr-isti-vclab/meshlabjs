@@ -31,12 +31,8 @@ MLJ.gui.component.Component = function (html, flags) {
         }
     };
 
-    this.insertInto = function (wrapper) {
-        var $wrap = $(wrapper);
-        if ($wrap.length > 0) {
-            $wrap.append(this.$);
-        }
-
+    this.disabled = function (bool) {
+        _this._disabled(bool);
     };
 
     $(window).ready(function () {
@@ -48,6 +44,8 @@ MLJ.gui.component.Component = function (html, flags) {
 
 MLJ.gui.component.Component.prototype = {
     _make: function () {
+    },
+    _disabled: function (bool) {
     }
 };
 
@@ -212,7 +210,7 @@ MLJ.gui.component.Button = function (flags) {
         this.$.button({disabled: disabled});
     };
 
-    this.disabled = function (bool) {
+    this._disabled = function (bool) {
         this.$.button({disabled: bool});
     };
 
@@ -256,7 +254,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
             : 0;
 
     var _this = this;
-    
+
     this.toggle = function () {
         _on ^= 1;
         if (_on) {
@@ -277,7 +275,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
     });
 
     //init        
-    _this.toggle();        
+    _this.toggle();
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
@@ -326,7 +324,7 @@ MLJ.gui.component.TextField = function (txt) {
             .attr("value", txt);
 
     var _this = this;
-    this.disabled = function () {
+    this._disabled = function () {
         _this.$.attr("disabled", "disabled");
     };
 
@@ -467,7 +465,7 @@ MLJ.gui.component.Pane = function () {
 
         this.$.css({
             height: "100%",
-            width:"100%",            
+            width: "100%",
             overflow: "auto"
         });
     };
@@ -649,73 +647,3 @@ MLJ.gui.component.Spinner = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Spinner);
-
-// SLIDER ______________________________________________________________________
-
-MLJ.gui.component.Slider = function (flags) {
-    var _html = '<div></div>';
-    var _$display = $('<div></div>')
-            .css({});
-
-    var _$sliderHandle;
-    var _$this = this;
-    this._make = function () {
-        this.$.slider(flags);
-
-//        _$sliderHandle = $('.ui-slider-handle');
-//        _$sliderHandle.append(_$display);
-//        _$display.width(_$sliderHandle.position().left);
-//        _$display.height(this.$.height()).append("<span style='margin-right:15px;'>" + this.getValue() + "</span>");
-
-//        var slider = this;
-//        //Eventa for drag and drop
-//        var startDrag;
-//        _$sliderHandle.mousedown(function () {
-//            startDrag = true;
-//        });
-//
-//        _$sliderHandle.mouseup(function () {
-//            startDrag = false;
-//        });
-//
-//        $(document).mousemove(function () {
-//            if (startDrag) {
-//                _$display.width(_$sliderHandle.position().left);
-//            }
-//        });
-
-    };
-
-    this.getValue = function () {
-        return this.$.slider("value");
-    };
-
-    this.onChange = function (callback) {
-        this.$.on("slidechange", function (event, ui) {
-            callback(event, ui);
-        });
-    };
-
-    this.onSlide = function (callback) {
-        this.$.on("slide", function (event, ui) {
-            callback(event, ui);
-//            _$sliderHandle.text(_$this.getValue());
-//            console.log(_$display.width());
-        });
-    };
-
-    this.onStart = function (callback) {
-        this.$.on("slidestart", function (event, ui) {
-            callback(event, ui);
-        });
-    };
-
-    this.onStop = function (callback) {
-        this.$.on("slidestop", function (event, ui) {
-            callback(event, ui);
-        });
-    };
-
-    MLJ.gui.component.Component.call(this, _html, flags);
-};
-MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Slider);
