@@ -22,15 +22,16 @@
  */
 
 /**
- * @file Defines and install Info widget 
+ * @file Defines and installs the Info widget, the area where the informations 
+ * about mesh are shown
  * @author Stefano Gabriele
  */
 
 (function (component) {
 
     /**         
-     * @class Create a new Info widget. The Info widget is the area where the 
-     * informations about mesh are shown
+     * @class Create a new Info widget
+     * @augments  MLJ.gui.widget.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -39,8 +40,7 @@
         var _PiP;
         var _$info = $('<div id="mlj-info"></div>');
         
-        /**
-         * @override
+        /**          
          * @author Stefano Gabriele
          */
         this._make = function () {//build function                 

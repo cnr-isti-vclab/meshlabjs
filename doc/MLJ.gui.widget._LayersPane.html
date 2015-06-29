@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Plugin</title>
+    <title>JSDoc: Class: _LayersPane</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Plugin</h1>
+    <h1 class="page-title">Class: _LayersPane</h1>
 
     
 
@@ -29,12 +29,12 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.core.html">.core</a><a href="MLJ.core.plugin.html">.plugin</a>.</span>
+            <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.gui.html">.gui</a><a href="MLJ.gui.widget.html">.widget</a>.</span>
         
-        Plugin
+        _LayersPane
         </h2>
         
-            <div class="class-description">Defines a generic plugin</div>
+            <div class="class-description">Create a new Layers Pane widget</div>
         
     
 </header>
@@ -48,7 +48,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Plugin"><span class="type-signature"></span>new Plugin<span class="signature">(type, name)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_LayersPane"><span class="type-signature">(private) </span>new _LayersPane<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
@@ -60,78 +60,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Integer</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The type of plugin, i.e. <code>MLJ.core.plugin.type.FILTER</code>or <code>MLJ.core.plugin.type.RENDERING</code></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The name of plugin</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -174,7 +102,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line59">line 59</a>
+        <a href="gui_widget_LayersPane.js.html">gui/widget/LayersPane.js</a>, <a href="gui_widget_LayersPane.js.html#line38">line 38</a>
     </li></ul></dd>
     
 
@@ -204,6 +132,17 @@
     </div>
 
     
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="MLJ.gui.widget.Widget.html">MLJ.gui.widget.Widget</a></li>
+    </ul>
+
+
+    
 
     
 
@@ -223,14 +162,191 @@
 
     
 
-    <h4 class="name" id="_applyTo"><span class="type-signature">(abstract) </span>_applyTo<span class="signature">(meshFile)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_make"><span class="type-signature"></span>_make<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="MLJ.gui.widget.Widget.html#_make">MLJ.gui.widget.Widget#_make</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gui_widget_LayersPane.js.html">gui/widget/LayersPane.js</a>, <a href="gui_widget_LayersPane.js.html#line120">line 120</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="_refresh"><span class="type-signature">(abstract) </span>_refresh<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    This function should be overridden to define the code that willbe executed after that apply or apply to all visible buttons was clicked
+    The function called to refresh the widget
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="MLJ.gui.widget.Widget.html#_refresh">MLJ.gui.widget.Widget#_refresh</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gui_widget_Widget.js.html">gui/widget/Widget.js</a>, <a href="gui_widget_Widget.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="addLayer"><span class="type-signature"></span>addLayer<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Adds a new layer
 </div>
 
 
@@ -266,13 +382,13 @@
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type">String</span>
 
 
             
@@ -282,7 +398,7 @@
 
             
 
-            <td class="description last">The mesh file that should be affectedby the code defined in this function</td>
+            <td class="description last">The name of the layer</td>
         </tr>
 
     
@@ -330,7 +446,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line90">line 90</a>
+        <a href="gui_widget_LayersPane.js.html">gui/widget/LayersPane.js</a>, <a href="gui_widget_LayersPane.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -361,152 +477,14 @@
 
     
 
-    <h4 class="name" id="_init"><span class="type-signature">(abstract) </span>_init<span class="signature">(guiBuilder)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getSelectedName"><span class="type-signature"></span>getSelectedName<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
 
     
 
 
 
 <div class="description">
-    This function should be overridden to define the plugin GUI and its initialization stuff
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>guiBuilder</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The object that provides useful function to build the GUI quickly</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line80">line 80</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="_main"><span class="type-signature">(abstract) </span>_main<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    This function represents the main entry point for the plugin execution
+    Returns the name of the selected layer
 </div>
 
 
@@ -557,96 +535,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line97">line 97</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="getName"><span class="type-signature"></span>getName<span class="signature">()</span><span class="type-signature"> &rarr; {String}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Returns the name of plugin
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Plugin.js.html">core/Plugin.js</a>, <a href="core_Plugin.js.html#line70">line 70</a>
+        <a href="gui_widget_LayersPane.js.html">gui/widget/LayersPane.js</a>, <a href="gui_widget_LayersPane.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -673,7 +562,7 @@
 
         
 <div class="param-desc">
-    The name of plugin
+    The name of the selected layer
 </div>
 
 
