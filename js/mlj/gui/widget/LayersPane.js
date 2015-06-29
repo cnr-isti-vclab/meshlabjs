@@ -22,7 +22,7 @@
  */
 
 /**
- * @file Defines and installs Layers pane widget that provides the features of
+ * @file Defines and installs the Layers pane widget that provides the features of
  * select and show/hide layers
  * @author Stefano Gabriele
  */

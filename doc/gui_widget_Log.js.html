@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: MLJ.js</title>
+    <title>JSDoc: Source: gui/widget/Log.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: MLJ.js</h1>
+    <h1 class="page-title">Source: gui/widget/Log.js</h1>
 
     
 
@@ -50,88 +50,73 @@
  */
 
 /**
- * @file Base library file, defines MLJ namespace and some global functions
+ * @file Defines and installs Log widget the text area used like standard output 
  * @author Stefano Gabriele
  */
-
-/**
- * MLJ namespace
- * @namespace MLJ
- * @author Stefano Gabriele
- */
-var MLJ = {
-    VERSION: "1.0"
-};
-
-/**         
- * @class Create a MLJ error
- * @param {number} errorCode The error code number
- * @param {string} message The error message
- * @memberOf MLJ
- * @author Stefano Gabriele   
- */
-MLJ.Error = function (errorCode, message) {
-    this.code = errorCode;
-    this.message = message;
-};
-
-(function ($) {
-
-    if (typeof $ === 'undefined') {
-        console.error("jQuery library needed.");
-    }
-
-    var error;
+(function (component) {
     
-    /** @function
-     *  @param {MLJ.Error} error The error to set 
-     *  @description Set an error
-     *  @memberOf MLJ
-     *  @author Stefano Gabriele
+    /**         
+     * @class Create a new Log widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
      */
-    this.setError = function (error) {        
-        this.error = error;
-    };    
-    
-    /** @function
-     *  @return {MLJ.Error} The last error
-     *  @description Get last error
-     *  @memberOf MLJ
-     *  @author Stefano Gabriele
-     */    
-    this.getLastError = function () {
-        return this.error;
+    var _Log = function () {
+
+        var _this = this;
+
+        //Console output redirecting ...
+        var _log = console.log, _warn = console.warn, _error = console.error;
+
+        console.log = function (message, args) {
+            var m = args ? message + " " + args : message;
+            _this.append(m);
+            _log.apply(console, arguments);
+        };
+
+        console.warn = function (message, args) {
+            var m = args ? message + " " + args : message;
+            _this.append(m);
+            _warn.apply(console, arguments);
+        };
+
+        console.error = function (message, args) {
+            var m = args ? message + " " + args : message;
+            _this.append(m);
+            _error.apply(console, arguments);
+        };
+
+        var _$log = $('&lt;textarea/>')
+                .attr("spellcheck", false)
+                .attr("readonly", "readonly");
+        
+        /**
+         * @author Stefano Gabriele
+         */
+        this._make = function () {
+            var $wrap = $('&lt;div/>').attr("id", "mlj-log-widget");
+            $wrap.append(_$log);
+            return $wrap;
+        };
+        
+        /**
+         * Appends text to Log
+         * @param {String} text The text to append
+         * @author Stefano Gabriele
+         */
+        this.append = function (text) {
+            _$log.append(text + "\n");
+            _$log.scrollTop(_$log[0].scrollHeight - _$log.height());
+        };
     };
-    
-    /**
-     * @function
-     * @param {class} base The superclass
-     * @param {class} sub The subclass
-     * @memberOf MLJ
-     * @description Utility function used to inherit from a superclass
-     */
-    this.extend = function (base, sub) {
-        // Avoid instantiating the base class just to setup inheritance
-        // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-        // for a polyfill
-        // Also, do a recursive merge of two prototypes, so we don't overwrite 
-        // the existing prototype, but still maintain the inheritance chain
-        // Thanks to @ccnokes
-        var origProto = sub.prototype;
-        sub.prototype = Object.create(base.prototype);
-        for (var key in origProto) {
-            sub.prototype[key] = origProto[key];
-        }
-        // Remember the constructor property was set wrong, let's fix it
-        sub.prototype.constructor = sub;
-        // In ECMAScript5+ (all modern browsers), you can make the constructor property
-        // non-enumerable if you define it like this instead
-        Object.defineProperty(sub.prototype, 'constructor', {
-            enumerable: false,
-            value: sub
-        });
-    };
-}).call(MLJ, jQuery);</code></pre>
+
+    MLJ.extend(MLJ.gui.widget.Widget, _Log);
+
+    //Install widget
+    MLJ.gui.installWidget("Log", new _Log());
+
+})(MLJ.gui.component);</code></pre>
         </article>
     </section>
 

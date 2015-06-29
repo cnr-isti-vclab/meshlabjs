@@ -1,19 +1,50 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
  */
 
+/**
+ * @file Defines and installs the Logo widget
+ * @author Stefano Gabriele
+ */
 (function (component) {
-
-    MLJ.gui.widget.Logo = function () {
+    
+    /**         
+     * @class Create a new Logo widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
+     */
+    var _Logo = function () {
 
         var LOGO_WIDTH = 96;
         var LOGO_HEIGHT = 821 * LOGO_WIDTH / 1023;
         var insets = 10;
         var _PiP;
         var _$dialog;
-
+        
+        /**
+         * @author Stefano Gabriele 
+         */
         this._make = function () {//build function                 
             _PiP = new component.PiP();
 
@@ -69,9 +100,9 @@ Stefano Gabriele <br>\
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.Logo);
+    MLJ.extend(MLJ.gui.widget.Widget, _Logo);
 
     //Install widget
-    MLJ.gui.installWidget("Logo", new MLJ.gui.widget.Logo());
+    MLJ.gui.installWidget("Logo", new _Logo());
 
 })(MLJ.gui.component);

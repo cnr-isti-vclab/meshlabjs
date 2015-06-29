@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Widget</title>
+    <title>JSDoc: Class: _Log</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Widget</h1>
+    <h1 class="page-title">Class: _Log</h1>
 
     
 
@@ -31,10 +31,10 @@
         <h2>
             <span class="ancestors"><a href="MLJ.html">MLJ</a><a href="MLJ.gui.html">.gui</a><a href="MLJ.gui.widget.html">.widget</a>.</span>
         
-        Widget
+        _Log
         </h2>
         
-            <div class="class-description">The widget base class</div>
+            <div class="class-description">Create a new Log widget</div>
         
     
 </header>
@@ -48,7 +48,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Widget"><span class="type-signature">(abstract) </span>new Widget<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_Log"><span class="type-signature">(private) </span>new _Log<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
@@ -102,7 +102,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gui_widget_Widget.js.html">gui/widget/Widget.js</a>, <a href="gui_widget_Widget.js.html#line42">line 42</a>
+        <a href="gui_widget_Log.js.html">gui/widget/Log.js</a>, <a href="gui_widget_Log.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -132,6 +132,17 @@
     </div>
 
     
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="MLJ.gui.widget.Widget.html">MLJ.gui.widget.Widget</a></li>
+    </ul>
+
+
+    
 
     
 
@@ -151,15 +162,11 @@
 
     
 
-    <h4 class="name" id="_make"><span class="type-signature">(abstract) </span>_make<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="_make"><span class="type-signature"></span>_make<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    The function called to build the widget
-</div>
 
 
 
@@ -182,7 +189,10 @@
     
 
     
-
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="MLJ.gui.widget.Widget.html#_make">MLJ.gui.widget.Widget#_make</a>
+    </li></ul></dd>
     
 
     
@@ -191,6 +201,15 @@
 
     
 
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
     
 
     
@@ -202,7 +221,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gui_widget_Widget.js.html">gui/widget/Widget.js</a>, <a href="gui_widget_Widget.js.html#line49">line 49</a>
+        <a href="gui_widget_Log.js.html">gui/widget/Log.js</a>, <a href="gui_widget_Log.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
@@ -262,6 +281,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="MLJ.gui.widget.Widget.html#_refresh">MLJ.gui.widget.Widget#_refresh</a>
+    </li></ul></dd>
+    
 
     
 
@@ -285,6 +309,144 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="gui_widget_Widget.js.html">gui/widget/Widget.js</a>, <a href="gui_widget_Widget.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="append"><span class="type-signature"></span>append<span class="signature">(text)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Appends text to Log
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>text</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The text to append</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gui_widget_Log.js.html">gui/widget/Log.js</a>, <a href="gui_widget_Log.js.html#line80">line 80</a>
     </li></ul></dd>
     
 

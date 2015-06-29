@@ -1,12 +1,40 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
  */
 
+/**
+ * @file Defines and installs the Log widget the text area used like standard output 
+ * @author Stefano Gabriele
+ */
 (function (component) {
-
-    MLJ.gui.widget.Log = function () {
+    
+    /**         
+     * @class Create a new Log widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
+     */
+    var _Log = function () {
 
         var _this = this;
 
@@ -34,22 +62,30 @@
         var _$log = $('<textarea/>')
                 .attr("spellcheck", false)
                 .attr("readonly", "readonly");
-
+        
+        /**
+         * @author Stefano Gabriele
+         */
         this._make = function () {
             var $wrap = $('<div/>').attr("id", "mlj-log-widget");
             $wrap.append(_$log);
             return $wrap;
         };
-
-        this.append = function (message) {
-            _$log.append(message + "\n");
+        
+        /**
+         * Appends text to Log
+         * @param {String} text The text to append
+         * @author Stefano Gabriele
+         */
+        this.append = function (text) {
+            _$log.append(text + "\n");
             _$log.scrollTop(_$log[0].scrollHeight - _$log.height());
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.Log);
+    MLJ.extend(MLJ.gui.widget.Widget, _Log);
 
     //Install widget
-    MLJ.gui.installWidget("Log", new MLJ.gui.widget.Log());
+    MLJ.gui.installWidget("Log", new _Log());
 
 })(MLJ.gui.component);

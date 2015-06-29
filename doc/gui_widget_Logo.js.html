@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: MLJ.js</title>
+    <title>JSDoc: Source: gui/widget/Logo.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: MLJ.js</h1>
+    <h1 class="page-title">Source: gui/widget/Logo.js</h1>
 
     
 
@@ -50,88 +50,90 @@
  */
 
 /**
- * @file Base library file, defines MLJ namespace and some global functions
+ * @file Defines and installs the Logo widget
  * @author Stefano Gabriele
  */
-
-/**
- * MLJ namespace
- * @namespace MLJ
- * @author Stefano Gabriele
- */
-var MLJ = {
-    VERSION: "1.0"
-};
-
-/**         
- * @class Create a MLJ error
- * @param {number} errorCode The error code number
- * @param {string} message The error message
- * @memberOf MLJ
- * @author Stefano Gabriele   
- */
-MLJ.Error = function (errorCode, message) {
-    this.code = errorCode;
-    this.message = message;
-};
-
-(function ($) {
-
-    if (typeof $ === 'undefined') {
-        console.error("jQuery library needed.");
-    }
-
-    var error;
+(function (component) {
     
-    /** @function
-     *  @param {MLJ.Error} error The error to set 
-     *  @description Set an error
-     *  @memberOf MLJ
-     *  @author Stefano Gabriele
+    /**         
+     * @class Create a new Logo widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
      */
-    this.setError = function (error) {        
-        this.error = error;
-    };    
-    
-    /** @function
-     *  @return {MLJ.Error} The last error
-     *  @description Get last error
-     *  @memberOf MLJ
-     *  @author Stefano Gabriele
-     */    
-    this.getLastError = function () {
-        return this.error;
+    var _Logo = function () {
+
+        var LOGO_WIDTH = 96;
+        var LOGO_HEIGHT = 821 * LOGO_WIDTH / 1023;
+        var insets = 10;
+        var _PiP;
+        var _$dialog;
+        
+        /**
+         * @author Stefano Gabriele 
+         */
+        this._make = function () {//build function                 
+            _PiP = new component.PiP();
+
+            var $logo = $('&lt;img id="logo" src="img/vcglogo200609_1024px.png">');
+
+            _$dialog = $('  &lt;div id="dialog" title="About MeshLabJS">\
+                    Copyright(C) 2015&lt;br>\
+                    &lt;br>\
+                    &lt;a href="http://vcg.isti.cnr.it/%7Ecignoni">Paolo Cignoni&lt;/a> &lt;br>\
+                    &lt;a href="http://vcg.isti.cnr.it"> Visual Computing Lab&lt;/a> &lt;br>\
+                    &lt;a href="http://www.isti.cnr.it"> ISTI - CNR&lt;/a>&lt;br>&lt;br> \
+&lt;b>MeshLabJS&lt;/b> is a web-based mesh processing system for \
+cleaning, filtering, editing and rendering of unstructured 3D triangular meshes. \
+This program is heavily inspired on the original desktop system &lt;a href="http://meshlab.sf.net">MeshLab&lt;/a>.&lt;br> \
+Like the original one, MeshLabJS for the mesh processing tasks relies on the \
+&lt;a href="http://vcg.sf.net">VCG&lt;/a> C++ library compiled to asm.js using emscripten \
+&lt;br>\
+&lt;br>&lt;b>Authors&lt;/b> (in first commit order)&lt;br>\
+Paolo Cignoni (Project Leader) &lt;br> \
+Maurizio Idini&lt;br>\
+Stefano Gabriele &lt;br>\
+&lt;/div>').hide();
+            $('body').append(_$dialog);
+
+            $logo.load(function () {
+                _PiP.appendContent(this);
+                $(this).width(LOGO_WIDTH);
+            });
+
+            $logo.css('cursor', 'pointer');
+
+            $(document).ready(function () {
+                var x = $('#mlj-tools-pane').outerWidth() + insets;
+                var y = $(window).height() - LOGO_HEIGHT - insets;
+                _PiP.setX(x);
+                _PiP.setY(y);
+            });
+
+            $(window).resize(function () {
+                var $tp = $('#mlj-tools-pane');
+                var newX = $tp.outerWidth() + $tp.offset().left + insets;
+                var newY = $(window).height() - LOGO_HEIGHT - insets;
+                _PiP.setX(newX);
+                _PiP.setY(newY);
+            });
+
+            $logo.click(function () {
+                $('#dialog').dialog(
+                        {draggable: false, width: 500, modal: true, resizable: false});
+            });
+
+            return _PiP.$;
+        };
     };
-    
-    /**
-     * @function
-     * @param {class} base The superclass
-     * @param {class} sub The subclass
-     * @memberOf MLJ
-     * @description Utility function used to inherit from a superclass
-     */
-    this.extend = function (base, sub) {
-        // Avoid instantiating the base class just to setup inheritance
-        // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-        // for a polyfill
-        // Also, do a recursive merge of two prototypes, so we don't overwrite 
-        // the existing prototype, but still maintain the inheritance chain
-        // Thanks to @ccnokes
-        var origProto = sub.prototype;
-        sub.prototype = Object.create(base.prototype);
-        for (var key in origProto) {
-            sub.prototype[key] = origProto[key];
-        }
-        // Remember the constructor property was set wrong, let's fix it
-        sub.prototype.constructor = sub;
-        // In ECMAScript5+ (all modern browsers), you can make the constructor property
-        // non-enumerable if you define it like this instead
-        Object.defineProperty(sub.prototype, 'constructor', {
-            enumerable: false,
-            value: sub
-        });
-    };
-}).call(MLJ, jQuery);</code></pre>
+
+    MLJ.extend(MLJ.gui.widget.Widget, _Logo);
+
+    //Install widget
+    MLJ.gui.installWidget("Logo", new _Logo());
+
+})(MLJ.gui.component);</code></pre>
         </article>
     </section>
 

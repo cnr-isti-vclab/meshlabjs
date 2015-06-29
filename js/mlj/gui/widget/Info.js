@@ -22,7 +22,7 @@
  */
 
 /**
- * @file Defines and installs the Info widget, the area where the informations 
+ * @file Defines and installs the Info widget the area where the informations 
  * about mesh are shown
  * @author Stefano Gabriele
  */
@@ -74,11 +74,12 @@
         };
         
         /**
-         * Appends a message to Info area
+         * Appends text to the Info area
+         * @param {String} text The text to append
          * @author Stefano Gabriele
          */
-        this.append = function (message) {
-            _$info.append("<p>" + message + "</p>");
+        this.append = function (text) {
+            _$info.append("<p>" + text + "</p>");
         };
     };
 
