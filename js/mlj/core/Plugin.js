@@ -71,8 +71,7 @@ MLJ.core.plugin.Plugin.prototype = {
         return this.name;
     },
     /**
-     * This abstract function is the right place where define the plugin GUI and 
-     * its initialization stuff
+     * This function should be overridden to define the plugin GUI and its initialization stuff
      * @param {MLJ.core.plugin.GUIBuilder} guiBuilder The object that provides 
      * useful function to build the GUI quickly
      * @abstract     
@@ -81,7 +80,7 @@ MLJ.core.plugin.Plugin.prototype = {
     _init: function (guiBuilder) {
     },
     /**
-     * This abstract function is the right place where define the code that will
+     * This function should be overridden to define the code that will
      * be executed after that apply or apply to all visible buttons was clicked
      * @param {MLJ.core.MeshFile} meshFile The mesh file that should be affected
      * by the code defined in this function
@@ -91,7 +90,7 @@ MLJ.core.plugin.Plugin.prototype = {
     _applyTo: function (meshFile) {
     },
     /**
-     * This abstract function represents the main entry point for the plugin execution
+     * This function represents the main entry point for the plugin execution
      * @abstract      
      * @author Stefano Gabriele
      */

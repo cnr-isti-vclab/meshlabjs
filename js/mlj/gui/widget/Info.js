@@ -1,15 +1,48 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Defines and install Info widget 
+ * @author Stefano Gabriele
  */
 
 (function (component) {
 
-    MLJ.gui.widget.Info = function () {
+    /**         
+     * @class Create a new Info widget. The Info widget is the area where the 
+     * informations about mesh are shown
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
+     */
+    var _Info = function () {
         var _PiP;
         var _$info = $('<div id="mlj-info"></div>');
-
+        
+        /**
+         * @override
+         * @author Stefano Gabriele
+         */
         this._make = function () {//build function                 
             _PiP = new component.PiP();
             _PiP.appendContent(_$info);
@@ -31,19 +64,27 @@
 
             return _PiP.$;
         };
-
+        
+        /**
+         * Clear the Info area
+         * @author Stefano Gabriele
+         */
         this.clear = function () {
             _$info.empty();
         };
-
+        
+        /**
+         * Appends a message to Info area
+         * @author Stefano Gabriele
+         */
         this.append = function (message) {
             _$info.append("<p>" + message + "</p>");
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.Info);
+    MLJ.extend(MLJ.gui.widget.Widget, _Info);
 
     //Install widget
-    MLJ.gui.installWidget("Info", new MLJ.gui.widget.Info());
+    MLJ.gui.installWidget("Info", new _Info());
 
 })(MLJ.gui.component);
