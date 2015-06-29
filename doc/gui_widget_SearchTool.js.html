@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gui/widget/Widget.js</title>
+    <title>JSDoc: Source: gui/widget/SearchTool.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gui/widget/Widget.js</h1>
+    <h1 class="page-title">Source: gui/widget/SearchTool.js</h1>
 
     
 
@@ -50,41 +50,65 @@
  */
 
 /**
- * @file Defines the Widget base class 
+ * @file Defines and installs the SearchTool widget 
  * @author Stefano Gabriele
  */
+(function () {
 
-/**
- * MLJ.gui.widget namespace
- * @namespace MLJ.gui.widget
- * @memberOf MLJ.gui
- * @author Stefano Gabriele
- */
-MLJ.gui.widget = {};
-
-/**         
- * @class The widget base class
- * @abstract
- * @author Stefano Gabriele 
- */
-MLJ.gui.widget.Widget = function () {};
-
-MLJ.gui.widget.Widget.prototype = {
-    /**
-     * The function called to build the widget
-     * @abstract
+    /**         
+     * @class Create a new SearchTool widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
      */
-    _make: function () {
+    var _SearchTool = function () {
+        var _elements = [];
+        var _$searchTool = $('&lt;div id="mlj-search-widget">&lt;/div>');
+        var _$input = $('&lt;input placeholder="Search">');
 
-    },
-    
-    /**
-     * The function called to refresh the widget
-     * @abstract
-     */
-    _refresh: function () {
-    }
-};</code></pre>
+        function refresh(select) {
+            $(document).trigger("mljSearchSelect", [select]);
+        }
+
+        /**
+         * @author Stefano Gabriele         
+         */
+        this._make = function () {//build function 
+            _$searchTool.append(_$input);
+            var select;
+            _$input.keyup(function () {
+                var matcher = new RegExp("(^)" + $.ui.autocomplete.escapeRegex($(this).val()), "i");
+                select = $.grep(_elements, function (item) {
+                    return matcher.test(item);
+                });
+
+                refresh(select);
+            });
+
+            return _$searchTool;
+        };
+
+        /**
+         * Adds a new tag in the search list
+         * @param {String} tag The tag to insert in the search list
+         */
+        this.addItem = function (tag) {
+            var split = tag.split(" ");
+            // Merges both arrays and gets unique items
+            _elements = MLJ.util.arrayUnique(_elements.concat(split));
+            return this;
+        };
+
+        MLJ.gui.widget.Widget.call(this);
+    };
+
+    MLJ.extend(MLJ.gui.widget.Widget, _SearchTool);
+
+    //Install widget
+    MLJ.gui.installWidget("SearchTool", new _SearchTool());
+
+})();</code></pre>
         </article>
     </section>
 

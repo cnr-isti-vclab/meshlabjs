@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gui/widget/Widget.js</title>
+    <title>JSDoc: Source: gui/widget/SceneBar.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gui/widget/Widget.js</h1>
+    <h1 class="page-title">Source: gui/widget/SceneBar.js</h1>
 
     
 
@@ -50,41 +50,93 @@
  */
 
 /**
- * @file Defines the Widget base class 
+ * @file Defines and installs the SceneBar widget 
  * @author Stefano Gabriele
  */
-
-/**
- * MLJ.gui.widget namespace
- * @namespace MLJ.gui.widget
- * @memberOf MLJ.gui
- * @author Stefano Gabriele
- */
-MLJ.gui.widget = {};
-
-/**         
- * @class The widget base class
- * @abstract
- * @author Stefano Gabriele 
- */
-MLJ.gui.widget.Widget = function () {};
-
-MLJ.gui.widget.Widget.prototype = {
-    /**
-     * The function called to build the widget
-     * @abstract
+(function (component) {
+    /**         
+     * @class Create a new SceneBar widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
      */
-    _make: function () {
+    var _SceneBar = function () {
 
-    },
-    
-    /**
-     * The function called to refresh the widget
-     * @abstract
-     */
-    _refresh: function () {
-    }
-};</code></pre>
+        var _toolBar = new component.ToolBar();
+
+        function init() {
+
+            var open = new component.FileButton({
+                tooltip: "Open mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png",
+                multiple: true
+            });
+                        
+
+            var save = new component.Button({
+                tooltip: "Save mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png"
+            });
+            
+            MLJ.gui.disabledOnSceneEmpty(save);
+            
+            var reload = new component.Button({
+                tooltip: "Reload mesh file",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png"
+            });
+            
+            MLJ.gui.disabledOnSceneEmpty(reload);
+
+            var snapshot = new component.Button({
+                tooltip: "Take snapshot",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png"
+            });
+            
+            MLJ.gui.disabledOnSceneEmpty(snapshot);
+            
+            _toolBar.addButton(open, save, reload, snapshot);
+
+            // SCENE BAR EVENT HANDLERS
+            open.onChange(function (input) {
+                MLJ.core.File.openMeshFile(input.files);
+            });
+
+            save.onClick(function () {
+                console.log("Save button clicked");
+            });
+
+            reload.onClick(function () {
+                var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
+                MLJ.core.File.reloadMeshFileByName(name);
+            });
+
+            snapshot.onClick(function () {
+                console.log("Snapshot button clicked");
+            });
+
+        }
+        
+        /**
+         * @author Stefano Gabriele         
+         */
+        this._make = function () {
+            _toolBar.$.attr("id", "mlj-scenebar-widget");
+            return _toolBar.$;
+        };
+
+        init();
+
+        MLJ.gui.widget.Widget.call(this);
+    };
+
+    MLJ.extend(MLJ.gui.widget.Widget, _SceneBar);
+
+    //Install widget
+    MLJ.gui.installWidget("SceneBar", new _SceneBar());
+
+})(MLJ.gui.component);
+</code></pre>
         </article>
     </section>
 

@@ -34,6 +34,24 @@
  */
 MLJ.util = {};
 
+/**
+ * Returns an array without duplicates
+ * @param {type} array The array to be cleaned
+ * @returns {Array} The array without duplicates
+ */
+MLJ.util.arrayUnique = function (array) {
+
+    var a = array.concat();
+    for (var i = 0; i < a.length; ++i) {
+        for (var j = i + 1; j < a.length; ++j) {
+            if (a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+};
+
 /**         
  * @class Create an Associative array 
  * @memberOf MLJ.util

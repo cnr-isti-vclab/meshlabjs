@@ -1,11 +1,39 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
  */
 
+/**
+ * @file Defines and installs the SceneBar widget 
+ * @author Stefano Gabriele
+ */
 (function (component) {
-    MLJ.gui.widget.SceneBar = function () {
+    /**         
+     * @class Create a new SceneBar widget
+     * @augments  MLJ.gui.widget.Widget
+     * @private
+     * @memberOf MLJ.gui.widget
+     * @author Stefano Gabriele 
+     */
+    var _SceneBar = function () {
 
         var _toolBar = new component.ToolBar();
 
@@ -60,7 +88,10 @@
             });
 
         }
-
+        
+        /**
+         * @author Stefano Gabriele         
+         */
         this._make = function () {
             _toolBar.$.attr("id", "mlj-scenebar-widget");
             return _toolBar.$;
@@ -71,9 +102,9 @@
         MLJ.gui.widget.Widget.call(this);
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.SceneBar);
+    MLJ.extend(MLJ.gui.widget.Widget, _SceneBar);
 
     //Install widget
-    MLJ.gui.installWidget("SceneBar", new MLJ.gui.widget.SceneBar());
+    MLJ.gui.installWidget("SceneBar", new _SceneBar());
 
 })(MLJ.gui.component);
