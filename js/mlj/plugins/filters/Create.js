@@ -58,5 +58,37 @@
 
     plugin.install(SphereFilter);
 
+    var TorusFilter = new plugin.Filter({
+        name: "Create Torus ",
+        tooltip: "Create a torus with the desired level of subdivisions and ratio between inner and outer radius",
+        arity: 0});
+
+    var stepWidget;
+    var radiusRatioWidget;
+
+    TorusFilter._init = function (builder) {
+
+        stepWidget = builder.Integer({
+            min: 6, step: 1, defval: 32,
+            label: "subdivision",
+            tooltip: "Number of recursive subdivision of the sphere"
+        });
+        
+        radiusRatioWidget = builder.Float({
+            min: 0, step: 0.1, max:4, defval:0.5,
+            label: "Radius Ratio",
+            tooltip: "Ratio between the section of the torus and the generating circle"
+        });
+    };
+
+    TorusFilter._applyTo = function () {
+        var mf = MLJ.core.File.createCppMeshFile("Torus");
+        Module.CreateTorus(mf.ptrMesh, stepWidget.getValue(), radiusRatioWidget.getValue());
+        scene.addLayer(mf);
+    };
+
+    plugin.install(TorusFilter);
+
+    
 
 })(MLJ.core.plugin, MLJ.core.Scene);

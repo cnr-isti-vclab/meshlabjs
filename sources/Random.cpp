@@ -3,7 +3,7 @@
 using namespace vcg;
 using namespace std;
 
-void RandomPlugin(uintptr_t _m, float max_displacement)
+void RandomPlugin(uintptr_t _m, float max_displacement, bool normalDirected)
 {
     MyMesh &m = *((MyMesh*) _m);
     srand(time(NULL));

@@ -24,6 +24,14 @@ void CreateSphere(uintptr_t _m, int refinement)
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
+void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    printf("Creating a torus of %i %f\n",refinement, radiusRatio);
+    tri::Torus(m,1.0,radiusRatio,refinement*2,refinement);
+    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+}
+
 void CreatePluginTEST()
 {
   for(int i=0;i<5;++i)
@@ -46,6 +54,7 @@ void CreatePluginTEST()
 //Binding code
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreatePlatonic", &CreatePlatonic);
+    emscripten::function("CreateTorus", &CreateTorus);
     emscripten::function("CreateSphere", &CreateSphere);
 }
 #endif
