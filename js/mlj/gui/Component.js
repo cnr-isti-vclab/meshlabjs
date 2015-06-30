@@ -302,7 +302,13 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     });
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
-
+    
+    this.onToggle = function (foo) {
+        _toggle.onToggle(function(on) {
+            foo(on);
+        });        
+    };
+    
     this._make = function () {
         this.$.append(_toggle.$, _$arrow);        
     };

@@ -136,18 +136,12 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 
 MLJ.core.plugin.RenderingBarBuilder = function (tb) {
     this.Button = function (flags) {        
-        var button = flags.toggle
+        var button = flags.toggle === true
             ? new MLJ.gui.component.CustomToggleButton(flags)      
             : new MLJ.gui.component.Button(flags);
                         
-            tb.add(button);
-            
-//        if (flags.onToggle !== undefined) {
-//            toggle.onToggle(function (on) {
-//                flags.onToggle(on);                
-//            });
-//        }
-
+            tb.add(button);                        
+        
         return button;
     };
 };
@@ -300,14 +294,25 @@ MLJ.core.plugin.Rendering = function (parameters) {
     var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
     
     var btn = tbBuilder.Button(parameters);
+    
+    if(parameters.toggle === true) {
+        btn.onToggle(function(on) {
 
-//        $(document).ready(function () {
-//            $(this).on("contextmenu", function (e) {
-//                if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
-//                    e.preventDefault();
-//                }
-//            });
-//        });
+        });
+    } else {
+        btn.onClick(function() {
+            
+        });
+    }
+    
+    //Prevents context menu opening
+    $(document).ready(function () {
+        $(this).on("contextmenu", function (e) {
+            if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
+                e.preventDefault();
+            }            
+        });
+    });
 //
 //        btn.$.focus(function (ev) {
 //            ev.preventDefault();
