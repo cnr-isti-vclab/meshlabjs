@@ -135,17 +135,21 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 };
 
 MLJ.core.plugin.RenderingBarBuilder = function (tb) {
-    this.Toggle = function (flags) {
-        var toggle = MLJ.gui.build.ToggleButton(flags);
-        tb.addButton(toggle);
+    this.Button = function (flags) {        
+        var button = flags.toggle
+            ? new MLJ.gui.component.CustomToggleButton(flags)      
+            : new MLJ.gui.component.Button(flags);
+            
+            //----- Sostituire nome a funzione
+            tb.addButton(button);
+            
+//        if (flags.onToggle !== undefined) {
+//            toggle.onToggle(function (on) {
+//                flags.onToggle(on);                
+//            });
+//        }
 
-        if (flags.onToggle !== undefined) {
-            toggle.onToggle(function (on) {
-                flags.onToggle(on);                
-            });
-        }
-
-        return toggle;
+        return button;
     };
 };
 
@@ -282,56 +286,6 @@ MLJ.core.plugin.Filter = function (parameters) {
     };
 };
 
-/**         
- * @class Creates a new rendering feature
- * @param {Object} parameters The object contains the initialization parameters 
- * to create a rendering plugin<br>
- * <code> paramters = {<br>
- * &nbsp name: //the name of rendering feature<br>
- * &nbsp button: { //rendering tool bar button definition<br> 
- * &nbsp&nbsp&nbsp type: //button type ("toggle")<br>
- * &nbsp&nbsp&nbsp tooltip: //button tooltip<br>
- * &nbsp&nbsp&nbsp icon: //button image path<br>
- * &nbsp&nbsp&nbsp on: //default button status (only for toggle button)<br>
- * &nbsp&nbsp&nbsp onToggle: //the function to perform on toggle event (only for toggle button)<br>
- * &nbsp&nbsp}<br>        
- * }
- * </code>
- * @memberOf MLJ.core.plugin 
- * @author Stefano Gabriele 
- * @example
- * <caption>Ambient light feature</caption>
- * (function (plugin, core, scene) {
- *  
- *      var plug = new plugin.Rendering({
- *          name: "Ambient Light",
- *          button: {
- *              type: "toggle",
- *              tooltip: "Ambient light on/off",
- *              icon: "img/icons/light.png",
- *              on: core.defaults.AmbientLight.on,
- *              onToggle: function(on) {                
- *                  scene.lights.AmbientLight.setOn(on);
- *              }
- *          }        
- *      });
- *       
- *      plug._init = function (guiBuilder) {
- *          guiBuilder.Color({
- *              label: "Color",
- *              tooltip: "Ambient light color",
- *              color: core.defaults.AmbientLight.color,
- *              onChange: function (hex) {
- *                  scene.lights.AmbientLight.setColor('#' + hex);
- *              }
- *          });
- *
- *      };
- *       
- *      plugin.install(plug);
- *      
- *})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
- */
 MLJ.core.plugin.Rendering = function (parameters) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING,
             parameters.name);
@@ -345,31 +299,30 @@ MLJ.core.plugin.Rendering = function (parameters) {
     var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
             MLJ.widget.TabbedPane.getRendToolBar());
     var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
+    
+    var btn = tbBuilder.Button(parameters);
 
-    if (parameters.button.type === "toggle") {
-        var btn = tbBuilder.Toggle(parameters.button);
-
-        $(document).ready(function () {
-            $(this).on("contextmenu", function (e) {
-                if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        btn.$.focus(function (ev) {
-            ev.preventDefault();
-
-            renderingPane.children().each(function (key, val) {
-                if ($(val).attr("id") === UID) {
-                    $(val).fadeIn();
-                } else {
-                    $(val).fadeOut();
-                }
-            });
-
-        });
-    }
+//        $(document).ready(function () {
+//            $(this).on("contextmenu", function (e) {
+//                if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
+//                    e.preventDefault();
+//                }
+//            });
+//        });
+//
+//        btn.$.focus(function (ev) {
+//            ev.preventDefault();
+//
+//            renderingPane.children().each(function (key, val) {
+//                if ($(val).attr("id") === UID) {
+//                    $(val).fadeIn();
+//                } else {
+//                    $(val).fadeOut();
+//                }
+//            });
+//
+//        });
+    
 
     this._main = function () {
         _this._init(guiBuilder);

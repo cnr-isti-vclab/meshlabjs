@@ -280,6 +280,43 @@ MLJ.gui.component.ToggleButton = function (flags) {
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
 
+
+// TOGGLE BUTTON _______________________________________________________________
+
+MLJ.gui.component.CustomToggleButton = function (flags) {
+    var _html = $('<div/>').css({
+        display: "inline-block",
+        paddingBottom: "8px",                
+        position: "relative"
+    });
+
+    var _$arrow = $('<div/>').css({
+        width: "0px",
+        height: "0px",
+        borderLeft: "6px solid transparent",
+        borderRight: "6px solid transparent",
+        borderTop: "6px solid black",
+        position: "absolute",
+        bottom: "0px",
+        left:"6px"
+    });
+
+    var _toggle = new MLJ.gui.component.ToggleButton(flags);
+
+    this._make = function () {
+        this.$.append(_toggle.$, _$arrow);        
+    };
+
+    this._disabled = function (bool) {
+        _toggle._disabled(bool);
+    };   
+    
+    MLJ.gui.component.Component.call(this, _html, flags);
+
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.CustomToggleButton);
+
 // CHECKBOX ____________________________________________________________________
 
 MLJ.gui.component.CheckBox = function (checked) {
@@ -441,10 +478,10 @@ MLJ.gui.component.ToolBar = function () {
 
     this.addButton = function () {
         for (var i = 0; i < arguments.length; i++) {
-            if (arguments[i] instanceof MLJ.gui.component.Button) {
+            if (arguments[i] instanceof MLJ.gui.component.Component) {
                 this.$.append(arguments[i].$);
             } else {
-                console.error("The parameter must be an instance of MLJ.gui.component.Button");
+                console.error("The parameter must be an instance of MLJ.gui.component.Component");
             }
         }
         return this;
