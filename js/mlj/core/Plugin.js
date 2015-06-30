@@ -295,15 +295,62 @@ MLJ.core.plugin.Rendering = function (parameters) {
     
     var btn = tbBuilder.Button(parameters);
     
+    var group = MLJ.gui.makeGroup("rendButtons");
+    if(btn instanceof MLJ.gui.component.CustomToggleButton) {
+        group.addItem(btn);
+    }
+    
     if(parameters.toggle === true) {
-        btn.onToggle(function(on) {
-
+         
+        //Click on button
+        btn.onToggle(function(on) {            
+           //Apply rendering pass to all mesh
+           if(MLJ.gui.isCtrlDown()) {
+                var ptr = MLJ.core.Scene.getLayers().iterator();
+                var layer;                
+                while (ptr.hasNext()) {
+                    layer = ptr.next();
+                    if (layer.getThreeMesh().visible) {
+                        _this._applyTo(layer, on);
+                    }
+                }                
+           } else { //Apply rendering pass to selected layer
+               var selected = MLJ.core.Scene.getSelectedLayer();
+               _this._applyTo(selected, on);
+           }           
         });
-    } else {
-        btn.onClick(function() {
+        
+        //Clicked with mouse right button
+        btn.onRightButtonClicked(function() {
+            btn.toggle("on");
+            var items = group.getItems();            
+            var item;
+            for(var key in items) {                
+                item = items[key];
+                if(item !== btn) {
+                    item.toggle("off");                    
+                } 
+            }
             
         });
-    }
+        
+        //Click on arrow
+        btn.onArrowClicked(function() {
+            
+            renderingPane.children().each(function (key, val) {
+                if ($(val).attr("id") === UID) {
+                    $(val).fadeIn();
+                } else {
+                    $(val).fadeOut();
+                }
+            });
+            
+        });            
+        
+    } else {
+        btn.onClick(function() {        
+        });
+    }       
     
     //Prevents context menu opening
     $(document).ready(function () {
@@ -312,26 +359,12 @@ MLJ.core.plugin.Rendering = function (parameters) {
                 e.preventDefault();
             }            
         });
-    });
-//
-//        btn.$.focus(function (ev) {
-//            ev.preventDefault();
-//
-//            renderingPane.children().each(function (key, val) {
-//                if ($(val).attr("id") === UID) {
-//                    $(val).fadeIn();
-//                } else {
-//                    $(val).fadeOut();
-//                }
-//            });
-//
-//        });
-    
+    });   
 
     this._main = function () {
         _this._init(guiBuilder);
         renderingPane.append(pane.$);
-    };
+    }        
 
 };
 

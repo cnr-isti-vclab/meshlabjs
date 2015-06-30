@@ -255,8 +255,19 @@ MLJ.gui.component.ToggleButton = function (flags) {
 
     var _this = this;
 
-    this.toggle = function () {
-        _on ^= 1;
+    this.toggle = function (param) {
+
+        switch (param) {
+            case "on":
+                _on = 1;
+                break;
+            case "off":
+                _on = 0;
+                break;
+            default:
+                _on ^= 1;
+        }
+
         if (_on) {
             _this.$.addClass("mlj-toggle-on");
         } else {
@@ -286,7 +297,7 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
 MLJ.gui.component.CustomToggleButton = function (flags) {
     var _html = $('<div/>').css({
         display: "inline-block",
-        paddingBottom: "8px",                
+        paddingBottom: "8px",
         position: "relative"
     });
 
@@ -298,25 +309,43 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         borderTop: "6px solid black",
         position: "absolute",
         bottom: "0px",
-        left:"6px"
+        left: "6px"
     });
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
-    
-    this.onToggle = function (foo) {
-        _toggle.onToggle(function(on) {
-            foo(on);
-        });        
+
+    this.toggle = function (param) {
+        _toggle.toggle(param);
     };
-    
+
+    this.onToggle = function (foo) {
+        _toggle.onToggle(function (on) {
+            foo(on);
+        });
+    };
+
+    this.onRightButtonClicked = function (foo) {
+        _toggle.$.mouseup(function (event) {
+            if (event.which === 3) {
+                foo();
+            }
+        });
+    };
+
+    this.onArrowClicked = function (foo) {
+        _$arrow.click(function () {
+            foo();
+        });
+    };
+
     this._make = function () {
-        this.$.append(_toggle.$, _$arrow);        
+        this.$.append(_toggle.$, _$arrow);
     };
 
     this._disabled = function (bool) {
         _toggle._disabled(bool);
-    };   
-    
+    };
+
     MLJ.gui.component.Component.call(this, _html, flags);
 
 };

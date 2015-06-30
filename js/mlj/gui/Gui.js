@@ -96,7 +96,6 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
     });
 };
 
-
 MLJ.gui.build = {           
     Button: function (flags) {
     return new MLJ.gui.component.Button(flags);
@@ -182,7 +181,31 @@ MLJ.gui.build = {
      */
     this.generateUID = function () {
         return "mlj-uid-" + _counter++;
-    };
+    }
+    
+    this.makeGroup = function (name) {
+
+        var _group = function () {
+            var __items = [];
+
+            this.addItem = function (item) {
+                __items.push(item);
+            };
+
+            this.getItems = function () {
+                return __items;
+            };
+        };
+
+        if (MLJ.gui.group === undefined) {
+            MLJ.gui.group = {};
+            MLJ.gui.group.name = new _group();
+        } else if (MLJ.gui.group.name === undefined) {
+            MLJ.gui.group.name = new _group();
+        }
+
+        return MLJ.gui.group.name;
+    }
     
     initKeysEventsHandler();
     
