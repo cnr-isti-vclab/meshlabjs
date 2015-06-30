@@ -67,7 +67,7 @@
             
             MLJ.gui.disabledOnSceneEmpty(snapshot);
             
-            _toolBar.addButton(open, save, reload, snapshot);
+            _toolBar.add(open, save, reload, snapshot);
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {

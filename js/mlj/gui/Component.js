@@ -476,7 +476,7 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ComboBox);
 MLJ.gui.component.ToolBar = function () {
     var _html = $('<div class="mjs-toolbar"></div>');
 
-    this.addButton = function () {
+    this.add = function () {
         for (var i = 0; i < arguments.length; i++) {
             if (arguments[i] instanceof MLJ.gui.component.Component) {
                 this.$.append(arguments[i].$);

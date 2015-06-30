@@ -139,9 +139,8 @@ MLJ.core.plugin.RenderingBarBuilder = function (tb) {
         var button = flags.toggle
             ? new MLJ.gui.component.CustomToggleButton(flags)      
             : new MLJ.gui.component.Button(flags);
-            
-            //----- Sostituire nome a funzione
-            tb.addButton(button);
+                        
+            tb.add(button);
             
 //        if (flags.onToggle !== undefined) {
 //            toggle.onToggle(function (on) {
