@@ -68,7 +68,7 @@ MLJ.gui.component.Grid = function () {
     var padding;
     for (var i = 0, m = arguments.length; i < m; i++) {
         arg = arguments[i];
-        padding = ($(arg).data("grid")) ? 0 : "10px";
+        padding = ($(arg).data("grid")) ? 0 : "4px";
         $cell = $('<div></div>')
                 .css({
                     display: "table-cell",

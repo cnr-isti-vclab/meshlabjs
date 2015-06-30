@@ -94,14 +94,16 @@ html,body{
     height: 100%;    
     border-right: gainsboro ridge;
 }
-
+#mlj-tabbed-pane {
+    font-size: 10pt;
+}
 /* Buttons ____________________________________________________________ */
 
 .mjs-toolbar .ui-button .ui-button-text,
 .ui-accordion-header .ui-button .ui-button-text {
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     line-height: 22px;
     /*vertical-align: middle;*/
     /*display: table-cell;*/    
