@@ -37,7 +37,7 @@
     var _SearchTool = function () {
         var _elements = [];
         var _$searchTool = $('<div id="mlj-search-widget"></div>');
-        var _$input = $('<input placeholder="Search">');
+        var _$input = $('<input placeholder="Search" autofocus>');
 
         function refresh(select) {
             $(document).trigger("mljSearchSelect", [select]);
