@@ -104,16 +104,18 @@ html,body{
     padding: 0;
     width: 20px;
     height: 20px;
-    line-height: 22px;
-    /*vertical-align: middle;*/
-    /*display: table-cell;*/    
+    line-height: 20px;
 }
 
 .ui-button img {
-    width: 20px;
-    height: 20px; 
-    padding: -1;
+    width: 18px;
+    height: 18px;     
     vertical-align: middle;   
+}
+
+#mlj-scenebar-widget .ui-button img {
+    width: 14px;
+    height: 14px;
 }
 
 .ui-button.mlj-toggle-on {
