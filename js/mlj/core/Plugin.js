@@ -298,6 +298,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
     var group = MLJ.gui.makeGroup("rendButtons");
     if(btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(btn);
+        MLJ.gui.disabledOnSceneEmpty(btn);
     }
     
     if(parameters.toggle === true) {
@@ -315,8 +316,10 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     }
                 }                
            } else { //Apply rendering pass to selected layer
-               var selected = MLJ.core.Scene.getSelectedLayer();
-               _this._applyTo(selected, on);
+                var selected = MLJ.core.Scene.getSelectedLayer();
+                if(selected !== undefined) {
+                    _this._applyTo(selected, on);
+                }
            }           
         });
         

@@ -309,9 +309,11 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         borderTop: "6px solid black",
         position: "absolute",
         bottom: "0px",
-        left: "6px"
+        left: "5px"
     });
-
+    
+    var _arrowHandler = null;
+    
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
     this.toggle = function (param) {
@@ -324,7 +326,7 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         });
     };
 
-    this.onRightButtonClicked = function (foo) {
+    this.onRightButtonClicked = function (foo) {        
         _toggle.$.mouseup(function (event) {
             if (event.which === 3) {
                 foo();
@@ -333,6 +335,7 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     };
 
     this.onArrowClicked = function (foo) {
+        _arrowHandler = foo;
         _$arrow.click(function () {
             foo();
         });
@@ -342,8 +345,16 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         this.$.append(_toggle.$, _$arrow);
     };
 
-    this._disabled = function (bool) {
-        _toggle._disabled(bool);
+    this._disabled = function (disabled) {
+        _toggle._disabled(disabled);
+        
+        if(disabled) {
+            _$arrow.css("opacity","0.2");
+            _$arrow.off();
+        } else {
+            _$arrow.css("opacity","1");
+            _$arrow.click(_arrowHandler);
+        }
     };
 
     MLJ.gui.component.Component.call(this, _html, flags);
@@ -449,7 +460,7 @@ MLJ.gui.component.ButtonSet = function (flags) {
     };
 
     this.getSelectedValue = function () {
-        return this.$.find(":checked").date("value");
+        return this.$.find(":checked").data("value");
     };
 
     this.onChange = function (foo) {
