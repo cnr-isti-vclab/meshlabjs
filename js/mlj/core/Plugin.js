@@ -32,20 +32,7 @@
  * @memberOf MLJ.core
  * @author Stefano Gabriele
  */
-MLJ.core.plugin = {
-    /**
-      * Enum for plugin types values.
-      * @readonly
-      * @enum {Integer}
-      * @memberOf MLJ.core
-      * @author Stefano Gabriele 
-     */
-    types: {
-        /** Filter type value*/
-        FILTER: 0,
-        /** Rendering type value*/
-        RENDERING: 1
-    }
+MLJ.core.plugin = {   
 };
 
 /**         
@@ -56,8 +43,7 @@ MLJ.core.plugin = {
  * @memberOf MLJ.core.plugin
  * @author Stefano Gabriele 
  */
-MLJ.core.plugin.Plugin = function (type, name) {
-    this.type = type;
+MLJ.core.plugin.Plugin = function (name) {    
     this.name = name;
 };
 
@@ -194,8 +180,8 @@ MLJ.core.plugin.RenderingBarBuilder = function (tb) {
  * })(MLJ.core.plugin, MLJ.core.Scene);
  */
 MLJ.core.plugin.Filter = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.FILTER
-            , parameters.name, parameters.tooltip, parameters.arity);
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.tooltip, 
+    parameters.arity);
     var _this = this;
 
     var entry = new MLJ.gui.build.AccordionEntry(
@@ -280,8 +266,7 @@ MLJ.core.plugin.Filter = function (parameters) {
 };
 
 MLJ.core.plugin.Rendering = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.RENDERING,
-            parameters.name);
+    MLJ.core.plugin.Plugin.call(this, parameters.name);
     var _this = this;
 
     var pane = MLJ.gui.build.Pane();
@@ -390,6 +375,7 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
             plugin = arguments[i];
             if (plugin instanceof MLJ.core.plugin.Plugin) {
                 _plugins.set(plugin.getName(), plugin);
+                console.log(plugin instanceof MLJ.core.plugin.Filter);
                 search.addItem(plugin.getName());
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
