@@ -361,7 +361,8 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
 (function (widget, gui) {
 
-    var _plugins = new MLJ.util.AssociativeArray();
+    var _filters = new MLJ.util.AssociativeArray();
+    var _rendering = new MLJ.util.AssociativeArray();
     
     /**
      * Installs a new plugin in MeshLabJS
@@ -373,10 +374,13 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
         var search = MLJ.gui.getWidget("SearchTool");
         for (var i = 0; i < arguments.length; i++) {
             plugin = arguments[i];
-            if (plugin instanceof MLJ.core.plugin.Plugin) {
-                _plugins.set(plugin.getName(), plugin);
-                console.log(plugin instanceof MLJ.core.plugin.Filter);
-                search.addItem(plugin.getName());
+            if (plugin instanceof MLJ.core.plugin.Plugin) {                
+                if(plugin instanceof MLJ.core.plugin.Filter) {
+                    _filters.set(plugin.getName(), plugin);
+                    search.addItem(plugin.getName());
+                } else if(plugin instanceof MLJ.core.plugin.Rendering) {
+                    _rendering.set(plugin.getName(), plugin);
+                }
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
             }
@@ -389,7 +393,12 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
      * @author Stefano Gabriele
      */
     this.run = function () {
-        var ptr = _plugins.iterator();
+        var ptr = _filters.iterator();
+        while (ptr.hasNext()) {
+            ptr.next()._main();
+        }
+        
+        ptr = _rendering.iterator();
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
