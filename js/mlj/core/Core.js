@@ -485,9 +485,9 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         _this.material = on === true
             ? new MLJ.core.PhongMaterial(_this.material.parameters) 
             : new MLJ.core.BasicMaterial(_this.material.parameters);            
-        _this.threeMesh.material = new THREE.MeshBasicMaterial();
-        _this.material.needUpdate();
-        geometryNeedUpdate();
+        _this.threeMesh.material = _this.material.threeMaterial;
+//        _this.material.needUpdate();
+//        geometryNeedUpdate();
         MLJ.core.Scene.render();
     };
     
