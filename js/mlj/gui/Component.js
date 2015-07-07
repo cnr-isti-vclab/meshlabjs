@@ -139,11 +139,11 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.PiP);
 
 // Color Picker ________________________________________________________________
 MLJ.gui.component.ColorPicker = function (flags) {
-//    var _html = '<input type="text" class="mlj-color-picker">';
     var _html = '<div class="mlj-color-picker"></div>';
     var _$picker = $('<input type="text"/>').addClass("mlj-picker");
     var _$preview = $('<div/>').addClass("mlj-picker-preview");
     var _this = this;
+    var _currentHexColor;
 
     this.setColor = function (color) {
         if (color.indexOf('#') === -1) {
@@ -151,15 +151,27 @@ MLJ.gui.component.ColorPicker = function (flags) {
         }
         _$preview.css("background-color", color);
         _$picker.val(color);
-//        var id = _this.$.attr("id");
-//        $('#' + id).find(".mlj-picker").colpickSetColor(color,true);
+    };
+
+    this.getColor = function (type) {
+        switch (type) {
+            case "rgb":
+                //Colpick RGB object
+                return $.colpick.hexToRgb(_currentHexColor);
+            case "hsb":
+                return $.colpick.hexToHsb(_currentHexColor);
+            case "style":
+                return "#" + _currentHexColor;
+            default: //hex color
+                return _currentHexColor;
+        }
     };
 
     this._make = function () {
         _this.$.append(_$picker, _$preview);
         _this.$.uniqueId();
         var id = _this.$.attr("id");
-
+        _currentHexColor = flags.color;
         $(window).ready(function () {
             $('#' + id).find(".mlj-picker").colpick({
                 layout: 'hex',
@@ -167,7 +179,7 @@ MLJ.gui.component.ColorPicker = function (flags) {
                 color: flags.color,
                 colorScheme: 'dark',
                 onChange: function (hsb, hex, rgb, el, bySetColor) {
-//                    $(el).css('border-color', '#' + hex);
+                    _currentHexColor = hex;
                     _$preview.css('background-color', '#' + hex);
                     // Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
                     if (!bySetColor)
@@ -291,6 +303,10 @@ MLJ.gui.component.ToggleButton = function (flags) {
         });
     };
 
+    this.isOn = function () {
+        return _on === 1;
+    };
+
     this.$.click(function () {
         _this.toggle();
     });
@@ -328,6 +344,10 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
 
     this.toggle = function (param) {
         _toggle.toggle(param);
+    };
+
+    this.isOn = function () {
+        return _toggle.isOn();
     };
 
     this.onToggle = function (foo) {
@@ -472,13 +492,13 @@ MLJ.gui.component.ButtonSet = function (flags) {
     this.getSelectedValue = function () {
         return this.$.find(":checked").data("value");
     };
-    
-    this.selectByValue = function(value) {
-        this.$.find(":input").each(function(key,element) {            
-            if($(element).data("value") === value) {                                
+
+    this.selectByValue = function (value) {
+        this.$.find(":input").each(function (key, element) {
+            if ($(element).data("value") === value) {
                 $(element).prop('checked', true).button('refresh');
             }
-        });        
+        });
     };
 
     this.onChange = function (foo) {
@@ -523,10 +543,12 @@ MLJ.gui.component.ComboBox = function (flags) {
     this.getSelectedValue = function () {
         return this.$.find(":selected").val();
     };
-    
-     this.selectByValue = function(value) {       
+
+    this.selectByValue = function (value) {
+        _this.$.find("option[value=" + value + "]").prop('selected', true);
+        _this.$.selectmenu('refresh');
     };
-    
+
     this.onChange = function (foo) {
         _this.$.on("selectmenuchange", function (event, ui) {
             foo(event, ui);

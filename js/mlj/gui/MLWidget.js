@@ -107,8 +107,8 @@ MLJ.gui.MLWidget.Choice = function (flags) {
 
     this.onChange = function (foo) {
         $(window).ready(function () {
-            _this.choice.onChange(function (val) {
-                foo(val);
+            _this.choice.onChange(function (event) {
+                foo(_this.choice.getSelectedValue());
             });
         });
     };
@@ -135,6 +135,10 @@ MLJ.gui.MLWidget.Color = function (flags) {
 
     this.setColor = function (color) {
         this.color.setColor(color);
+    };
+    
+    this.getColor = function(type) {
+      return this.color.getColor(type);
     };
 
     MLJ.gui.MLWidget.call(this);
