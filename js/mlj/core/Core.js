@@ -82,11 +82,6 @@ MLJ.core = {
         },
         /** Material defaults */
         Material: {
-            specular: '#ffffff',
-            color: '#a0a0a0',
-            emissive: '#7c7b7b',
-            shading: THREE.FlatShading,
-            shininess: 50,
             wireframe: false
         }
     }
@@ -360,6 +355,21 @@ MLJ.core.PhongMaterial = function (parameters) {
 
 MLJ.extend(MLJ.core.Material, MLJ.core.PhongMaterial);
 
+MLJ.core.ShaderMaterial = function (parameters) {    
+           
+    /**     
+     * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
+     * @author Stefano Gabriele
+     */
+    this._build = function () {
+        this.threeMaterial = new THREE.MeshPhongMaterial(this.parameters);        
+    };
+       
+    MLJ.core.Material.call(this, parameters);
+};
+
+MLJ.extend(MLJ.core.Material, MLJ.core.ShaderMaterial);
+
 /**         
  * @class Creates a new MeshFile 
  * @param {String} name The name of the mesh file
@@ -379,11 +389,30 @@ MLJ.extend(MLJ.core.Material, MLJ.core.PhongMaterial);
 MLJ.core.MeshFile = function (name, ptrMesh) {
     this.name = name;
     this.ptrMesh = ptrMesh;
-    this.VN = this.vert = this.FN = this.face = null;
-    this.material = new MLJ.core.PhongMaterial();
+    this.VN = this.vert = this.FN = this.face = this.material = null;    
     this.threeMesh = null;
-    var _this = this;
-
+    var _this = this;        
+    
+    function init() {
+        var rend = MLJ.core.plugin.getRenderingPlugins();
+        var params = {};
+        var colorWheel = rend.getByKey("ColorWheel");
+        var filled = rend.getByKey("Filled");
+        
+        params.color = colorWheel.parameters.color;
+        
+        params.specular = filled.parameters.specular;
+        params.emissive = filled.parameters.emissive;
+        params.shading = filled.parameters.shading;
+        params.shininess = filled.parameters.shininess;
+        
+        _this.material = filled.parameters.light === true 
+            ? new MLJ.core.PhongMaterial(params) 
+            : new MLJ.core.BasicMaterial(params);        
+        
+        buildThreeMesh();
+    }
+    
     function buildMeshGeometry() {
         var meshProp = new Module.MeshLabJs(ptrMesh);
         _this.VN = meshProp.getVertexNumber();
@@ -490,6 +519,6 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         _this.threeMesh = _this.name = _this.ptrMesh = _this.VN = _this.vert =
                 _this.FN = _this.face = _this.material = _this = null;
     };
-
-    buildThreeMesh();
+    
+    init();
 };

@@ -345,7 +345,7 @@ MLJ.core.Scene = {};
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
         }
     };
-    
+
     /**
      * Returns the layer corresponding to the given name
      * @param {String} name The name of the layer     
@@ -356,14 +356,14 @@ MLJ.core.Scene = {};
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
     };
-    
-    
+
+
     /**
      * Removes the layer corresponding to the given name
      * @param {String} name The name of the layer which must be removed  
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele     
-     */    
+     */
     this.removeLayerByName = function (name) {
         var meshFile = this.getLayerByName(name);
 
@@ -374,36 +374,36 @@ MLJ.core.Scene = {};
             meshFile.dispose();
         }
     };
-    
+
     /**
      * Returns the currently selected layer     
      * @returns {MLJ.core.MeshFile} The currently selected layer
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele     
-     */   
+     */
     this.getSelectedLayer = function () {
         return _selectedLayer;
     };
-    
+
     /**
      * Returns the layers list
      * @returns {MLJ.util.AssociativeArray} The layers list
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele     
-     */ 
+     */
     this.getLayers = function () {
         return _layers;
     };
-    
+
     /**
      * Renders the scene
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele     
-     */ 
+     */
     this.render = function () {
         _renderer.render(_scene, _camera);
     };
-    
+
     //INIT
     $(window).ready(function () {
         initScene();

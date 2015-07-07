@@ -32,7 +32,7 @@
  * @memberOf MLJ.core
  * @author Stefano Gabriele
  */
-MLJ.core.plugin = {   
+MLJ.core.plugin = {
 };
 
 /**         
@@ -43,8 +43,9 @@ MLJ.core.plugin = {
  * @memberOf MLJ.core.plugin
  * @author Stefano Gabriele 
  */
-MLJ.core.plugin.Plugin = function (name) {    
+MLJ.core.plugin.Plugin = function (name, parameters) {
     this.name = name;
+    this.parameters = parameters;
 };
 
 MLJ.core.plugin.Plugin.prototype = {
@@ -55,6 +56,16 @@ MLJ.core.plugin.Plugin.prototype = {
      */
     getName: function () {
         return this.name;
+    },
+    /**
+     * Returns the parameter of plugins or <code>undefined</code> if plugin has no
+     * parameters
+     * @returns {Object} The parameters of plugin or <code>undefined</code> if plugin 
+     * has no parameters    
+     * @author Stefano Gabriele
+     */
+    getParameters: function () {
+        return this.paramters;
     },
     /**
      * This function should be overridden to define the plugin GUI and its initialization stuff
@@ -92,7 +103,7 @@ MLJ.core.plugin.Plugin.prototype = {
  * @memberOf MLJ.core.plugin
  * @author Stefano Gabriele 
  */
-MLJ.core.plugin.GUIBuilder = function (component) {    
+MLJ.core.plugin.GUIBuilder = function (component) {
     this.Float = function (flags) {
         var float = new MLJ.gui.MLWidget.Float(flags);
         component.appendContent(float._make());
@@ -121,13 +132,13 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 };
 
 MLJ.core.plugin.RenderingBarBuilder = function (tb) {
-    this.Button = function (flags) {        
+    this.Button = function (flags) {
         var button = flags.toggle === true
-            ? new MLJ.gui.component.CustomToggleButton(flags)      
-            : new MLJ.gui.component.Button(flags);
-                        
-            tb.add(button);                        
-        
+                ? new MLJ.gui.component.CustomToggleButton(flags)
+                : new MLJ.gui.component.Button(flags);
+
+        tb.add(button);
+
         return button;
     };
 };
@@ -180,8 +191,8 @@ MLJ.core.plugin.RenderingBarBuilder = function (tb) {
  * })(MLJ.core.plugin, MLJ.core.Scene);
  */
 MLJ.core.plugin.Filter = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.tooltip, 
-    parameters.arity);
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.tooltip,
+            parameters.arity);
     var _this = this;
 
     var entry = new MLJ.gui.build.AccordionEntry(
@@ -266,7 +277,7 @@ MLJ.core.plugin.Filter = function (parameters) {
 };
 
 MLJ.core.plugin.Rendering = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name);
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.parameters);
     var _this = this;
 
     var pane = MLJ.gui.build.Pane();
@@ -277,54 +288,54 @@ MLJ.core.plugin.Rendering = function (parameters) {
     var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
             MLJ.widget.TabbedPane.getRendToolBar());
     var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
-    
+
     var btn = tbBuilder.Button(parameters);
-    
+
     var group = MLJ.gui.makeGroup("rendButtons");
-    if(btn instanceof MLJ.gui.component.CustomToggleButton) {
+    if (btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(btn);
         MLJ.gui.disabledOnSceneEmpty(btn);
     }
-    
-    if(parameters.toggle === true) {
-         
+
+    if (parameters.toggle === true) {
+
         //Click on button
-        btn.onToggle(function(on) {            
-           //Apply rendering pass to all mesh
-           if(MLJ.gui.isCtrlDown()) {
+        btn.onToggle(function (on) {
+            //Apply rendering pass to all mesh
+            if (MLJ.gui.isCtrlDown()) {
                 var ptr = MLJ.core.Scene.getLayers().iterator();
-                var layer;                
+                var layer;
                 while (ptr.hasNext()) {
                     layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer, on);
                     }
-                }                
-           } else { //Apply rendering pass to selected layer
+                }
+            } else { //Apply rendering pass to selected layer
                 var selected = MLJ.core.Scene.getSelectedLayer();
-                if(selected !== undefined) {
+                if (selected !== undefined) {
                     _this._applyTo(selected, on);
                 }
-           }           
-        });
-        
-        //Clicked with mouse right button
-        btn.onRightButtonClicked(function() {
-            btn.toggle("on");
-            var items = group.getItems();            
-            var item;
-            for(var key in items) {                
-                item = items[key];
-                if(item !== btn) {
-                    item.toggle("off");                    
-                } 
             }
-            
         });
-        
+
+        //Clicked with mouse right button
+        btn.onRightButtonClicked(function () {
+            btn.toggle("on");
+            var items = group.getItems();
+            var item;
+            for (var key in items) {
+                item = items[key];
+                if (item !== btn) {
+                    item.toggle("off");
+                }
+            }
+
+        });
+
         //Click on arrow
-        btn.onArrowClicked(function() {
-            
+        btn.onArrowClicked(function () {
+
             renderingPane.children().each(function (key, val) {
                 if ($(val).attr("id") === UID) {
                     $(val).fadeIn();
@@ -332,27 +343,42 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     $(val).fadeOut();
                 }
             });
-            
-        });            
-        
-    } else {
-        btn.onClick(function() {        
+
         });
-    }       
-    
+
+    } else {
+        btn.onClick(function () {
+
+            renderingPane.children().each(function (key, val) {
+                if ($(val).attr("id") === UID) {
+                    $(val).fadeIn();
+                } else {
+                    $(val).fadeOut();
+                }
+            });
+        });
+    }
+
+    $(document).on("SceneLayerSelected", function () {
+        _this._update();
+    });
+
     //Prevents context menu opening
     $(document).ready(function () {
         $(this).on("contextmenu", function (e) {
             if (btn.$.find("img").prop("outerHTML") === $(e.target).prop("outerHTML")) {
                 e.preventDefault();
-            }            
+            }
         });
-    });   
-
+    });
+    
+    this._update = function() {        
+    },
+    
     this._main = function () {
         _this._init(guiBuilder);
         renderingPane.append(pane.$);
-    }        
+    };
 
 };
 
@@ -363,7 +389,7 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 
     var _filters = new MLJ.util.AssociativeArray();
     var _rendering = new MLJ.util.AssociativeArray();
-    
+
     /**
      * Installs a new plugin in MeshLabJS
      * @memberOf MLJ.core.plugin
@@ -374,11 +400,11 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
         var search = MLJ.gui.getWidget("SearchTool");
         for (var i = 0; i < arguments.length; i++) {
             plugin = arguments[i];
-            if (plugin instanceof MLJ.core.plugin.Plugin) {                
-                if(plugin instanceof MLJ.core.plugin.Filter) {
+            if (plugin instanceof MLJ.core.plugin.Plugin) {
+                if (plugin instanceof MLJ.core.plugin.Filter) {
                     _filters.set(plugin.getName(), plugin);
                     search.addItem(plugin.getName());
-                } else if(plugin instanceof MLJ.core.plugin.Rendering) {
+                } else if (plugin instanceof MLJ.core.plugin.Rendering) {
                     _rendering.set(plugin.getName(), plugin);
                 }
             } else {
@@ -386,7 +412,7 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
             }
         }
     };
-    
+
     /**
      * Executes the main entry point function for all installed plugins
      * @memberOf MLJ.core.plugin
@@ -397,11 +423,20 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
-        
+
         ptr = _rendering.iterator();
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
+
+    };
+
+    this.getRenderingPlugins = function () {
+        return _rendering;
+    };
+
+    this.getFilterPlugins = function () {
+        return _filters;
     };
 
 }).call(MLJ.core.plugin, MLJ.widget, MLJ.gui);//MLJ.widget contains GUI running widgets
