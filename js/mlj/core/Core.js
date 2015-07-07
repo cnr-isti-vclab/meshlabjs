@@ -480,6 +480,17 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         MLJ.core.Scene.render();
     };
     
+     this.setLighting = function (on) {        
+        _this.material.parameters.lighting = on;
+        _this.material = on === true
+            ? new MLJ.core.PhongMaterial(_this.material.parameters) 
+            : new MLJ.core.BasicMaterial(_this.material.parameters);            
+        _this.threeMesh.material = new THREE.MeshBasicMaterial();
+        _this.material.needUpdate();
+        geometryNeedUpdate();
+        MLJ.core.Scene.render();
+    };
+    
     /**
      * Returns this THREE.Mesh object
      * @returns {THREE.Mesh} this THREE.Mesh object
