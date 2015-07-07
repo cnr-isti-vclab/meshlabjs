@@ -17,6 +17,10 @@ MLJ.gui.MLWidget.Number = function (flags) {
         this.spinner.onSpinStop(foo);
     };
 
+    this.setValue = function (value) {
+        this.spinner.setValue(value);
+    };
+
     MLJ.gui.MLWidget.call(this);
 };
 

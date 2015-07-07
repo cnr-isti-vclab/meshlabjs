@@ -144,17 +144,17 @@ MLJ.gui.component.ColorPicker = function (flags) {
     var _$picker = $('<input type="text"/>').addClass("mlj-picker");
     var _$preview = $('<div/>').addClass("mlj-picker-preview");
     var _this = this;
-    
-    this.setColor = function(color) {
-        if(color.indexOf('#') === -1) {
-            color = "#"+color;
+
+    this.setColor = function (color) {
+        if (color.indexOf('#') === -1) {
+            color = "#" + color;
         }
-        _$preview.css("background-color",color);
+        _$preview.css("background-color", color);
         _$picker.val(color);
 //        var id = _this.$.attr("id");
 //        $('#' + id).find(".mlj-picker").colpickSetColor(color,true);
     };
-    
+
     this._make = function () {
         _this.$.append(_$picker, _$preview);
         _this.$.uniqueId();
@@ -181,7 +181,7 @@ MLJ.gui.component.ColorPicker = function (flags) {
             }).keyup(function () {
                 $(this).colpickSetColor(this.value);
             }).val(flags.color);
-            _$preview.css('background-color', flags.color);            
+            _$preview.css('background-color', flags.color);
         });
     };
 
@@ -723,6 +723,10 @@ MLJ.gui.component.Spinner = function (flags) {
 
     this.getValue = function () {
         return _$spinner.val();
+    };
+
+    this.setValue = function (value) {
+        _$spinner.val(value);
     };
 
     this._make = function () {
