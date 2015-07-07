@@ -472,6 +472,14 @@ MLJ.gui.component.ButtonSet = function (flags) {
     this.getSelectedValue = function () {
         return this.$.find(":checked").data("value");
     };
+    
+    this.selectByValue = function(value) {
+        this.$.find(":input").each(function(key,element) {            
+            if($(element).data("value") === value) {                                
+                $(element).prop('checked', true).button('refresh');
+            }
+        });        
+    };
 
     this.onChange = function (foo) {
         _this.$.find(":input").change(function () {
@@ -515,7 +523,10 @@ MLJ.gui.component.ComboBox = function (flags) {
     this.getSelectedValue = function () {
         return this.$.find(":selected").val();
     };
-
+    
+     this.selectByValue = function(value) {       
+    };
+    
     this.onChange = function (foo) {
         _this.$.on("selectmenuchange", function (event, ui) {
             foo(event, ui);

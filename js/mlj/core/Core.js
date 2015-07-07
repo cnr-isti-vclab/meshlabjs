@@ -406,7 +406,7 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         params.shading = filled.parameters.shading;
         params.shininess = filled.parameters.shininess;
         
-        _this.material = filled.parameters.light === true 
+        _this.material = filled.parameters.lighting === true 
             ? new MLJ.core.PhongMaterial(params) 
             : new MLJ.core.BasicMaterial(params);        
         

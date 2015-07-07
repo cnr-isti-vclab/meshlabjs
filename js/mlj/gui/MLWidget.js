@@ -100,6 +100,10 @@ MLJ.gui.MLWidget.Choice = function (flags) {
     this.getValue = function () {
         return this.choice.getSelectedValue();
     };
+    
+    this.selectByValue = function(value) {
+        this.choice.selectByValue(value);
+    };
 
     this.onChange = function (foo) {
         $(window).ready(function () {
