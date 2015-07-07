@@ -8,7 +8,7 @@ MLJ.gui.MLWidget.prototype = {
 MLJ.gui.MLWidget.Number = function (flags) {
     this.spinner = MLJ.gui.build.Spinner(flags);
     this.label = MLJ.gui.build.Label(flags);
-    
+
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.spinner);
     };
@@ -99,7 +99,7 @@ MLJ.gui.MLWidget.Choice = function (flags) {
 
     this.onChange = function (foo) {
         $(window).ready(function () {
-            _this.choice.onChange(function (val) {                
+            _this.choice.onChange(function (val) {
                 foo(val);
             });
         });
@@ -123,6 +123,10 @@ MLJ.gui.MLWidget.Color = function (flags) {
 
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.color);
+    };
+
+    this.setColor = function (color) {
+        this.color.setColor(color);
     };
 
     MLJ.gui.MLWidget.call(this);

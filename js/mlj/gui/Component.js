@@ -144,7 +144,17 @@ MLJ.gui.component.ColorPicker = function (flags) {
     var _$picker = $('<input type="text"/>').addClass("mlj-picker");
     var _$preview = $('<div/>').addClass("mlj-picker-preview");
     var _this = this;
-
+    
+    this.setColor = function(color) {
+        if(color.indexOf('#') === -1) {
+            color = "#"+color;
+        }
+        _$preview.css("background-color",color);
+        _$picker.val(color);
+//        var id = _this.$.attr("id");
+//        $('#' + id).find(".mlj-picker").colpickSetColor(color,true);
+    };
+    
     this._make = function () {
         _this.$.append(_$picker, _$preview);
         _this.$.uniqueId();
@@ -171,7 +181,7 @@ MLJ.gui.component.ColorPicker = function (flags) {
             }).keyup(function () {
                 $(this).colpickSetColor(this.value);
             }).val(flags.color);
-            _$preview.css('background-color', flags.color);
+            _$preview.css('background-color', flags.color);            
         });
     };
 
@@ -311,9 +321,9 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         bottom: "0px",
         left: "5px"
     });
-    
+
     var _arrowHandler = null;
-    
+
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
     this.toggle = function (param) {
@@ -326,7 +336,7 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
         });
     };
 
-    this.onRightButtonClicked = function (foo) {        
+    this.onRightButtonClicked = function (foo) {
         _toggle.$.mouseup(function (event) {
             if (event.which === 3) {
                 foo();
@@ -347,12 +357,12 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
 
     this._disabled = function (disabled) {
         _toggle._disabled(disabled);
-        
-        if(disabled) {
-            _$arrow.css("opacity","0.2");
+
+        if (disabled) {
+            _$arrow.css("opacity", "0.2");
             _$arrow.off();
         } else {
-            _$arrow.css("opacity","1");
+            _$arrow.css("opacity", "1");
             _$arrow.click(_arrowHandler);
         }
     };
