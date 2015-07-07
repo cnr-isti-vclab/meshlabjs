@@ -12,3 +12,5 @@ sources/FilterTest
 /nbproject/project.xml
 
 sources/Makefile
+
+doc/html/
