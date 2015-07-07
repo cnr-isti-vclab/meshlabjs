@@ -18,7 +18,7 @@
     "opts": {
         "template": "templates/default",
         "encoding": "utf8",
-        "destination": "./",
+        "destination": "./html",
         "recurse": true,
         "access": "all"
     }
