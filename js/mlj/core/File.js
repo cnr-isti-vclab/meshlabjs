@@ -104,7 +104,7 @@ MLJ.core.File = {
             }
 
             console.timeEnd("Parsing Mesh Time");
-            var ptrMesh = Opener.getMesh();
+            var ptrMesh = CppMesh.getMesh();
 
             var mf = new MLJ.core.MeshFile(file.name, ptrMesh);
 
