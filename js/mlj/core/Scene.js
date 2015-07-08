@@ -22,7 +22,7 @@
  */
 
 /**
- * @file Defines the functions to manage the scene
+ * @file Defines the functions to manage the scene, e.g. the set of mesh layers that constitute the ''document'' of the MeshLabJS system. 
  * @author Stefano Gabriele
  */
 
@@ -214,50 +214,49 @@ MLJ.core.Scene = {};
     }
 
     function _addLayer(meshFile, reloaded) {
-        if (meshFile instanceof MLJ.core.MeshFile) {
-
-            //Add new mesh to associative array _layers            
-            _layers.set(meshFile.name, meshFile);
-
-            if (meshFile.cpp === true) {
-                meshFile.updateThreeMesh();
-            }
-
-            //Set mesh position
-            var mesh = meshFile.getThreeMesh();
-            var box = new THREE.Box3().setFromObject(mesh);
-            mesh.position = box.center();
-            _scene.add(mesh);
-
-            _selectedLayer = meshFile;
-
-            //Compute the global bounding box
-            _computeGlobalBBbox();
-
-            //render the scene
-            _this.render();
-
-            if (!reloaded) {
-                /**
-                 *  Triggered when a layer is added
-                 *  @event MLJ.core.Scene#SceneLayerAdded
-                 *  @type {Object}
-                 *  @property {MLJ.core.MeshFile} meshFile The last mesh file added
-                 *  @property {Integer} layersNumber The number of layers in the scene
-                 *  @example
-                 *  <caption>Event Interception:</caption>
-                 *  $(document).on("SceneLayerAdded",
-                 *      function (event, meshFile, layersNumber) {
-                 *          //do something
-                 *      }
-                 *  );
-                 */
-                $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
-            }
-
-        } else {
+        if (!(meshFile instanceof MLJ.core.MeshFile)) {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            return;
         }
+        //Add new mesh to associative array _layers            
+        _layers.set(meshFile.name, meshFile);
+
+        if (meshFile.cpp === true) {
+            meshFile.updateThreeMesh();
+        }
+
+        //Set mesh position
+        var mesh = meshFile.getThreeMesh();
+        var box = new THREE.Box3().setFromObject(mesh);
+        mesh.position = box.center();
+        _scene.add(mesh);
+
+        _selectedLayer = meshFile;
+
+        //Compute the global bounding box
+        _computeGlobalBBbox();
+
+        //render the scene
+        _this.render();
+
+        if (!reloaded) {
+            /**
+             *  Triggered when a layer is added
+             *  @event MLJ.core.Scene#SceneLayerAdded
+             *  @type {Object}
+             *  @property {MLJ.core.MeshFile} meshFile The last mesh file added
+             *  @property {Integer} layersNumber The number of layers in the scene
+             *  @example
+             *  <caption>Event Interception:</caption>
+             *  $(document).on("SceneLayerAdded",
+             *      function (event, meshFile, layersNumber) {
+             *          //do something
+             *      }
+             *  );
+             */
+            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
+        }
+
     }
 
     this.lights = {
