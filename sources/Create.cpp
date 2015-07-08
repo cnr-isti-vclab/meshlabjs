@@ -19,6 +19,7 @@ void CreatePlatonic(uintptr_t _m, int index)
 }
 void CreateSphere(uintptr_t _m, int refinement)
 {
+  printf("Creating a sphere with subdivision level %i\n",refinement);
     MyMesh &m = *((MyMesh*) _m);
     tri::Sphere(m,refinement);
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);

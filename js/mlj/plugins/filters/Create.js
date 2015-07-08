@@ -39,11 +39,11 @@
         tooltip: "Create a sphere with the desired level of subdivision",
         arity: 0});
 
-    var stepWidget;
+    var sphereLevWidget;
 
     SphereFilter._init = function (builder) {
 
-        stepWidget = builder.Integer({
+        sphereLevWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
             label: "subdivision",
             tooltip: "Number of recursive subdivision of the sphere"
@@ -52,7 +52,7 @@
 
     SphereFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Sphere");
-        Module.CreateSphere(mf.ptrMesh, stepWidget.getValue());
+        Module.CreateSphere(mf.ptrMesh, sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
 
