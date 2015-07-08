@@ -8,8 +8,8 @@
         toggle: true,
         on: true,
         parameters: {
-            specular: new THREE.Color('#ffffff'),
-            emissive: new THREE.Color('#7c7b7b'),
+            specular: '#a9a9a9',
+            emissive: '#7d7d7d',
             shininess: 50,
             shading: THREE.FlatShading,
             lighting: true
@@ -22,7 +22,7 @@
         specularColor = guiBuilder.Color({
             label: "Specular",
             tooltip: "Specular color of the material, i.e. how shiny the material is and the color of its shine. Setting this the same color as the diffuse value (times some intensity) makes the material more metallic-looking; setting this to some gray makes the material look more plastic",
-            color: '#' + plug.parameters.specular.getHexString(),
+            color: plug.parameters.specular,
             onChange: function (hex) {
                 var meshFile = scene.getSelectedLayer();
                 meshFile.material.setSpecular('#' + hex);
@@ -32,7 +32,7 @@
         emissiveColor = guiBuilder.Color({
             label: "Emissive",
             tooltip: "Emissive (light) color of the material, essentially a solid color unaffected by other lighting",
-            color: '#' + plug.parameters.emissive.getHexString(),
+            color: plug.parameters.emissive,
             onChange: function (hex) {
                 var meshFile = scene.getSelectedLayer();
                 meshFile.material.setEmissive('#' + hex);
@@ -74,7 +74,7 @@
             meshFile.setShading(val);
         });
 
-        lightingWidget.onChange(function (val) {
+        lightingWidget.onChange(function (val) {            
             var meshFile = scene.getSelectedLayer();
             meshFile.setLighting(val);
         });
@@ -82,7 +82,7 @@
     };
 
     plug._update = function () {
-        var meshFile = scene.getSelectedLayer();
+        var meshFile = scene.getSelectedLayer();        
         specularColor.setColor(meshFile.material.parameters.specular.getHexString());
         emissiveColor.setColor(meshFile.material.parameters.emissive.getHexString());
         shininessWidget.setValue(meshFile.material.parameters.shininess);
@@ -91,8 +91,30 @@
     };
 
     plug._applyTo = function (meshFile, on) {
-        meshFile.setShading(shadingWidget.getValue());
-        meshFile.material.setShininess(shininessWidget.getValue());
+
+        var rend = MLJ.core.plugin.getRenderingPlugins(); 
+        var colorWheel = rend.getByKey("ColorWheel");
+
+        if (on) {
+            meshFile.setRenderingOn(true);
+            var params = {};                                                
+            
+            params.color = colorWheel.getAlbedoColor();
+            params.specular = specularColor.getColor();
+            params.emissive = emissiveColor.getColor();
+            params.shading = shadingWidget.getValue();
+            params.shininess = shininessWidget.getValue();
+            params.lighting = lightingWidget.getValue();                        
+            
+            var material = params.lighting === true
+                    ? new MLJ.core.PhongMaterial(params)
+                    : new MLJ.core.BasicMaterial(params);                                                                
+            
+            meshFile.updateMaterial(material);            
+        } else {
+            meshFile.setRenderingOn(false);
+        }
+
     };
 
     plugin.install(plug);
