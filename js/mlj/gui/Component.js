@@ -159,11 +159,12 @@ MLJ.gui.component.ColorPicker = function (flags) {
                 //Colpick RGB object
                 return $.colpick.hexToRgb(_currentHexColor);
             case "hsb":
+                //Colpick hsb object
                 return $.colpick.hexToHsb(_currentHexColor);
-            case "style":
-                return "#" + _currentHexColor;
-            default: //hex color
-                return _currentHexColor;
+            default:
+                return _currentHexColor.indexOf('#') === -1
+                        ? '#' + _currentHexColor
+                        : _currentHexColor;            
         }
     };
 

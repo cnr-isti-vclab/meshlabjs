@@ -6,7 +6,7 @@
         tooltip: "ColorWheel Tooltip",
         icon: "img/icons/color.png",
         parameters: {
-            color: new THREE.Color('#a0a0a0')
+            color: '#474747'
         }
     });
 
@@ -18,7 +18,7 @@
         albedoColor = guiBuilder.Color({
             label: "Albedo color",
             tooltip: "Diffuse color of the material",
-            color: '#' + plug.parameters.color.getHexString(),
+            color: plug.parameters.color,
             onChange: function (hex) {
                 var meshFile = scene.getSelectedLayer();
                 meshFile.material.setColor('#' + hex);
@@ -29,7 +29,12 @@
 
     plug._update = function () {
         var meshFile = scene.getSelectedLayer();
-        albedoColor.setColor(meshFile.material.parameters.color.getHexString());
+       albedoColor.setColor(meshFile.material.parameters.color.getHexString());
+
+    };
+    
+    plug.getAlbedoColor = function(type) {
+      return albedoColor.getColor(type);
     };
 
     plugin.install(plug);

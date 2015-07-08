@@ -309,12 +309,14 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer, on);
+                        layer.properties.set(parameters.name,on);
                     }
                 }
             } else { //Apply rendering pass to selected layer
                 var selected = MLJ.core.Scene.getSelectedLayer();
-                if (selected !== undefined) {
-                    _this._applyTo(selected, on);
+                if (selected !== undefined) {                    
+                    _this._applyTo(selected, on);                                        
+                    selected.properties.set(parameters.name,on);
                 }
             }
         });
@@ -346,6 +348,12 @@ MLJ.core.plugin.Rendering = function (parameters) {
 
         });
 
+        $(document).on("SceneLayerAdded",
+                function (event, meshFile, layersNumber) {                    
+                    _this._applyTo(meshFile, btn.isOn());
+                    meshFile.properties.set(parameters.name,btn.isOn());
+                });
+
     } else {
         btn.onClick(function () {
 
@@ -359,9 +367,19 @@ MLJ.core.plugin.Rendering = function (parameters) {
         });
     }
 
-    $(document).on("SceneLayerSelected", function () {
+    $(document).on("SceneLayerSelected", function (event, meshFile) {
         _this._update();
+
+        if (parameters.toggle === true) {
+            var val = meshFile.properties.getByKey(parameters.name);            
+            if (val === true) {
+                btn.toggle("on");
+            } else {
+                btn.toggle("off");
+            }
+        }
     });
+
 
     //Prevents context menu opening
     $(document).ready(function () {
@@ -372,7 +390,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
         });
     });
     
-    this._update = function() {        
+    this._update = function () {
     },
     
     this._main = function () {

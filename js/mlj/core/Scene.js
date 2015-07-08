@@ -246,7 +246,7 @@ MLJ.core.Scene = {};
                  *  @property {Integer} layersNumber The number of layers in the scene
                  *  @example
                  *  <caption>Event Interception:</caption>
-                 *  $(document).on("SceneLayerSelected",
+                 *  $(document).on("SceneLayerAdded",
                  *      function (event, meshFile, layersNumber) {
                  *          //do something
                  *      }

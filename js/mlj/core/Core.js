@@ -82,6 +82,9 @@ MLJ.core = {
         },
         /** Material defaults */
         Material: {
+            color: '#474747',
+            specular: '#a9a9a9',
+            emissive: '#7d7d7d',
             wireframe: false
         }
     }
@@ -234,7 +237,7 @@ MLJ.core.Material = function (parameters) {
         this.parameters.color = this.threeMaterial.color = new THREE.Color(value);
         MLJ.core.Scene.render();
     };
-            
+    
     /**
      * Indicates that this material need update
      * @author Stefano Gabriele     
@@ -252,10 +255,15 @@ MLJ.core.Material = function (parameters) {
         _this.threeMaterial = _this.parameters = _this = null;        
     };
     
-    this.build = function() {
+    this.build = function() {        
+        if(_this.parameters.color === undefined) {
+            _this.parameters.color = new THREE.Color(MLJ.core.defaults.Material.color);
+        } else if(!(_this.parameters.color instanceof THREE.Color)) {
+            _this.parameters.color = new THREE.Color(_this.parameters.color);
+        }        
         _this._build();
-    }
-    
+    };
+        
     //Init
     this.build();
 };
@@ -296,24 +304,25 @@ MLJ.extend(MLJ.core.Material, MLJ.core.BasicMaterial);
  */
 MLJ.core.PhongMaterial = function (parameters) {    
            
+    if(parameters.emissive === undefined) {
+        parameters.emissive = new THREE.Color(MLJ.core.defaults.Material.emissive);
+    } else if(!(parameters.color instanceof THREE.Color)) {
+        parameters.emissive = new THREE.Color(parameters.emissive);
+    }
+      
+    if(parameters.specular === undefined) {
+        parameters.specular = new THREE.Color(MLJ.core.defaults.Material.specular);
+    } else if(!(parameters.color instanceof THREE.Color)) {
+        parameters.specular = new THREE.Color(parameters.specular);
+    }      
+           
     /**     
      * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
      * @author Stefano Gabriele
      */
-    this._build = function () {
+    this._build = function () {        
         this.threeMaterial = new THREE.MeshPhongMaterial(this.parameters);        
-    };
-    
-    /**
-     * Sets the diffuse color of the material
-     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
-     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-     * @author Stefano Gabriele     
-     */
-    this.setColor = function (value) {
-        this.parameters.color = this.threeMaterial.color = new THREE.Color(value);
-        MLJ.core.Scene.render();
-    };
+    };    
     
     /**
      * Sets the Emissive (light) color of the material, essentially a solid color unaffected by other lighting
@@ -391,25 +400,12 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     this.ptrMesh = ptrMesh;
     this.VN = this.vert = this.FN = this.face = this.material = null;    
     this.threeMesh = null;
-    var _this = this;        
+    this.properties = new MLJ.util.AssociativeArray();
+    var _isRendered = true;
+    var _this = this;   
     
     function init() {
-        var rend = MLJ.core.plugin.getRenderingPlugins();
-        var params = {};
-        var colorWheel = rend.getByKey("ColorWheel");
-        var filled = rend.getByKey("Filled");
-        
-        params.color = colorWheel.parameters.color;
-        
-        params.specular = filled.parameters.specular;
-        params.emissive = filled.parameters.emissive;
-        params.shading = filled.parameters.shading;
-        params.shininess = filled.parameters.shininess;
-        
-        _this.material = filled.parameters.lighting === true 
-            ? new MLJ.core.PhongMaterial(params) 
-            : new MLJ.core.BasicMaterial(params);        
-        
+        _this.material = new MLJ.core.BasicMaterial();             
         buildThreeMesh();
     }
     
@@ -464,7 +460,12 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
      * THREE.SmoothShading, THREE.NoShading</code>
      * @author Stefano Gabriele 
      */
-    this.setShading = function (shading) {        
+    this.setShading = function (shading) {
+        //The mesh file is no rendered
+        if(!this.isRendered()) {
+            return;
+        }
+        
         //Set material shading parameter
         this.material.parameters.shading = shading;
 
@@ -480,14 +481,41 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         MLJ.core.Scene.render();
     };
     
-     this.setLighting = function (on) {        
+    this.updateMaterial = function(material) {
+        if(!(material instanceof MLJ.core.Material)) {
+            console.warn("The parameters must be an instance of MLJ.core.Material");
+        } else {            
+            _this.material = material;
+            _this.threeMesh.material = _this.material.threeMaterial;            
+        }
+        MLJ.core.Scene.render();
+    };  
+    
+    this.setRenderingOn = function(on) {
+        _isRendered = on;
+        if(on) {
+          _this.threeMesh.material = _this.material.threeMaterial;
+        } else {
+          _this.threeMesh.material = null;
+        }
+        MLJ.core.Scene.render();
+    };
+    
+    this.isRendered = function() {
+        return _isRendered;
+    }
+    
+    this.setLighting = function (on) {        
+        //The mesh file is no rendered
+        if(!this.isRendered()) {
+            return;
+        }                
+        
         _this.material.parameters.lighting = on;
         _this.material = on === true
             ? new MLJ.core.PhongMaterial(_this.material.parameters) 
             : new MLJ.core.BasicMaterial(_this.material.parameters);            
         _this.threeMesh.material = _this.material.threeMaterial;
-//        _this.material.needUpdate();
-//        geometryNeedUpdate();
         MLJ.core.Scene.render();
     };
     
