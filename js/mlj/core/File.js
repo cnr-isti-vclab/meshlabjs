@@ -94,8 +94,8 @@ MLJ.core.File = {
             FS.createDataFile("/", file.name, int8buf, true, true);
 
             console.time("Parsing Mesh Time");
-            var Opener = new Module.Opener();
-            var resOpen = Opener.openMesh(file.name);
+            var CppMesh = new Module.CppMesh();
+            var resOpen = CppMesh.openMesh(file.name);
             if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
@@ -172,8 +172,8 @@ MLJ.core.File = {
             name += " " + nameAmount;
         }
 
-        var Opener = new Module.Opener();
-        var ptrMesh = Opener.getMesh();
+        var CppMesh = new Module.CppMesh();
+        var ptrMesh = CppMesh.getMesh();
         var mf = new MLJ.core.MeshFile(name, ptrMesh);
 
         //Indicates that the mesh is created by c++

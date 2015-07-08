@@ -8,16 +8,16 @@ using namespace vcg;
 using namespace std;
 using namespace emscripten;
 
-class Opener
+class CppMesh
 {
   public:
     MyMesh m;
   int openMesh(string fileName) {
     int loadmask;
-    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);      
+    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
     if(ret!=0) {
       printf("Error in opening file\n");
-      
+
     }
     // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
     return ret;
@@ -30,10 +30,10 @@ class Opener
 };
 
 //Binding code
-EMSCRIPTEN_BINDINGS(Opener) {
-  class_<Opener>("Opener")
+EMSCRIPTEN_BINDINGS(CppMesh) {
+  class_<CppMesh>("CppMesh")
     .constructor<>()
-    .function("openMesh",        &Opener::openMesh)
-    .function("getMesh",         &Opener::getMesh)
+    .function("openMesh",        &CppMesh::openMesh)
+    .function("getMesh",         &CppMesh::getMesh)
     ;
 }
