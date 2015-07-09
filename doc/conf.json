@@ -16,7 +16,7 @@
         }
     },
     "opts": {
-        "template": "templates/default",
+        "template": "./MeshLabTemplate",
         "encoding": "utf8",
         "destination": "./html",
         "recurse": true,
