@@ -1,5 +1,6 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
+#include <vcg/complex/algorithms/clustering.h>
 
 using namespace vcg;
 using namespace std;
@@ -28,6 +29,20 @@ class MyTriEdgeCollapse: public vcg::tri::TriEdgeCollapseQuadric< MyMesh, Vertex
             typedef  vcg::tri::TriEdgeCollapseQuadric< MyMesh, VertexPair,  MyTriEdgeCollapse, QHelper> TECQ;
             inline MyTriEdgeCollapse(  const VertexPair &p, int i, BaseParameterClass *pp) :TECQ(p,i,pp){}
 };
+
+void ClusteringSimplification(uintptr_t _baseM, float threshold)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::Clustering<MyMesh, vcg::tri::AverageColorCell<MyMesh> > ClusteringGrid;
+  ClusteringGrid.Init(m.bbox,100000,threshold);
+  if(m.FN() ==0)
+    ClusteringGrid.AddPointSet(m);
+  else
+    ClusteringGrid.AddMesh(m);
+
+  ClusteringGrid.ExtractMesh(m);
+    printf("Completed Clustering Simplification\n");
+}
 
 void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool qualityQuadric)
 {
