@@ -58,7 +58,7 @@
     var _$3D = $('<div id="_3D"></div>');
 
     function makeTitle(title) {
-        var _PiP = MLJ.gui.build.PiP();
+        var _PiP = new MLJ.gui.component.PiP();
 
         var $title = $('<div id="mlj-title">' + title + '</div>');
         var insets = 10;

@@ -96,57 +96,6 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
     });
 };
 
-MLJ.gui.build = {           
-    Button: function (flags) {
-    return new MLJ.gui.component.Button(flags);
-    },
-    FileButton: function (flags) {
-    return new MLJ.gui.component.FileButton(flags);
-    },
-    ToggleButton: function (flags) {
-    return new MLJ.gui.component.ToggleButton(flags);
-    },
-    Accordion: function (flags) {
-    return new MLJ.gui.component.Accordion(flags);
-    },
-    AccordionEntry: function (flags) {
-    return new MLJ.gui.component.AccordionEntry(flags);
-    },    
-    Spinner: function (flags) {
-        return new MLJ.gui.component.Spinner(flags);
-    },
-    Slider: function (flags) {
-        return new MLJ.gui.component.Slider(flags);
-    },
-    ToolBar: function () {
-        return new MLJ.gui.component.ToolBar();
-    },
-    PiP: function () {
-        return new MLJ.gui.component.PiP();
-    },
-    Pane: function () {
-        return new MLJ.gui.component.Pane();
-    },
-    Label: function (flags) {
-        return new MLJ.gui.component.Label(flags);
-    },
-    TextField: function (text) {
-        return new MLJ.gui.component.TextField(text);
-    },
-    ColorPicker: function (flags) {
-        return new MLJ.gui.component.ColorPicker(flags);
-    },
-    CheckBox: function (checked) {
-        return new MLJ.gui.component.CheckBox(checked);
-    },
-    ComboBox: function (flags) {
-        return new MLJ.gui.component.ComboBox(flags);
-    },
-    ButtonSet: function (flags) {
-        return new MLJ.gui.component.ButtonSet(flags);
-    }
-};
-
 (function () {
 
     var _counter = 0;    

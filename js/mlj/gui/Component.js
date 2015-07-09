@@ -684,7 +684,7 @@ MLJ.gui.component.AccordionEntry = function (flags) {
     this.$title = $('<h3></h3>').css("position", "relative");
     this.$content = $('<div></div>');
     var _$headerWrapp = $("<div></div>").css({display: "table", width: "100%"});
-    var _$label = new MLJ.gui.build.Label(flags);
+    var _$label = new MLJ.gui.component.Label(flags);
     var _$title = $('<div/>').append(_$label.$).css({display: "table-cell"});
     var _$btnWrapp = $('<div></div>').css({display: "table-cell", textAlign: "right"});
     _$headerWrapp.append(_$title, _$btnWrapp);

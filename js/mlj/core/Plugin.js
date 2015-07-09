@@ -195,7 +195,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             parameters.arity);
     var _this = this;
 
-    var entry = new MLJ.gui.build.AccordionEntry(
+    var entry = new MLJ.gui.component.AccordionEntry(
             {label: parameters.name, tooltip: parameters.tooltip});
 
     //Test if arity is number and is integer
@@ -229,7 +229,7 @@ MLJ.core.plugin.Filter = function (parameters) {
     this._main = function () {
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
-        var apply = MLJ.gui.build.Button({
+        var apply = new MLJ.gui.component.Button({
             tooltip: "Apply to selected layer",
             icon: "img/icons/apply.png",
         });
@@ -249,7 +249,7 @@ MLJ.core.plugin.Filter = function (parameters) {
         }
 
         if (parameters.arity === 1) {
-            var applyAll = MLJ.gui.build.Button({
+            var applyAll = new MLJ.gui.component.Button({
                 tooltip: "Apply to all visible layers",
                 icon: "img/icons/apply_all.png",
             });
@@ -280,7 +280,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.parameters);
     var _this = this;
 
-    var pane = MLJ.gui.build.Pane();
+    var pane = new MLJ.gui.component.Pane();
     var UID = MLJ.gui.generateUID();
     pane.$.css("position", "absolute").attr("id", UID);
 
