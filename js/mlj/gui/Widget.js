@@ -39,9 +39,9 @@ MLJ.gui.widget = {};
  * @abstract
  * @author Stefano Gabriele 
  */
-MLJ.gui.widget.Widget = function () {};
+MLJ.gui.Widget = function () {};
 
-MLJ.gui.widget.Widget.prototype = {
+MLJ.gui.Widget.prototype = {
     /**
      * The function called to build the widget
      * @abstract

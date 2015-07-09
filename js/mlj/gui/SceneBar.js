@@ -28,7 +28,7 @@
 (function (component) {
     /**         
      * @class Create a new SceneBar widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -99,10 +99,10 @@
 
         init();
 
-        MLJ.gui.widget.Widget.call(this);
+        MLJ.gui.Widget.call(this);
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _SceneBar);
+    MLJ.extend(MLJ.gui.Widget, _SceneBar);
 
     //Install widget
     MLJ.gui.installWidget("SceneBar", new _SceneBar());

@@ -29,7 +29,7 @@
 
     /**         
      * @class Create a new SearchTool widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -72,10 +72,10 @@
             return this;
         };
 
-        MLJ.gui.widget.Widget.call(this);
+        MLJ.gui.Widget.call(this);
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _SearchTool);
+    MLJ.extend(MLJ.gui.Widget, _SearchTool);
 
     //Install widget
     MLJ.gui.installWidget("SearchTool", new _SearchTool());

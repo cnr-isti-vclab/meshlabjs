@@ -30,7 +30,7 @@
     
     /**         
      * @class Create a new Layers Pane widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -159,7 +159,7 @@
 
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _LayersPane);
+    MLJ.extend(MLJ.gui.Widget, _LayersPane);
 
     //Install widget
     MLJ.gui.installWidget("LayersPane", new _LayersPane());

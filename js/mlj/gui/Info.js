@@ -31,7 +31,7 @@
 
     /**         
      * @class Create a new Info widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -83,7 +83,7 @@
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _Info);
+    MLJ.extend(MLJ.gui.Widget, _Info);
 
     //Install widget
     MLJ.gui.installWidget("Info", new _Info());

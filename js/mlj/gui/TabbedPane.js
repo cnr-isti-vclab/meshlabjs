@@ -6,7 +6,7 @@
 
 (function (component) {
 
-    MLJ.gui.widget.TabbedPane = function () {
+    MLJ.gui.TabbedPane = function () {
 
         var _tabs = [];
         var _$tabbedPane = $('<div id="mlj-tabbed-pane"></div>');
@@ -144,9 +144,9 @@
         init();
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, MLJ.gui.widget.TabbedPane);
+    MLJ.extend(MLJ.gui.Widget, MLJ.gui.TabbedPane);
 
     //Install widget
-    MLJ.gui.installWidget("TabbedPane", new MLJ.gui.widget.TabbedPane());
+    MLJ.gui.installWidget("TabbedPane", new MLJ.gui.TabbedPane());
 
 })(MLJ.gui.component);

@@ -29,7 +29,7 @@
     
     /**         
      * @class Create a new Logo widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -100,7 +100,7 @@ Stefano Gabriele <br>\
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _Logo);
+    MLJ.extend(MLJ.gui.Widget, _Logo);
 
     //Install widget
     MLJ.gui.installWidget("Logo", new _Logo());

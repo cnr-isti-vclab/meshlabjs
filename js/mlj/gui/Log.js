@@ -29,7 +29,7 @@
     
     /**         
      * @class Create a new Log widget
-     * @augments  MLJ.gui.widget.Widget
+     * @augments  MLJ.gui.Widget
      * @private
      * @memberOf MLJ.gui.widget
      * @author Stefano Gabriele 
@@ -83,7 +83,7 @@
         };
     };
 
-    MLJ.extend(MLJ.gui.widget.Widget, _Log);
+    MLJ.extend(MLJ.gui.Widget, _Log);
 
     //Install widget
     MLJ.gui.installWidget("Log", new _Log());

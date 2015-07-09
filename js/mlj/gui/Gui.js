@@ -45,22 +45,22 @@ MLJ.widget = {};
 /**
  * Installs a widget; technically sets the entry <code> MLJ.widget[name] = widget</code>
  * @param {String} name The name of the widget
- * @param {MLJ.gui.widget.Widget} widget The widget to be installed
+ * @param {MLJ.gui.Widget} widget The widget to be installed
  * @memberOf MLJ.gui 
  * @author Stefano Gabriele
  */
 MLJ.gui.installWidget = function (name, widget) {
-    if (widget instanceof MLJ.gui.widget.Widget) {
+    if (widget instanceof MLJ.gui.Widget) {
         MLJ.widget[name] = widget;
     } else {
-        console.error("The parameter must be an instance of MLJ.gui.widget.Widget");
+        console.error("The parameter must be an instance of MLJ.gui.Widget");
     }
 };
 
 /**
  * Returns a widget by its name
  * @param {String} name The name of the widget 
- * @returns {MLJ.gui.widget.Widget} The widget if it exists in <code>MLJ.widget</code>,
+ * @returns {MLJ.gui.Widget} The widget if it exists in <code>MLJ.widget</code>,
  * <code>null</code> otherwise
  * @memberOf MLJ.gui
  * @author Stefano Gabriele
