@@ -15,3 +15,7 @@ sources/Makefile
 
 doc/html/
 sources/Makefile
+
+js/generated/MeshlabJs.js.mem
+
+js/generated/MeshlabJs.js
