@@ -29,14 +29,14 @@
 
 
 /**
- * @class The MLWidget base class
+ * @class The Param base class
  * @abstract
  * @author Stefano Gabriele 
  */
-MLJ.gui.MLWidget = function () {
+MLJ.gui.Param = function () {
 };
 
-MLJ.gui.MLWidget.prototype = {
+MLJ.gui.Param.prototype = {
     /**
     * The function called to build the MLWidget
     * @abstract    
@@ -45,7 +45,7 @@ MLJ.gui.MLWidget.prototype = {
     }
 };
 
-MLJ.gui.MLWidget.Number = function (flags) {
+MLJ.gui.Param.Number = function (flags) {
     this.spinner = new MLJ.gui.component.Spinner(flags);
     this.label = new MLJ.gui.component.Label(flags);
 
@@ -61,13 +61,13 @@ MLJ.gui.MLWidget.Number = function (flags) {
         this.spinner.setValue(value);
     };
 
-    MLJ.gui.MLWidget.call(this);
+    MLJ.gui.Param.call(this);
 };
 
-MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Number);
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Number);
 
-MLJ.gui.MLWidget.Float = function (flags) {
-    MLJ.gui.MLWidget.Number.call(this, flags);
+MLJ.gui.Param.Float = function (flags) {
+    MLJ.gui.Param.Number.call(this, flags);
 
     var _this = this;
 
@@ -83,10 +83,10 @@ MLJ.gui.MLWidget.Float = function (flags) {
 
 };
 
-MLJ.extend(MLJ.gui.MLWidget.Number, MLJ.gui.MLWidget.Float);
+MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Float);
 
-MLJ.gui.MLWidget.Integer = function (flags) {
-    MLJ.gui.MLWidget.Number.call(this, flags);
+MLJ.gui.Param.Integer = function (flags) {
+    MLJ.gui.Param.Number.call(this, flags);
 
     var _this = this;
 
@@ -102,9 +102,9 @@ MLJ.gui.MLWidget.Integer = function (flags) {
 
 };
 
-MLJ.extend(MLJ.gui.MLWidget.Number, MLJ.gui.MLWidget.Integer);
+MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Integer);
 
-MLJ.gui.MLWidget.Bool = function (flags) {
+MLJ.gui.Param.Bool = function (flags) {
     this.checkbox = new MLJ.gui.component.CheckBox(flags.defval);
     this.label = new MLJ.gui.component.Label(flags);
 
@@ -116,12 +116,12 @@ MLJ.gui.MLWidget.Bool = function (flags) {
         return this.checkbox.checked();
     };
 
-    MLJ.gui.MLWidget.call(this);
+    MLJ.gui.Param.call(this);
 };
 
-MLJ.extend(MLJ.gui.MLWidget.Number, MLJ.gui.MLWidget.Bool);
+MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Bool);
 
-MLJ.gui.MLWidget.Choice = function (flags) {
+MLJ.gui.Param.Choice = function (flags) {
     this.choice = flags.options.length > 3
             ? new MLJ.gui.component.ComboBox(flags)
             : new MLJ.gui.component.ButtonSet(flags);
@@ -153,18 +153,18 @@ MLJ.gui.MLWidget.Choice = function (flags) {
         });
     };
 
-    MLJ.gui.MLWidget.call(this);
+    MLJ.gui.Param.call(this);
 };
 
-MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Choice);
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Choice);
 
 /**         
  * @class A color picking widget
  * @param {flags} flags
- * @memberOf MLJ.gui.MLWidget
+ * @memberOf MLJ.gui.Param
  * @author Stefano Gabriele 
  */
-MLJ.gui.MLWidget.Color = function (flags) {
+MLJ.gui.Param.Color = function (flags) {
 
     this.color = new MLJ.gui.component.ColorPicker({
         onChange: function (hsb, hex) {
@@ -187,7 +187,7 @@ MLJ.gui.MLWidget.Color = function (flags) {
       return this.color.getColor(type);
     };
 
-    MLJ.gui.MLWidget.call(this);
+    MLJ.gui.Param.call(this);
 };
 
-MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Color);
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Color);

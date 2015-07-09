@@ -105,27 +105,27 @@ MLJ.core.plugin.Plugin.prototype = {
  */
 MLJ.core.plugin.GUIBuilder = function (component) {
     this.Float = function (flags) {
-        var float = new MLJ.gui.MLWidget.Float(flags);
+        var float = new MLJ.gui.Param.Float(flags);
         component.appendContent(float._make());
         return float;
     };
     this.Integer = function (flags) {
-        var integer = new MLJ.gui.MLWidget.Integer(flags);
+        var integer = new MLJ.gui.Param.Integer(flags);
         component.appendContent(integer._make());
         return integer;
     };
     this.Bool = function (flags) {
-        var bool = new MLJ.gui.MLWidget.Bool(flags);
+        var bool = new MLJ.gui.Param.Bool(flags);
         component.appendContent(bool._make());
         return bool;
     };
     this.Choice = function (flags) {
-        var choice = new MLJ.gui.MLWidget.Choice(flags);
+        var choice = new MLJ.gui.Param.Choice(flags);
         component.appendContent(choice._make());
         return choice;
     };
     this.Color = function (flags) {
-        var color = new MLJ.gui.MLWidget.Color(flags);
+        var color = new MLJ.gui.Param.Color(flags);
         component.appendContent(color._make());
         return color;
     };
