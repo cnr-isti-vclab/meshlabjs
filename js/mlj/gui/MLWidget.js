@@ -28,10 +28,19 @@
  */
 
 
-
+/**
+ * @class The MLWidget base class
+ * @abstract
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.MLWidget = function () {
 };
+
 MLJ.gui.MLWidget.prototype = {
+    /**
+    * The function called to build the MLWidget
+    * @abstract    
+    */
     _make: function () {
     }
 };
