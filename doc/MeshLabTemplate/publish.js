@@ -299,7 +299,8 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
                 itemsNav += '<li>' + linktoFn('', item.name) + '</li>';
             }
             else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
-                itemsNav += '<li>' + linktoFn(item.longname, item.name.replace(/^module:/, '')) + '</li>';
+                //itemsNav += '<li>' + linktoFn(item.longname, item.name.replace(/^module:/, '')) + '</li>';
+                itemsNav += '<li>' + linktoFn(item.longname, item.longname) + '</li>';
                 itemsSeen[item.longname] = true;
             }
         });
