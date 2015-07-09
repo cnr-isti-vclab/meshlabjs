@@ -1,3 +1,34 @@
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Defines the functions and classes to create and to manage the 
+ * graphical user interface of MeshLabJS
+ * @author Stefano Gabriele
+ */
+
+
+
 MLJ.gui.MLWidget = function () {
 };
 MLJ.gui.MLWidget.prototype = {
@@ -118,6 +149,12 @@ MLJ.gui.MLWidget.Choice = function (flags) {
 
 MLJ.extend(MLJ.gui.MLWidget, MLJ.gui.MLWidget.Choice);
 
+/**         
+ * @class A color picking widget
+ * @param {flags} flags
+ * @memberOf MLJ.gui.MLWidget
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.MLWidget.Color = function (flags) {
 
     this.color = MLJ.gui.build.ColorPicker({
