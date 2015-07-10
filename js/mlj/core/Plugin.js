@@ -208,10 +208,8 @@ MLJ.core.plugin.Filter = function (parameters) {
 
     $(document).on("mljSearchSelect", function (ev, select) {
         var found = false;
-
         for (var i = 0, m = select.length; i < m; i++) {
-
-            if (parameters.name.includes(select[i])) {
+            if (parameters.name.indexOf(select[i])!=-1) {
                 entry.show();
                 found = true;
                 //exit from for cycle
