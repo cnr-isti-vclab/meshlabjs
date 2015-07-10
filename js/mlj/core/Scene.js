@@ -49,8 +49,8 @@ MLJ.core.Scene = {};
         var _3D = $('#_3D');
 
         return {
-            width: _3D.width(),
-            height: _3D.height()
+            width: _3D.innerWidth (),
+            height: _3D.innerHeight()
         };
     }
 
@@ -83,8 +83,9 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         _camera.position.z = 15;
-        _renderer = new THREE.WebGLRenderer({alpha: true});
+        _renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true});
         _renderer.shadowMapEnabled = true;
+        _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
