@@ -382,22 +382,22 @@ MLJ.extend(MLJ.core.Material, MLJ.core.ShaderMaterial);
 /**         
  * @class Creates a new MeshFile 
  * @param {String} name The name of the mesh file
- * @param {uintptr_t} ptrMesh the pointer returned from a c++ function call
+ * @param {CppMesh} cppMesh the CppMesh object
  * @memberOf MLJ.core
  * @author Stefano Gabriele 
  * @example
- * var Opener = new Module.Opener();
+ * var CppMesh = new Module.CppMesh();
  * var resOpen = Opener.openMesh(file.name);
  * if (resOpen != 0) {
  *      // error in opening ...
- * } else {
- *      var ptrMesh = Opener.getMesh(); 
- *      var mf = new MLJ.core.MeshFile(file.name, ptrMesh); 
+ * } else { 
+ *      var mf = new MLJ.core.MeshFile(file.name, CppMesh); 
  * } 
  */
-MLJ.core.MeshFile = function (name, ptrMesh) {
+MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
-    this.ptrMesh = ptrMesh;
+    this.ptrMesh = cppMesh.getMesh();
+    this.cppMesh = cppMesh;
     this.VN = this.vert = this.FN = this.face = this.material = null;    
     this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
@@ -410,7 +410,7 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
     }
     
     function buildMeshGeometry() {
-        var meshProp = new Module.MeshLabJs(ptrMesh);
+        var meshProp = new Module.MeshLabJs(_this.ptrMesh);
         _this.VN = meshProp.getVertexNumber();
         _this.vert = meshProp.getVertexVector();
         _this.FN = meshProp.getFaceNumber();
@@ -554,7 +554,9 @@ MLJ.core.MeshFile = function (name, ptrMesh) {
         if (_this.threeMesh.texture) {
             _this.threeMesh.texture.dispose();
         }
-
+        
+        _this.cppMesh.delete();
+        
         _this.threeMesh = _this.name = _this.ptrMesh = _this.VN = _this.vert =
                 _this.FN = _this.face = _this.material = _this = null;
     };

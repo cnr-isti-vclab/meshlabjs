@@ -100,13 +100,12 @@ MLJ.core.File = {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
 
-                onLoaded(false);
+                onLoaded(false);                                
             }
 
             console.timeEnd("Parsing Mesh Time");
-            var ptrMesh = CppMesh.getMesh();
 
-            var mf = new MLJ.core.MeshFile(file.name, ptrMesh);
+            var mf = new MLJ.core.MeshFile(file.name, CppMesh);
 
             FS.unlink(file.name);
 
@@ -173,8 +172,7 @@ MLJ.core.File = {
         }
 
         var CppMesh = new Module.CppMesh();
-        var ptrMesh = CppMesh.getMesh();
-        var mf = new MLJ.core.MeshFile(name, ptrMesh);
+        var mf = new MLJ.core.MeshFile(name, CppMesh);
 
         //Indicates that the mesh is created by c++
         mf.cpp = true;
