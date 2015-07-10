@@ -778,3 +778,69 @@ MLJ.gui.component.Spinner = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Spinner);
+
+/**         
+ * @class A Ranged Float component
+ * @param {flags} flags
+ * @memberOf MLJ.gui.Component
+ * @author Stefano Giammori 
+ */
+MLJ.gui.component.RangedFloat = function (flags) {
+    //local variable for the input parameters
+    var inputparams;
+    //create root
+    var _html = $('<div>').css({ position: "relative", float: "left", clear: "none", width: "100%" });
+    //create slider node
+    var _$slider = $('<div>').css({ width: "50%", position: "relative", left: "0px", top: "12px" });
+    //edit text node
+    var _$editText = $('<input>')
+        .css({ width: "30%", position: "relative", left: "110px", bottom: "7px" });
+    //init function
+    this._make = function () {
+        //extract parameters
+        var minval = this.flag("min");
+        var maxval = this.flag("max");
+        var defval = this.flag("defval");
+        var stepval = this.flag("step");
+        inputparams = {
+            minvalue:  (minval  !== undefined ? minval : 0), 
+            maxvalue:  (maxval  !== undefined ? maxval : 100),
+            defvalue:  (defval  !== undefined ? defval : 50),
+            stepvalue: (stepval !== undefined ? stepval : 0.01)
+        };
+        //append the slider to the root
+        this.$.append(_$slider);
+        //append the edit text to the root
+        this.$.append(_$editText);
+        //slider init
+        _$slider.slider({
+            min: inputparams.minvalue,
+            max: inputparams.maxvalue,
+            step: inputparams.stepvalue,
+            create: function (event, ui) {
+                _$slider.slider('value', inputparams.defvalue);
+                _$editText.val(inputparams.defvalue);
+            },
+            //onslide event
+            slide: function (event, ui) {
+                _$editText.val(ui.value);
+            }
+        });
+        //set EditText's event listener
+        _$editText.change(function () {
+            _$slider.slider('value', $(this).val());
+        });
+    };
+
+    this.getValue = function () {
+        return _$slider.val();
+    };
+
+    this.setValue = function (value) {
+        _$slider.slider('value', value);
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.RangedFloat);
