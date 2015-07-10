@@ -823,6 +823,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
             },
             //onslide event
             slide: function (event, ui) {
+                _$slider.slider('value', ui.value);
                 _$editText.val(ui.value);
             }
         });
@@ -833,7 +834,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
     };
 
     this.getValue = function () {
-        return _$slider.val();
+        return _$slider.slider('value');
     };
 
     this.setValue = function (value) {
