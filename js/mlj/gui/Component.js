@@ -821,19 +821,45 @@ MLJ.gui.component.RangedFloat = function (flags) {
             min: inputparams.minvalue,
             max: inputparams.maxvalue,
             step: inputparams.stepvalue,
+            //onCreate event callback
             create: function (event, ui) {
                 _$slider.slider('value', inputparams.defvalue);
                 _$editText.val(inputparams.defvalue);
             },
-            //onslide event
+            //onSlide event callback
             slide: function (event, ui) {
                 _$slider.slider('value', ui.value);
                 _$editText.val(ui.value);
             }
         });
-        //set EditText's event listener
+        //set EditText's event callback when text changed
         _$editText.change(function () {
-            _$slider.slider('value', $(this).val());
+            //inserted value
+            var val = $(this).val();
+            //validation pattern
+            var pattern = /^([-+]?\d+(\.\d+)?)/;
+            //trunk in group the string
+            val = val.match(pattern);
+            //take the larger part of the inserted value matching the pattern
+            val = (val != null ? val[0] : null)
+            if ( val == null || ! pattern.test(val)) {
+                console.error('Invalid input, reset to default value');
+                val = inputparams.defvalue; //if not correct, assign the default value
+            }
+            //take the boundaries
+            var min = _$slider.slider("option", "min");
+            var max = _$slider.slider("option", "max");
+            //validate the boundaries
+            if (val > max) {
+                _$editText.val(max);
+                _$slider.slider('value', max);
+            } else if (val < min) {
+                _$editText.val(min);
+                _$slider.slider('value', min);
+            } else {
+                _$editText.val(val);
+                _$slider.slider('value', val);
+            }
         });
     };
 
