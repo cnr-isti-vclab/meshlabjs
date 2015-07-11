@@ -2,9 +2,9 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        specular: new THREE.Color('#a9a9a9'),
-        emissive: new THREE.Color('#7d7d7d'),
-        shininess: 50,
+        specular: new THREE.Color('#505050'),
+        emissive: new THREE.Color('#404040'),
+        shininess: 15,
         shading: THREE.FlatShading,
         lighting: true,
         updateGeometry: false

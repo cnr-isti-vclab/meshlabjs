@@ -2,7 +2,7 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        color: new THREE.Color('#474747')
+        color: new THREE.Color('#A0A0A0')
     };
 
     var plug = new plugin.Rendering({
