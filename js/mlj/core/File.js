@@ -74,13 +74,14 @@ MLJ.core.File = {
         //Validate file extension
         if (!isExtensionValid(extension)) {
             var err = new MLJ.Error(
-                    MLJ.core.meshfile.ErrorCodes.EXTENSION,
+                    MLJ.core.File.ErrorCodes.EXTENSION,
                     "MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again."
                     );
 
             MLJ.setError(err);
 
             onLoaded(false);
+            return;
         }
 
         //Read file
