@@ -74,7 +74,7 @@
             tooltip: "Number of recursive subdivision of the sphere"
         });
         
-        radiusRatioWidget = builder.Float({
+        radiusRatioWidget = builder.RangedFloat({
             min: 0, step: 0.1, max:4, defval:0.5,
             label: "Radius Ratio",
             tooltip: "Ratio between the section of the torus and the generating circle"

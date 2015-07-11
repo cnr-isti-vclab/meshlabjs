@@ -129,6 +129,11 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         component.appendContent(color._make());
         return color;
     };
+    this.RangedFloat = function (flags) {
+        var rangedfloat = new MLJ.gui.Param.RangedFloat(flags);
+        component.appendContent(rangedfloat._make());
+        return rangedfloat;
+    };
 };
 
 MLJ.core.plugin.RenderingBarBuilder = function (tb) {

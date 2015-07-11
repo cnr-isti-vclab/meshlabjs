@@ -191,3 +191,29 @@ MLJ.gui.Param.Color = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Color);
+
+/**         
+ * @class A Ranged Float widget
+ * @param {flags} flags
+ * @memberOf MLJ.gui.Param
+ * @author Stefano Giammori 
+ */
+MLJ.gui.Param.RangedFloat = function (flags) {
+    this.rangedfloat = new MLJ.gui.component.RangedFloat(flags);
+    this.label = new MLJ.gui.component.Label(flags);
+
+    this._make = function () {
+        return MLJ.gui.component.Grid(this.label, this.rangedfloat);
+    };
+
+    this.getValue = function () {
+        return parseFloat(this.rangedfloat.getValue());
+    };
+
+    this.setValue = function (value) {
+        this.rangedfloat.setValue(value);
+    };
+
+};
+
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.RangedFloat);
