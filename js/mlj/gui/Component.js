@@ -795,10 +795,13 @@ MLJ.gui.component.RangedFloat = function (flags) {
     //create root
     var _html = $('<div>').css({ position: "relative", float: "left", clear: "none", width: "100%" });
     //create slider node
-    var _$slider = $('<div>').css({ width: "50%", position: "relative", left: "0px", top: "12px" });
+    var _$slider = $('<div>').css({ width: "50%", position: "relative", left: "0px", top: "10px" });
+    //create label of min max
+    var _pmin = $('<p>').css({ fontSize: '50%', position: "absolute", left: "0px" });
+    var _pmax = $('<p>').css({ fontSize: '50%', position: "absolute", left: "87px" });
     //edit text node
     var _$editText = $('<input>')
-        .css({ width: "30%", position: "relative", left: "110px", bottom: "7px" });
+        .css({ width: "30%", position: "relative", left: "110px", bottom: "8px" });
     //init function
     this._make = function () {
         //extract parameters
@@ -812,6 +815,10 @@ MLJ.gui.component.RangedFloat = function (flags) {
             defvalue:  (defval  !== undefined ? defval : 50),
             stepvalue: (stepval !== undefined ? stepval : 0.01)
         };
+        _pmin.html(inputparams.minvalue)
+        _pmax.html(inputparams.maxvalue)
+        this.$.append(_pmin);
+        this.$.append(_pmax);
         //append the slider to the root
         this.$.append(_$slider);
         //append the edit text to the root
@@ -838,11 +845,11 @@ MLJ.gui.component.RangedFloat = function (flags) {
             var val = $(this).val();
             //validation pattern
             var pattern = /^([-+]?\d+(\.\d+)?)/;
-            //trunk in group the string
+            //trunk in groups the string
             val = val.match(pattern);
+            val = (val ? val[0] : null )
             //take the larger part of the inserted value matching the pattern
-            val = (val != null ? val[0] : null)
-            if ( val == null || ! pattern.test(val)) {
+            if ( val == null || ! pattern.test(val) ) {
                 console.error('Invalid input, reset to default value');
                 val = inputparams.defvalue; //if not correct, assign the default value
             }
@@ -864,10 +871,11 @@ MLJ.gui.component.RangedFloat = function (flags) {
     };
 
     this.getValue = function () {
-        return _$slider.slider('value');
+        return _$editText.val();
     };
 
     this.setValue = function (value) {
+        _$editText.val(value);
         _$slider.slider('value', value);
     };
 
