@@ -53,7 +53,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _this = this;   
     
     function init() {
-        _this.material = new MLJ.core.BasicMaterial();             
+        _this.material = new MLJ.core.BasicMaterial();
         buildThreeMesh();
     }
     

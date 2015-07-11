@@ -80,13 +80,6 @@ MLJ.core = {
             intensity: 0.5,
             distance: 0
         },
-        /** Material defaults */
-        Material: {
-            color: '#474747',
-            specular: '#a9a9a9',
-            emissive: '#7d7d7d',
-            wireframe: false
-        }
     }
 };
 
@@ -208,33 +201,31 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
 
 MLJ.core.Material = function (parameters) {
     
+    /**     
+    * Contains this material paramters
+    * @type Object
+    * @author Stefano Gabriele
+    */
+    this.parameters = parameters === undefined 
+        ? this.parameters = {color: new THREE.Color("#474747")} : parameters;
+    
     var _this = this;
     
     /**     
      * Contains this THREE.Material.
      * @type THREE.MeshPhongMaterial
      * @author Stefano Gabriele
-     */
-       
+     */      
     this.threeMaterial = null;
-    
-    /**     
-    * Contains this material paramters
-    * @type Object
-    * @author Stefano Gabriele
-    */
-    this.parameters = parameters === undefined
-            ? $.extend(true, {}, MLJ.core.defaults.Material)
-            : parameters;     
-              
+      
     /**
     * Sets the diffuse color of the material
     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
     * @author Stefano Gabriele     
     */
-    this.setColor = function (value) {
-        this.parameters.color = this.threeMaterial.color = new THREE.Color(value);
+    this.setColor = function (value) {        
+        this.parameters.color = this.threeMaterial.color = new THREE.Color(value);        
         MLJ.core.Scene.render();
     };
     
@@ -255,12 +246,7 @@ MLJ.core.Material = function (parameters) {
         _this.threeMaterial = _this.parameters = _this = null;        
     };
     
-    this.build = function() {        
-        if(_this.parameters.color === undefined) {
-            _this.parameters.color = new THREE.Color(MLJ.core.defaults.Material.color);
-        } else if(!(_this.parameters.color instanceof THREE.Color)) {
-            _this.parameters.color = new THREE.Color(_this.parameters.color);
-        }        
+    this.build = function() {          
         _this._build();
     };
         

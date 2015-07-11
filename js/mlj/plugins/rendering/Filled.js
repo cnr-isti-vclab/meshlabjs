@@ -1,33 +1,16 @@
 
 (function (plugin, core, scene) {
 
-    /**         
-     * @class Creates a new PhongMaterial 
-     * @param {Object} parameters The initial paramters of the material
-     * @memberOf MLJ.core
-     * @author Stefano Gabriele 
-     * @example
-     * var material = new PhongMaterial({
-     *    specular: '#ffffff',
-     *    color: '#a0a0a0',
-     *    emissive: '#7c7b7b',
-     *    shading: THREE.FlatShading,
-     *    shininess: 50, 
-     * });
-     */
+    var DEFAULTS = {
+        specular: new THREE.Color('#a9a9a9'),
+        emissive: new THREE.Color('#7d7d7d'),
+        shininess: 50,
+        shading: THREE.FlatShading,
+        lighting: true,
+        updateGeometry: false
+    };
+
     var PhongMaterial = function (parameters) {
-
-        if (parameters.emissive === undefined) {
-            parameters.emissive = new THREE.Color(MLJ.core.defaults.Material.emissive);
-        } else if (!(parameters.color instanceof THREE.Color)) {
-            parameters.emissive = new THREE.Color(parameters.emissive);
-        }
-
-        if (parameters.specular === undefined) {
-            parameters.specular = new THREE.Color(MLJ.core.defaults.Material.specular);
-        } else if (!(parameters.color instanceof THREE.Color)) {
-            parameters.specular = new THREE.Color(parameters.specular);
-        }
 
         /**     
          * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
@@ -83,14 +66,7 @@
         tooltip: "Tooltip",
         icon: "img/icons/flat.png",
         toggle: true,
-        on: true,
-        parameters: {
-            specular: '#a9a9a9',
-            emissive: '#7d7d7d',
-            shininess: 50,
-            shading: THREE.FlatShading,
-            lighting: true
-        }
+        on: true
     });
 
     var lightingWidget, shadingWidget, shininessWidget,
@@ -99,7 +75,7 @@
         specularColor = guiBuilder.Color({
             label: "Specular",
             tooltip: "Specular color of the material, i.e. how shiny the material is and the color of its shine. Setting this the same color as the diffuse value (times some intensity) makes the material more metallic-looking; setting this to some gray makes the material look more plastic",
-            color: plug.parameters.specular,
+            color: "#" + DEFAULTS.specular.getHexString(),
             onChange: function (hex) {
                 var meshFile = scene.getSelectedLayer();
                 meshFile.material.setSpecular('#' + hex);
@@ -109,7 +85,7 @@
         emissiveColor = guiBuilder.Color({
             label: "Emissive",
             tooltip: "Emissive (light) color of the material, essentially a solid color unaffected by other lighting",
-            color: plug.parameters.emissive,
+            color: "#" + DEFAULTS.emissive.getHexString(),
             onChange: function (hex) {
                 var meshFile = scene.getSelectedLayer();
                 meshFile.material.setEmissive('#' + hex);
@@ -120,7 +96,7 @@
             label: "Shininess",
             tooltip: "How shiny the specular highlight is. A higher value gives a sharper highlight",
             min: 0, max: 100, step: 1,
-            defval: plug.parameters.shininess
+            defval: DEFAULTS.shininess
         });
 
         shadingWidget = guiBuilder.Choice({
@@ -148,31 +124,23 @@
 
         shadingWidget.onChange(function (shading) {
             var meshFile = scene.getSelectedLayer();
-//            meshFile.setShading(val);
+
+            //Set material shading parameter
+            meshFile.material.parameters.shading = shading;
 
             //The mesh file is no rendered
             if (!meshFile.isRendered()) {
                 return;
             }
 
-            //Set material shading parameter
-            meshFile.material.parameters.shading = shading;
-            
+            if (meshFile.material.parameters.lighting !== true) {
+                meshFile.material.parameters.updateGeometry = true;
+                return;
+            }
+
             var material = new PhongMaterial(meshFile.material.parameters);
-            
             //Update material and geometry
             meshFile.updateMaterial(material, true);
-            
-            //Rebuild material
-            //meshFile.material.build();
-                                    
-            //Change mesh old material with new one
-            //_this.threeMesh.material = this.material.threeMaterial;            
-
-            //Update geometry
-            //geometryNeedUpdate();
-
-//            MLJ.core.Scene.render();
         });
 
         lightingWidget.onChange(function (on) {
@@ -188,7 +156,8 @@
                     ? new PhongMaterial(meshFile.material.parameters)
                     : new MLJ.core.BasicMaterial(meshFile.material.parameters);
 
-            meshFile.updateMaterial(material);
+            meshFile.updateMaterial(material, meshFile.material.parameters.updateGeometry);
+            meshFile.material.parameters.updateGeometry = false;
         });
 
     };
@@ -202,30 +171,38 @@
         lightingWidget.selectByValue(meshFile.material.parameters.lighting);
     };
 
-    plug._applyTo = function (meshFile, on) {
+    plug._applyTo = function (meshFile, on, defaults) {
+
+        if (!on) {
+            meshFile.setRenderingOn(false);
+            return;
+        }
 
         var rend = MLJ.core.plugin.getRenderingPlugins();
         var colorWheel = rend.getByKey("ColorWheel");
-
-        if (on) {
-            meshFile.setRenderingOn(true);
-            var params = {};
-
-            params.color = colorWheel.getAlbedoColor();
-            params.specular = specularColor.getColor();
-            params.emissive = emissiveColor.getColor();
-            params.shading = shadingWidget.getValue();
-            params.shininess = shininessWidget.getValue();
-            params.lighting = lightingWidget.getValue();
-
-            var material = params.lighting === true
-                    ? new PhongMaterial(params)
-                    : new MLJ.core.BasicMaterial(params);
-
-            meshFile.updateMaterial(material);
-        } else {
-            meshFile.setRenderingOn(false);
+        var params;
+        if (defaults === true) {
+            params = jQuery.extend(true, {}, DEFAULTS);
+            params.color = colorWheel.getDefaults().color.clone();
         }
+        else {
+            params = {
+                color: new THREE.Color(colorWheel.getAlbedoColor()),
+                specular: new THREE.Color(specularColor.getColor()),
+                emissive: new THREE.Color(emissiveColor.getColor()),
+                shading: shadingWidget.getValue(),
+                shininess: shininessWidget.getValue(),
+                lighting: lightingWidget.getValue()
+            };
+        }
+
+        var material = params.lighting === true
+                ? new PhongMaterial(params)
+                : new MLJ.core.BasicMaterial(params);
+
+        meshFile.updateMaterial(material);
+
+        meshFile.setRenderingOn(true);
 
     };
 
