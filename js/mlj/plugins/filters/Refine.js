@@ -23,6 +23,6 @@
         scene.updateLayer(meshFile);
     };
 
-    plugin.install(filter);
+    plugin.Manager.install(filter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

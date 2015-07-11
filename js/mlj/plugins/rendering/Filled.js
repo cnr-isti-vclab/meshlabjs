@@ -178,8 +178,8 @@
             return;
         }
 
-        var rend = MLJ.core.plugin.getRenderingPlugins();
-        var colorWheel = rend.getByKey("ColorWheel");
+        var rend = MLJ.core.plugin.Manager.getRenderingPlugins();
+        var colorWheel = rend.getByKey("ColorWheel");        
         var params;
         if (defaults === true) {
             params = jQuery.extend(true, {}, DEFAULTS);
@@ -199,13 +199,13 @@
         var material = params.lighting === true
                 ? new PhongMaterial(params)
                 : new MLJ.core.BasicMaterial(params);
-
+                                                
         meshFile.updateMaterial(material);
 
         meshFile.setRenderingOn(true);
 
     };
 
-    plugin.install(plug);
+    plugin.Manager.install(plug);
 
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

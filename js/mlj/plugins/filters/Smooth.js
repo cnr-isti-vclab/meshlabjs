@@ -30,7 +30,7 @@
         scene.updateLayer(meshFile);
     };
 
-    plugin.install(LaplacianSmoothFilter);
+    plugin.Manager.install(LaplacianSmoothFilter);
 
 
     var TaubinSmoothFilter = new plugin.Filter({
@@ -70,7 +70,7 @@
         scene.updateLayer(meshFile);
     };
 
-    plugin.install(TaubinSmoothFilter);
+    plugin.Manager.install(TaubinSmoothFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);

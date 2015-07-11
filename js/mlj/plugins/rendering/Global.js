@@ -8,6 +8,6 @@
     });
     
 
-    plugin.install(plug);
+    plugin.Manager.install(plug);
 
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

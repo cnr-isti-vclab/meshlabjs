@@ -43,7 +43,11 @@
         <script src="js/mlj/core/Scene.js"></script>
         <script src="js/mlj/core/File.js"></script>
 
-        <script src="js/mlj/core/Plugin.js"></script>     
+        <script src="js/mlj/core/plugin/Plugin.js"></script>
+        <script src="js/mlj/core/plugin/Filter.js"></script>
+        <script src="js/mlj/core/plugin/Rendering.js"></script>
+        <script src="js/mlj/core/plugin/Manager.js"></script>
+        
         <script src="js/mlj/plugins/filters/Smooth.js"></script> 
         <script src="js/mlj/plugins/filters/Refine.js"></script>
         <script src="js/mlj/plugins/filters/Random.js"></script>
@@ -55,7 +59,7 @@
         <script src="js/mlj/plugins/rendering/ColorWheel.js"></script> 
         <script src="js/mlj/plugins/rendering/Box.js"></script> 
         <script src="js/mlj/plugins/rendering/Points.js"></script> 
-        <!--<script src="js/mlj/plugins/rendering/Wire.js"></script>--> 
+        <script src="js/mlj/plugins/rendering/Wire.js"></script> 
         <script src="js/mlj/plugins/rendering/Filled.js"></script>         
         <script src="js/mlj/plugins/rendering/Normals.js"></script> 
         <script src="js/mlj/plugins/rendering/BoundaryEdges.js"></script>         
@@ -79,7 +83,7 @@
     </head>
     <body>        
         <script>
-            MLJ.core.plugin.run();
+            MLJ.core.plugin.Manager.run();
             MLJ.gui.makeGUI("MeshLabJS");            
         </script>
     </body>

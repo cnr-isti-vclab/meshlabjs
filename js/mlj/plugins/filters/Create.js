@@ -31,7 +31,7 @@
         scene.addLayer(mf);
     };
 
-    plugin.install(PlatonicFilter);
+    plugin.Manager.install(PlatonicFilter);
 
 
     var SphereFilter = new plugin.Filter({
@@ -56,7 +56,7 @@
         scene.addLayer(mf);
     };
 
-    plugin.install(SphereFilter);
+    plugin.Manager.install(SphereFilter);
 
     var TorusFilter = new plugin.Filter({
         name: "Create Torus ",
@@ -87,7 +87,7 @@
         scene.addLayer(mf);
     };
 
-    plugin.install(TorusFilter);
+    plugin.Manager.install(TorusFilter);
 
     
 

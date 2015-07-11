@@ -26,7 +26,7 @@
         scene.addLayer(newmeshFile);
     };
 
-    plugin.install(MontecarloSamplingFilter);
+    plugin.Manager.install(MontecarloSamplingFilter);
 
 
     var PoissonDiskSamplingFilter = new plugin.Filter({
@@ -61,7 +61,7 @@
         scene.addLayer(newmeshFile);
     };
 
-    plugin.install(PoissonDiskSamplingFilter);
+    plugin.Manager.install(PoissonDiskSamplingFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);
