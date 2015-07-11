@@ -303,7 +303,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
     if (parameters.toggle === true) {
 
         //Click on button
-        btn.onToggle(function (on) {
+        btn.onToggle(function (on) {            
             //Apply rendering pass to all mesh
             if (MLJ.gui.isCtrlDown()) {
                 var ptr = MLJ.core.Scene.getLayers().iterator();
@@ -326,16 +326,17 @@ MLJ.core.plugin.Rendering = function (parameters) {
 
         //Clicked with mouse right button
         btn.onRightButtonClicked(function () {
-            btn.toggle("on");
+            btn.toggle("off", true);
             var items = group.getItems();
             var item;
+                                    
             for (var key in items) {
                 item = items[key];
                 if (item !== btn) {
-                    item.toggle("off");
+                    item.toggle("on",true);
                 }
             }
-
+            
         });
 
         //Click on arrow

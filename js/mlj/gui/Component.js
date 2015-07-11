@@ -278,7 +278,7 @@ MLJ.gui.component.ToggleButton = function (flags) {
 
     var _this = this;
 
-    this.toggle = function (param) {
+    this.toggle = function (param, click) {
 
         switch (param) {
             case "on":
@@ -295,6 +295,10 @@ MLJ.gui.component.ToggleButton = function (flags) {
             _this.$.addClass("mlj-toggle-on");
         } else {
             _this.$.removeClass("mlj-toggle-on");
+        }
+        
+        if(click === true) {            
+            _this.$.click();
         }
     };
 
@@ -343,8 +347,8 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
-    this.toggle = function (param) {
-        _toggle.toggle(param);
+    this.toggle = function (param,click) {
+        _toggle.toggle(param,click);
     };
 
     this.isOn = function () {
