@@ -49,6 +49,17 @@ void CreatePluginTEST()
   assert(IsWaterTight(m));
   }
 
+  // Parameter space sampling
+  // subdiv           8 16 32 48
+  // radiusratio      0.25 0.50 0.75 1.00 .. 2.00
+  for(int j=1;j<=6;++j)
+    for(int i=1;i<=8;++i)
+    {
+      MyMesh m;
+      CreateTorus(uintptr_t(&m),j*8,0.25*i);
+      if(i!=4) assert(IsWaterTight(m));
+      tri::RequireCompactness(m);
+    }
 }
 
 #ifdef __EMSCRIPTEN__
