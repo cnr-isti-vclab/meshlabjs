@@ -142,20 +142,21 @@ MLJ.util.AssociativeArray = function () {
     /**
      * Removes an element from this associative array          
      * @param {String} key The key whose mapping is to be removed from the array
-     * @returns {Boolean} <code>true</code> if element was removed, 
-     * <code>false</code> otherwise
+     * @returns {Object} The removed element if the array contains a mapping for
+     * the key, <code>null</code> otherwise
      */
     this.remove = function (key) {
+        var element = values[key];
         delete values[key];
         for (var i = 0, m = keys.length; i < m; i++) {
             if (keys[i] === key) {
                 keys.splice(i, 1);
                 //we have finished
-                return true;
+                return element;
             }
         }
 
-        return false;
+        return null;
     };
 
     /**
