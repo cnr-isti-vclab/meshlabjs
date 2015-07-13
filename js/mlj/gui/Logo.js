@@ -66,6 +66,7 @@ Like the original one, MeshLabJS for the mesh processing tasks relies on the \
 Paolo Cignoni (Project Leader) <br> \
 Maurizio Idini<br>\
 Stefano Gabriele <br>\
+Stefano Giammori <br>\
 </div>').hide();
             $('body').append(_$dialog);
 
