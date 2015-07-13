@@ -33,10 +33,12 @@
             "float edgeFactor(){",
             "   vec3 d = fwidth(vCenter);",
             "   vec3 a3 = smoothstep(vec3(0.0), d*lineWidth, vCenter);",
-            "   return min(min(a3.x, a3.y), a3.z);",
+            "   float edgeDist = min(min(a3.x, a3.y), a3.z);",
+            "   if(edgeDist > 0.5) discard;",
+            "   return 1.0-edgeDist;",
             "}",
             "void main() {",
-            "   gl_FragColor = mix( vec4( lineColor,1.0 ), vec4(0.0), edgeFactor());",
+            "   gl_FragColor = vec4( lineColor, edgeFactor());",
             "}"
 
         ].join("\n")
@@ -139,7 +141,8 @@
                     attributes: attributes,
 //                lights: true, // set this flag and you have access to scene lights
                     shading: THREE.FlatShading,
-                    transparent: true
+                    transparent: true,
+                    side:THREE.DoubleSide
                 };
             } else {
                 parameters = overlay.userData;
