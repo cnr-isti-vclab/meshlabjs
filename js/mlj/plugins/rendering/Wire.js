@@ -101,8 +101,8 @@
         if (wireframe === undefined) {
             color = "#" + DEFAULTS.color.getHexString();
             thickness = DEFAULTS.thickness;
-        } else {            
-            thickness = wireframe.userData.uniforms.lineWidth.value;            
+        } else {
+            thickness = wireframe.userData.uniforms.lineWidth.value;
             color = "#" + wireframe.userData.uniforms.lineColor.value.getHexString();
 //        lightingWidget.selectByValue(meshFile.material.parameters.lighting);
         }
@@ -110,7 +110,14 @@
         thicknessWidget.setValue(thickness);
     };
 
-    plug._applyTo = function (meshFile, on) {
+    function setupAttributes(geometry, values) {
+        for (var f = 0; f < geometry.faces.length; f++) {
+            values[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+        }
+    }
+
+    plug._applyTo = function (meshFile, on, defaults) {
+        
         if (on) {
             var geom = meshFile.getThreeMesh().geometry.clone();
 
@@ -118,12 +125,6 @@
             var attrVal = attributes.center.value;
 
             setupAttributes(geom, attrVal);
-
-            function setupAttributes(geometry, values) {
-                for (var f = 0; f < geometry.faces.length; f++) {
-                    values[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
-                }
-            }
 
             var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
 
@@ -142,7 +143,7 @@
 //                lights: true, // set this flag and you have access to scene lights
                     shading: THREE.FlatShading,
                     transparent: true,
-                    side:THREE.DoubleSide
+                    side: THREE.DoubleSide
                 };
             } else {
                 parameters = overlay.userData;
@@ -152,7 +153,7 @@
             var wireframe = new THREE.Mesh(geom, mat);
             scene.addOverlayLayer(meshFile, "wireframe", wireframe, parameters);
 
-        } else {            
+        } else {
             scene.removeOverlayLayer(meshFile, "wireframe");
         }
 

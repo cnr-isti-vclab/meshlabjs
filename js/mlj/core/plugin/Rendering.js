@@ -98,12 +98,16 @@ MLJ.core.plugin.Rendering = function (parameters) {
         });
 
         $(document).on("SceneLayerAdded",
-                function (event, meshFile, layersNumber) {
-                    if (btn.isOn()) {
+                function (event, meshFile, layersNumber) {                                        
+                    //Check if the renderinfg fetaure is on by default
+                    if (btn.isOn() === parameters.on) {
                         _this._applyTo(meshFile, btn.isOn(), true);
                         meshFile.properties.set(parameters.name, btn.isOn());
                         update();
+                    } else {
+                        btn.toggle("off");
                     }
+                    
                 });
                 
         $(document).on("SceneLayerUpdated",
