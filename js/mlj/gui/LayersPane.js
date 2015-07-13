@@ -62,44 +62,19 @@
                     function (event, mesh) {
                         //Add item to layers pane widget
                         MLJ.widget.LayersPane.addLayer(mesh.name);
-
-                        var infoWidg = MLJ.gui.getWidget("Info");
-                        //Clear info area
-                        infoWidg.clear();
-
-                        //Add mesh info to info widget
-                        infoWidg.append("Current Mesh: " + mesh.name);
-                        infoWidg.append("Vertices: " + mesh.VN);
-                        infoWidg.append("Faces: " + mesh.FN);
+                        MLJ.gui.getWidget("Info").updateInfo(mesh);
                     });
 
             $(document).on("SceneLayerSelected",
                     function (event, mesh) {
-
-                        var infoWidg = MLJ.gui.getWidget("Info");
-
-                        //Clear info area
-                        infoWidg.clear();
-
-                        //Add mesh info to info widget
-                        infoWidg.append("Current Mesh: " + mesh.name);
-                        infoWidg.append("Vertices: " + mesh.VN);
-                        infoWidg.append("Faces: " + mesh.FN);
-
+                        MLJ.gui.getWidget("Info").updateInfo(mesh);
                     });
 
             $(document).on("SceneLayerUpdated",
                     function (event, mesh) {
                         //UPDATE INFO                        
                         if (_selectedName === mesh.name) {
-                            var infoWidg = MLJ.gui.getWidget("Info");
-                            //Clear info area
-                            infoWidg.clear();
-
-                            //Add mesh info to info widget
-                            infoWidg.append("Current Mesh: " + mesh.name);
-                            infoWidg.append("Vertices: " + mesh.VN);
-                            infoWidg.append("Faces: " + mesh.FN);
+                        MLJ.gui.getWidget("Info").updateInfo(mesh);
                         }
 
                     });

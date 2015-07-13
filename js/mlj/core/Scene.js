@@ -319,6 +319,13 @@ MLJ.core.Scene = {};
     this.setLayerVisible = function (layerName, visible) {
         var layer = _layers.getByKey(layerName);
         layer.getThreeMesh().visible = visible;
+        
+        var iter = layer.overlays.iterator();
+        
+        while(iter.hasNext()) {
+            iter.next().mesh.visible = visible;
+        }
+        
         MLJ.core.Scene.render();
     };
 
@@ -333,7 +340,7 @@ MLJ.core.Scene = {};
     };       
     
     this.addOverlayLayer = function(mehFile, name, mesh, userData) {
-        if(!(mesh instanceof THREE.Mesh)) {
+        if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
         }

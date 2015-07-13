@@ -181,7 +181,6 @@
         var colorWheel = rend.getByKey("ColorWheel");    
         var globalRender = rend.getByKey("Global");
         var curSideValue = globalRender.getBackfaceCullingValue()?THREE.FrontSide:THREE.DoubleSide;
-        console.log(curSideValue);
         
         if (defaults === true) {
             params = jQuery.extend(true, {}, DEFAULTS);
