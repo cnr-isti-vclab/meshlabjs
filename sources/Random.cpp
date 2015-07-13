@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <stdlib.h>
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -35,6 +36,8 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("RandomDisplacement", &RandomPlugin);
 }
 =======
+=======
+>>>>>>> master
 #include "mesh_def.h"
 
 using namespace vcg;
@@ -58,4 +61,7 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("RandomDisplacement", &RandomPlugin);
 }
 #endif
+<<<<<<< HEAD
+>>>>>>> master
+=======
 >>>>>>> master
