@@ -237,10 +237,15 @@ html,body{
 /* INFO WIDGET ______________________________________________________________ */
 #mlj-info {    
     /*overflow: auto;*/
-    width: 450px;
-    height: 100px;    
+    padding: 3px;
+    width: 120px;
+    height: 60px;    
     background-color: rgba(0,0,0,0.5);    
     color: white;
+    font-size: 75%;
+text-align: center;
+    vertical-align: middle;
+    border-radius: 12px;
 }
 
 #mlj-info p {
