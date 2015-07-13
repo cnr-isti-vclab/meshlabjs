@@ -154,7 +154,7 @@ MLJ.core.Scene = {};
                     $(document).trigger("SceneLayerUpdated", [meshFile]);
                 });
     }
-
+    
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
@@ -163,8 +163,8 @@ MLJ.core.Scene = {};
      * translate every object in a right position.
      */
     function _computeGlobalBBbox() {
-        var iter = _layers.iterator();
-
+        var iter = _layers.iterator();        
+        
         var threeMesh;
         while (iter.hasNext()) {
             threeMesh = iter.next().getThreeMesh();
@@ -235,12 +235,29 @@ MLJ.core.Scene = {};
         _selectedLayer = meshFile;
 
         //Compute the global bounding box
-        _computeGlobalBBbox();
-
-        //render the scene
-        _this.render();
+        _computeGlobalBBbox();      
 
         if (!reloaded) {
+            var layersIter = _layers.iterator();
+            var layer, overlaysIter;
+            while(layersIter.hasNext()) {
+                layer = layersIter.next();
+                overlaysIter = layer.overlays.iterator();
+                while(overlaysIter.hasNext()) {
+                    mesh = overlaysIter.next().mesh;                
+
+                    mesh.position.set(
+                        meshFile.threeMesh.position.x,
+                        meshFile.threeMesh.position.y,
+                        meshFile.threeMesh.position.z);
+
+                    mesh.scale.set(
+                        meshFile.threeMesh.scale.x,
+                        meshFile.threeMesh.scale.y,
+                        meshFile.threeMesh.scale.z);
+                }
+            }                                   
+            
             /**
              *  Triggered when a layer is added
              *  @event MLJ.core.Scene#SceneLayerAdded
@@ -255,9 +272,11 @@ MLJ.core.Scene = {};
              *      }
              *  );
              */
-            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
+            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);                       
         }
-
+        
+        //render the scene
+        _this.render();
     }
 
     this.lights = {
@@ -311,7 +330,49 @@ MLJ.core.Scene = {};
      */
     this.addLayer = function (meshFile) {
         _addLayer(meshFile, false);
+    };       
+    
+    this.addOverlayLayer = function(mehFile, name, mesh, userData) {
+        if(!(mesh instanceof THREE.Mesh)) {
+            console.warn("mesh parameter must be an instance of THREE.Mesh");
+            return;
+        }
+        
+        mesh.position.set(
+            mehFile.threeMesh.position.x,
+            mehFile.threeMesh.position.y,
+            mehFile.threeMesh.position.z);
+            
+        mesh.scale.set(
+            mehFile.threeMesh.scale.x,
+            mehFile.threeMesh.scale.y,
+            mehFile.threeMesh.scale.z);
+        
+        mehFile.overlays.set(name,{mesh:mesh, userData: userData});
+        
+        _scene.add(mesh);
+
+        //render the scene
+        _this.render();
     };
+    
+    this.removeOverlayLayer = function(meshFile, name) {        
+        var overlay = meshFile.overlays.getByKey(name);
+        
+        if(overlay !== undefined) {
+            var mesh = overlay.mesh;            
+            
+            _scene.remove(mesh);
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+
+            if (mesh.texture) {
+                mesh.texture.dispose();
+            }
+            _this.render();                    
+        }
+        
+    };  
 
     /**
      * Updates a layer. This function should be called if the <code>meshFile</code>

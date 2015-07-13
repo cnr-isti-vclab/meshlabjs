@@ -49,6 +49,8 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     this.VN = this.vert = this.FN = this.face = this.material = null;    
     this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
+    //is updated by MLJ.core.Scene and contains overlaying mesh
+    this.overlays = new MLJ.util.AssociativeArray();
     var _isRendered = true;
     var _this = this;   
     
@@ -104,7 +106,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
 
     this.updateMaterial = function(material, updateGeometry) {
         if(!(material instanceof MLJ.core.Material)) {
-            console.warn("The parameters must be an instance of MLJ.core.Material");
+            console.warn("material parameter must be an instance of MLJ.core.Material");
         } else {            
             _this.material = material;
             _this.threeMesh.material = _this.material.threeMaterial;            
@@ -115,7 +117,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         }
         
         MLJ.core.Scene.render();
-    };  
+    };    
     
     this.setRenderingOn = function(on) {
         _isRendered = on;
@@ -129,7 +131,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     
     this.isRendered = function() {
         return _isRendered;
-    }      
+    };
     
     /**
      * Returns this THREE.Mesh object
@@ -170,8 +172,9 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.cppMesh.delete();
         
         _this.threeMesh = _this.name = _this.ptrMesh = _this.VN = _this.vert =
-                _this.FN = _this.face = _this.material = _this = null;
+            _this.FN = _this.face = _this.material = _this.properties =  
+            _this.overlays = _this = null;
     };
     
     init();
-};
+}
