@@ -11,6 +11,3 @@ sources/Makefile
 /nbproject/project.xml
 
 doc/html/
-
-js/generated/MeshlabJs.js.mem
-js/generated/MeshlabJs.js
