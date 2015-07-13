@@ -178,11 +178,15 @@
         }
 
         var rend = MLJ.core.plugin.Manager.getRenderingPlugins();
-        var colorWheel = rend.getByKey("ColorWheel");        
-        var params;
+        var colorWheel = rend.getByKey("ColorWheel");    
+        var globalRender = rend.getByKey("Global");
+        var curSideValue = globalRender.getBackfaceCullingValue()?THREE.FrontSide:THREE.DoubleSide;
+        console.log(curSideValue);
+        
         if (defaults === true) {
             params = jQuery.extend(true, {}, DEFAULTS);
             params.color = colorWheel.getDefaults().color.clone();
+            params.side = curSideValue;
         }
         else {
             params = {
@@ -191,7 +195,8 @@
                 emissive: new THREE.Color(emissiveColor.getColor()),
                 shading: shadingWidget.getValue(),
                 shininess: shininessWidget.getValue(),
-                lighting: lightingWidget.getValue()
+                lighting: lightingWidget.getValue(),
+                side: THREE.DoubleSide
             };
         }
 

@@ -7,7 +7,25 @@
         icon: "img/icons/global.png"        
     });
     
+    var cullingWidget;
+    
+    plug._init = function (guiBuilder) {
+        
+        cullingWidget = guiBuilder.Choice({
+            label: "Backface Culling",
+            tooltip: "Enable/disable Backface Culling",
+            options: [
+                {content: "on", value: true},
+                {content: "off", value: false, selected: true}
+            ]
+        });
 
+    };
+
+    plug.getBackfaceCullingValue = function (type) {
+        return cullingWidget.getValue();
+    };
+    
     plugin.Manager.install(plug);
 
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
