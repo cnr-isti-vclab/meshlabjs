@@ -44,7 +44,7 @@
     SphereFilter._init = function (builder) {
 
         sphereLevWidget = builder.Integer({
-            min: 1, step: 1, defval: 1,
+            min: 1, step: 1, defval: 3,
             label: "subdivision",
             tooltip: "Number of recursive subdivision of the sphere"
         });
