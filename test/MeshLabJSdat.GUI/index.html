@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link href="css/style.css" rel="stylesheet">     
+    <link rel="icon" href="img/favicon.png" type="image/x-icon"/>
+    <!-- PreProcessing information ... -->
+    <script src="js/include/dat.gui.min.js"></script>
+    <script src="js/include/three.min.js"></script>
+    <script src="js/include/TrackballControls.js"></script> 
+    <script src="js/include/jquery-1.11.2.min.js"></script>
+    <script src="js/include/FileSaver.min.js"></script>
+    <title>MeshLabJs</title>      
+</head>
+<body onload="MeshLabJsLoader()">
+<div id="inputFile">   
+    <input type="file" id="files" name="files[]" value="tetra.off" style="visibility:hidden;"/>
+    <br>
+    <output id="list"></output>
+</div>
+<div id='divTextArea'>
+    <textarea id="infoMesh" ></textarea>
+    <textarea id="log" ></textarea>
+</div>
+<div id="openedMesh" class="mesh-controls">
+    <table id="field">
+        <tr>
+            <td>Opened Mesh</td>
+        </tr>
+    </table>
+</div>
+
+</body>
+    <!-- Post-processing page ... -->
+    <script src="js/engine/MeshLabJsLoader.js"></script>
+    <script src="js/engine/MeshLabJsRender.js"></script>
+    <script src="js/shaders/WireframeShader.js"></script>
+    <script src="js/engine/MeshLabJsGui.js"></script> 
+    <script src="js/generated/MeshlabJs.js"></script>
+
+    <!-- Import Plugin -->
+    <script src="js/plugin/refine.js"></script>
+    <script src="js/plugin/smooth.js"></script>   
+    <script src="js/plugin/random.js"></script>
+</html>

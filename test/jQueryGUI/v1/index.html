@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>MeshLabJs v1.0</title>
+        <link rel="icon" href="../img/favicon.png" type="image/x-icon"/>             
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">       
+        <script src="../../../js/include/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>        
+        <script src="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.js"></script>                
+        <link rel="stylesheet" href="css/style.css">
+
+    </head>
+    <body>        
+
+        <div style="width: 100%; height: 100%; position: relative;">
+            <div id="left">
+                <div id="top">            
+                    <span>MeshLabJs v1.0</span>
+                </div> 
+                <div id="tools-btn" style="background-color: black; padding: 10px;">
+                    <button id="open" title="Open mesh file"></button>
+                    <button id="save" title="Save mesh file"></button>
+                    <button id="reload" title="Reload file"></button>
+                    <button id="snapshot" title="Take snapshot"></button>
+                    <button id="search" title="Search tool"></button>
+                    <script>
+                        $("#open").append("<img src='../icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png' />")
+                                .button({text: "Apri mesh"}).tooltip();
+
+                        $("#save").append("<img src='../icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png' />")
+                                .button({disabled: false}).tooltip();
+
+                        $("#reload").append("<img src='../icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png' />")
+                                .button({disabled: false}).tooltip();
+
+                        $("#snapshot").append("<img src='../icons/IcoMoon-Free-master/PNG/48px/0016-camera.png' />")
+                                .button({disabled: false}).tooltip();
+
+                        $("#search").append("<img src='../icons/IcoMoon-Free-master/PNG/48px/0135-search.png' />")
+                                .button({disabled: false}).tooltip().on("click",
+                                function (event, ui) {
+
+                                });
+                    </script>
+                </div>
+
+                <div id="rendering-btn" style="background-color: black; padding: 0px 10px 10px 10px;">
+                    <button id="light" title="Light on/off"></button>
+                    <button id="wireframe" title="Wireframe"></button>
+                    <script>
+                        $("#light").append("<img src='../icons/light.png' />")
+                                .button({disabled: false}).tooltip().data("checked", 0)
+                                .on("click", function (event, ui) {
+                                    var checked = $(this).data("checked") ^ 1;
+                                    $(this).data("checked", checked);
+                                    if (checked) {
+                                        $(this).addClass("checked");
+                                    } else {
+                                        $(this).removeClass("checked");
+                                    }
+                                });
+                        $("#wireframe").append("<img src='../icons/wireframe.png' />")
+                                .button({disabled: false}).tooltip().data("checked", 0)
+                                .on("click", function (event, ui) {
+                                    var checked = $(this).data("checked") ^ 1;
+                                    $(this).data("checked", checked);
+                                    if (checked) {
+                                        $(this).addClass("checked");
+                                    } else {
+                                        $(this).removeClass("checked");
+                                    }
+                                });</script>
+                </div>
+
+
+                <!--                <div id="search">
+                                    
+                                    <label for="autocomplete"></label>
+                                    <input id="autocomplete" placeholder="Search">
+                
+                                    <script>
+                                        var tags = ["c++", "java", "php", "coldfusion", "javascript", "asp", "ruby"];
+                                        $("#autocomplete").autocomplete({
+                                            source: function (request, response) {
+                                                var matcher = new RegExp("^" + $.ui.autocomplete.escapeRegex(request.term), "i");
+                                                response($.grep(tags, function (item) {
+                                                    return matcher.test(item);
+                                                }));
+                                            }
+                                        });
+                                    </script>
+                                </div>-->
+
+                <div id="tabs">
+                    <ul>
+                        <li><a href="#fragment-1"><span>Scene</span></a></li>
+                        <li><a href="#fragment-2"><span>Lighting</span></a></li>
+                        <li><a href="#fragment-3"><span>Rendering</span></a></li>
+                    </ul>                
+                    <div id="fragment-1">
+                        <p>First tab is active by default:</p>
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat
+                    </div>
+                    <div id="fragment-2">
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+                    </div>
+                    <div id="fragment-3">
+
+                        <div id="accordion">
+                            <h3>Material</h3>
+                            <div>
+                                <p>Mauris mauris ante, blandit et, ultrices a, suscipit eget.
+                                    Integer ut neque. Vivamus nisi metus, molestie vel, gravida in,
+                                    condimentum sit amet, nunc. Nam a nibh. Donec suscipit eros.
+                                    Nam mi. Proin viverra leo ut odio.</p>
+                            </div>
+                            <h3>Filters</h3>
+                            <div>
+                                <p>Sed non urna. Phasellus eu ligula. Vestibulum sit amet purus.
+                                    Vivamus hendrerit, dolor aliquet laoreet, mauris turpis velit,
+                                    faucibus interdum tellus libero ac justo.</p>
+                            </div>
+                            <h3>Section 3</h3>
+                            <div>
+                                <p>Nam enim risus, molestie et, porta ac, aliquam ac, risus.
+                                    Quisque lobortis.Phasellus pellentesque purus in massa.</p>
+                                <ul>
+                                    <li>List item one</li>
+                                    <li>List item two</li>
+                                    <li>List item three</li>
+                                </ul>
+                            </div>
+                        </div>                      
+                    </div>
+                </div>
+            </div>
+            <div id="right">
+
+            </div>
+            <div id="dialog" title="Dialog Title">I'm a dialog</div>
+            <script>
+                $("#dialog").dialog({
+                    appendTo: "#right", autoOpen: false});
+                $("#dialog").dialog("open");</script>
+        </div>
+        <script>
+
+            $("#accordion").accordion({
+                heightStyle: 'content'
+            });
+            $("#tabs").tabs({heightStyle: 'auto'});
+            function resize() {
+                var docH = $(document).height();
+                var docW = $(document).width();
+                var topH = $('#top').height();
+                var leftW = $('#left').width();
+                $('#tabs').height(docH - topH);
+                $('#right').width(docW - leftW - 1);
+            }
+
+            resize();
+            $(window).resize(function () {
+                resize();
+            });
+            var w = $("#left").width();
+            var t = $("#left").height() / 2;
+            var p = $("<span id='p' class='ui-icon ui-icon-circle-arrow-w'></span>")
+                    .css({position: "absolute", left: w, top: t});
+            p.appendTo("body");
+            var log = $("<div id='log'>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</div>")
+                    .css({position: "absolute", left: 500, top: 100,
+                        width: 300, height: 120, backgroundColor: "rgba(0,0,0,0.4)",
+                        color: "lightgray", padding: "10px", border: "solid 1px white", overflow: "auto"});
+            log.appendTo("body");
+
+            var info = $("<div id='log'>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</div>")
+                    .css({position: "absolute", left: 500, top: 600,
+                        width: 300, height: 120, backgroundColor: "rgba(0,0,0,0.4)",
+                        color: "lightgray", padding: "10px", border: "solid 1px gainsboro", overflow: "auto"});
+            info.appendTo("body");
+
+
+            p.click(function () {
+                var $left = $('#left');
+                if ($left.is(":visible")) {
+                    $left.hide("slide", {direction: "left"}, 500);
+                    p.animate({
+                        left: "-=" + w
+                    }, 500, function () {
+                        // Animation complete.
+                    });
+                    $('#right').animate({
+                        left: "-=" + (w + 1),
+                        width: "+=" + (w + 1)
+                    }, 500);
+                } else {
+                    $left.show("slide", {direction: "left"}, 500);
+                    p.animate({
+                        left: "+=" + w
+                    }, 500, function () {
+                        // Animation complete.
+                    });
+                    $('#right').animate({
+                        left: "+=" + (w + 1),
+                        width: "-=" + (w + 1)
+                    }, 500);
+                }
+            });
+//            $('#left').click(function(){
+//                $(this).hide("slide", { direction: "left" }, 1000);
+//                console.log('left');
+//            });
+
+
+
+        </script>
+
+    </body>
+</html>

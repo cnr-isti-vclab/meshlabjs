@@ -1,0 +1,16 @@
+
+*.o
+
+sources/FilterTest.pro.user
+sources/.qmake.stash
+sources/FilterTest
+sources/Makefile
+
+/nbproject/private/
+/nbproject/project.properties
+/nbproject/project.xml
+
+doc/html/
+
+js/generated/MeshlabJs.js.mem
+js/generated/MeshlabJs.js

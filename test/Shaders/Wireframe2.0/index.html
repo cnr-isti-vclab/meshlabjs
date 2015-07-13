@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Wireframe Shader</title>
+        <meta charset="utf-8">
+        <style>
+            body {
+                margin: 0px;
+                background-color: #000000;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+
+        <script src="../../../js/include/three.min.js"></script>
+        <script src="WireframeShader.js"></script>
+
+        <script type="x-shader/x-vertex" id="vertexShader">
+
+            attribute vec3 center;
+            varying vec3 vCenter;
+            
+            varying vec3 vecPos;
+            varying vec3 vecNormal;
+                        
+            void main() {                
+                vecPos = (modelMatrix * vec4(position, 1.0 )).xyz;
+                vecNormal = (modelMatrix * vec4(normal, 0.0)).xyz;
+                
+                vCenter = center;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            }
+
+        </script>
+
+        <script type="x-shader/x-fragment" id="fragmentShader">
+
+            #extension GL_OES_standard_derivatives : enable
+            
+            uniform vec3 color;
+            varying vec3 vCenter;
+            
+            varying vec3 vecPos;
+            varying vec3 vecNormal;
+            
+            uniform vec3 pointLightColor[MAX_POINT_LIGHTS];
+            uniform vec3 pointLightPosition[MAX_POINT_LIGHTS];
+            uniform float pointLightDistance[MAX_POINT_LIGHTS];       
+
+            float edgeFactor(){
+            vec3 d = fwidth(vCenter);
+            vec3 a3 = smoothstep(vec3(0.0), d*1.5, vCenter);
+            return min(min(a3.x, a3.y), a3.z);
+            }
+
+
+            void main() {
+                
+                vec4 addedLights = vec4(0.0,0.0,0.0, 1.0);                
+                
+                for(int l = 0; l < MAX_POINT_LIGHTS; l++) {
+                    vec3 lightDirection = normalize(vecPos-pointLightPosition[l]);
+                    addedLights.rgb += clamp(dot(-lightDirection, vecNormal), 0.0, 1.0)
+                        * pointLightColor[l];
+                }            
+                                
+                gl_FragColor.rgb = mix(vec3(0.0), color, edgeFactor())*addedLights.rgb ;
+                //gl_FragColor = (vec4(0.0, 0.0, 0.0, (1.0-edgeFactor())*0.95))*addedLights;
+            }                       
+
+        </script>
+
+        <script>
+
+var camera, scene, renderer;
+var meshTris, meshLines, meshMixed;
+
+init();
+animate();
+
+function init() {
+
+    camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.z = 800;
+
+    scene = new THREE.Scene();
+
+//___________________________________________________
+
+    light = new THREE.PointLight(0xffffff, 1, 0);
+    light.position.set(0, 0, 800);
+    scene.add(light);
+    //scene.add(new THREE.AmbientLight(0xffffff));
+
+    var geometry = new THREE.DodecahedronGeometry(150);
+
+    var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
+    var attrVal = attributes.center.value;
+
+    setupAttributes(geometry, attrVal);
+
+    var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
+
+    uniforms.emissive.value = new THREE.Color(0xff0000);
+    uniforms.specular.value = new THREE.Color(0xffffff);
+    uniforms.shininess.value = 20;
+
+    var parameters = {
+        fragmentShader: WIREFRAME.fragmentShader,
+        vertexShader: WIREFRAME.vertexShader,
+        uniforms: uniforms,
+        attributes: attributes,
+        lights: true, // set this flag and you have access to scene lights
+        shading: THREE.FlatShading
+    };
+
+    var material = new THREE.ShaderMaterial(parameters);
+
+    meshDodeca = new THREE.Mesh(geometry, material);
+    meshDodeca.position.x = -200;
+    scene.add(meshDodeca);
+
+//___________________________________________________
+
+    var size = 150;
+    //var geometryTris = new THREE.BoxGeometry(size, size, size);
+    var geometryTris = meshDodeca.geometry.clone();
+
+    var vertexShader = document.getElementById('vertexShader').textContent;
+    var fragmentShader = document.getElementById('fragmentShader').textContent;
+
+    // wireframe using gl.TRIANGLES (interpreted as triangles)
+
+    var attributesTris = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
+    var valuesTris = attributesTris.center.value;
+
+    setupAttributes(geometryTris, valuesTris);
+
+    var materialTris = new THREE.ShaderMaterial({uniforms:
+                THREE.UniformsUtils.merge([
+                    THREE.UniformsLib['lights'],
+                    {color: {type: "c", value: new THREE.Color(0xff0000)}}
+                ]),
+        attributes: attributesTris,
+        vertexShader: vertexShader, fragmentShader: fragmentShader,
+        lights: true});
+
+    //var basicMater = new THREE.MeshBasicMaterial()
+    meshTris = new THREE.Mesh(geometryTris, materialTris);
+    meshTris.position.x = 200;
+    scene.add(meshTris);
+
+
+    // renderer
+
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // events
+
+    window.addEventListener('resize', onWindowResize, false);
+
+}
+
+function setupAttributes(geometry, values) {
+
+    for (var f = 0; f < geometry.faces.length; f++) {
+
+        values[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+
+    }
+
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+}
+
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    meshTris.rotation.x += 0.005;
+    meshTris.rotation.y += 0.01;
+    meshDodeca.rotation.x += 0.005;
+    meshDodeca.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+
+}
+
+        </script>
+
+    </body>
+</html>

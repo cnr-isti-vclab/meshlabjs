@@ -1,0 +1,136 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 30-mag-2015, 12.14.41
+    Author     : Stefano Gabriele
+    email      : stefano_gabriele@yahoo.it
+*/
+
+/*BROWSER RESETS ____________________________________________________________ */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+blockquote, q {
+    quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/*_____________________________________________________________ BROWSER RESETS*/
+
+html,body{
+    width: 100%;
+    height: 100%;
+    /*background: linear-gradient( #00000f,  #8080ff);*/ 
+    font-family: Segoe UI,Arial,sans-serif;
+    overflow: hidden;
+}
+
+#top {    
+    height:70px; 
+    background-color: black;
+    border-bottom: solid 4px gainsboro;
+    background-image: url('../../../../img/favicon.png');
+    background-repeat: no-repeat;
+    background-size: 60px auto;    
+    background-position:15px 15px;
+    line-height: 70px;    
+}
+
+#top span {
+    margin-left: 100px;
+    color: white;
+    font-size: 1.5em;    
+}
+
+#left {
+    position: absolute;
+    border-right: solid 1px white;    
+    width: 400px;
+}
+
+#tabs .ui-tabs-panel {
+    /*margin: 0px;*/
+    padding: 2px;
+}
+
+#search {    
+    line-height: 50px;
+    background-color: #414141;
+    color: white;
+    text-align: right;
+}
+
+#search .ui-autocomplete-input{
+    padding: 10px;
+    border-radius: 4px;
+    border: solid 1px gainsboro;    
+    margin-right: 5px;
+}
+
+#right {
+    position: absolute;
+    left: 401px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    white-space: nowrap;    
+    overflow: hidden;
+    background: rgb(238,238,238);
+    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNlZWVlZWUiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNTE1MTUxIiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+    background: -moz-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%, rgba(81,81,81,1) 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(81,81,81,1)));
+    background: -webkit-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
+    background: -o-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
+    background: -ms-radial-gradient(center, ellipse cover,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
+    background: radial-gradient(ellipse at center,  rgba(238,238,238,1) 0%,rgba(81,81,81,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#515151',GradientType=1 );
+}
+
+#tools-btn img, #rendering-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+.checked {
+    background: green;
+}

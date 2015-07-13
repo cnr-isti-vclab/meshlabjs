@@ -1,0 +1,84 @@
+html,body{
+	width: 100%;
+	height: 100%;
+	background: linear-gradient( #00000f,  #8080ff);
+	overflow: hidden;
+}
+table {
+ 	border: 0px solid white;
+	width: 20.6%;
+	min-height: 5%;
+	float:top;
+	float: right;
+	top: 11%;
+ 	right: 4px;
+ 	position: absolute;
+ 	color: #d0d0d0;
+	background-color: transparent;
+
+}
+input[type=checkbox]{
+	float: left;
+}
+td{
+	padding: 0 4px 0 5px;
+	height: 24px;
+	background-color: #111;
+	border-bottom: 1px solid #2c2c2c;
+	border-left: 3px solid #e61d5f;
+	color: #eee;
+  	font: 11px 'Lucida Grande', sans-serif;
+  	text-shadow: 0 1px 0 #111;
+}
+
+label{
+	display: inline-block;
+	margin: 0;
+	vertical-align: middle;
+}
+
+canvas{
+	width: 100%;
+	height: 100%;  
+	float:top;
+}
+.dg.main{
+	border: 0px solid white;
+	width: auto;
+	height:auto;
+	float:top;
+	float: left;
+	top: 1%;
+ 	left: 0.5%;
+ 	vertical-align: right;
+ 	position: absolute;
+}
+textarea#infoMesh{
+	border: 1px solid white;
+	width: 20%;
+	height: 9%;
+	float:top;
+	float: right;
+	top: 1%;
+ 	right: 5px;
+ 	vertical-align: right;
+ 	position: absolute;
+ 	resize:none;
+ 	color: #d0d0d0;
+	background-color: #00000f;
+}
+textarea#log{
+	border: 1px solid white;
+	width: 20%;
+	height: 9%;
+	float:bottom;
+	float: right;
+	bottom: 1%;
+ 	right: 5px;
+ 	vertical-align: right;
+ 	position: absolute;
+ 	resize:none;
+ 	color: #d0d0d0;
+	background-color: #00000f;
+}
+

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>MeshLabJs v2.0</title>
+        <link rel="icon" href="../../../img/favicon.png" type="image/x-icon"/>             
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
+        <link rel="stylesheet" href="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">       
+        <link rel="stylesheet" href="css/style.css">
+        <script src="../../../js/include/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>        
+        <script src="../../../js/include/jquery-ui-1.11.4.custom/jquery-ui.js"></script>                        
+
+        <script src="js/mlj/MLJ.js"></script>
+        <script src="js/mlj/gui/Gui.js"></script>
+        <script src="js/mlj/gui/SceneBar.js"></script>
+        <script src="js/mlj/gui/SearchTool.js"></script>
+        <script src="js/mlj/gui/LayersPane.js"></script>
+        <script src="js/mlj/gui/TabbedPane.js"></script>
+        <script src="js/mlj/gui/Log.js"></script>
+        <script src="js/mlj/gui/Info.js"></script>
+        <script src="js/mlj/gui/Logo.js"></script>
+        <script src="js/main.js"></script>
+    </head>
+    <body>
+        <script>
+            MLJ.gui.LayersPane.addLayer("Layer 1");
+            MLJ.gui.LayersPane.addLayer("Layer 2");
+            MLJ.gui.LayersPane.addLayer("Layer 3");
+            MLJ.gui.LayersPane.addLayer("Layer 4");
+            MLJ.gui.LayersPane.addLayer("Layer 5");
+            MLJ.gui.LayersPane.addLayer("Layer 6");
+
+            MLJ.gui.Log.append("Message 1");
+            MLJ.gui.Log.append("Message 2");
+            MLJ.gui.Log.append("Message 3");
+            MLJ.gui.Log.append("Message 4");
+            
+            MLJ.gui.Info.append("Info 1");
+            MLJ.gui.Info.append("Info 2");
+            MLJ.gui.Info.append("Info 3");
+            MLJ.gui.Info.append("Info 4");
+            MLJ.gui.Info.append("Info 5");
+            MLJ.gui.Info.append("Info 6");
+
+            MLJ.gui.makeGUI("MeshLabJs v2.0");
+
+        </script>
+    </body>
+</html>
+
+<!--                              
+//        $("#light").append("<img src='../icons/light.png' />")
+//        .button({disabled: false}).tooltip().data("checked", 0)
+//        .on("click", function (event, ui) {
+//            var checked = $(this).data("checked") ^ 1;
+//            $(this).data("checked", checked);
+//            if (checked) {
+//                $(this).addClass("checked");
+//            } else {
+//                $(this).removeClass("checked");
+//            }
+//        });
+//$("#wireframe").append("<img src='../icons/wireframe.png' />")
+//        .button({disabled: false}).tooltip().data("checked", 0)
+//        .on("click", function (event, ui) {
+//            var checked = $(this).data("checked") ^ 1;
+//            $(this).data("checked", checked);
+//            if (checked) {
+//                $(this).addClass("checked");
+//            } else {
+//                $(this).removeClass("checked");
+//            }
+//        });
+//        < /script>
+//        < /div>
+//        < /div>
+//        < /div>-->
+
+
+
+<!--                <div style="height: 200px;">
+                    <div id="log">
+                        <h3>Log</h3>
+                        <div>
+                            <p>Mauris mauris ante, blandit et, ultrices a, suscipit eget.
+                                Integer ut neque. Vivamus nisi metus, molestie vel, gravida in,
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    $("#log").accordion({heightStyle: 'fill', collapsible: false});
+                </script>
+
+                <script>
+                    $("#accordion").accordion({heightStyle: 'fill'});
+                    $("#tabs").tabs({heightStyle: 'fill'});
+
+                    $(window).resize(function () {
+                        $('#left').height($(window).height());
+                        $('#tabs').tabs("refresh");
+                        $('#accordion').accordion("refresh");
+                    });
+                </script>                              -->
+
