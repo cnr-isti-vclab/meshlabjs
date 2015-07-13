@@ -63,7 +63,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     }
                 }
             } else { //Apply rendering pass to selected layer
-                var selected = MLJ.core.Scene.getSelectedLayer();                
+                var selected = MLJ.core.Scene.getSelectedLayer();
                 if (selected !== undefined) {
                     _this._applyTo(selected, on);
                     selected.properties.set(parameters.name, on);
@@ -83,12 +83,10 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     item.toggle("on", true);
                 }
             }
-
         });
 
         //Click on arrow
         btn.onArrowClicked(function () {
-
             renderingPane.children().each(function (key, val) {
                 if ($(val).attr("id") === UID) {
                     $(val).fadeIn();
@@ -102,12 +100,19 @@ MLJ.core.plugin.Rendering = function (parameters) {
         $(document).on("SceneLayerAdded",
                 function (event, meshFile, layersNumber) {
                     if (btn.isOn()) {
-                        
                         _this._applyTo(meshFile, btn.isOn(), true);
                         meshFile.properties.set(parameters.name, btn.isOn());
-                        _this._update();
+                        update();
                     }
                 });
+                
+        $(document).on("SceneLayerUpdated",
+            function (event, meshFile) {
+                if (btn.isOn()) {
+                    _this._applyTo(meshFile, false);
+                    _this._applyTo(meshFile, true);            
+                }
+        });
 
     } else {
         btn.onClick(function () {
@@ -124,12 +129,13 @@ MLJ.core.plugin.Rendering = function (parameters) {
         $(document).on("SceneLayerAdded",
                 function (event, meshFile, layersNumber) {
                     _this._applyTo(meshFile, true, true);
-                    _this._update();
+                    update();
                 });
-    }
-
+                       
+    }        
+    
     $(document).on("SceneLayerSelected", function (event, meshFile) {
-        _this._update();
+        update();
 
         if (parameters.toggle === true) {
             var val = meshFile.properties.getByKey(parameters.name);
@@ -141,7 +147,6 @@ MLJ.core.plugin.Rendering = function (parameters) {
         }
     });
 
-
     //Prevents context menu opening
     $(document).ready(function () {
         $(this).on("contextmenu", function (e) {
@@ -150,13 +155,19 @@ MLJ.core.plugin.Rendering = function (parameters) {
             }
         });
     });
-
-    this._update = function () {
-    },
-            this._main = function () {
-                _this._init(guiBuilder);
-                renderingPane.append(pane.$);
-            };
+    
+    function update() {
+         var selected = MLJ.core.Scene.getSelectedLayer();
+         _this._update(selected);
+    }
+    
+    this._update = function (meshFile) {
+    };
+    
+    this._main = function () {
+        _this._init(guiBuilder);
+        renderingPane.append(pane.$);
+    };
 
 };
 

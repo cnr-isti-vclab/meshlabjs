@@ -162,8 +162,7 @@
 
     };
 
-    plug._update = function () {
-        var meshFile = scene.getSelectedLayer();
+    plug._update = function (meshFile) {        
         specularColor.setColor(meshFile.material.parameters.specular.getHexString());
         emissiveColor.setColor(meshFile.material.parameters.emissive.getHexString());
         shininessWidget.setValue(meshFile.material.parameters.shininess);
@@ -203,7 +202,6 @@
         meshFile.updateMaterial(material);
 
         meshFile.setRenderingOn(true);
-
     };
 
     plugin.Manager.install(plug);
