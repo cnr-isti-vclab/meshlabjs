@@ -333,7 +333,7 @@ MLJ.core.Scene = {};
     };       
     
     this.addOverlayLayer = function(mehFile, name, mesh, userData) {
-        if(!(mesh instanceof THREE.Mesh)) {
+        if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
         }
