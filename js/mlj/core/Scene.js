@@ -319,6 +319,13 @@ MLJ.core.Scene = {};
     this.setLayerVisible = function (layerName, visible) {
         var layer = _layers.getByKey(layerName);
         layer.getThreeMesh().visible = visible;
+        
+        var iter = layer.overlays.iterator();
+        
+        while(iter.hasNext()) {
+            iter.next().mesh.visible = visible;
+        }
+        
         MLJ.core.Scene.render();
     };
 
