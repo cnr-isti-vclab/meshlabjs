@@ -47,7 +47,7 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
 void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool qualityQuadric)
 {
   MyMesh &m = *((MyMesh*) _baseM);
-
+  tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
   math::Quadric<double> QZero;
   QZero.SetZero();
   QuadricTemp TD(m.vert,QZero);

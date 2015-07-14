@@ -110,28 +110,25 @@
         thicknessWidget.setValue(thickness);
     };
 
-    function setupAttributes(geometry, values) {
-        for (var f = 0; f < geometry.faces.length; f++) {
-            values[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
-        }
-    }
-
     plug._applyTo = function (meshFile, on, defaults) {
-        
+
         if (on) {
             var geom = meshFile.getThreeMesh().geometry.clone();
-
+            
+            //setup attributes
             var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
-            var attrVal = attributes.center.value;
-
-            setupAttributes(geom, attrVal);
-
+            var attrVal = attributes.center.value;                        
+            
+            for (var f = 0; f < geom.faces.length; f++) {
+                attrVal[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+             }                                    
+                       
             var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
 
             var overlay = meshFile.overlays.getByKey("wireframe");
 
             var parameters;
-            if (overlay === undefined) {
+            if (overlay === undefined) {                
                 uniforms.lineColor.value = DEFAULTS.color;
                 uniforms.lineWidth.value = DEFAULTS.thickness;
 
@@ -147,16 +144,16 @@
                 };
             } else {
                 parameters = overlay.userData;
+                parameters.attributes = attributes;
             }
 
             var mat = new THREE.ShaderMaterial(parameters);
-            var wireframe = new THREE.Mesh(geom, mat);
-            scene.addOverlayLayer(meshFile, "wireframe", wireframe, parameters);
+            var wireframe = new THREE.Mesh(geom, mat);            
+            scene.addOverlayLayer(meshFile, "wireframe", wireframe, parameters);            
 
         } else {
             scene.removeOverlayLayer(meshFile, "wireframe");
         }
-
     };
 
     plugin.Manager.install(plug);
