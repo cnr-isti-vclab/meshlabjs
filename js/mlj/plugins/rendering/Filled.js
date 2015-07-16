@@ -162,7 +162,7 @@
 
     };
 
-    plug._update = function (meshFile) {        
+    plug._updateOnChangeMesh = function (meshFile) {        
         specularColor.setColor(meshFile.material.parameters.specular.getHexString());
         emissiveColor.setColor(meshFile.material.parameters.emissive.getHexString());
         shininessWidget.setValue(meshFile.material.parameters.shininess);

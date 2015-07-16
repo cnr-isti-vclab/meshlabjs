@@ -98,7 +98,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
         });
 
         $(document).on("SceneLayerAdded",
-                function (event, meshFile, layersNumber) {                                        
+                function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
                     if (btn.isOn() === parameters.on) {
                         _this._applyTo(meshFile, btn.isOn(), true);
@@ -107,16 +107,16 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     } else {
                         btn.toggle("off");
                     }
-                    
+
                 });
-                
+
         $(document).on("SceneLayerUpdated",
-            function (event, meshFile) {
-                if (btn.isOn()) {
-                    _this._applyTo(meshFile, false);
-                    _this._applyTo(meshFile, true);            
-                }
-        });
+                function (event, meshFile) {
+                    if (btn.isOn()) {
+                        _this._applyTo(meshFile, false);
+                        _this._applyTo(meshFile, true);
+                    }
+                });
 
     } else {
         btn.onClick(function () {
@@ -135,9 +135,9 @@ MLJ.core.plugin.Rendering = function (parameters) {
                     _this._applyTo(meshFile, true, true);
                     update();
                 });
-                       
-    }        
-    
+
+    }
+
     $(document).on("SceneLayerSelected", function (event, meshFile) {
         update();
 
@@ -159,15 +159,15 @@ MLJ.core.plugin.Rendering = function (parameters) {
             }
         });
     });
-    
+
     function update() {
-         var selected = MLJ.core.Scene.getSelectedLayer();
-         _this._update(selected);
+        var selected = MLJ.core.Scene.getSelectedLayer();
+        _this._updateOnChangeMesh(selected);
     }
-    
-    this._update = function (meshFile) {
+
+    this._updateOnChangeMesh = function (meshFile) {
     };
-    
+
     this._main = function () {
         _this._init(guiBuilder);
         renderingPane.append(pane.$);

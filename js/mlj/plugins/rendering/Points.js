@@ -90,7 +90,7 @@
 //        });
     };
 
-    plug._update = function (meshFile) {
+    plug._updateOnChangeMesh = function (meshFile) {
         var points = meshFile.overlays.getByKey("points");
         var size, color;
         if (points === undefined) {
@@ -129,7 +129,7 @@
                 parameters = {
                     fragmentShader: POINTS.fragmentShader,
                     vertexShader: POINTS.vertexShader,
-                    uniforms: uniforms,
+                    uniforms: uniforms
 //                    attributes: attributes,
 //                lights: true, // set this flag and you have access to scene lights
 //                    transparent: true,

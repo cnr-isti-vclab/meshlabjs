@@ -95,7 +95,7 @@
 //        });
     };
 
-    plug._update = function (meshFile) {
+    plug._updateOnChangeMesh = function (meshFile) {
         var wireframe = meshFile.overlays.getByKey("wireframe");
         var thickness, color;
         if (wireframe === undefined) {
@@ -147,8 +147,9 @@
                 parameters.attributes = attributes;
             }
 
-            var mat = new THREE.ShaderMaterial(parameters);
-            var wireframe = new THREE.Mesh(geom, mat);            
+            var mat = new THREE.ShaderMaterial(parameters);            
+            var wireframe = new THREE.Mesh(geom, mat);                        
+            
             scene.addOverlayLayer(meshFile, "wireframe", wireframe, parameters);            
 
         } else {

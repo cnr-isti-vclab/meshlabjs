@@ -8,7 +8,7 @@
     var plug = new plugin.Rendering({
         name: "ColorWheel",
         tooltip: "ColorWheel Tooltip",
-        icon: "img/icons/color.png",
+        icon: "img/icons/color.png"
     });
 
     var albedoColor;
@@ -27,7 +27,7 @@
 
     };
 
-    plug._update = function () {
+    plug._updateOnChangeMesh = function () {
         var meshFile = scene.getSelectedLayer();        
         albedoColor.setColor(meshFile.material.parameters.color.getHexString());
     };
