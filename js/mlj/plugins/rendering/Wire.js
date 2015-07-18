@@ -72,41 +72,40 @@
 
     plug._applyTo = function (meshFile, on) {
 
-        if (on) {
-            var geom = meshFile.getThreeMesh().geometry.clone();
-
-            //setup attributes
-            var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
-            var attrVal = attributes.center.value;
-
-            for (var f = 0; f < geom.faces.length; f++) {
-                attrVal[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
-            }
-
-            var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
-            var params = meshFile.overlaysParams.getByKey(plug.getName());
-
-            uniforms.color.value = params.color;
-            uniforms.thickness.value = params.thickness;
-
-            var parameters = {
-                fragmentShader: WIREFRAME.fragmentShader,
-                vertexShader: WIREFRAME.vertexShader,
-                uniforms: uniforms,
-                attributes: attributes,
-                shading: THREE.FlatShading,
-                transparent: true,
-                side: THREE.DoubleSide
-            };
-
-            var mat = new THREE.ShaderMaterial(parameters);
-            var wireframe = new THREE.Mesh(geom, mat);
-
-            scene.addOverlayLayer(meshFile, plug.getName(), wireframe);
-
-        } else {
+        if (on == false) {
             scene.removeOverlayLayer(meshFile, plug.getName());
+            return;
         }
+        var geom = meshFile.getThreeMesh().geometry.clone();
+
+        //setup attributes
+        var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
+        var attrVal = attributes.center.value;
+
+        for (var f = 0; f < geom.faces.length; f++) {
+            attrVal[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+        }
+
+        var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
+        var params = meshFile.overlaysParams.getByKey(plug.getName());
+
+        uniforms.color.value = params.color;
+        uniforms.thickness.value = params.thickness;
+
+        var parameters = {
+            fragmentShader: WIREFRAME.fragmentShader,
+            vertexShader: WIREFRAME.vertexShader,
+            uniforms: uniforms,
+            attributes: attributes,
+            shading: THREE.FlatShading,
+            transparent: true,
+            side: THREE.DoubleSide
+        };
+
+        var mat = new THREE.ShaderMaterial(parameters);
+        var wireframe = new THREE.Mesh(geom, mat);
+
+        scene.addOverlayLayer(meshFile, plug.getName(), wireframe);
     };
 
     plugin.Manager.install(plug);
