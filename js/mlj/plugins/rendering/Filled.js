@@ -4,62 +4,113 @@
     var DEFAULTS = {
         specular: new THREE.Color('#505050'),
         emissive: new THREE.Color('#404040'),
-        shininess: 15,
-        shading: THREE.FlatShading,
-        lighting: true,
-        updateGeometry: false
+        shininess: 15.0,
+        lights: true,
+        shading: THREE.FlatShading
     };
 
-    var PhongMaterial = function (parameters) {
+    var PHONG = {
+        uniforms: THREE.UniformsUtils.merge([
+            THREE.UniformsLib[ "common" ],
+            THREE.UniformsLib[ "bump" ],
+            THREE.UniformsLib[ "normalmap" ],
+            THREE.UniformsLib[ "fog" ],
+            THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "shadowmap" ],
+            {
+                "emissive": {type: "c", value: DEFAULTS.emissive},
+                "specular": {type: "c", value: DEFAULTS.specular},
+                "shininess": {type: "f", value: DEFAULTS.shininess},
+                "lights": {type: "i", value: DEFAULTS.lights},
+                "wrapRGB": {type: "v3", value: new THREE.Vector3(1, 1, 1)},                
+            }
 
-        /**     
-         * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
-         * @author Stefano Gabriele
-         */
-        this._build = function () {
-            this.threeMaterial = new THREE.MeshPhongMaterial(this.parameters);
-        };
+        ]),
+        vertexShader: [
+            "#define PHONG",
+            "varying vec3 vViewPosition;",
+            "uniform int shading;",
+            "#ifndef FLAT_SHADED",            
+            "	varying vec3 vNormal;",
+            "#endif",
+            THREE.ShaderChunk[ "common" ],
+            THREE.ShaderChunk[ "map_pars_vertex" ],
+            THREE.ShaderChunk[ "lightmap_pars_vertex" ],
+            THREE.ShaderChunk[ "envmap_pars_vertex" ],
+            THREE.ShaderChunk[ "lights_phong_pars_vertex" ],
+            THREE.ShaderChunk[ "color_pars_vertex" ],
+            THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+            THREE.ShaderChunk[ "skinning_pars_vertex" ],
+            THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+            THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+            "void main() {",
+            THREE.ShaderChunk[ "map_vertex" ],
+            THREE.ShaderChunk[ "lightmap_vertex" ],
+            THREE.ShaderChunk[ "color_vertex" ],
+            THREE.ShaderChunk[ "morphnormal_vertex" ],
+            THREE.ShaderChunk[ "skinbase_vertex" ],
+            THREE.ShaderChunk[ "skinnormal_vertex" ],
+            THREE.ShaderChunk[ "defaultnormal_vertex" ],
+            "#ifndef FLAT_SHADED", // Normal computed with derivatives when FLAT_SHADED
+            "	vNormal = normalize( transformedNormal );",
+            "#endif",
+            THREE.ShaderChunk[ "morphtarget_vertex" ],
+            THREE.ShaderChunk[ "skinning_vertex" ],
+            THREE.ShaderChunk[ "default_vertex" ],
+            THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+            "	vViewPosition = -mvPosition.xyz;",
+            THREE.ShaderChunk[ "worldpos_vertex" ],
+            THREE.ShaderChunk[ "envmap_vertex" ],
+            THREE.ShaderChunk[ "lights_phong_vertex" ],
+            THREE.ShaderChunk[ "shadowmap_vertex" ],
+            "}"
 
-        /**
-         * Sets the Emissive (light) color of the material, essentially a solid color unaffected by other lighting
-         * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
-         * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-         * @author Stefano Gabriele     
-         */
-        this.setEmissive = function (value) {
-            this.parameters.emissive = this.threeMaterial.emissive = new THREE.Color(value);
-            MLJ.core.Scene.render();
-        };
+        ].join("\n"),
+        fragmentShader: [
+            "#define PHONG",
+            "uniform vec3 diffuse;",
+            "uniform vec3 emissive;",
+            "uniform vec3 specular;",
+            "uniform float shininess;",
+            "uniform float opacity;",
+            "uniform int lights;",           
+            THREE.ShaderChunk[ "common" ],
+            THREE.ShaderChunk[ "color_pars_fragment" ],
+            THREE.ShaderChunk[ "map_pars_fragment" ],
+            THREE.ShaderChunk[ "alphamap_pars_fragment" ],
+            THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+            THREE.ShaderChunk[ "envmap_pars_fragment" ],
+            THREE.ShaderChunk[ "fog_pars_fragment" ],
+            THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+            THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+            THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
+            THREE.ShaderChunk[ "normalmap_pars_fragment" ],
+            THREE.ShaderChunk[ "specularmap_pars_fragment" ],
+            THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
+            "void main() {",           
+            "	vec3 outgoingLight = vec3( 0.0 );", 
+            "	vec4 diffuseColor = vec4( diffuse, opacity );",
+            THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+            THREE.ShaderChunk[ "map_fragment" ],
+            THREE.ShaderChunk[ "color_fragment" ],
+            THREE.ShaderChunk[ "alphamap_fragment" ],
+            THREE.ShaderChunk[ "alphatest_fragment" ],
+            THREE.ShaderChunk[ "specularmap_fragment" ],            
+            THREE.ShaderChunk[ "lights_phong_fragment" ],            
+            THREE.ShaderChunk[ "lightmap_fragment" ],
+            THREE.ShaderChunk[ "envmap_fragment" ],
+            THREE.ShaderChunk[ "shadowmap_fragment" ],
+            THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+            THREE.ShaderChunk[ "fog_fragment" ],            
+            " if(lights == 0) ",
+            "   gl_FragColor = diffuseColor;",
+            " else",
+            "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+            "}"
 
-        /**
-         * Sets the headlight color
-         * @param {Object} color Can be a hexadecimal or a CSS-style string for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-         * @author Stefano Gabriele     
-         */
-        this.setSpecular = function (value) {
-            this.parameters.specular = this.threeMaterial.specular = new THREE.Color(value);
-            MLJ.core.Scene.render();
-        };
+        ].join("\n")
 
-        /**
-         * Sets the specular color of the material, i.e., how shiny the material is 
-         * and the color of its shine. Setting this the same color as the diffuse 
-         * value (times some intensity) makes the material more metallic-looking; 
-         * setting this to some gray makes the material look more plastic
-         * @param {Object} color Can be a hexadecimal or a CSS-style string 
-         * for example, "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-         * @author Stefano Gabriele     
-         */
-        this.setShininess = function (value) {
-            this.parameters.shininess = this.threeMaterial.shininess = value;
-            MLJ.core.Scene.render();
-        };
-
-        MLJ.core.Material.call(this, parameters);
     };
-
-    MLJ.extend(MLJ.core.Material, PhongMaterial);
-
 
     var plug = new plugin.Rendering({
         name: "Filled",
@@ -67,7 +118,7 @@
         icon: "img/icons/flat.png",
         toggle: true,
         on: true
-    });
+    }, DEFAULTS);
 
     var lightingWidget, shadingWidget, shininessWidget,
             specularColor, emissiveColor;
@@ -76,27 +127,22 @@
             label: "Specular",
             tooltip: "Specular color of the material, i.e. how shiny the material is and the color of its shine. Setting this the same color as the diffuse value (times some intensity) makes the material more metallic-looking; setting this to some gray makes the material look more plastic",
             color: "#" + DEFAULTS.specular.getHexString(),
-            onChange: function (hex) {
-                var meshFile = scene.getSelectedLayer();
-                meshFile.material.setSpecular('#' + hex);
-            }
+            bindTo: "specular"
         });
 
         emissiveColor = guiBuilder.Color({
             label: "Emissive",
             tooltip: "Emissive (light) color of the material, essentially a solid color unaffected by other lighting",
             color: "#" + DEFAULTS.emissive.getHexString(),
-            onChange: function (hex) {
-                var meshFile = scene.getSelectedLayer();
-                meshFile.material.setEmissive('#' + hex);
-            }
+            bindTo: "emissive"
         });
 
         shininessWidget = guiBuilder.Integer({
             label: "Shininess",
             tooltip: "How shiny the specular highlight is. A higher value gives a sharper highlight",
             min: 0, max: 100, step: 1,
-            defval: DEFAULTS.shininess
+            defval: DEFAULTS.shininess,
+            bindTo: "shininess"
         });
 
         shadingWidget = guiBuilder.Choice({
@@ -105,7 +151,8 @@
             options: [
                 {content: "Flat", value: THREE.FlatShading, selected: true},
                 {content: "Smooth", value: THREE.SmoothShading}
-            ]
+            ],
+            bindTo: "shading"
         });
 
         lightingWidget = guiBuilder.Choice({
@@ -114,98 +161,73 @@
             options: [
                 {content: "on", value: true, selected: true},
                 {content: "off", value: false}
-            ]
+            ],
+            bindTo: "lights"
         });
 
-        shininessWidget.onChange(function (val) {
-            var meshFile = scene.getSelectedLayer();
-            meshFile.material.setShininess(val);
-        });
+//        shininessWidget.onChange(function (val) {
+////            var meshFile = scene.getSelectedLayer();
+////            meshFile.material.setShininess(val);
+//        });
 
-        shadingWidget.onChange(function (shading) {
-            var meshFile = scene.getSelectedLayer();
-
-            //Set material shading parameter
-            meshFile.material.parameters.shading = shading;
-
-            //The mesh file is no rendered
-            if (!meshFile.isRendered()) {
-                return;
-            }
-
-            if (meshFile.material.parameters.lighting !== true) {
-                meshFile.material.parameters.updateGeometry = true;
-                return;
-            }
-
-            var material = new PhongMaterial(meshFile.material.parameters);
-            //Update material and geometry
-            meshFile.updateMaterial(material, true);
-        });
+//        shadingWidget.onChange(function (shading) {
+////            var meshFile = scene.getSelectedLayer();
+////
+////            //Set material shading parameter
+////            meshFile.material.parameters.shading = shading;
+////
+////            //The mesh file is no rendered
+////            if (!meshFile.isRendered()) {
+////                return;
+////            }
+////
+////            if (meshFile.material.parameters.lighting !== true) {
+////                meshFile.material.parameters.updateGeometry = true;
+////                return;
+////            }
+////
+////            var material = new PhongMaterial(meshFile.material.parameters);
+////            //Update material and geometry
+////            meshFile.updateMaterial(material, true);
+//        });
 
         lightingWidget.onChange(function (on) {
-            var meshFile = scene.getSelectedLayer();
-
-            //The mesh file is no rendered
-            if (!meshFile.isRendered()) {
-                return;
-            }
-
-            meshFile.material.parameters.lighting = on;
-            var material = on === true
-                    ? new PhongMaterial(meshFile.material.parameters)
-                    : new MLJ.core.BasicMaterial(meshFile.material.parameters);
-
-            meshFile.updateMaterial(material, meshFile.material.parameters.updateGeometry);
-            meshFile.material.parameters.updateGeometry = false;
+            var meshFile = scene.getSelectedLayer();            
+            plug._applyTo(meshFile,false);            
+            plug._applyTo(meshFile,true);
         });
-
     };
 
-    plug._updateOnChangeMesh = function (meshFile) {        
-        specularColor.setColor(meshFile.material.parameters.specular.getHexString());
-        emissiveColor.setColor(meshFile.material.parameters.emissive.getHexString());
-        shininessWidget.setValue(meshFile.material.parameters.shininess);
-        shadingWidget.selectByValue(meshFile.material.parameters.shading);
-        lightingWidget.selectByValue(meshFile.material.parameters.lighting);
-    };
+    plug._applyTo = function (meshFile, on) {
 
-    plug._applyTo = function (meshFile, on, defaults) {
+        if (on) {
+            var geom = meshFile.getThreeMesh().geometry.clone();                                   
+            
+            var uniforms = THREE.UniformsUtils.clone(PHONG.uniforms);
+            var params = meshFile.overlaysParams.getByKey(plug.getName());
+            
+            uniforms.emissive.value = params.emissive;
+            uniforms.specular.value = params.specular;
+            uniforms.lights.value = params.lights;            
 
-        if (!on) {
-            meshFile.setRenderingOn(false);
-            return;
-        }
-
-        var rend = MLJ.core.plugin.Manager.getRenderingPlugins();
-        var colorWheel = rend.getByKey("ColorWheel");    
-        var globalRender = rend.getByKey("Global");
-        var curSideValue = globalRender.getBackfaceCullingValue()?THREE.FrontSide:THREE.DoubleSide;
-        
-        if (defaults === true) {
-            params = jQuery.extend(true, {}, DEFAULTS);
-            params.color = colorWheel.getDefaults().color.clone();
-            params.side = curSideValue;
-        }
-        else {
-            params = {
-                color: new THREE.Color(colorWheel.getAlbedoColor()),
-                specular: new THREE.Color(specularColor.getColor()),
-                emissive: new THREE.Color(emissiveColor.getColor()),
-                shading: shadingWidget.getValue(),
-                shininess: shininessWidget.getValue(),
-                lighting: lightingWidget.getValue(),
+            var parameters = {
+                fragmentShader: PHONG.fragmentShader,
+                vertexShader: PHONG.vertexShader,
+                uniforms: uniforms,
+                shading: THREE.FlatShading,
+                lights: true,
                 side: THREE.DoubleSide
             };
+
+            var mat = new THREE.ShaderMaterial(parameters);
+            var filled = new THREE.Mesh(geom, mat);
+
+            scene.addOverlayLayer(meshFile, plug.getName(), filled);
+
+        } else {
+            scene.removeOverlayLayer(meshFile, plug.getName());
         }
 
-        var material = params.lighting === true
-                ? new PhongMaterial(params)
-                : new MLJ.core.BasicMaterial(params);
-                                                
-        meshFile.updateMaterial(material);
-
-        meshFile.setRenderingOn(true);
     };
 
     plugin.Manager.install(plug);

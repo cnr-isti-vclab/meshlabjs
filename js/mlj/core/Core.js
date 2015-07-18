@@ -52,36 +52,19 @@ var Module = {
     }
 };
 
-
-/**
- * MLJ.core namspace
- * @namespace MLJ.core
- * @memberOf MLJ
- * @author Stefano Gabriele
- */
 MLJ.core = {
-    /**
-     * Enum for defaults
-     * @readonly
-     * @enum {Object}
-     * @memberOf MLJ.core     
-     * @author Stefano Gabriele
-     */
-    defaults: {
-        /** AmbientLight defaults */
-        AmbientLight: {
-            color: "#ffffff",
-            on: false
-        },
-        /** Headlight defaults */
-        Headlight: {
-            color: "#ffffff",
-            on: true,
-            intensity: 0.5,
-            distance: 0
-        },
+    defaults: {},
+    setDefaults: function(name, parameters) {        
+        if(MLJ.core.defaults[name] !== undefined) {        
+            console.warn("The default properties of "+name+" was overridden.");
+        }    
+        MLJ.core.defaults[name] = parameters;        
+    },
+    getDefaults: function(name) {        
+        return MLJ.core.defaults[name];
     }
 };
+
 
 /**         
  * @class Creates a new Ambient light
@@ -93,10 +76,8 @@ MLJ.core = {
  */
 MLJ.core.AmbientLight = function (scene, camera, renderer) {
 
-    var _on = MLJ.core.defaults.AmbientLight.on;
-
-    var _light = new THREE.AmbientLight(
-            MLJ.core.defaults.AmbientLight.color);
+    var _on = false;
+    var _light = new THREE.AmbientLight("#ffffff");
     
     /**
      * Sets the ambient light color
@@ -151,12 +132,8 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  * @author Stefano Gabriele 
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
-    var _on = MLJ.core.defaults.Headlight.on;
-
-    var _light = new THREE.PointLight(
-            MLJ.core.defaults.Headlight.color,
-            MLJ.core.defaults.Headlight.intensity,
-            MLJ.core.defaults.Headlight.distance);
+    var _on = true;
+    var _light = new THREE.PointLight("#ffffff",0.5,0);
     
     /**
      * Sets the intensity of the headlight
@@ -199,92 +176,77 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
 
 };
 
-MLJ.core.Material = function (parameters) {
-    
-    /**     
-    * Contains this material paramters
-    * @type Object
-    * @author Stefano Gabriele
-    */
-    this.parameters = parameters === undefined 
-        ? this.parameters = {color: new THREE.Color("#474747")} : parameters;
-    
-    var _this = this;
-    
-    /**     
-     * Contains this THREE.Material.
-     * @type THREE.MeshPhongMaterial
-     * @author Stefano Gabriele
-     */      
-    this.threeMaterial = null;
-      
-    /**
-    * Sets the diffuse color of the material
-    * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
-    * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-    * @author Stefano Gabriele     
-    */
-    this.setColor = function (value) {        
-        this.parameters.color = this.threeMaterial.color = new THREE.Color(value);        
-        MLJ.core.Scene.render();
-    };
-    
-    /**
-     * Indicates that this material need update
-     * @author Stefano Gabriele     
-     */
-    this.needUpdate = function () {
-        _this.threeMaterial.needUpdate = true;
-    };
-    
-    /**
-     * Removes the object from memory
-     * @author Stefano Gabriele     
-     */
-    this.dispose = function () {
-        _this.threeMaterial.dispose();
-        _this.threeMaterial = _this.parameters = _this = null;        
-    };
-    
-    this.build = function() {          
-        _this._build();
-    };
-        
-    //Init
-    this.build();
-};
-
-MLJ.core.Material.prototype = {
-    _build: function () {
-    }
-};
-
-MLJ.core.BasicMaterial = function (parameters) {               
-    
-    /**     
-     * Build a new THREE.MeshBasicMaterial initialized with <code>this.parameters</code>
-     * @author Stefano Gabriele
-     */
-    this._build = function () {
-        this.threeMaterial = new THREE.MeshBasicMaterial(this.parameters);        
-    };
-            
-    MLJ.core.Material.call(this, parameters);
-};
-
-MLJ.extend(MLJ.core.Material, MLJ.core.BasicMaterial);
-
-MLJ.core.ShaderMaterial = function (parameters) {    
-           
-    /**     
-     * Build a new THREE.MeshPhongMaterial initialized with <code>this.parameters</code>
-     * @author Stefano Gabriele
-     */
-    this._build = function () {
-        this.threeMaterial = new THREE.MeshPhongMaterial(this.parameters);        
-    };
-       
-    MLJ.core.Material.call(this, parameters);
-};
-
-MLJ.extend(MLJ.core.Material, MLJ.core.ShaderMaterial);
+//MLJ.core.Material = function (parameters) {
+//    
+//    /**     
+//    * Contains this material paramters
+//    * @type Object
+//    * @author Stefano Gabriele
+//    */
+//    this.parameters = parameters === undefined 
+//        ? this.parameters = {color: new THREE.Color("#474747")} : parameters;
+//    
+//    var _this = this;
+//    
+//    /**     
+//     * Contains this THREE.Material.
+//     * @type THREE.MeshPhongMaterial
+//     * @author Stefano Gabriele
+//     */      
+//    this.threeMaterial = null;
+//      
+//    /**
+//    * Sets the diffuse color of the material
+//    * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
+//    * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
+//    * @author Stefano Gabriele     
+//    */
+//    this.setColor = function (value) {        
+//        this.parameters.color = this.threeMaterial.color = new THREE.Color(value);        
+//        MLJ.core.Scene.render();
+//    };
+//    
+//    /**
+//     * Indicates that this material need update
+//     * @author Stefano Gabriele     
+//     */
+//    this.needUpdate = function () {
+//        _this.threeMaterial.needUpdate = true;
+//    };
+//    
+//    /**
+//     * Removes the object from memory
+//     * @author Stefano Gabriele     
+//     */
+//    this.dispose = function () {
+//        _this.threeMaterial.dispose();
+//        _this.threeMaterial = _this.parameters = _this = null;        
+//    };
+//    
+//    this.build = function() {          
+//        _this._build();
+//    };
+//        
+//    //Init
+//    this.build();
+//};
+//
+//MLJ.core.Material.prototype = {
+//    _build: function () {
+//    }
+//};
+//
+//MLJ.core.BasicMaterial = function (parameters) {               
+//    
+//    /**     
+//     * Build a new THREE.MeshBasicMaterial initialized with <code>this.parameters</code>
+//     * @author Stefano Gabriele
+//     */
+//    this._build = function () {
+//        this.threeMaterial = new THREE.MeshBasicMaterial(this.parameters);        
+//    };
+//            
+//    MLJ.core.Material.call(this, parameters);
+//};
+//
+//MLJ.extend(MLJ.core.Material, MLJ.core.BasicMaterial);

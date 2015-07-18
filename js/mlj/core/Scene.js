@@ -103,7 +103,7 @@ MLJ.core.Scene = {};
         controls.keys = [65, 83, 68];
 
         //INIT LIGHTS 
-        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+//        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS
@@ -230,7 +230,7 @@ MLJ.core.Scene = {};
         var mesh = meshFile.getThreeMesh();
         var box = new THREE.Box3().setFromObject(mesh);
         mesh.position = box.center();
-        _scene.add(mesh);
+//        _scene.add(mesh);
 
         _selectedLayer = meshFile;
 
@@ -244,7 +244,7 @@ MLJ.core.Scene = {};
                 layer = layersIter.next();
                 overlaysIter = layer.overlays.iterator();
                 while(overlaysIter.hasNext()) {
-                    mesh = overlaysIter.next().mesh;                
+                    mesh = overlaysIter.next();                
 
                     mesh.position.set(
                         meshFile.threeMesh.position.x,
@@ -323,7 +323,7 @@ MLJ.core.Scene = {};
         var iter = layer.overlays.iterator();
         
         while(iter.hasNext()) {
-            iter.next().mesh.visible = visible;
+            iter.next().visible = visible;
         }
         
         MLJ.core.Scene.render();
@@ -339,7 +339,7 @@ MLJ.core.Scene = {};
         _addLayer(meshFile, false);
     };       
     
-    this.addOverlayLayer = function(mehFile, name, mesh, userData) {
+    this.addOverlayLayer = function(mehFile, name, mesh) {
         if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
@@ -355,7 +355,7 @@ MLJ.core.Scene = {};
             mehFile.threeMesh.scale.y,
             mehFile.threeMesh.scale.z);
         
-        mehFile.overlays.set(name,{mesh:mesh, userData: userData});
+        mehFile.overlays.set(name,mesh);
         
         _scene.add(mesh);
 
@@ -364,19 +364,23 @@ MLJ.core.Scene = {};
     };
     
     this.removeOverlayLayer = function(meshFile, name) {        
-        var overlay = meshFile.overlays.getByKey(name);
+        var mesh = meshFile.overlays.getByKey(name);
         
-        if(overlay !== undefined) {
-            var mesh = overlay.mesh;            
+        if(mesh !== undefined) {
+            mesh = meshFile.overlays.remove(name);            
             
-            _scene.remove(mesh);
+            _scene.remove(mesh);                        
+            
             mesh.geometry.dispose();
             mesh.material.dispose();
+            mesh.geometry = null;
+            mesh.material = null;            
 
             if (mesh.texture) {
-                mesh.texture.dispose();
+                mesh.texture.dispose();            
+                mesh.texture = null;
             }
-            _this.render();                    
+            _this.render();                              
         }
         
     };  
@@ -438,7 +442,7 @@ MLJ.core.Scene = {};
         if (meshFile !== undefined) {
             _layers.remove(name);
 
-            _scene.remove(meshFile.getThreeMesh());
+//            _scene.remove(meshFile.getThreeMesh());
             meshFile.dispose();
         }
     };

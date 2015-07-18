@@ -164,7 +164,7 @@ MLJ.gui.component.ColorPicker = function (flags) {
             default:
                 return _currentHexColor.indexOf('#') === -1
                         ? '#' + _currentHexColor
-                        : _currentHexColor;            
+                        : _currentHexColor;
         }
     };
 
@@ -296,8 +296,8 @@ MLJ.gui.component.ToggleButton = function (flags) {
         } else {
             _this.$.removeClass("mlj-toggle-on");
         }
-        
-        if(click === true) {            
+
+        if (click === true) {
             _this.$.click();
         }
     };
@@ -347,8 +347,8 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
-    this.toggle = function (param,click) {
-        _toggle.toggle(param,click);
+    this.toggle = function (param, click) {
+        _toggle.toggle(param, click);
     };
 
     this.isOn = function () {
@@ -408,7 +408,7 @@ MLJ.gui.component.CheckBox = function (checked) {
             checked = false;
         }
 
-        this.checked(checked);
+        this.setChecked(checked);
     };
 
     this.onChange = function (foo) {
@@ -417,13 +417,12 @@ MLJ.gui.component.CheckBox = function (checked) {
         });
     };
 
-    this.checked = function (boolean) {
-        //Get
-        if (boolean === undefined) {
-            return this.$.prop('checked');
-        }
 
-        //Set
+    this.isChecked = function () {
+        return this.$.prop('checked');
+    };
+
+    this.setChecked = function (boolean) {
         if (jQuery.type(boolean) !== "boolean") {
             boolean = false;
         }
@@ -793,15 +792,15 @@ MLJ.gui.component.RangedFloat = function (flags) {
     //local variable for the input parameters
     var inputparams;
     //create root
-    var _html = $('<div>').css({ position: "relative", float: "left", clear: "none", width: "100%" });
+    var _html = $('<div>').css({position: "relative", float: "left", clear: "none", width: "100%"});
     //create slider node
-    var _$slider = $('<div>').css({ width: "50%", position: "relative", left: "0px", top: "10px" });
+    var _$slider = $('<div>').css({width: "50%", position: "relative", left: "0px", top: "10px"});
     //create label of min max
-    var _pmin = $('<p>').css({ fontSize: '50%', position: "absolute", left: "0px" });
-    var _pmax = $('<p>').css({ fontSize: '50%', position: "absolute", left: "87px" });
+    var _pmin = $('<p>').css({fontSize: '50%', position: "absolute", left: "0px"});
+    var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "87px"});
     //edit text node
     var _$editText = $('<input>')
-        .css({ width: "30%", position: "relative", left: "110px", bottom: "8px" });
+            .css({width: "30%", position: "relative", left: "110px", bottom: "8px"});
     //init function
     this._make = function () {
         //extract parameters
@@ -810,9 +809,9 @@ MLJ.gui.component.RangedFloat = function (flags) {
         var defval = this.flag("defval");
         var stepval = this.flag("step");
         inputparams = {
-            minvalue:  (minval  !== undefined ? minval : 0), 
-            maxvalue:  (maxval  !== undefined ? maxval : 100),
-            defvalue:  (defval  !== undefined ? defval : 50),
+            minvalue: (minval !== undefined ? minval : 0),
+            maxvalue: (maxval !== undefined ? maxval : 100),
+            defvalue: (defval !== undefined ? defval : 50),
             stepvalue: (stepval !== undefined ? stepval : 0.01)
         };
         _pmin.html(inputparams.minvalue)
@@ -847,9 +846,9 @@ MLJ.gui.component.RangedFloat = function (flags) {
             var pattern = /^([-+]?\d+(\.\d+)?)/;
             //trunk in groups the string
             val = val.match(pattern);
-            val = (val ? val[0] : null )
+            val = (val ? val[0] : null)
             //take the larger part of the inserted value matching the pattern
-            if ( val == null || ! pattern.test(val) ) {
+            if (val == null || !pattern.test(val)) {
                 console.error('Invalid input, reset to default value');
                 val = inputparams.defvalue; //if not correct, assign the default value
             }

@@ -105,35 +105,89 @@ MLJ.core.plugin.Plugin.prototype = {
  * @author Stefano Gabriele 
  */
 MLJ.core.plugin.GUIBuilder = function (component) {
+    var _this = this;
+    var _onChange = function () {
+    };
+    this.params = new MLJ.util.AssociativeArray();
+
     this.Float = function (flags) {
         var float = new MLJ.gui.Param.Float(flags);
         component.appendContent(float._make());
+        _this.params.set(flags.bindTo, float);
+
+        float.onChange(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
         return float;
     };
     this.Integer = function (flags) {
         var integer = new MLJ.gui.Param.Integer(flags);
         component.appendContent(integer._make());
+        _this.params.set(flags.bindTo, integer);
+
+        integer.onChange(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
         return integer;
     };
     this.Bool = function (flags) {
         var bool = new MLJ.gui.Param.Bool(flags);
         component.appendContent(bool._make());
+        _this.params.set(flags.bindTo, bool);
+
+        bool.onChange(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
         return bool;
     };
     this.Choice = function (flags) {
         var choice = new MLJ.gui.Param.Choice(flags);
         component.appendContent(choice._make());
+        _this.params.set(flags.bindTo, choice);
+
+        choice.onChange(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
         return choice;
     };
     this.Color = function (flags) {
+        var onChangeFunc = flags.onChange;
+
+        flags.onChange = function (val) {
+            _onChange(flags.bindTo, new THREE.Color('#' + val));
+
+            if (jQuery.isFunction(onChangeFunc)) {
+                onChangeFunc();
+            }
+        };
+
         var color = new MLJ.gui.Param.Color(flags);
         component.appendContent(color._make());
+        _this.params.set(flags.bindTo, color);
+
         return color;
     };
     this.RangedFloat = function (flags) {
         var rangedfloat = new MLJ.gui.Param.RangedFloat(flags);
         component.appendContent(rangedfloat._make());
+        _this.params.set(flags.bindTo, rangedfloat);
+
+//  TODO add onChange(){..............}
+//        
+//        rangedfloat.onChange(function() {
+//            _onChange();
+//        });
+
+
         return rangedfloat;
+    };
+
+    this.setOnParamChange = function (foo) {
+        _onChange = foo;
     };
 };
 

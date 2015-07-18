@@ -8,8 +8,8 @@
     var plug = new plugin.Rendering({
         name: "ColorWheel",
         tooltip: "ColorWheel Tooltip",
-        icon: "img/icons/color.png"
-    });
+        icon: "img/icons/color.png"        
+    }, DEFAULTS);
 
     var albedoColor;
 
@@ -19,33 +19,17 @@
             label: "Albedo color",
             tooltip: "Diffuse color of the material",
             color: "#"+DEFAULTS.color.getHexString(),
-            onChange: function (hex) {
-                var meshFile = scene.getSelectedLayer();
-                meshFile.material.setColor('#' + hex);
-            }
+            bindTo: "color"
         });
 
     };
 
-    plug._updateOnChangeMesh = function () {
-        var meshFile = scene.getSelectedLayer();        
-        albedoColor.setColor(meshFile.material.parameters.color.getHexString());
-    };
-
-    plug._applyTo = function (meshFile, on, defaults) {
-        if (defaults === true) {
-            meshFile.material.setColor(DEFAULTS.color.clone());
-        } else {
-            meshFile.material.setColor(albedoColor.getColor());
-        }
-    };
-
-    plug.getAlbedoColor = function (type) {
-        return albedoColor.getColor(type);
-    };
-    
-    plug.getDefaults = function() {
-        return DEFAULTS;
+    plug._applyTo = function (meshFile, on) {
+//        if (defaults === true) {
+//            meshFile.material.setColor(DEFAULTS.color.clone());
+//        } else {
+//            meshFile.material.setColor(albedoColor.getColor());
+//        }
     };
 
     plugin.Manager.install(plug);

@@ -26,9 +26,10 @@
  * @author Stefano Gabriele
  */
 
-MLJ.core.plugin.Rendering = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.parameters);
+MLJ.core.plugin.Rendering = function (parameters, defaults) {
+    MLJ.core.plugin.Plugin.call(this, parameters.name);
     var _this = this;
+    MLJ.core.setDefaults(_this.getName(), defaults);    
 
     var pane = new MLJ.gui.component.Pane();
     var UID = MLJ.gui.generateUID();
@@ -101,7 +102,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
                 function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
                     if (btn.isOn() === parameters.on) {
-                        _this._applyTo(meshFile, btn.isOn(), true);
+                        _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
                         update();
                     } else {
@@ -132,7 +133,7 @@ MLJ.core.plugin.Rendering = function (parameters) {
 
         $(document).on("SceneLayerAdded",
                 function (event, meshFile, layersNumber) {
-                    _this._applyTo(meshFile, true, true);
+                    _this._applyTo(meshFile, true);
                     update();
                 });
 
@@ -162,11 +163,26 @@ MLJ.core.plugin.Rendering = function (parameters) {
 
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
-        _this._updateOnChangeMesh(selected);
+        var params = selected.overlaysParams.getByKey(_this.getName());       
+        for (var key in params) {                       
+            guiBuilder.params.getByKey(key)._changeValue(params[key]);
+        }
     }
 
-    this._updateOnChangeMesh = function (meshFile) {
-    };
+    guiBuilder.setOnParamChange(function (paramProp, value) {        
+        var meshFile = MLJ.core.Scene.getSelectedLayer();        
+        var params = meshFile.overlaysParams.getByKey(_this.getName());
+        params[paramProp] = value;
+        var overlay = meshFile.overlays.getByKey(_this.getName());        
+        if(overlay.material instanceof THREE.ShaderMaterial) {
+            //is a uniform ?
+            if(overlay.material.uniforms[paramProp] !== undefined) {
+                overlay.material.uniforms[paramProp].value = value;
+                MLJ.core.Scene.render();                
+            }            
+        }
+    });        
+
 
     this._main = function () {
         _this._init(guiBuilder);
