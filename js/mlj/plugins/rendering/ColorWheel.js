@@ -29,7 +29,8 @@
             options: [
                 {content: "albedo", value: "0", selected: true},
                 {content: "mesh id", value: "1"},
-            ]
+            ],
+            bindTo: "meshColorMapping"
         });
         
 
