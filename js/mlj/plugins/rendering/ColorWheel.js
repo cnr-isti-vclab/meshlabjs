@@ -2,7 +2,8 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        color: new THREE.Color('#A0A0A0')
+        color: new THREE.Color('#A0A0A0'),
+        meshColorMapping: 0
     };
 
     var plug = new plugin.Rendering({
@@ -12,6 +13,7 @@
     }, DEFAULTS);
 
     var albedoColor;
+    var meshColorWidget;
 
     plug._init = function (guiBuilder) {
 
@@ -21,6 +23,15 @@
             color: "#"+DEFAULTS.color.getHexString(),
             bindTo: "color"
         });
+        meshColorWidget = guiBuilder.Choice({
+            label: "Mesh Color",
+            tooltip: "Choose one of the possible ways of choosing the color of the mesh",
+            options: [
+                {content: "albedo", value: "0", selected: true},
+                {content: "mesh id", value: "1"},
+            ]
+        });
+        
 
     };
 
