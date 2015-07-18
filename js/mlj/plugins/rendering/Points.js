@@ -67,27 +67,27 @@
 
     plug._applyTo = function (meshFile, on) {
 
-        if (on) {
-            var geom = meshFile.getThreeMesh().geometry.clone();
-            var uniforms = THREE.UniformsUtils.clone(POINTS.uniforms);
-            var params = meshFile.overlaysParams.getByKey(plug.getName());
-
-            uniforms.color.value = params.color;
-            uniforms.size.value = params.size;                        
-            
-            var parameters = {
-                fragmentShader: POINTS.fragmentShader,
-                vertexShader: POINTS.vertexShader,
-                uniforms: uniforms
-            };
-
-            var mat = new THREE.ShaderMaterial(parameters);
-            var points = new THREE.PointCloud(geom, mat);
-            scene.addOverlayLayer(meshFile, plug.getName(), points);
-
-        } else {
+        if (on == false) {
             scene.removeOverlayLayer(meshFile, plug.getName());
+            return;
         }
+        var geom = meshFile.getThreeMesh().geometry.clone();
+        var uniforms = THREE.UniformsUtils.clone(POINTS.uniforms);
+        var params = meshFile.overlaysParams.getByKey(plug.getName());
+
+        uniforms.color.value = params.color;
+        uniforms.size.value = params.size;
+
+        var parameters = {
+            fragmentShader: POINTS.fragmentShader,
+            vertexShader: POINTS.vertexShader,
+            uniforms: uniforms
+        };
+
+        var mat = new THREE.ShaderMaterial(parameters);
+        var points = new THREE.PointCloud(geom, mat);
+        scene.addOverlayLayer(meshFile, plug.getName(), points);
+
 
     };
 
