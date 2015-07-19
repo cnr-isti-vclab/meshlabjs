@@ -179,7 +179,22 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         var meshFile = MLJ.core.Scene.getSelectedLayer();
         var params = meshFile.overlaysParams.getByKey(_this.getName());
         params[paramProp] = value;
-       
+        
+        if (parameters.global === true) {
+            var iter = meshFile.overlays.iterator();
+            var overlay;
+            //Update the global paramter for all overlay layers
+            while (iter.hasNext()) {
+                overlay = iter.next();
+                //check if overlay has this uniform defined
+                if (overlay.material.uniforms[paramProp] !== undefined) {
+                    overlay.material.uniforms[paramProp].value = value;
+                }
+            }
+
+            MLJ.core.Scene.render();
+            return;
+        }
 
         var overlay = meshFile.overlays.getByKey(_this.getName());
         //is a uniform ?
