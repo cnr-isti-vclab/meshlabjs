@@ -34,6 +34,20 @@
  */
 MLJ.util = {};
 
+MLJ.util.loadFile = function (path, callback) {
+    if (!jQuery.isFunction(callback)) {
+        console.warn("The callback paramter must be a funciton.")
+    }
+    $.get(path, function (response, status, xhr) {
+        if (status === "error") {
+            var msg = "An error occurred. Status code: ";
+            console.warn(msg + xhr.status + ". Status text: " + xhr.statusText);
+            return;
+        }        
+        callback(response);        
+    });
+};
+
 /**
  * Returns an array without duplicates
  * @param {type} array The array to be cleaned
