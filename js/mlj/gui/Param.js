@@ -239,6 +239,7 @@ MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Color);
 MLJ.gui.Param.RangedFloat = function (flags) {
     this.rangedfloat = new MLJ.gui.component.RangedFloat(flags);
     this.label = new MLJ.gui.component.Label(flags);
+    var _this = this;
 
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.rangedfloat);
@@ -250,6 +251,12 @@ MLJ.gui.Param.RangedFloat = function (flags) {
 
     this.setValue = function (value) {
         this.rangedfloat.setValue(value);
+    };
+
+    this.onChange = function(foo) {
+        this.rangedfloat.onChange(function() {
+            foo(_this.getValue());
+        });
     };
 
     this._changeValue = function (value) {

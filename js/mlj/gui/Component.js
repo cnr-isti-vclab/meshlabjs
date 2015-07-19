@@ -878,6 +878,12 @@ MLJ.gui.component.RangedFloat = function (flags) {
         _$slider.slider('value', value);
     };
 
+    this.onChange = function (foo) {
+        this.$.change(function (event) {
+            foo(event);
+        });
+    };
+
     MLJ.gui.component.Component.call(this, _html, flags);
 };
 
