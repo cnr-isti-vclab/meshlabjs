@@ -36,16 +36,49 @@ MLJ.util = {};
 
 MLJ.util.loadFile = function (path, callback) {
     if (!jQuery.isFunction(callback)) {
-        console.warn("The callback paramter must be a funciton.")
+        console.warn("The callback paramter must be a funciton.");
     }
-    $.get(path, function (response, status, xhr) {
-        if (status === "error") {
-            var msg = "An error occurred. Status code: ";
-            console.warn(msg + xhr.status + ". Status text: " + xhr.statusText);
-            return;
-        }        
-        callback(response);        
-    });
+
+    var tmpArray = [];
+    if (jQuery.isArray(path)) {
+        tmpArray = path;        
+    } else {
+        tmpArray.push(path);
+    }
+    
+    var results = new MLJ.util.AssociativeArray();    
+    function _load(path, _callback) {
+        
+        var fileName = path.substring(path.lastIndexOf('/')+1);                    
+        
+        $.ajax({
+            url: path,
+            error: function (xhr, textStatus, errorThrown) {
+                var msg = "An error occurred. Status code: ";
+                console.warn(msg + xhr.status + ". Status text: " + textStatus);
+                results.set(fileName,"");
+            },
+            success: function (data) {
+                results.set(fileName,data);
+                _callback(data);
+            }
+        });
+    }
+    
+    var i = 0;
+    function _loadNextFile() {
+        _load(tmpArray[i], function () {
+            i++;
+            if (i === tmpArray.length) {
+                callback(results);
+                return;
+            } else {
+                _loadNextFile();
+            }            
+        });
+    }
+    
+    _loadNextFile();
 };
 
 /**
