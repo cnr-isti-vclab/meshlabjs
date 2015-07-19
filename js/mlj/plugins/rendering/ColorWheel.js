@@ -2,14 +2,15 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        color: new THREE.Color('#A0A0A0'),
+        diffuse: new THREE.Color('#A0A0A0'),
         meshColorMapping: 0
     };
 
     var plug = new plugin.Rendering({
         name: "ColorWheel",
         tooltip: "ColorWheel Tooltip",
-        icon: "img/icons/color.png"        
+        icon: "img/icons/color.png",
+        global: true
     }, DEFAULTS);
 
     var albedoColor;
@@ -20,15 +21,15 @@
         albedoColor = guiBuilder.Color({
             label: "Albedo color",
             tooltip: "Diffuse color of the material",
-            color: "#"+DEFAULTS.color.getHexString(),
-            bindTo: "color"
+            color: "#"+DEFAULTS.diffuse.getHexString(),
+            bindTo: "diffuse"
         });
         meshColorWidget = guiBuilder.Choice({
             label: "Mesh Color",
             tooltip: "Choose one of the possible ways of choosing the color of the mesh",
             options: [
                 {content: "albedo", value: "0", selected: true},
-                {content: "mesh id", value: "1"},
+                {content: "mesh id", value: "1"}
             ],
             bindTo: "meshColorMapping"
         });
