@@ -26,13 +26,20 @@
  * @author Stefano Gabriele
  */
 
-MLJ.core.plugin.Rendering = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.parameters);
-    var _this = this;
+MLJ.core.plugin.Rendering = function (parameters, defaults) {
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
+    
+    //if is defined parameters.loadShader, this.shaders is an associative array
+    //mapping the shader name with its code
+    this.shaders = null;
+    
+    var _this = this;    
+    MLJ.core.setDefaults(_this.getName(), defaults);
 
     var pane = new MLJ.gui.component.Pane();
     var UID = MLJ.gui.generateUID();
     pane.$.css("position", "absolute").attr("id", UID);
+    pane.$.hide();
 
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
     var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
@@ -98,25 +105,25 @@ MLJ.core.plugin.Rendering = function (parameters) {
         });
 
         $(document).on("SceneLayerAdded",
-                function (event, meshFile, layersNumber) {                                        
+                function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
                     if (btn.isOn() === parameters.on) {
-                        _this._applyTo(meshFile, btn.isOn(), true);
+                        _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
                         update();
                     } else {
                         btn.toggle("off");
                     }
-                    
+
                 });
-                
+
         $(document).on("SceneLayerUpdated",
-            function (event, meshFile) {
-                if (btn.isOn()) {
-                    _this._applyTo(meshFile, false);
-                    _this._applyTo(meshFile, true);            
-                }
-        });
+                function (event, meshFile) {
+                    if (btn.isOn()) {
+                        _this._applyTo(meshFile, false);
+                        _this._applyTo(meshFile, true);
+                    }
+                });
 
     } else {
         btn.onClick(function () {
@@ -132,12 +139,12 @@ MLJ.core.plugin.Rendering = function (parameters) {
 
         $(document).on("SceneLayerAdded",
                 function (event, meshFile, layersNumber) {
-                    _this._applyTo(meshFile, true, true);
+                    _this._applyTo(meshFile, true);
                     update();
                 });
-                       
-    }        
-    
+
+    }
+
     $(document).on("SceneLayerSelected", function (event, meshFile) {
         update();
 
@@ -159,16 +166,67 @@ MLJ.core.plugin.Rendering = function (parameters) {
             }
         });
     });
-    
+
     function update() {
-         var selected = MLJ.core.Scene.getSelectedLayer();
-         _this._update(selected);
+        var selected = MLJ.core.Scene.getSelectedLayer();
+        var params = selected.overlaysParams.getByKey(_this.getName());
+        for (var key in params) {
+            guiBuilder.params.getByKey(key)._changeValue(params[key]);
+        }
     }
-    
-    this._update = function (meshFile) {
-    };
-    
-    this._main = function () {
+
+    guiBuilder.setOnParamChange(function (paramProp, value) {
+        var meshFile = MLJ.core.Scene.getSelectedLayer();
+        var params = meshFile.overlaysParams.getByKey(_this.getName());
+        params[paramProp] = value;
+        
+        if (parameters.global === true) {
+            var iter = meshFile.overlays.iterator();
+            var overlay;
+            //Update the global paramter for all overlay layers
+            while (iter.hasNext()) {
+                overlay = iter.next();
+                //check if overlay has this uniform defined
+                if (overlay.material.uniforms[paramProp] !== undefined) {
+                    overlay.material.uniforms[paramProp].value = value;
+                }
+            }
+
+            MLJ.core.Scene.render();
+            return;
+        }
+
+        var overlay = meshFile.overlays.getByKey(_this.getName());
+        //is a uniform ?
+        if (overlay.material.uniforms[paramProp] !== undefined) {
+            overlay.material.uniforms[paramProp].value = value;
+            MLJ.core.Scene.render();
+        }
+
+    });
+
+
+    this._main = function () {                
+        //if loadShader property is setted, load shader files
+        if (parameters.loadShader !== undefined) {
+              
+            //Prevent that the rendering pass will be applied if the shader
+            //files are not completely loaded
+            btn.$.hide();
+            
+            var pathBase = "./js/mlj/plugins/rendering/shaders/";            
+            //Set shader files path
+            for(var i=0, m=parameters.loadShader.length; i<m; i++) {
+                parameters.loadShader[i] = pathBase + parameters.loadShader[i];
+            }
+            
+            MLJ.util.loadFile(parameters.loadShader, function (results) {
+                //Shader loaded
+                _this.shaders = results;
+                //Show button
+                btn.$.show();
+            });                        
+        }
         _this._init(guiBuilder);
         renderingPane.append(pane.$);
     };

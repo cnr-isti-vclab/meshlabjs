@@ -38,10 +38,17 @@ MLJ.gui.Param = function () {
 
 MLJ.gui.Param.prototype = {
     /**
-    * The function called to build the MLWidget
-    * @abstract    
-    */
+     * The function called to build a Param widget
+     * @abstract    
+     */
     _make: function () {
+    },
+    /**
+     * The function called to change the value of a param widget
+     * @abstract    
+     */
+    _changeValue: function (val) {
+
     }
 };
 
@@ -59,6 +66,10 @@ MLJ.gui.Param.Number = function (flags) {
 
     this.setValue = function (value) {
         this.spinner.setValue(value);
+    };
+
+    this._changeValue = function (value) {
+        this.setValue(value);
     };
 
     MLJ.gui.Param.call(this);
@@ -107,19 +118,34 @@ MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Integer);
 MLJ.gui.Param.Bool = function (flags) {
     this.checkbox = new MLJ.gui.component.CheckBox(flags.defval);
     this.label = new MLJ.gui.component.Label(flags);
+    var _this = this;
 
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.checkbox);
     };
 
-    this.getValue = function () {
-        return this.checkbox.checked();
+    this.getValue = function () {        
+        return this.checkbox.isChecked();
+    };
+
+    this.setChecked = function (value) {
+        this.checkbox.setChecked(value);
+    };
+    
+    this.onChange = function(foo) {
+      this.checkbox.onChange(function() {
+          foo(_this.getValue());
+      });
+    };
+
+    this._changeValue = function (value) {
+        this.setChecked(value);
     };
 
     MLJ.gui.Param.call(this);
 };
 
-MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Bool);
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Bool);
 
 MLJ.gui.Param.Choice = function (flags) {
     this.choice = flags.options.length > 3
@@ -140,9 +166,13 @@ MLJ.gui.Param.Choice = function (flags) {
     this.getValue = function () {
         return this.choice.getSelectedValue();
     };
-    
-    this.selectByValue = function(value) {
+
+    this.selectByValue = function (value) {
         this.choice.selectByValue(value);
+    };
+
+    this._changeValue = function (value) {
+        this.selectByValue(value);
     };
 
     this.onChange = function (foo) {
@@ -182,9 +212,17 @@ MLJ.gui.Param.Color = function (flags) {
     this.setColor = function (color) {
         this.color.setColor(color);
     };
-    
-    this.getColor = function(type) {
-      return this.color.getColor(type);
+
+    this._changeValue = function (value) {
+        if(value instanceof THREE.Color) {
+            this.color.setColor(value.getHexString());
+        } else {
+            this.color.setColor(value);
+        }
+    };
+
+    this.getColor = function (type) {
+        return this.color.getColor(type);
     };
 
     MLJ.gui.Param.call(this);
@@ -201,6 +239,7 @@ MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Color);
 MLJ.gui.Param.RangedFloat = function (flags) {
     this.rangedfloat = new MLJ.gui.component.RangedFloat(flags);
     this.label = new MLJ.gui.component.Label(flags);
+    var _this = this;
 
     this._make = function () {
         return MLJ.gui.component.Grid(this.label, this.rangedfloat);
@@ -211,6 +250,16 @@ MLJ.gui.Param.RangedFloat = function (flags) {
     };
 
     this.setValue = function (value) {
+        this.rangedfloat.setValue(value);
+    };
+
+    this.onChange = function(foo) {
+        this.rangedfloat.onChange(function() {
+            foo(_this.getValue());
+        });
+    };
+
+    this._changeValue = function (value) {
         this.rangedfloat.setValue(value);
     };
 

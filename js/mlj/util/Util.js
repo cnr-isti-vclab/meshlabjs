@@ -34,6 +34,53 @@
  */
 MLJ.util = {};
 
+MLJ.util.loadFile = function (path, callback) {
+    if (!jQuery.isFunction(callback)) {
+        console.warn("The callback paramter must be a funciton.");
+    }
+
+    var tmpArray = [];
+    if (jQuery.isArray(path)) {
+        tmpArray = path;        
+    } else {
+        tmpArray.push(path);
+    }
+    
+    var results = new MLJ.util.AssociativeArray();    
+    function _load(path, _callback) {
+        
+        var fileName = path.substring(path.lastIndexOf('/')+1);                    
+        
+        $.ajax({
+            url: path,
+            error: function (xhr, textStatus, errorThrown) {
+                var msg = "An error occurred. Status code: ";
+                console.warn(msg + xhr.status + ". Status text: " + textStatus);
+                results.set(fileName,"");
+            },
+            success: function (data) {
+                results.set(fileName,data);
+                _callback(data);
+            }
+        });
+    }
+    
+    var i = 0;
+    function _loadNextFile() {
+        _load(tmpArray[i], function () {
+            i++;
+            if (i === tmpArray.length) {
+                callback(results);
+                return;
+            } else {
+                _loadNextFile();
+            }            
+        });
+    }
+    
+    _loadNextFile();
+};
+
 /**
  * Returns an array without duplicates
  * @param {type} array The array to be cleaned

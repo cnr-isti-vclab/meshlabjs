@@ -46,17 +46,26 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
     this.ptrMesh = cppMesh.getMesh();
     this.cppMesh = cppMesh;
-    this.VN = this.vert = this.FN = this.face = this.material = null;    
-    this.threeMesh = null;
+    this.VN = this.vert = this.FN = this.face = this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
     //is updated by MLJ.core.Scene and contains overlaying mesh
     this.overlays = new MLJ.util.AssociativeArray();
+    //contains overlaying mesh parameters
+    this.overlaysParams = new MLJ.util.AssociativeArray();
     var _isRendered = true;
     var _this = this;   
     
     function init() {
-        _this.material = new MLJ.core.BasicMaterial();
-        buildThreeMesh();
+//        buildThreeMesh();
+        console.time("Time to create mesh: ");
+        _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
+        console.timeEnd("Time to create mesh: ");
+        
+        for(var name in MLJ.core.defaults) {
+            _this.overlaysParams.set(name,
+                jQuery.extend(true, {}, MLJ.core.defaults[name]));                        
+        }
+        
     }
     
     function buildMeshGeometry() {
@@ -89,12 +98,13 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         return geometry;
     }
 
-    function buildThreeMesh() {
-        console.time("Time to create mesh: ");
-        _this.threeMesh = new THREE.Mesh(buildMeshGeometry(),
-                _this.material.threeMaterial);
-        console.timeEnd("Time to create mesh: ");
-    }
+//    function buildThreeMesh() {
+//        console.time("Time to create mesh: ");
+////        _this.threeMesh = new THREE.Mesh(buildMeshGeometry(),
+////                _this.material.threeMaterial);
+//        _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
+//        console.timeEnd("Time to create mesh: ");
+//    }
 
     function geometryNeedUpdate() {
         _this.threeMesh.geometry.verticesNeedUpdate = true;
@@ -104,34 +114,34 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.threeMesh.geometry.computeVertexNormals();
     }
 
-    this.updateMaterial = function(material, updateGeometry) {
-        if(!(material instanceof MLJ.core.Material)) {
-            console.warn("material parameter must be an instance of MLJ.core.Material");
-        } else {            
-            _this.material = material;
-            _this.threeMesh.material = _this.material.threeMaterial;            
-        }
-        
-        if(updateGeometry === true) {            
-            geometryNeedUpdate();
-        }
-        
-        MLJ.core.Scene.render();
-    };    
+//    this.updateMaterial = function(material, updateGeometry) {
+//        if(!(material instanceof MLJ.core.Material)) {
+//            console.warn("material parameter must be an instance of MLJ.core.Material");
+//        } else {            
+//            _this.material = material;
+//            _this.threeMesh.material = _this.material.threeMaterial;            
+//        }
+//        
+//        if(updateGeometry === true) {            
+//            geometryNeedUpdate();
+//        }
+//        
+//        MLJ.core.Scene.render();
+//    };    
     
-    this.setRenderingOn = function(on) {
-        _isRendered = on;
-        if(on) {
-          _this.threeMesh.material = _this.material.threeMaterial;
-        } else {
-          _this.threeMesh.material = null;
-        }
-        MLJ.core.Scene.render();
-    };
+//    this.setRenderingOn = function(on) {
+//        _isRendered = on;
+//        if(on) {
+//          _this.threeMesh.material = _this.material.threeMaterial;
+//        } else {
+//          _this.threeMesh.material = null;
+//        }
+//        MLJ.core.Scene.render();
+//    };
     
-    this.isRendered = function() {
-        return _isRendered;
-    };
+//    this.isRendered = function() {
+//        return _isRendered;
+//    };
     
     /**
      * Returns this THREE.Mesh object
@@ -152,7 +162,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.threeMesh.geometry.dispose();
 
         //Rebuild mesh geometry
-        this.threeMesh.geometry = buildMeshGeometry();
+        _this.threeMesh.geometry = buildMeshGeometry();
 
         geometryNeedUpdate();
     };
@@ -163,17 +173,12 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      */
     this.dispose = function () {
         _this.threeMesh.geometry.dispose();
-        _this.material.dispose();
-
-        if (_this.threeMesh.texture) {
-            _this.threeMesh.texture.dispose();
-        }
-        
+        _this.threeMesh.material.dispose();
         _this.cppMesh.delete();
         
-        _this.threeMesh = _this.name = _this.ptrMesh = _this.VN = _this.vert =
-            _this.FN = _this.face = _this.material = _this.properties =  
-            _this.overlays = _this = null;
+        _this.name = _this.ptrMesh = _this.VN = _this.vert = _this.FN =
+        _this.face = _this.threeMesh = _this.properties = _this.overlays = 
+        _this.overlaysParams =  _this = null;
     };
     
     init();
