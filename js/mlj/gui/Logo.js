@@ -48,7 +48,7 @@
         this._make = function () {//build function                 
             _PiP = new component.PiP();
 
-            var $logo = $('<img id="logo" src="img/vcglogo200609_1024px.png">');
+            var $logo = $('<img id="logo" src="img/vcglogo_196px.png">');
 
             _$dialog = $('  <div id="dialog" title="About MeshLabJS">\
                     Copyright(C) 2015<br>\
