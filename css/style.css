@@ -287,6 +287,13 @@ text-align: center;
     visibility:  visible;
 }
 
+.ui-tooltip {
+border-radius: 4px;
+}
+.ui-tooltip-content {
+    font-size: 66%;
+    line-height: 120%;
+}
 .ui-tabs .ui-tabs-panel {
     padding: 0.5em 0;
 }
