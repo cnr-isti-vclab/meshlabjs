@@ -56,7 +56,6 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _this = this;   
     
     function init() {
-//        buildThreeMesh();
         console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
         console.timeEnd("Time to create mesh: ");
@@ -97,15 +96,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
 
         return geometry;
     }
-
-//    function buildThreeMesh() {
-//        console.time("Time to create mesh: ");
-////        _this.threeMesh = new THREE.Mesh(buildMeshGeometry(),
-////                _this.material.threeMaterial);
-//        _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
-//        console.timeEnd("Time to create mesh: ");
-//    }
-
+    
     function geometryNeedUpdate() {
         _this.threeMesh.geometry.verticesNeedUpdate = true;
         _this.threeMesh.geometry.elementsNeedUpdate = true;
@@ -113,35 +104,6 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.threeMesh.geometry.computeFaceNormals();
         _this.threeMesh.geometry.computeVertexNormals();
     }
-
-//    this.updateMaterial = function(material, updateGeometry) {
-//        if(!(material instanceof MLJ.core.Material)) {
-//            console.warn("material parameter must be an instance of MLJ.core.Material");
-//        } else {            
-//            _this.material = material;
-//            _this.threeMesh.material = _this.material.threeMaterial;            
-//        }
-//        
-//        if(updateGeometry === true) {            
-//            geometryNeedUpdate();
-//        }
-//        
-//        MLJ.core.Scene.render();
-//    };    
-    
-//    this.setRenderingOn = function(on) {
-//        _isRendered = on;
-//        if(on) {
-//          _this.threeMesh.material = _this.material.threeMaterial;
-//        } else {
-//          _this.threeMesh.material = null;
-//        }
-//        MLJ.core.Scene.render();
-//    };
-    
-//    this.isRendered = function() {
-//        return _isRendered;
-//    };
     
     /**
      * Returns this THREE.Mesh object
