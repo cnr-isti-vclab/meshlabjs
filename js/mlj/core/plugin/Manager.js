@@ -52,6 +52,9 @@ MLJ.core.plugin.Manager = {
                 if (plugin instanceof MLJ.core.plugin.Filter) {
                     _filters.set(plugin.getName(), plugin);
                     search.addItem(plugin.getName());
+                    if(plugin.parameters.tooltip) {
+                        search.addItem(plugin.parameters.tooltip);
+                    }
                 } else if (plugin instanceof MLJ.core.plugin.Rendering) {
                     _rendering.set(plugin.getName(), plugin);
                 }
