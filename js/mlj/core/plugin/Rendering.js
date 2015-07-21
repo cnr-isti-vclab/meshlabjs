@@ -198,7 +198,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
         var overlay = meshFile.overlays.getByKey(_this.getName());
         //is a uniform ?
-        if (overlay.material.uniforms[paramProp] !== undefined) {
+        if (overlay !== undefined && overlay.material.uniforms[paramProp] !== undefined) {
             overlay.material.uniforms[paramProp].value = value;
             MLJ.core.Scene.render();
         }

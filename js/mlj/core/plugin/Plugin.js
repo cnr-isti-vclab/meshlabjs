@@ -175,14 +175,11 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var rangedfloat = new MLJ.gui.Param.RangedFloat(flags);
         component.appendContent(rangedfloat._make());
         _this.params.set(flags.bindTo, rangedfloat);
-
-//  TODO add onChange(){..............}
-//        
-//        rangedfloat.onChange(function() {
-//            _onChange();
-//        });
-
-
+                
+        rangedfloat.onChange(function (val) {            
+            _onChange(flags.bindTo, val);            
+        });
+        
         return rangedfloat;
     };
 

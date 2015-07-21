@@ -800,7 +800,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
     var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "87px"});
     //edit text node
     var _$editText = $('<input>')
-            .css({width: "30%", position: "relative", left: "110px", bottom: "8px"});
+            .css({width: "30%", position: "relative", left: "110px", bottom: "8px"});        
     //init function
     this._make = function () {
         //extract parameters
@@ -814,8 +814,8 @@ MLJ.gui.component.RangedFloat = function (flags) {
             defvalue: (defval !== undefined ? defval : 50),
             stepvalue: (stepval !== undefined ? stepval : 0.01)
         };
-        _pmin.html(inputparams.minvalue)
-        _pmax.html(inputparams.maxvalue)
+        _pmin.html(inputparams.minvalue);
+        _pmax.html(inputparams.maxvalue);
         this.$.append(_pmin);
         this.$.append(_pmax);
         //append the slider to the root
@@ -827,9 +827,9 @@ MLJ.gui.component.RangedFloat = function (flags) {
             min: inputparams.minvalue,
             max: inputparams.maxvalue,
             step: inputparams.stepvalue,
+            value: inputparams.defvalue,
             //onCreate event callback
             create: function (event, ui) {
-                _$slider.slider('value', inputparams.defvalue);
                 _$editText.val(inputparams.defvalue);
             },
             //onSlide event callback
@@ -846,7 +846,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
             var pattern = /^([-+]?\d+(\.\d+)?)/;
             //trunk in groups the string
             val = val.match(pattern);
-            val = (val ? val[0] : null)
+            val = (val ? val[0] : null);
             //take the larger part of the inserted value matching the pattern
             if (val == null || !pattern.test(val)) {
                 console.error('Invalid input, reset to default value');
@@ -878,9 +878,9 @@ MLJ.gui.component.RangedFloat = function (flags) {
         _$slider.slider('value', value);
     };
 
-    this.onChange = function (foo) {
-        this.$.change(function (event) {
-            foo(event);
+    this.onChange = function (foo) {          
+        _$slider.on( "slidechange", function( event, ui ) {
+            foo(event,ui);
         });
     };
 

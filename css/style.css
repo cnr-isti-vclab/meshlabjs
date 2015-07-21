@@ -212,10 +212,10 @@ html,body{
 /* LOG WIDGET _______________________________________________________________ */
 
 #mlj-log-widget  {    
-    position: relative;
+    position: relative;    
     width: 100%;
-    height: 100%;         
-    background-color: rgba(0,0,0,0.5);
+    height: 100%;             
+    background-color: rgba(0,0,0,0.5);    
 }
 
 #mlj-log-widget textarea{
@@ -228,10 +228,12 @@ html,body{
     padding: 5px;
     top:0; bottom:0;
     width: 100%;
+    height: 100%;
     outline: none;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    overflow: auto;
 }
 
 /* INFO WIDGET ______________________________________________________________ */
@@ -285,6 +287,13 @@ text-align: center;
     visibility:  visible;
 }
 
+.ui-tooltip {
+border-radius: 4px;
+}
+.ui-tooltip-content {
+    font-size: 66%;
+    line-height: 120%;
+}
 .ui-tabs .ui-tabs-panel {
     padding: 0.5em 0;
 }
