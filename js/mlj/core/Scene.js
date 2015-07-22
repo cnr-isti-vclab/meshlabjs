@@ -83,8 +83,13 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         _camera.position.z = 15;
-        _renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true});
-        _renderer.shadowMapEnabled = true;
+        
+        _renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true, 
+            preserveDrawingBuffer:true});
+        
+        _renderer.shadowMapEnabled = true;        
         _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
@@ -111,7 +116,7 @@ MLJ.core.Scene = {};
         $canvas.addEventListener('touchmove', controls.update.bind(controls), false);
         $canvas.addEventListener('mousemove', controls.update.bind(controls), false);        
         $canvas.addEventListener('mousewheel', controls.update.bind(controls), false);        
-        $canvas.addEventListener( 'DOMMouseScroll', controls.update.bind(controls), false ); // firefox
+        $canvas.addEventListener('DOMMouseScroll', controls.update.bind(controls), false ); // firefox
         
         controls.addEventListener('change', function () {                  
             MLJ.core.Scene.render();
@@ -134,7 +139,6 @@ MLJ.core.Scene = {};
 
         $(document).on("MeshFileReloaded",
                 function (event, meshFile) {
-//                    MLJ.core.Scene.reloadLayer(meshFile);
                     MLJ.core.Scene.removeLayerByName(meshFile.name);
                     _addLayer(meshFile, true);
                     /**
@@ -474,7 +478,15 @@ MLJ.core.Scene = {};
     this.render = function () {
         _renderer.render(_scene, _camera);
     };
-
+    
+    this.takeSnapshot = function() {
+        var canvas = _renderer.context.canvas;        
+        // draw to canvas...
+        canvas.toBlob(function(blob) {
+            saveAs(blob, "snapshot.png");
+        });
+    };
+    
     //INIT
     $(window).ready(function () {
         initScene();
