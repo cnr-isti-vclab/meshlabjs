@@ -21,7 +21,13 @@
 
         var geom = meshFile.getThreeMesh().geometry.clone();
 
-        var bbox = new THREE.BoxHelper(meshFile.getThreeMesh());
+        // bounding box helper
+        var bbHelper = new THREE.BoundingBoxHelper( meshFile.getThreeMesh(), 0xffffff );
+        bbHelper.visible = false;
+        bbHelper.update();
+
+        var bbox = new THREE.BoxHelper(bbHelper);
+        bbox.update(meshFile.getThreeMesh());
 
         scene.addOverlayLayer(meshFile, plug.getName(), bbox);
     };
