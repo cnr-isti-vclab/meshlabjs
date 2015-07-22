@@ -20,6 +20,15 @@
             ]
         });
 
+        statsWidget = guiBuilder.Choice({
+            label: "Show Stats",
+            tooltip: "Enable/disable the display of rendering performance stats",
+            options: [
+                {content: "on", value: true},
+                {content: "off", value: false, selected: true}
+            ]
+        });
+
     };
 
     plug.getBackfaceCullingValue = function (type) {
