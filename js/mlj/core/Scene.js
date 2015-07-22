@@ -107,14 +107,13 @@ MLJ.core.Scene = {};
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS
-        $('canvas')[0].addEventListener('touchmove', controls.update.bind(controls), false);
-        $('canvas')[0].addEventListener('mousemove', controls.update.bind(controls), false);
-        $('canvas')[0].addEventListener('mousewheel', function () {
-            controls.update();
-            return false;
-        }, false);
-
-        controls.addEventListener('change', function () {
+        var $canvas = $('canvas')[0];
+        $canvas.addEventListener('touchmove', controls.update.bind(controls), false);
+        $canvas.addEventListener('mousemove', controls.update.bind(controls), false);        
+        $canvas.addEventListener('mousewheel', controls.update.bind(controls), false);        
+        $canvas.addEventListener( 'DOMMouseScroll', controls.update.bind(controls), false ); // firefox
+        
+        controls.addEventListener('change', function () {                  
             MLJ.core.Scene.render();
         });
 
