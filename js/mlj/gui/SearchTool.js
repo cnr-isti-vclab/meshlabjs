@@ -66,8 +66,10 @@
          * @param {String} tag The tag to insert in the search list
          */
         this.addItem = function (tag) {
-            var split = tag.split(" ");
-            // Merges both arrays and gets unique items
+            //Replace special characters with a whitespace
+            var cleanedTag = tag.replace(/[^\w\s]/gi," ");
+            var split = cleanedTag.split(" ");
+            // Merge both arrays and get unique items
             _elements = MLJ.util.arrayUnique(_elements.concat(split));
             return this;
         };

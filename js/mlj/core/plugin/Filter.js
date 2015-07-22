@@ -75,8 +75,7 @@
  * })(MLJ.core.plugin, MLJ.core.Scene);
  */
 MLJ.core.plugin.Filter = function (parameters) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters.tooltip,
-            parameters.arity);
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
     var _this = this;
 
     var entry = new MLJ.gui.component.AccordionEntry(
@@ -92,8 +91,15 @@ MLJ.core.plugin.Filter = function (parameters) {
 
     $(document).on("mljSearchSelect", function (ev, select) {
         var found = false;
+        var tooltipMatch, nameMatch;
         for (var i = 0, m = select.length; i < m; i++) {
-            if (parameters.name.indexOf(select[i]) != -1) {
+            
+            tooltipMatch = parameters.tooltip 
+                ? parameters.tooltip.indexOf(select[i]) != -1 : false;
+            
+            nameMatch = parameters.name.indexOf(select[i]) != -1;
+            
+            if (nameMatch || tooltipMatch) {
                 entry.show();
                 found = true;
                 //exit from for cycle
