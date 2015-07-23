@@ -6,7 +6,8 @@
         tooltip: "Box Tooltip",
         icon: "img/icons/box.png",
         toggle: true,
-        on: false
+        on: false,
+        updateOnLayerAdded: true
     });
 
 	plug._init = function (guiBuilder) {
