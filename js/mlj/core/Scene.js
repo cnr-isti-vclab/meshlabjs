@@ -342,23 +342,23 @@ MLJ.core.Scene = {};
         _addLayer(meshFile, false);
     };       
     
-    this.addOverlayLayer = function(mehFile, name, mesh) {
+    this.addOverlayLayer = function(meshFile, name, mesh) {
         if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
         }
         
         mesh.position.set(
-            mehFile.threeMesh.position.x,
-            mehFile.threeMesh.position.y,
-            mehFile.threeMesh.position.z);
+            meshFile.threeMesh.position.x,
+            meshFile.threeMesh.position.y,
+            meshFile.threeMesh.position.z);
             
         mesh.scale.set(
-            mehFile.threeMesh.scale.x,
-            mehFile.threeMesh.scale.y,
-            mehFile.threeMesh.scale.z);
+            meshFile.threeMesh.scale.x,
+            meshFile.threeMesh.scale.y,
+            meshFile.threeMesh.scale.z);
         
-        mehFile.overlays.set(name,mesh);
+        meshFile.overlays.set(name,mesh);
         
         _scene.add(mesh);
 
