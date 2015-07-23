@@ -83,8 +83,8 @@
                 MLJ.core.File.reloadMeshFileByName(name);
             });
 
-            snapshot.onClick(function () {
-                console.log("Snapshot button clicked");
+            snapshot.onClick(function () {                
+                MLJ.core.Scene.takeSnapshot();
             });
 
         }

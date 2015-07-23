@@ -17,7 +17,7 @@ bool IsWaterTight(MyMesh &m)
 int main(int argc, char*argv[])
 {
   CreatePluginTEST();
-
+  SamplingPluginTEST();
   printf("Done");
   return 0;
 }

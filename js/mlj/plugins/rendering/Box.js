@@ -9,6 +9,28 @@
         on: false
     });
 
+	plug._init = function (guiBuilder) {
+
+        };
+
+    plug._applyTo = function (meshFile, on) {
+        if (on == false) {
+            scene.removeOverlayLayer(meshFile, plug.getName());
+            return;
+        }
+
+        var geom = meshFile.getThreeMesh().geometry.clone();
+
+        // bounding box helper
+        var bbHelper = new THREE.BoundingBoxHelper( meshFile.getThreeMesh(), 0xffffff );
+        bbHelper.visible = false;
+        bbHelper.update();
+
+        var bbox = new THREE.BoxHelper(bbHelper);
+        bbox.update(meshFile.getThreeMesh());
+
+        scene.addOverlayLayer(meshFile, plug.getName(), bbox);
+    };
 
     plugin.Manager.install(plug);
 
