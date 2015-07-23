@@ -109,10 +109,10 @@
                 side: THREE.DoubleSide
             };
 
-            var mat = new THREE.ShaderMaterial(parameters);
-            var filled = new THREE.Mesh(geom, mat);
+            var mat = new THREE.RawShaderMaterial(parameters);
+            var filled = new THREE.Mesh(geom, mat);            
 
-            scene.addOverlayLayer(meshFile, plug.getName(), filled);
+            scene.addOverlayLayer(meshFile, plug.getName(), filled);            
 
         } else {
             scene.removeOverlayLayer(meshFile, plug.getName());

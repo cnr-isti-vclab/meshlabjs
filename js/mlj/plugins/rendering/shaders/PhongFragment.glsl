@@ -1,10 +1,14 @@
 #extension GL_OES_standard_derivatives : enable
+precision highp float;
+precision highp int;
 
 #define MAX_DIR_LIGHTS 0
 #define MAX_POINT_LIGHTS 1
 #define GAMMA_FACTOR 2
 #define DOUBLE_SIDED
 #define SMOOTH 2
+
+uniform mat4 viewMatrix;
 
 uniform int shading;
 uniform vec3 diffuse;
@@ -86,11 +90,6 @@ uniform vec3 ambientLightColor;
 	uniform vec3 pointLightPosition[ MAX_POINT_LIGHTS ];
 	uniform float pointLightDistance[ MAX_POINT_LIGHTS ];
 	uniform float pointLightDecay[ MAX_POINT_LIGHTS ];
-#endif
-
-
-#if MAX_SPOT_LIGHTS > 0 || defined( USE_BUMPMAP ) || defined( USE_ENVMAP )
-	varying vec3 vWorldPosition;
 #endif
 
 #ifdef WRAP_AROUND
