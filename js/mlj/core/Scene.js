@@ -359,7 +359,7 @@ MLJ.core.Scene = {};
             meshFile.threeMesh.scale.z);
         
         meshFile.overlays.set(name,mesh);
-        
+        mesh.visible = meshFile.getThreeMesh().visible;
         _scene.add(mesh);
 
         //render the scene
