@@ -233,7 +233,7 @@ MLJ.core.Scene = {};
         var mesh = meshFile.getThreeMesh();
         var box = new THREE.Box3().setFromObject(mesh);
         mesh.position = box.center();
-        //_scene.add(mesh);
+//        _scene.add(mesh);
 
         _selectedLayer = meshFile;
 
@@ -246,7 +246,6 @@ MLJ.core.Scene = {};
             while(layersIter.hasNext()) {
                 layer = layersIter.next();
                 overlaysIter = layer.overlays.iterator();
-
                 while(overlaysIter.hasNext()) {
                     mesh = overlaysIter.next();                
 
@@ -260,7 +259,7 @@ MLJ.core.Scene = {};
                         meshFile.threeMesh.scale.y,
                         meshFile.threeMesh.scale.z);
                 }
-            }
+            }                                   
             
             /**
              *  Triggered when a layer is added
@@ -276,18 +275,7 @@ MLJ.core.Scene = {};
              *      }
              *  );
              */
-
-            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
-
-            //loop on the other layers to refresh their scene status
-            layersIter = _layers.iterator();
-            while(layersIter.hasNext()) {
-                layer = layersIter.next();
-                if(meshFile.name != layer.name){ //if the layer is different from the layer added
-                    $(document).trigger("SceneLayerToBeRefreshed", [layer, _layers.size()]); //"pull the trigger"
-                }
-            }
-
+            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);                       
         }
         
         //render the scene
@@ -395,7 +383,7 @@ MLJ.core.Scene = {};
                 mesh.texture.dispose();            
                 mesh.texture = null;
             }
-            _this.render();
+            _this.render();                              
         }
         
     };  
