@@ -54,7 +54,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         MLJ.gui.disabledOnSceneEmpty(btn);
     }
 
-    if (parameters.toggle === true) { //case : toggle rendering buttons (e.g Box, Points, ...)
+    if (parameters.toggle === true) {
 
         //Click on button
         btn.onToggle(function (on) {
@@ -107,44 +107,27 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         $(document).on("SceneLayerAdded",
                 function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
-                    var b = btn.isOn(); //control the actual value of the button
-                    var p = parameters.on; //control the value of the related (at the button value) param
-                    var rndBtnName = parameters.name; //rendering button name relative at this call
-                    if (b === p) { //if params are equals
-                        _this._applyTo(meshFile, p);
-                        meshFile.properties.set(rndBtnName, p);
+                    if (btn.isOn() === parameters.on) {
+                        _this._applyTo(meshFile, btn.isOn());
+                        meshFile.properties.set(parameters.name, btn.isOn());
                         update();
-                    } else { //else the button must be shutted down
+                    } else {
                         btn.toggle("off");
                     }
 
                 });
 
-        $(document).on("SceneLayerToBeRefreshed",
-                    function (event, meshFile, layersNumber) {
-                        //actual value of the button (related to a new layer added)
-                        var b = btn.isOn();
-                        //value stored previously in the associative array
-                        var val = meshFile.properties.getByKey(parameters.name);
-                        if ( b == false && val === true ) { //if button had been previously pressed
-                            _this._applyTo(meshFile, false); //remove previous overlay layer
-                            if (meshFile.getThreeMesh().visible)
-                                _this._applyTo(meshFile, true); //add updated overlay layer
-                        }
-
-                });
-
         $(document).on("SceneLayerUpdated",
-                function (event, meshFile) {
+                function (event, meshFile) {                    
                     if (btn.isOn()) {
                         _this._applyTo(meshFile, false);
                         _this._applyTo(meshFile, true);
                     }
                 });
 
-    } else { //case : global rendering buttons (e.g Global, ColorWheel)
-
+    } else {
         btn.onClick(function () {
+
             renderingPane.children().each(function (key, val) {
                 if ($(val).attr("id") === UID) {
                     $(val).fadeIn();
