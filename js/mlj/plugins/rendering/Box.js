@@ -10,21 +10,18 @@
         updateOnLayerAdded: true
     });
 
-	plug._init = function (guiBuilder) {
+    plug._init = function (guiBuilder) {
 
-        };
+    };
 
     plug._applyTo = function (meshFile, on) {
-        if (on == false) {
+        if (on === false) {
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
-        }
-
-        var geom = meshFile.getThreeMesh().geometry.clone();
+        }       
 
         // bounding box helper
-        var bbHelper = new THREE.BoundingBoxHelper( meshFile.getThreeMesh(), 0xffffff );
-        bbHelper.visible = false;
+        var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
         bbHelper.update();
 
         var bbox = new THREE.BoxHelper(bbHelper);
