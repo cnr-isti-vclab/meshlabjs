@@ -76,6 +76,8 @@
 
             save.onClick(function () {
                 console.log("Save button clicked");
+                var meshFile = MLJ.core.Scene.getSelectedLayer();
+                MLJ.core.File.saveMeshFile(meshFile);
             });
 
             reload.onClick(function () {

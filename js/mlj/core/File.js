@@ -93,7 +93,7 @@ MLJ.core.File = {
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
-
+            
             console.time("Parsing Mesh Time");
             var CppMesh = new Module.CppMesh();
             var resOpen = CppMesh.openMesh(file.name);
@@ -101,14 +101,12 @@ MLJ.core.File = {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
 
-                onLoaded(false);                                
+                onLoaded(false);
             }
 
             console.timeEnd("Parsing Mesh Time");
 
             var mf = new MLJ.core.MeshFile(file.name, CppMesh);
-
-            FS.unlink(file.name);
 
             onLoaded(true, mf);
 
@@ -153,7 +151,7 @@ MLJ.core.File = {
             }
         });
     };
-    
+
     /**
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
@@ -211,5 +209,21 @@ MLJ.core.File = {
             });
         });
     };
+
+    this.saveMeshFile = function (meshFile) {
+        //call a SaveMesh contructon from c++ Saver.cpp class
+        var Save = new Module.SaveMesh(meshFile.ptrMesh);
+        //call a saveMesh method from above class
+        var resSave = Save.saveMesh(meshFile.name);
+        
+        //handle errors ...        
+        
+        //readFile is a Emscripten function which read a file into memory by path
+        var file = FS.readFile('/'+meshFile.name);
+        //create a Blob by filestream
+        var blob = new Blob([file], {type: "application/octet-stream"});
+        //call a saveAs function of FileSaver Library
+        saveAs(blob, meshFile.name);
+    };        
 
 }).call(MLJ.core.File);
