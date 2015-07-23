@@ -3,6 +3,7 @@
 void RandomPluginTEST();
 void MeshingPluginTEST();
 void CreatePluginTEST();
+void SamplingPluginTEST();
 
 #endif // FILTERTEST_H
 
