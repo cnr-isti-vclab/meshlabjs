@@ -1,17 +1,17 @@
 #define SMOOTH 2
 
-vec3 objectNormal = normal;
-
-#ifdef FLIP_SIDED
-	objectNormal = -objectNormal;
-#endif
-
-vec3 transformedNormal = normalMatrix * objectNormal;
 varying vec3 vViewPosition;
 varying vec3 vNormal;
 uniform int shading;
 
-void main() {    
+void main() {
+    vec3 objectNormal = normal;
+
+    #ifdef FLIP_SIDED
+	objectNormal = -objectNormal;
+    #endif
+    
+    vec3 transformedNormal = normalMatrix * objectNormal;
     if(shading == SMOOTH) {
         vNormal = normalize( transformedNormal );    
     }

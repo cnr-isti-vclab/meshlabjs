@@ -1,7 +1,5 @@
-precision highp float;
-precision highp int;
 #extension GL_OES_standard_derivatives : enable
- 
+
 #define MAX_DIR_LIGHTS 0
 #define MAX_POINT_LIGHTS 1
 #define GAMMA_FACTOR 2
