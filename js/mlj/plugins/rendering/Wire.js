@@ -61,7 +61,7 @@
             bindTo: "color"
         });
 
-        thicknessWidget = guiBuilder.Float({
+        thicknessWidget = guiBuilder.RangedFloat({
             label: "Thickness",
             tooltip: "The thickenss of the lines",
             min: 1, max: 10, step: 0.5,
