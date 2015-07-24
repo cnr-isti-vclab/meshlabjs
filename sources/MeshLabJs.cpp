@@ -15,8 +15,6 @@ public:
     m = (MyMesh*) _m;
   }
 
-int getVertexNumber(){ return m->VN(); }
-
   inline uintptr_t getVertexVector() { 
     float * v = new float[m->VN()*3];
     int k=0;
@@ -28,8 +26,6 @@ int getVertexNumber(){ return m->VN(); }
     }  
     return (uintptr_t)v; 
   }
-
-inline int getFaceNumber() { return m->FN(); }
 
 inline uintptr_t getFaceVector() { 
     int * f = new int[m->FN()*3];
@@ -46,8 +42,6 @@ inline uintptr_t getFaceVector() {
 EMSCRIPTEN_BINDINGS(MeshLabJs) {
   class_<MeshLabJs>("MeshLabJs")
     .constructor<uintptr_t>()
-    .function("getVertexNumber", &MeshLabJs::getVertexNumber)
-    .function("getFaceNumber",   &MeshLabJs::getFaceNumber)
     .function("getFaceVector",   &MeshLabJs::getFaceVector)
     .function("getVertexVector", &MeshLabJs::getVertexVector)
     ;

@@ -69,9 +69,11 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     
     function buildMeshGeometry() {
         var meshProp = new Module.MeshLabJs(_this.ptrMesh);
-        _this.VN = meshProp.getVertexNumber();
+        _this.VN = cppMesh.VN();
+        
+//        _this.VN = meshProp.getVertexNumber();
         _this.vert = meshProp.getVertexVector();
-        _this.FN = meshProp.getFaceNumber();
+        _this.FN = cppMesh.FN();
         _this.face = meshProp.getFaceVector();
 
         var geometry = new THREE.Geometry();

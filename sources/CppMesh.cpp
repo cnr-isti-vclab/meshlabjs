@@ -23,6 +23,10 @@ class CppMesh
     return ret;
   }
 
+  
+  int VN() { return m.VN();}
+  int FN() { return m.FN();}
+  
   uintptr_t getMesh(){
     return (uintptr_t)((void*)(&m)) ;
   }
@@ -35,5 +39,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .constructor<>()
     .function("openMesh",        &CppMesh::openMesh)
     .function("getMesh",         &CppMesh::getMesh)
+    .function("VN",&CppMesh::VN)
+    .function("FN",&CppMesh::FN)
     ;
 }
