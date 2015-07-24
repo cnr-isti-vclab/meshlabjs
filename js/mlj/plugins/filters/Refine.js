@@ -7,7 +7,7 @@
         arity: 1
     });
 
-    var iterWdg;
+    var iterWdg,refineTypeWidget;
     filter._init = function (builder) {
 
         iterWdg = builder.Integer({
@@ -15,11 +15,20 @@
             label: "Step",
             tooltip: "How many refinement iterations are applied to the mesh"
         });
+        refineTypeWidget  = builder.Choice({
+            label: "Refinement Algorithm",
+            tooltip: "Choose the possible subdivision surface algorithm",
+            options: [
+                {content: "Midpoint", value: "0", selected: true},
+                {content: "Butterfly", value: "1"},
+                {content: "Loop", value: "2"},
+            ]
+        });
 
     };
 
     filter._applyTo = function (meshFile) {
-        Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue());
+        Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue(),parseInt(refineTypeWidget.getValue()));
         scene.updateLayer(meshFile);
     };
 

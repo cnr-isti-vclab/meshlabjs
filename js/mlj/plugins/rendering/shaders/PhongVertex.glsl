@@ -1,7 +1,14 @@
 #define SMOOTH 2
 
+attribute vec3 position;
+attribute vec3 normal;
+
 varying vec3 vViewPosition;
 varying vec3 vNormal;
+
+uniform mat3 normalMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
 uniform int shading;
 
 void main() {

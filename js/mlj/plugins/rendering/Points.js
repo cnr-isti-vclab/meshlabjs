@@ -27,10 +27,10 @@
             bindTo: "color"
         });
 
-        pointSizeWidget = guiBuilder.Float({
-            label: "Size",
-            tooltip: "The size of the points",
-            min: 1, max: 10, step: 0.5,
+        pointSizeWidget = guiBuilder.RangedFloat({
+            label: "Point Size",
+            tooltip: "The size of the points in pixels",
+            min: 0.5, max: 16, step: 0.5,
             defval: DEFAULTS.size,
             bindTo: "size"
         });

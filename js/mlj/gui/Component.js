@@ -676,7 +676,16 @@ MLJ.gui.component.Accordion = function (flags) {
     this.refresh = function () {
         this.$.accordion({active: false}).accordion("refresh");
     };
-
+    
+    this._disabled = function (disabled) {
+        if(disabled) {
+            this.$.accordion("disable");
+        } else {
+            this.$.accordion("enable");
+        }
+                
+    };
+    
     MLJ.gui.component.Component.call(this, _html);
 
 };

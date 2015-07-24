@@ -88,8 +88,8 @@ MLJ.core.Scene = {};
             antialias: true, 
             alpha: true, 
             preserveDrawingBuffer:true});
+        _renderer.shadowMapEnabled = true;
         
-        _renderer.shadowMapEnabled = true;        
         _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
@@ -342,24 +342,24 @@ MLJ.core.Scene = {};
         _addLayer(meshFile, false);
     };       
     
-    this.addOverlayLayer = function(mehFile, name, mesh) {
+    this.addOverlayLayer = function(meshFile, name, mesh) {
         if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
         }
         
         mesh.position.set(
-            mehFile.threeMesh.position.x,
-            mehFile.threeMesh.position.y,
-            mehFile.threeMesh.position.z);
+            meshFile.threeMesh.position.x,
+            meshFile.threeMesh.position.y,
+            meshFile.threeMesh.position.z);
             
         mesh.scale.set(
-            mehFile.threeMesh.scale.x,
-            mehFile.threeMesh.scale.y,
-            mehFile.threeMesh.scale.z);
+            meshFile.threeMesh.scale.x,
+            meshFile.threeMesh.scale.y,
+            meshFile.threeMesh.scale.z);
         
-        mehFile.overlays.set(name,mesh);
-        
+        meshFile.overlays.set(name,mesh);
+        mesh.visible = meshFile.getThreeMesh().visible;
         _scene.add(mesh);
 
         //render the scene

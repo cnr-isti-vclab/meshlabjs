@@ -114,15 +114,24 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     } else {
                         btn.toggle("off");
                     }
+                    
+                    //if the rendering pass need to be updated when a 
+                    //new layer is added
+                    if (parameters.updateOnLayerAdded) {
+                        var ptr = MLJ.core.Scene.getLayers().iterator();
+                        var layer, isOn;
+                        while (ptr.hasNext()) {
+                            layer = ptr.next();
+                            isOn = layer.properties.getByKey(parameters.name);
+                            reapplay(isOn,layer);                            
+                        }
+                    }
 
                 });
 
         $(document).on("SceneLayerUpdated",
                 function (event, meshFile) {
-                    if (btn.isOn()) {
-                        _this._applyTo(meshFile, false);
-                        _this._applyTo(meshFile, true);
-                    }
+                    reapplay(btn.isOn(),meshFile);                    
                 });
 
     } else {
@@ -171,11 +180,18 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         var selected = MLJ.core.Scene.getSelectedLayer();
         var params = selected.overlaysParams.getByKey(_this.getName());
         var param;
-        for (var key in params) {            
-            param = guiBuilder.params.getByKey(key);            
-            if(param !== undefined) {
+        for (var key in params) {
+            param = guiBuilder.params.getByKey(key);
+            if (param !== undefined) {
                 param._changeValue(params[key]);
             }
+        }
+    }
+
+    function reapplay(applay, meshFile) {
+        if (applay) {
+            _this._applyTo(meshFile, false);
+            _this._applyTo(meshFile, true);
         }
     }
 
@@ -213,7 +229,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             MLJ.core.Scene.render();
             return;
         }
-        
+
     });
 
     this._main = function () {

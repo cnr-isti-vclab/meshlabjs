@@ -69,9 +69,11 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     
     function buildMeshGeometry() {
         var meshProp = new Module.MeshLabJs(_this.ptrMesh);
-        _this.VN = meshProp.getVertexNumber();
+        _this.VN = cppMesh.VN();
+        
+//        _this.VN = meshProp.getVertexNumber();
         _this.vert = meshProp.getVertexVector();
-        _this.FN = meshProp.getFaceNumber();
+        _this.FN = cppMesh.FN();
         _this.face = meshProp.getFaceVector();
 
         var geometry = new THREE.Geometry();
@@ -103,7 +105,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.threeMesh.geometry.normalsNeedUpdate = true;
         _this.threeMesh.geometry.computeFaceNormals();
         _this.threeMesh.geometry.computeVertexNormals();
-    }
+    }    
     
     /**
      * Returns this THREE.Mesh object
@@ -134,13 +136,16 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      * @author Stefano Gabriele     
      */
     this.dispose = function () {
+        
+        FS.unlink(file.name);
+        
         _this.threeMesh.geometry.dispose();
         _this.threeMesh.material.dispose();
         _this.cppMesh.delete();
         
         _this.name = _this.ptrMesh = _this.VN = _this.vert = _this.FN =
         _this.face = _this.threeMesh = _this.properties = _this.overlays = 
-        _this.overlaysParams =  _this = null;
+        _this.overlaysParams =  _this = null;       
     };
     
     init();
