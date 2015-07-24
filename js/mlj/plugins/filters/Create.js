@@ -1,6 +1,21 @@
 
 (function (plugin, scene) {
 
+    var DuplicateLayerFilter = new plugin.Filter({
+        name: "Layer Duplicate",
+        tooltip: "Duplicate current Layer.",
+        arity: 1
+    });
+    
+    DuplicateLayerFilter._init = function (builder) {
+    };
+    
+    DuplicateLayerFilter._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.File.createCppMeshFile(basemeshFile.name);
+        Module.DuplicateLayer(basemeshFile.ptrMesh, newmeshFile.ptrMesh);
+        scene.addLayer(newmeshFile);
+    };
+     plugin.Manager.install(DuplicateLayerFilter);
     var PlatonicFilter = new plugin.Filter({
         name: "Create Platonic Solid",
         tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
