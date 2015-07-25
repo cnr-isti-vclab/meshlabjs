@@ -57,18 +57,19 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     if (parameters.toggle === true) {
 
         //Click on button
-        btn.onToggle(function (on) {
+        btn.onToggle(function (on, event) {            
             //Apply rendering pass to all mesh
-            if (MLJ.gui.isCtrlDown()) {
+            if (event.ctrlKey === true) {                
                 var ptr = MLJ.core.Scene.getLayers().iterator();
                 var layer;
                 while (ptr.hasNext()) {
-                    layer = ptr.next();
+                    layer = ptr.next();                    
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer, on);
                         layer.properties.set(parameters.name, on);
                     }
                 }
+                
             } else { //Apply rendering pass to selected layer
                 var selected = MLJ.core.Scene.getSelectedLayer();
                 if (selected !== undefined) {

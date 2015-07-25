@@ -303,8 +303,8 @@ MLJ.gui.component.ToggleButton = function (flags) {
     };
 
     this.onToggle = function (foo) {
-        _this.$.click(function () {
-            foo(_on === 1);
+        _this.$.click(function (event) {
+            foo(_on === 1, event);
         });
     };
 
@@ -356,8 +356,8 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     };
 
     this.onToggle = function (foo) {
-        _toggle.onToggle(function (on) {
-            foo(on);
+        _toggle.onToggle(function (on,event) {
+            foo(on,event);
         });
     };
 
