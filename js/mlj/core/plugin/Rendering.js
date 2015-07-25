@@ -60,13 +60,20 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         btn.onToggle(function (on, event) {            
             //Apply rendering pass to all mesh
             if (event.ctrlKey === true) {                
-                var ptr = MLJ.core.Scene.getLayers().iterator();
-                var layer;
+                var passName = parameters.name;
+                var ptr = MLJ.core.Scene.getLayers().iterator();                
+                //get selected layer
+                var selLayer = MLJ.core.Scene.getSelectedLayer();                
+                //get this rendering pass paramters of selected layer
+                var selParams = selLayer.overlaysParams.getByKey(passName);
+                var layer;             
+                //apply rendering pass with 'selParams' to all layers
                 while (ptr.hasNext()) {
-                    layer = ptr.next();                    
-                    if (layer.getThreeMesh().visible) {
-                        _this._applyTo(layer, on);
-                        layer.properties.set(parameters.name, on);
+                    layer = ptr.next();    
+                    if (layer.getThreeMesh().visible) {                        
+                        layer.overlaysParams.set(passName,selParams);
+                        layer.properties.set(passName, on);
+                        _this._applyTo(layer, on);                        
                     }
                 }
                 
