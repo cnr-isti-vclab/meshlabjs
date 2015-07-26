@@ -44,7 +44,6 @@
  */
 MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
-    this.ptrMesh = cppMesh.getMesh();
     this.cppMesh = cppMesh;
     this.VN = this.vert = this.FN = this.face = this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
@@ -55,6 +54,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _isRendered = true;
     var _this = this;   
     
+ 
     function init() {
         console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
@@ -68,7 +68,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     }
     
     function buildMeshGeometry() {
-        var meshProp = new Module.MeshLabJs(_this.ptrMesh);
+        var meshProp = new Module.MeshLabJs(_this.ptrMesh());
         _this.VN = cppMesh.VN();
         
 //        _this.VN = meshProp.getVertexNumber();
@@ -132,6 +132,16 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     };
     
     /**
+     * Returns the ptr to the cppMesh object
+     * @returns {THREE.Mesh} this THREE.Mesh object
+     *  
+     */
+    this.ptrMesh = function () {
+        return _this.cppMesh.getMeshPtr();
+    }
+    
+    
+    /**
      * Removes the object from memory
      * @author Stefano Gabriele     
      */
@@ -143,7 +153,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.threeMesh.material.dispose();
         _this.cppMesh.delete();
         
-        _this.name = _this.ptrMesh = _this.VN = _this.vert = _this.FN =
+        _this.name = _this.VN = _this.vert = _this.FN =
         _this.face = _this.threeMesh = _this.properties = _this.overlays = 
         _this.overlaysParams =  _this = null;       
     };

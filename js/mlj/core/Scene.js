@@ -22,27 +22,53 @@
  */
 
 /**
- * @file Defines the functions to manage the scene, e.g. the set of mesh layers that constitute the ''document'' of the MeshLabJS system. 
+ * @file 
+ *
  * @author Stefano Gabriele
  */
 
 /**
- * MLJ.core.Scene namespace
+ * The MLJ.core.Scene namespace defines the functions to manage the scene, 
+ * i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
+ * This namespace also actually stores the set of meshes, the reference to current mesh, 
+ * the threejs container for the scene, the threejs camera and the threejs renderer 
+ * (e.g. the webgl context where the scene is rendered).
+ *
  * @namespace MLJ.core.Scene
  * @memberOf MLJ.core
  * @author Stefano Gabriele
+ *
  */
 MLJ.core.Scene = {};
 
 (function () {
 
-    //Contains all mesh in the scene
+    /**
+     * Associative Array that contains all the meshes in the scene 
+     * @type MLJ.util.AssociativeArray
+     * @memberOf MLJ.core.Scene     
+     */
     var _layers = new MLJ.util.AssociativeArray();
 
-    //Reference to selected layer (type MeshFile)
+    /**
+     * Reference to current layer 
+     * @type MLJ.core.MeshFile
+     * @memberOf MLJ.core.Scene     
+     */
     var _selectedLayer;
 
-    var _scene, _camera, _renderer;
+    /**
+     * It contains the ThreeJs Representation of the current set of layers. 
+     * Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshFile object.
+     * @type THREE.Scene
+     * @memberOf MLJ.core.Scene     
+     */
+    var _scene;
+    
+    var  _camera;
+    
+    /// @type {Object}
+    var _renderer;
     var _this = this;
 
     function get3DSize() {

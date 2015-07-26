@@ -212,7 +212,7 @@ MLJ.core.File = {
 
     this.saveMeshFile = function (meshFile) {
         //call a SaveMesh contructon from c++ Saver.cpp class
-        var Save = new Module.SaveMesh(meshFile.ptrMesh);
+        var Save = new Module.SaveMesh(meshFile.ptrMesh());
         //call a saveMesh method from above class
         var resSave = Save.saveMesh(meshFile.name);
         

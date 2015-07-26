@@ -25,7 +25,7 @@
     };
 
     filter._applyTo = function (meshFile) {
-        Module.RandomDisplacement(meshFile.ptrMesh, displWidget.getValue(),normalDispWidget.getValue());
+        Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
         scene.updateLayer(meshFile);
     };
 

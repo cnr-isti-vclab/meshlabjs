@@ -12,7 +12,7 @@
     
     DuplicateLayerFilter._applyTo = function (basemeshFile) {
         var newmeshFile = MLJ.core.File.createCppMeshFile(basemeshFile.name);
-        Module.DuplicateLayer(basemeshFile.ptrMesh, newmeshFile.ptrMesh);
+        Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
      plugin.Manager.install(DuplicateLayerFilter);
@@ -42,7 +42,7 @@
 
     PlatonicFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent());
-        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));
+        Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
 
@@ -67,7 +67,7 @@
 
     SphereFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Sphere");
-        Module.CreateSphere(mf.ptrMesh, sphereLevWidget.getValue());
+        Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
 
@@ -98,7 +98,7 @@
 
     TorusFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Torus");
-        Module.CreateTorus(mf.ptrMesh, stepWidget.getValue(), radiusRatioWidget.getValue());
+        Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
 

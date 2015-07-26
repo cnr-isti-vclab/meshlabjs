@@ -20,7 +20,7 @@
     };
 
     filter._applyTo = function (meshFile) {
-        Module.QuadricSimplification(meshFile.ptrMesh, ratioW.getValue(), 0, true);
+        Module.QuadricSimplification(meshFile.ptrMesh(), ratioW.getValue(), 0, true);
         scene.updateLayer(meshFile);
     };
 

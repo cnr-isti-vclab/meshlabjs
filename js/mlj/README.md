@@ -1,7 +1,9 @@
 MeshLabJS Code Documentation
 =========
 
-The main namespace is {@link MLJ.core} and the two main classes are the {@link MLJ.core.Scene} that holds the whole document concept of the system, e.g. the set of meshes on which you work, and the {@link MLJ.core.MeshFile} that actually holds each one of the mesh.
+The main namespace is {@link MLJ.core} and the two main elements are the {@link MLJ.core.Scene}
+ namespace that holds the whole document concept of the system, e.g. the set of meshes on which
+ you work, and the {@link MLJ.core.MeshFile} class that actually holds each one of the mesh.
 
 Two part of MeshLabJs are designed for extendability, *filters* and *rendering passes*.
 
@@ -12,7 +14,7 @@ Filters are simple functional processing pieces that works on the current meshes
 Filters structure is quite rigid. There are three kind of filters according to the number of meshes that they can take in input: 
 - 0 - Creation filters
 - 1 - Single mesh filters (they can be applied to all the layers togheter
-- n>1 - Filters that take in input two or more meshes and performe something else (like transferring information, computing distances etc.)
+- n>1 - Filters that take in input two or more meshes and perform something else (like transferring information, computing distances etc.)
 
 Filters parameters are standardized and there are only a few possible types of input. Each type correspond to a widget defined in {@link MLJ.gui.MLWidget } This is a requirement for building up uniform interfaces. 
 - Integer
