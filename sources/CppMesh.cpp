@@ -29,7 +29,36 @@ class CppMesh
   uintptr_t getMeshPtr(){
     return (uintptr_t)((void*)(&m)) ;
   }
+  
+  uintptr_t getMatrixPtr()
+  {
+    return (uintptr_t)((void*)(&tr));
+  }
+  
+  inline uintptr_t getVertexVector() { 
+    float * v = new float[m.VN()*3];
+    int k=0;
+    for (int i = 0; i < m.VN(); i++){
+      for (int j = 0; j < 3; j++){
+        v[k] = m.vert[i].cP()[j];
+        k++;
+      }
+    }  
+    return (uintptr_t)v; 
+  }
 
+  inline uintptr_t getFaceVector() { 
+    int * f = new int[m.FN()*3];
+    int k=0;
+    for (int i = 0; i < m.FN(); i++)
+      for (int j = 0; j < 3; j++){
+        f[k] = (int)tri::Index(m,m.face[i].cV(j));
+        k++;
+      }
+    return (uintptr_t)f;
+  }
+
+  
 };
 
 //Binding code
@@ -37,7 +66,10 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
   class_<CppMesh>("CppMesh")
     .constructor<>()
     .function("openMesh",        &CppMesh::openMesh)
-    .function("getMeshPtr",         &CppMesh::getMeshPtr)
+    .function("getMeshPtr",      &CppMesh::getMeshPtr)
+    .function("getMatrixPtr",    &CppMesh::getMatrixPtr)
+    .function("getVertexVector", &CppMesh::getVertexVector)
+    .function("getFaceVector",   &CppMesh::getFaceVector)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;

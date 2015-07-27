@@ -68,13 +68,10 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     }
     
     function buildMeshGeometry() {
-        var meshProp = new Module.MeshLabJs(_this.ptrMesh());
         _this.VN = cppMesh.VN();
-        
-//        _this.VN = meshProp.getVertexNumber();
-        _this.vert = meshProp.getVertexVector();
+        _this.vert = cppMesh.getVertexVector();
         _this.FN = cppMesh.FN();
-        _this.face = meshProp.getFaceVector();
+        _this.face = cppMesh.getFaceVector();
 
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
@@ -137,6 +134,16 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      *  
      */
     this.ptrMesh = function () {
+        return _this.cppMesh.getMeshPtr();
+    }
+    
+    /**
+     * Returns the THREE.Matrix4 object that is stored with the mesh
+     * @returns {Matrix4}
+     *  
+     */
+    this.ptrMesh = function () {
+        THREE.Matrix4.elements = THREE.Matrix4();
         return _this.cppMesh.getMeshPtr();
     }
     
