@@ -1,6 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 #include <vcg/complex/algorithms/clustering.h>
+#include <vcg/complex/algorithms/create/platonic.h>
 
 using namespace vcg;
 using namespace std;
@@ -34,7 +35,10 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::Clustering<MyMesh, vcg::tri::AverageColorCell<MyMesh> > ClusteringGrid;
-  ClusteringGrid.Init(m.bbox,100000,threshold);
+  float cellSize = m.bbox.Diag() * threshold;
+  printf("Clustering with a cell size of %6.2f = %4.2f * %6.2f\n",cellSize,threshold,m.bbox.Diag());
+
+  ClusteringGrid.Init(m.bbox,100000,cellSize);
   if(m.FN() ==0)
     ClusteringGrid.AddPointSet(m);
   else
@@ -71,11 +75,29 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   printf("Completed Simplification\n");
 }
 
+void MeshingPluginTEST()
+{
+  for(int i=1;i<5;++i)
+  {
+    MyMesh mq,mc;
+    Torus(mq,10*i,5*i);
+    Torus(mc,10*i,5*i);
+    int t0=clock();
+    QuadricSimplification(uintptr_t(&mq),0.5f,0,false);
+    int t1=clock();
+    printf("Quadric    simplification in  %6.3f sec\n",float(t1-t0)/CLOCKS_PER_SEC);
+    ClusteringSimplification(uintptr_t(&mc),0.01f);
+    int t2=clock();
+    printf("Clustering simplification in  %6.3f sec\n",float(t2-t1)/CLOCKS_PER_SEC);
+  }
+}
+
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("QuadricSimplification", &QuadricSimplification);
-//    emscripten::function("MontecarloSampling", &MontecarloSamplingML);
+    emscripten::function("ClusteringSimplification", &ClusteringSimplification);
 }
 #endif
 
