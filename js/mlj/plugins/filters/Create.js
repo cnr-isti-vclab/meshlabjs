@@ -1,6 +1,20 @@
 
 (function (plugin, scene) {
 
+    var DeleteLayerFilter = new plugin.Filter({
+        name: "Layer Delete",
+        tooltip: "Delete Current Layer.",
+        arity: 1
+    });
+    
+     DeleteLayerFilter._init = function (builder) {
+    };
+    
+    DeleteLayerFilter._applyTo = function (basemeshFile) {
+        scene.removeLayerByName(basemeshFile.name);
+    };
+    plugin.Manager.install(DeleteLayerFilter);
+    
     var DuplicateLayerFilter = new plugin.Filter({
         name: "Layer Duplicate",
         tooltip: "Duplicate current Layer.",
@@ -15,7 +29,8 @@
         Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
-     plugin.Manager.install(DuplicateLayerFilter);
+    plugin.Manager.install(DuplicateLayerFilter);
+     
     var PlatonicFilter = new plugin.Filter({
         name: "Create Platonic Solid",
         tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
