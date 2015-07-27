@@ -13,9 +13,9 @@ struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
                                            vcg::Use<MyEdge>     ::AsEdgeType,
                                            vcg::Use<MyFace>     ::AsFaceType>{};
 
-class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f,
+class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::vertex::Normal3f, vcg::vertex::Color4b,
                                                    vcg::vertex::VFAdj,   vcg::vertex::Mark, vcg::vertex::BitFlags  >{};
-class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj,     vcg::face::VFAdj,
+class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj,     vcg::face::VFAdj, vcg::face::Color4b,
                                                    vcg::face::Normal3f,  vcg::face::VertexRef,
                                                    vcg::face::BitFlags > {};
 class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
