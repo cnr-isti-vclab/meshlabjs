@@ -80,17 +80,6 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
     var _light = new THREE.AmbientLight("#ffffff");
     
     /**
-     * Sets the ambient light color
-     * @param {Object} color Can be a hexadecimal or a CSS-style string for example,
-     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-     * @author Stefano Gabriele     
-     */
-    this.setColor = function (color) {
-        _light.color = new THREE.Color(color);
-        renderer.render(scene, camera);
-    };
-    
-    /**
      * Returns <code>true</code> if this ambient light is on
      * @returns {Boolean} <code>true</code> if this ambient light is on, 
      * <code>false</code> otherwise
@@ -133,29 +122,10 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
     var _on = true;
-    var _light = new THREE.PointLight("#ffffff",0.5,0);
-    
-    /**
-     * Sets the intensity of the headlight
-     * @param {Float} Numeric value of the light's strength/intensity
-     * @author Stefano Gabriele     
-     */
-    this.setIntensity = function (value) {
-        _light.intensity = value;
-        renderer.render(scene, camera);
-    };
-    
-    /**
-     * Sets the headlight color
-     * @param {Object} color Can be a hexadecimal or a CSS-style string for example, 
-     * "rgb(250, 0,0)", "rgb(100%,0%,0% )", "#ff0000", "#f00", or "red"
-     * @author Stefano Gabriele     
-     */
-    this.setColor = function (color) {
-        _light.color = new THREE.Color(color);
-        renderer.render(scene, camera);
-    };
-    
+    var _light = new THREE.DirectionalLight("#ffffff",0.5);
+    _light.position.set( 0, -1, 0 );
+
+
     /**
      * Sets this headlight on/off
      * @param {Boolean} on If <code>true</code>, this headlight is enabled; 

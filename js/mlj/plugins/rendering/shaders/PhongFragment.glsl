@@ -2,8 +2,8 @@
 precision highp float;
 precision highp int;
 
-#define MAX_DIR_LIGHTS 0
-#define MAX_POINT_LIGHTS 1
+#define MAX_DIR_LIGHTS 1
+#define MAX_POINT_LIGHTS 0
 #define GAMMA_FACTOR 2
 #define DOUBLE_SIDED
 #define SMOOTH 2
