@@ -4,7 +4,7 @@
     var DeleteLayerFilter = new plugin.Filter({
         name: "Layer Delete",
         tooltip: "Delete Current Layer.",
-        arity: 1
+        arity: 2
     });
     
      DeleteLayerFilter._init = function (builder) {
