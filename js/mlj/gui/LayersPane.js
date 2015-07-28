@@ -68,6 +68,7 @@
             $(document).on("SceneLayerSelected",
                     function (event, mesh) {
                         MLJ.gui.getWidget("Info").updateInfo(mesh);
+                        select(mesh.name);
                     });
 
             $(document).on("SceneLayerUpdated",
@@ -82,6 +83,7 @@
             $(document).on("SceneLayerRemoved",
                 function (event, mesh) {
                     MLJ.widget.LayersPane.removeLayer(mesh.name);
+                    MLJ.gui.getWidget("Info").clear();
                 });
         }
         
