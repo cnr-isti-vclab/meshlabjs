@@ -66,6 +66,9 @@ MLJ.core.plugin.Manager = {
 
     /**
      * Executes the main entry point function for all installed plugins
+     * It is called only in the index.html after loading all the js plugins
+     * to perform all the proper initialization and GUI setup 
+     * (e.g. it will call for each plugin the _init())
      * @memberOf MLJ.core.plugin
      * @author Stefano Gabriele
      */
