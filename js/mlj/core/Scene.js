@@ -65,6 +65,16 @@ MLJ.core.Scene = {};
      */
     var _scene;
     
+    /**
+     * The ThreeJs group that contains all the layers. 
+     * It also store the global transformation (scale + translation) 
+     * that brings the global bbox of the scene
+     * in the origin of the camera reference system. 
+     * @type THREE.Object
+     * @memberOf MLJ.core.Scene     
+     */
+    var _group;
+    
     var  _camera;
     
     /// @type {Object}
@@ -109,7 +119,9 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         _camera.position.z = 15;
-        
+        _group = new THREE.Object3D();
+        _scene.add(_group);
+
         _renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
             alpha: true, 
@@ -191,21 +203,8 @@ MLJ.core.Scene = {};
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
-    function _computeGlobalBBbox() {
-        var iter = _layers.iterator();        
-        
-        var threeMesh;
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            if (threeMesh.scaleFactor) {
-                threeMesh.position.x -= threeMesh.offsetVec.x;
-                threeMesh.position.y -= threeMesh.offsetVec.y;
-                threeMesh.position.z -= threeMesh.offsetVec.z;
-                var scaling = threeMesh.scaleFactor;
-                threeMesh.scale.multiplyScalar(1 / scaling);
-            }
-        }
-
+    function _computeGlobalBBbox()
+    {
         var BBGlobal = new THREE.Box3();
         iter = _layers.iterator();
         while (iter.hasNext()) {
@@ -213,35 +212,15 @@ MLJ.core.Scene = {};
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
-
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-            threeMesh.scale.multiplyScalar(scaleFac);
-            threeMesh.scaleFactor = scaleFac;
-        }
-
-        BBGlobal = new THREE.Box3();
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var bbox = new THREE.Box3().setFromObject(threeMesh);
-            BBGlobal.union(bbox);
-        }
-
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var offset = new THREE.Vector3();
-            offset = BBGlobal.center().negate();
-            threeMesh.position.x += offset.x;
-            threeMesh.position.y += offset.y;
-            threeMesh.position.z += offset.z;
-            threeMesh.offsetVec = offset;
-        }
-
+        var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
+        var offset = BBGlobal.center().negate();;
+        _group.scale.set(scaleFac,scaleFac,scaleFac);
+        _group.position.set(offset.x*scaleFac,offset.y*scaleFac,offset.z*scaleFac);
+        _group.updateMatrix();
+//        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
+//        console.log("ScaleFactor:" + scaleFac);
     }
+  
 
     function _addLayer(meshFile, reloaded) {
         if (!(meshFile instanceof MLJ.core.MeshFile)) {
@@ -255,37 +234,11 @@ MLJ.core.Scene = {};
             meshFile.updateThreeMesh();
         }
 
-        //Set mesh position
-        var mesh = meshFile.getThreeMesh();
-        var box = new THREE.Box3().setFromObject(mesh);
-        mesh.position = box.center();
-//        _scene.add(mesh);
-
         _selectedLayer = meshFile;
-
-        //Compute the global bounding box
+        
         _computeGlobalBBbox();      
 
         if (!reloaded) {
-            var layersIter = _layers.iterator();
-            var layer, overlaysIter;
-            while(layersIter.hasNext()) {
-                layer = layersIter.next();
-                overlaysIter = layer.overlays.iterator();
-                while(overlaysIter.hasNext()) {
-                    mesh = overlaysIter.next();                
-
-                    mesh.position.set(
-                        meshFile.threeMesh.position.x,
-                        meshFile.threeMesh.position.y,
-                        meshFile.threeMesh.position.z);
-
-                    mesh.scale.set(
-                        meshFile.threeMesh.scale.x,
-                        meshFile.threeMesh.scale.y,
-                        meshFile.threeMesh.scale.z);
-                }
-            }                                   
             
             /**
              *  Triggered when a layer is added
@@ -374,19 +327,9 @@ MLJ.core.Scene = {};
             return;
         }
         
-        mesh.position.set(
-            meshFile.threeMesh.position.x,
-            meshFile.threeMesh.position.y,
-            meshFile.threeMesh.position.z);
-            
-        mesh.scale.set(
-            meshFile.threeMesh.scale.x,
-            meshFile.threeMesh.scale.y,
-            meshFile.threeMesh.scale.z);
-        
         meshFile.overlays.set(name,mesh);
         mesh.visible = meshFile.getThreeMesh().visible;
-        _scene.add(mesh);
+        _group.add(mesh);
 
         //render the scene
         _this.render();
@@ -398,8 +341,7 @@ MLJ.core.Scene = {};
         if(mesh !== undefined) {
             mesh = meshFile.overlays.remove(name);            
             
-            _scene.remove(mesh);                        
-            
+            _group.remove(mesh);                        
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh.geometry = null;
