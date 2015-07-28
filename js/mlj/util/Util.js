@@ -148,7 +148,33 @@ MLJ.util.AssociativeArray = function () {
             return next;
         };
     };
-
+    
+    /**
+     * Returns the last inserted value of this associative array or 
+     * <code>null</code> if the array is empty
+     * @returns the last inserted value or <code>null</code> if the array is empty
+     * @author Stefano Gabriele  
+     */
+    this.getLast = function() {
+        if(this.size() === 0)
+            return null;
+        
+        return values[keys[0]];     
+    };
+    
+    /**
+     * Returns the first inserted value of this associative array or 
+     * <code>null</code> if the array is empty
+     * @returns the first inserted value or <code>null</code> if the array is empty
+     * @author Stefano Gabriele  
+     */
+    this.getFirst = function() {
+        if(this.size() === 0)
+            return null;
+        
+        return values[keys[keys.length - 1]];
+    };
+    
     /**
      * Returns the value to which the specified key is mapped, or 
      * <code>undefined</code> if this array contains no mapping for the key
