@@ -154,10 +154,29 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      */
     this.dispose = function () {
         
-        FS.unlink(file.name);
+        FS.unlink(name);
+        
+        var iter = _this.overlays.iterator();
+        var mesh;
+        while(iter.hasNext()) {
+            mesh = iter.next();
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+            
+            if (mesh.texture) {
+                mesh.texture.dispose();            
+                mesh.texture = null;
+            }
+        }
         
         _this.threeMesh.geometry.dispose();
         _this.threeMesh.material.dispose();
+        
+        if (_this.threeMesh.texture) {
+            _this.threeMesh.texture.dispose();            
+            _this.threeMesh.texture = null;
+        }
+        
         _this.cppMesh.delete();
         
         _this.name = _this.VN = _this.vert = _this.FN =
