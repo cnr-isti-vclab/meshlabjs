@@ -223,6 +223,7 @@ MLJ.core.Scene = {};
   
 
     function _addLayer(meshFile, reloaded) {
+        
         if (!(meshFile instanceof MLJ.core.MeshFile)) {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
             return;
@@ -409,12 +410,28 @@ MLJ.core.Scene = {};
      */
     this.removeLayerByName = function (name) {
         var meshFile = this.getLayerByName(name);
-
+        
         if (meshFile !== undefined) {
+            //remove layer from list
             _layers.remove(name);
-
-//            _scene.remove(meshFile.getThreeMesh());
+                             
+            //remove all overlays from scene
+            var iter = meshFile.overlays.iterator();
+                        
+            while(iter.hasNext()) {
+                _scene.remove(iter.next());
+            }
+                              
+            $(document).trigger("SceneLayerRemoved", [meshFile]);
+        
             meshFile.dispose();
+                         
+            if(_layers.size() > 0) {
+                _this.selectLayerByName(_layers.getFirst().name);
+            }
+            
+            MLJ.core.Scene.render();
+            
         }
     };
 
