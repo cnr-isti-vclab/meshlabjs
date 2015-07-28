@@ -419,7 +419,7 @@ MLJ.core.Scene = {};
             var iter = meshFile.overlays.iterator();
                         
             while(iter.hasNext()) {
-                _scene.remove(iter.next());
+                _group.remove(iter.next());
             }
                               
             $(document).trigger("SceneLayerRemoved", [meshFile]);
@@ -430,8 +430,9 @@ MLJ.core.Scene = {};
                 _this.selectLayerByName(_layers.getFirst().name);
             }
             
-            MLJ.core.Scene.render();
+            _computeGlobalBBbox();
             
+            MLJ.core.Scene.render(); 
         }
     };
 
