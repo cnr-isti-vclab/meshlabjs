@@ -9,6 +9,12 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::UpdateTopology<MyMesh>::FaceFace(m);
+  int nonManifCount = tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m);
+  if(nonManifCount > 0)
+  {
+    printf("Refinement algorithms can be applied only on 2-manifold meshes. Current mesh has %i non manifold edges\n",nonManifCount);
+    return;
+  }
 
   switch(alg)
   {
