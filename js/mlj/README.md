@@ -1,11 +1,8 @@
 MeshLabJS Code Documentation
 =========
+Basic Concepts
+----------------
 
-The main namespace is {@link MLJ.core} and the two main elements are the {@link MLJ.core.Scene}
- namespace that holds the whole document concept of the system, e.g. the set of meshes on which
- you work, and the {@link MLJ.core.MeshFile} class that actually holds each one of the mesh.
-
-Two part of MeshLabJs are designed for extendability, *filters* and *rendering passes*.
 
 Filters
 -------
@@ -36,9 +33,20 @@ Behaviour:
 change of the current layer means that the displayed status of the icons and of the parameters has to be updated accordingly.
 
 
+Code Structure
+-------------
+The main namespace is {@link MLJ.core} and the two main elements are the {@link MLJ.core.Scene}
+ namespace that holds the whole document concept of the system, e.g. the set of meshes on which
+ you work, and the {@link MLJ.core.MeshFile} class that actually holds each one of the mesh.
+
+Two part of MeshLabJs are designed for extendability, *filters* and *rendering passes*.
+
 Interface
 --------- 
 The system at startup builds the whole interface as follows...
+
+Development Environment
+------------------
 
 
 Javascript & C++ Interaction
