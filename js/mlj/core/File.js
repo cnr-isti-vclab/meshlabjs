@@ -109,6 +109,8 @@ MLJ.core.File = {
             var mf = new MLJ.core.MeshFile(file.name, CppMesh);
 
             onLoaded(true, mf);
+            
+            FS.unlink(file.name);
 
         }; //end onloadend
     }
@@ -211,6 +213,11 @@ MLJ.core.File = {
     };
 
     this.saveMeshFile = function (meshFile) {
+        
+        //Create data file in FS
+        var int8buf = new Int8Array(meshFile.ptrMesh());
+        FS.createDataFile("/", meshFile.name, int8buf, true, true);
+        
         //call a SaveMesh contructon from c++ Saver.cpp class
         var Save = new Module.SaveMesh(meshFile.ptrMesh());
         //call a saveMesh method from above class
