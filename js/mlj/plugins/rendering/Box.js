@@ -1,15 +1,16 @@
 
 (function (plugin, core, scene) {
 
-    //point DEFAULT parameters
+    /** point DEFAULT parameters */
     var pntParameters = {
-            'ptsFactor' : 10,    //the minorFactor value will be 10
-            'majorFactor' : 2.5, //the majorFactor value will be (ptsFactor*2.5),
-            'pntSize' : 0.15,
+            'minorFactor' : 10,
+            'majorFactor' : 2,
+            'minorPointSize' : 0.15,
+            'majorPointSize' : 0.30,
             'pntColor' : new THREE.Color(1,0,0)
         };
 
-    //label DEFAULT parameters
+    /** label DEFAULT parameters */
     var lblParameters = {
             //'fontFace' : "Arial",
             'fontSize' : 10,
@@ -33,7 +34,7 @@
     plug._applyTo = function (meshFile, on) {
         if (on === false) {
             scene.removeOverlayLayer(meshFile, "majorQuotes");
-            for(var i=0; i<(pntParameters.ptsFactor+1)*3; i++)
+            for(var i=0; i<(pntParameters.minorFactor+1)*3; i++)
                 scene.removeOverlayLayer(meshFile, "labels"+i);
             scene.removeOverlayLayer(meshFile, "minorQuotes");
             scene.removeOverlayLayer(meshFile, plug.getName());
@@ -69,33 +70,36 @@
         6: bboxmin.x, bboxmin.y, bboxmin.z
         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        var labelsGroup = new THREE.Group(); //var needed to group labels
+        //var needed to group labels
+        var labelsGroup = new THREE.Group();
 
         //adding minor quotes
         var pcBuffer = generatePointcloud (
                     bboxMax,
                     bboxMin,
-                    pntParameters, //point params
-                    lblParameters, //label params
-                    labelsGroup //at the end will contains a group of labels
+                    pntParameters.minorFactor,
+                    pntParameters.minorPointSize,
+                    pntParameters.pntColor,
+                    lblParameters,
+                    labelsGroup
                 );
-        scene.addOverlayLayer(meshFile, "minorQuotes", pcBuffer); //add layer of minor quotes
+        //add layer of minor quotes
+        scene.addOverlayLayer(meshFile, "minorQuotes", pcBuffer);
 
         //adding layers of texture sprite
-        for(var i=0; i<(pntParameters.ptsFactor+1)*3; i++)
+        for(var i=0; i<(pntParameters.minorFactor+1)*3; i++)
             scene.addOverlayLayer(meshFile, "labels"+i, labelsGroup.children[0]);
 
         //adding major quotes
-        var supp = pntParameters.ptsFactor;
-        pntParameters.ptsFactor *= 2.5;
         pcBuffer = generatePointcloud (
                         bboxMax,
                         bboxMin,
-                        pntParameters, //point params
-                        lblParameters, //label params
-                        labelsGroup //at the end will contains a group of labels
+                        pntParameters.majorFactor,
+                        pntParameters.majorPointSize,
+                        pntParameters.pntColor,
+                        lblParameters,
+                        labelsGroup
                     );
-        pntParameters.ptsFactor = supp;
         //add a layer of major quotes
         scene.addOverlayLayer(meshFile, "majorQuotes", pcBuffer);
     };
@@ -106,19 +110,14 @@
      * @param {Vector3} max The max of the bbox
      * @param {Vector3} min The min of the bbox
      * @param {Number} pointSize The size of a generic point
-     * @param {Number} pointsfactor The edge subdivisions number
+     * @param {Number} pointfactor The edge subdivisions number
      * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointcloud( bboxMax, bboxMin, pntParameters, lblParameters, labelsgroup) {
+    function generatePointcloud( bboxMax, bboxMin, pointFactor, pointSize, pointColor, lblParameters, labelsgroup) {
 
         if ( pntParameters === undefined ) pntParameters = {};
-
-        //extract point params
-        var pointsfactor = pntParameters.hasOwnProperty("ptsFactor") ? pntParameters["ptsFactor"] : 15;
-        var pointsize = pntParameters.hasOwnProperty("pntSize") ? pntParameters["pntSize"] : 0.10;
-        var pointcolor = pntParameters.hasOwnProperty("pntColor") ? pntParameters["pntColor"] : new THREE.Color( 1,0,0 );
 
         var len0 = bboxMax.y - bboxMin.y; //segm. 0 - 3
         var len1 = bboxMax.x - bboxMin.x; //segm. 2 - 3
@@ -126,9 +125,9 @@
 
         var lengths = { 'len03' : len0, 'len23' : len1, 'len04' : len2}; //3 segments length
 
-        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pointsfactor, pointcolor, lblParameters, labelsgroup);
+        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pointFactor, pointColor, lblParameters, labelsgroup);
 
-        var material = new THREE.PointCloudMaterial({ size: pointsize, vertexColors: THREE.VertexColors } );
+        var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
 
         return new THREE.PointCloud(geometry, material );
     }
@@ -139,19 +138,19 @@
      * @param {Vector3} max The max of the bbox
      * @param {Vector3} min The min of the bbox
      * @param {Object} lengths The lengths of the 3 singol edges will be quoted
-     * @param {Number} pointsfactor The edge subdivisions number
+     * @param {Number} pointfactor The edge subdivisions number
      * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointCloudGeometry(max, min, lengths, pointsfactor, pointcolor, lblParameters, labelsgroup){
+    function generatePointCloudGeometry(max, min, lengths, pointfactor, pointcolor, lblParameters, labelsgroup){
         var geometry = new THREE.BufferGeometry();
         var div, x, y, z, j, k;
 
         //estimate the number of points (op segment dependent)
-        var pointsnum0 = lengths.len03/pointsfactor;
-        var pointsnum1 = lengths.len23/pointsfactor;
-        var pointsnum2 = lengths.len04/pointsfactor;
+        var pointsnum0 = lengths.len03/pointfactor;
+        var pointsnum1 = lengths.len23/pointfactor;
+        var pointsnum2 = lengths.len04/pointfactor;
 
         //estimate the size of the 2 array ({positions, color} : each row represent a point)
         var arraySize = Math.trunc(
@@ -176,8 +175,9 @@
         while( y > min.y ) {
             y = max.y - k * div;
 
-            var sprite = makeTextSprite( y.toFixed(2), //sprite text
-                                         { 'x' : x+0.1, 'y' : y, 'z': z }, //sprite position
+            var sprite = makeTextSprite(
+                                         y.toFixed(2),
+                                         { 'x' : x+0.1, 'y' : y, 'z': z },
                                          lblParameters
                                        );
             labelsgroup.add( sprite );
@@ -205,8 +205,8 @@
             x = max.x - k * div;
 
             var sprite = makeTextSprite(
-                                         x.toFixed(2), //sprite text
-                                         { 'x' : x, 'y' : y-0.1, 'z': z }, //sprite position
+                                         x.toFixed(2),
+                                         { 'x' : x, 'y' : y-0.1, 'z': z },
                                          lblParameters
                                        );
             labelsgroup.add( sprite );
@@ -234,8 +234,8 @@
             z = max.z - k * div;
 
             var sprite = makeTextSprite(
-                                         z.toFixed(2), //sprite text
-                                         { 'x' : x+0.1, 'y' : y+0.1, 'z': z }, //sprite position
+                                         z.toFixed(2),
+                                         { 'x' : x+0.1, 'y' : y+0.1, 'z': z },
                                          lblParameters
                                        );
             labelsgroup.add( sprite );
@@ -303,28 +303,10 @@
     	//write the message in the canvas
     	context.lineWidth = borderThickness;
     	roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, fontsize + borderThickness, 6);
-    	// 1.4 is extra height factor for text below baseline: g,j,p,q.
-    	/*context.fillRect(
-                    canvas.width / 2 - textWidth / 2 - borderThickness / 2,
-                    canvas.height / 2 - fontsize / 2 - borderThickness / 2,
-                    textWidth + borderThickness,
-                    fontsize + borderThickness, 6
-                );
-                */
-    	//context.fillRect(, textWidth + backgroundMargin, size + backgroundMargin);
-    	/*roundRect(context,
-                    canvas.width / 2 - textWidth / 2 - borderThickness / 2,
-                    canvas.height / 2 - fontsize / 2 - borderThickness / 2,
-                    textWidth + borderThickness,
-                    fontsize + borderThickness, 6
-                );*/
-    	//text options
     	context.fillStyle = "rgba(0, 0, 0, 1.0)";
-    	//set starting point [in which (0,0):top left of the canvas;(+x):right;(+y):down;]
+    	//set starting point in which (borderThickness, fontsize + borderThickness/2) : top left of the canvas
+    	//MEMO_LEGEND : [go +x ~ go right; go +y ~ go down]
     	context.fillText( message, borderThickness, fontsize + borderThickness/2);
-    	//context.fillText(message, canvas.width/2, canvas.height/2);
-    	//context.fillText(message, canvas.width, canvas.height);
-    	//context.fillText( message, borderThickness + canvas.width, borderThickness + fontsize * 1.4);
 
     	// canvas contents will be used for a texture
     	var texture = new THREE.Texture(canvas)
@@ -361,11 +343,11 @@
      * Make a text texture <code>message</code> with TextGeometry approach
      * @param {Vector3} max The max of the bbox
      * @param {Vector3} min The min of the bbox
-     * @param {Number} pointsfactor The edge subdivisions number
+     * @param {Number} pointfactor The edge subdivisions number
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generateLabels(max, min, pointsfactor) {
+    function generateLabels(max, min, pointfactor) {
         var textGeo = new THREE.TextGeometry(
             'C',
             {
