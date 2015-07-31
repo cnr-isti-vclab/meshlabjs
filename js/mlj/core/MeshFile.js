@@ -153,9 +153,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      * @author Stefano Gabriele     
      */
     this.dispose = function () {
-        
-        FS.unlink(name);
-        
+               
         var iter = _this.overlays.iterator();
         var mesh;
         while(iter.hasNext()) {
