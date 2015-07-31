@@ -49,7 +49,52 @@ Development Environment
 ------------------
 
 
+Development Environment
+-------------
+MeshLabJS is written in C++ and JavaScript. All the code in C++ is compiled to Javascript with emscripten compiler.     
+It also use various libraries:
+-   VCG: a open source portable C++ templated library for manipulation, processing and displaying with OpenGL of triangle and tetrahedral meshes.
+-   Thress.js: a library for a simpler use of WebGL. Used for the rendering part.
+-   jQuery: the famous JavaScript library.
+
+### Build instructions
+
+For both Windows and Linux, you need to:
+-   download and install [**Emscripten**](https://kripken.github.io/emscripten-site/)
+-   download [**VCG**](http://vcg.isti.cnr.it/vcglib/)
+-   download a generic webserver (**xammp**, **lamp**)
+-   clone the repository of *MeshLabJS* to the webserver public directory
+-   create a folder named *generated* in *MeshLabJS/js/*. In this folder will be copied the compiled files.
+-   open *MeshLabJs/source/*
+
+##### Windows
+-   edit *build.bat*  according to your *vcglib* path
+-   launch *build.bat* 
+
+##### Linux
+- edit *MakeFileJS* according to your *vcglib* path
+-   execute the following commands:
+    >make -f MakefileJS clean   
+    >make -f MakefileJS  
+    >make -f MakefileJS install
+
+##### Using
+-   launch the webserver and open the public folder with any javascript-capable browser
+
 Javascript & C++ Interaction
 ----------------------------
-All the mesh processing tasks are performed in C++ compiled to asm.js using emscripten.
-
+All the mesh processing tasks are performed in C++ compiled to asm.js using emscripten.     
+In the C++ functions is necessary to specify a emscripten bindings for the functions to be exported:
+```cpp
+#ifdef __EMSCRIPTEN__
+//Binding code
+EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
+    emscripten::function("Function1Name", &Function1Pointer);
+    ...
+    emscripten::function("FunctionNName", &FunctionNPointer);
+}
+#endif
+```
+After that, with the object *Module* (a global JavaScript object with attributes that Emscripten-generated code calls at various points in its execution) is possible to call the function:
+```javascript
+Module.Function1Name(parameter_1, ...., parameter_n);
