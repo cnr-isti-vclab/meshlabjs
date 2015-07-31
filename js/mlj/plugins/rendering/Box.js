@@ -4,8 +4,8 @@
     //point DEFAULT parameters
     var pntParameters = {
             'ptsFactor' : 10,    //the minorFactor value will be 10
-            'majorFactor' : 2.5, //the majorFactor value will be (minorFactor*2.5),
-            'pntSize' : 0.05,
+            'majorFactor' : 2.5, //the majorFactor value will be (ptsFactor*2.5),
+            'pntSize' : 0.15,
             'pntColor' : new THREE.Color(1,0,0)
         };
 
@@ -86,7 +86,8 @@
             scene.addOverlayLayer(meshFile, "labels"+i, labelsGroup.children[0]);
 
         //adding major quotes
-        pntParameters.pntSize *= 2.5;
+        var supp = pntParameters.ptsFactor;
+        pntParameters.ptsFactor *= 2.5;
         pcBuffer = generatePointcloud (
                         bboxMax,
                         bboxMin,
@@ -94,6 +95,7 @@
                         lblParameters, //label params
                         labelsGroup //at the end will contains a group of labels
                     );
+        pntParameters.ptsFactor = supp;
         //add a layer of major quotes
         scene.addOverlayLayer(meshFile, "majorQuotes", pcBuffer);
     };
