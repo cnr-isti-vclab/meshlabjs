@@ -33,7 +33,7 @@
     plug._applyTo = function (meshFile, on) {
         if (on === false) {
             scene.removeOverlayLayer(meshFile, "majorQuotes");
-            for(var i=0; i<(pntParameters.minorFactor+1)*3; i++)
+            for(var i=0; i<(pntParameters.ptsFactor+1)*3; i++)
                 scene.removeOverlayLayer(meshFile, "labels"+i);
             scene.removeOverlayLayer(meshFile, "minorQuotes");
             scene.removeOverlayLayer(meshFile, plug.getName());
