@@ -207,7 +207,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         var meshFile = MLJ.core.Scene.getSelectedLayer();
         var params = meshFile.overlaysParams.getByKey(_this.getName());
         params[paramProp] = value;
-
+              
         if (parameters.global === true) {
             var iter = meshFile.overlays.iterator();
             var overlay;
@@ -230,12 +230,18 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         if (overlay === undefined) {
             return;
         }
-
-        //is a uniform ?
-        if (overlay.material.uniforms[paramProp] !== undefined) {
+        
+        //is 'bindTo' property a uniform?
+        if (overlay.material.uniforms !== undefined 
+                && overlay.material.uniforms[paramProp] !== undefined) {
             overlay.material.uniforms[paramProp].value = value;
             MLJ.core.Scene.render();
             return;
+        }
+        
+        //is 'bindTo' property a function?
+        if(jQuery.isFunction(paramProp)) {
+            paramProp(value);
         }
 
     });
