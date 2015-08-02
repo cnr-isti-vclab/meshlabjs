@@ -1,22 +1,23 @@
 
 (function (plugin, core, scene) {
 
-    /** point DEFAULT parameters */
-    var pntParameters = {
-            'minorFactor' : 10,
-            'majorFactor' : 2,
-            'minorPointSize' : 0.15,
-            'majorPointSize' : 0.30,
-            'pntColor' : new THREE.Color(1,0,0)
-        };
+    var DEFAULTS = {
 
-    /** label DEFAULT parameters */
-    var lblParameters = {
-            //'fontFace' : "Arial",
-            'fontSize' : 10,
-            //'borderThickness' : 4,
-            'borderColor' : {r:0, g:0, b:0, a:0},
-            'bgColor' : {r:255, g:255, b:255, a:0}
+            //uniforms
+            minorFactor : 0.1,
+            majorFactor : 0.5,
+            minorPointSize : 0.10,
+            pntColor : new THREE.Color(1,0,0),
+
+            //label parameters
+            lblParameters : {
+                fontFace : "Arial",
+                fontSize : 10,
+                borderThickness : 4,
+                borderColor : {r:0, g:0, b:0, a:0},
+                bgColor : {r:255, g:255, b:255, a:0}
+            }
+
         };
 
     var plug = new plugin.Rendering({
@@ -26,22 +27,36 @@
         toggle: true,
         on: false,
         updateOnLayerAdded: true
-    });
+    }, DEFAULTS );
 
+    var boxMinorFactorWidget;
     plug._init = function (guiBuilder) {
+        boxMinorFactorWidget = guiBuilder.RangedFloat({
+            label: "Minor Factor",
+            tooltip: "The minor factor is the distance between two consecutive measures in non quoted axis",
+            min: 0.1, step: 0.1, max:0.5,
+            defval: DEFAULTS.minorFactor,
+            bindTo: "minorFactor"
+        });
     };
 
     plug._applyTo = function (meshFile, on) {
         if (on === false) {
-            scene.removeOverlayLayer(meshFile, "majorQuotes");
-            for(var i=0; i<(pntParameters.minorFactor+1)*3; i++)
-                scene.removeOverlayLayer(meshFile, "labels"+i);
-            scene.removeOverlayLayer(meshFile, "minorQuotes");
+            scene.removeOverlayLayer(meshFile, "majLabels");
+            scene.removeOverlayLayer(meshFile, "majQuotes");
+            scene.removeOverlayLayer(meshFile, "medlabels");
+            scene.removeOverlayLayer(meshFile, "medQuotes");
+            scene.removeOverlayLayer(meshFile, "minQuotes");
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
 
-        //bounding box helper
+        /*var params = meshFile.overlaysParams.getByKey(plug.getName());
+        var uniforms = {
+            minorFactor: {type: "f", value: params.minorFactor},
+        };*/
+
+        /* Overlay bounding box (THREE.BoxHelper) */
 
         var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
         bbHelper.update();
@@ -49,10 +64,10 @@
         bbox.update(meshFile.getThreeMesh());
         scene.addOverlayLayer(meshFile, plug.getName(), bbox);
 
-        //bounding box quotes with labels
+        /* Overlay quotes (THREE.PointCloud) and overlay labels (THREE.Sprite) */
 
         //calculate bbox
-        var geometry = meshFile.getThreeMesh().geometry;
+        var geometry = meshFile.getThreeMesh().geometry.clone();
         if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
         var bboxMax = geometry.boundingBox.max;
         var bboxMin = geometry.boundingBox.min;
@@ -70,38 +85,47 @@
         6: bboxmin.x, bboxmin.y, bboxmin.z
         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        //var needed to group labels
-        var labelsGroup = new THREE.Group();
-
         //adding minor quotes
         var pcBuffer = generatePointcloud (
                     bboxMax,
                     bboxMin,
-                    pntParameters.minorFactor,
-                    pntParameters.minorPointSize,
-                    pntParameters.pntColor,
-                    lblParameters,
-                    labelsGroup
+                    DEFAULTS.minorFactor,
+                    DEFAULTS.minorPointSize,
+                    DEFAULTS.pntColor,
+                    DEFAULTS.lblParameters,
+                    undefined
                 );
-        //add layer of minor quotes
-        scene.addOverlayLayer(meshFile, "minorQuotes", pcBuffer);
+        scene.addOverlayLayer(meshFile, "minQuotes", pcBuffer);
 
-        //adding layers of texture sprite
-        for(var i=0; i<(pntParameters.minorFactor+1)*3; i++)
-            scene.addOverlayLayer(meshFile, "labels"+i, labelsGroup.children[0]);
+        //var needed to group labels
+        var labelsGroup = new THREE.Mesh();
 
-        //adding major quotes
+        //adding medium quotes
         pcBuffer = generatePointcloud (
                         bboxMax,
                         bboxMin,
-                        pntParameters.majorFactor,
-                        pntParameters.majorPointSize,
-                        pntParameters.pntColor,
-                        lblParameters,
+                        DEFAULTS.majorFactor,
+                        DEFAULTS.minorPointSize*2,
+                        DEFAULTS.pntColor,
+                        DEFAULTS.lblParameters,
                         labelsGroup
                     );
-        //add a layer of major quotes
-        scene.addOverlayLayer(meshFile, "majorQuotes", pcBuffer);
+        scene.addOverlayLayer(meshFile, "medQuotes", pcBuffer);
+        scene.addOverlayLayer(meshFile, "medLabels", labelsGroup);
+
+        labelsGroup = new THREE.Mesh();
+
+        //adding major quotes
+        var pcBuffer = generateExtremesPointcloud (
+                        bboxMax,
+                        bboxMin,
+                        DEFAULTS.minorPointSize*3,
+                        DEFAULTS.pntColor,
+                        DEFAULTS.lblParameters,
+                        labelsGroup
+                    );
+        scene.addOverlayLayer(meshFile, "majQuotes", pcBuffer);
+        scene.addOverlayLayer(meshFile, "majLabels", labelsGroup);
     };
 
     /**
@@ -117,8 +141,6 @@
     */
     function generatePointcloud( bboxMax, bboxMin, pointFactor, pointSize, pointColor, lblParameters, labelsgroup) {
 
-        if ( pntParameters === undefined ) pntParameters = {};
-
         var len0 = bboxMax.y - bboxMin.y; //segm. 0 - 3
         var len1 = bboxMax.x - bboxMin.x; //segm. 2 - 3
         var len2 = bboxMax.z - bboxMin.z; //segm. 0 - 4
@@ -128,7 +150,20 @@
         var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pointFactor, pointColor, lblParameters, labelsgroup);
 
         var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
+        /*var shaderMaterial = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            attributes: attributes,
+            vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
+            fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
+            alphaTest: 0.9
+        });*/
 
+        return new THREE.PointCloud(geometry, material );
+    }
+
+    function generateExtremesPointcloud( bboxMax, bboxMin, pointSize, pointColor, lblParameters, labelsgroup){
+        var geometry = generateBordersPointCloudGeometry(bboxMax, bboxMin, pointColor, lblParameters, labelsgroup);
+        var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
         return new THREE.PointCloud(geometry, material );
     }
 
@@ -144,117 +179,239 @@
      * @author Stefano Giammori
     */
     function generatePointCloudGeometry(max, min, lengths, pointfactor, pointcolor, lblParameters, labelsgroup){
-        var geometry = new THREE.BufferGeometry();
-        var div, x, y, z, j, k;
+        var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
 
         //estimate the number of points (op segment dependent)
-        var pointsnum0 = lengths.len03/pointfactor;
-        var pointsnum1 = lengths.len23/pointfactor;
-        var pointsnum2 = lengths.len04/pointfactor;
+        var pointsnum0 = Math.trunc(lengths.len03/pointfactor);
+        var pointsnum1 = Math.trunc(lengths.len23/pointfactor);
+        var pointsnum2 = Math.trunc(lengths.len04/pointfactor);
 
         //estimate the size of the 2 array ({positions, color} : each row represent a point)
-        var arraySize = Math.trunc(
-                                   (
-                                    (lengths.len03 / pointsnum0 + 1) +
-                                    (lengths.len23 / pointsnum1 + 1) +
-                                    (lengths.len04 / pointsnum2 + 1)
-                                   ) * 3
-                                  );
-        var positions = new Float32Array( arraySize );
-        var colors = new Float32Array( arraySize );
+        var arraySize =(
+                         (pointsnum0 !== 0 ? (pointsnum0+1) : 0) +
+                         (pointsnum1 !== 0 ? (pointsnum1+1) : 0) +
+                         (pointsnum2 !== 0 ? (pointsnum2+1) : 0)
+                       ) * 3;
+        if(arraySize > 0){
+            geometry = new THREE.BufferGeometry();
+            var positions = new Float32Array( arraySize );
+            var colors = new Float32Array( arraySize );
 
-        //segment 0 - 3
-        var id = 0;
-        var i = 0;
-        k = 0;
-        x = max.x + 0.1; //TODO : MeshSizes dependent
-        y = max.y;
-        z = max.z;
-        div = pointsnum0;
+            //segment 0 - 3
+            var id = 0;
+            var i = 0;
+            k = 0;
+            x = max.x + 0.1; //TODO : MeshSizes dependent value ?
+            y = max.y;
+            z = max.z;
+            div = pointfactor;
 
-        while( y > min.y ) {
-            y = max.y - k * div;
+            while( y >= min.y ) {
 
-            var sprite = makeTextSprite(
-                                         y.toFixed(2),
-                                         { 'x' : x+0.1, 'y' : y, 'z': z },
-                                         lblParameters
+                if(labelsgroup !== undefined && y!==max.y && y!==0 && y!==min.y){
+                    var sprite = makeTextSprite(
+                                                 y.toFixed(2),
+                                                 { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                 lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+                };
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                y = max.y - k * div;
+            }
+
+            //segment 2 - 3
+            id = k * 3;
+            k = 0;
+            x = max.x;
+            y = min.y-0.1;
+            z = max.z;
+            div = pointfactor;
+
+            while( x >= min.x ) {
+
+                if(labelsgroup!=undefined && x!==max.x && x!==0 && x!==min.x){
+                    var sprite = makeTextSprite(
+                                             x.toFixed(2),
+                                             { 'x' : x, 'y' : y-0.1, 'z': z },
+                                             lblParameters
                                        );
-            labelsgroup.add( sprite );
+                    labelsgroup.add( sprite );
+                }
 
-            positions[(3 * k) + id] = x;
-            positions[(3 * k + 1) + id] = y;
-            positions[(3 * k + 2) + id] = z;
 
-            colors[(3 * k) + id] = pointcolor.r * 5;
-            colors[(3 * k + 1) + id] = pointcolor.g * 0;
-            colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
 
-            k++;
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                x = max.x - k * div;
+            }
+
+            //segment 0 - 4
+            id += k * 3;
+            k = 0;
+            x = max.x;
+            y = max.y+0.1;
+            z = max.z;
+            div = pointfactor;
+
+            while( z >= min.z ) {
+
+                if(labelsgroup !== undefined  && z!==max.z && z!==0 && z!==min.z){
+                    var sprite = makeTextSprite(
+                                                 z.toFixed(2),
+                                                 { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                 lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+                }
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                z = max.z - k * div;
+            }
+
+            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
         }
-
-        //segment 2 - 3
-        id = (lengths.len03 / pointsnum0 + 1) * 3;
-        k = 0;
-        x = max.x;
-        y = min.y-0.1; //TODO : MeshSizes dependent
-        z = max.z;
-        div = pointsnum1;
-
-        while( x > min.x ) {
-            x = max.x - k * div;
-
-            var sprite = makeTextSprite(
-                                         x.toFixed(2),
-                                         { 'x' : x, 'y' : y-0.1, 'z': z },
-                                         lblParameters
-                                       );
-            labelsgroup.add( sprite );
-
-            positions[(3 * k) + id] = x;
-            positions[(3 * k + 1) + id] = y;
-            positions[(3 * k + 2) + id] = z;
-
-            colors[(3 * k) + id] = pointcolor.r * 5;
-            colors[(3 * k + 1) + id] = pointcolor.g * 0;
-            colors[(3 * k + 2) + id] = pointcolor.b * 0;
-
-            k++;
-        }
-
-        //segment 0 - 4
-        id = ((lengths.len03 / pointsnum0 + 1) + (lengths.len23 / pointsnum1 + 1))*3;
-        k = 0;
-        x = max.x+0.1; //TODO : MeshSizes dependent
-        y = max.y+0.1;
-        z = max.z;
-        div = pointsnum2;
-
-        while( z > min.z ) {
-            z = max.z - k * div;
-
-            var sprite = makeTextSprite(
-                                         z.toFixed(2),
-                                         { 'x' : x+0.1, 'y' : y+0.1, 'z': z },
-                                         lblParameters
-                                       );
-            labelsgroup.add( sprite );
-
-            positions[(3 * k) + id] = x;
-            positions[(3 * k + 1) + id] = y;
-            positions[(3 * k + 2) + id] = z;
-
-            colors[(3 * k) + id] = pointcolor.r * 5;
-            colors[(3 * k + 1) + id] = pointcolor.g * 0;
-            colors[(3 * k + 2) + id] = pointcolor.b * 0;
-
-            k++;
-        }
-
-    	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-    	geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
 
     	return geometry;
+    }
+
+    function generateBordersPointCloudGeometry(max, min, pointcolor, lblParameters, labelsgroup){
+        var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
+
+        //estimate the number of points (only the extreme points)
+        var pointsnum0 = 2, pointsnum1 = 2, pointsnum2 = 2;
+        var xdiv = (max.x - min.x) / 2, ydiv = (max.y - min.y) / 2, zdiv = (max.z - min.z) / 2;
+        var xCenter = max.x - xdiv, yCenter = max.y - ydiv, zCenter = max.z - zdiv;
+
+        //estimate the size of the 2 array ({positions, color} : each row represent a point)
+        var arraySize =(
+                         pointsnum0 + (xCenter === 0 ? 1 : 0) +
+                         pointsnum1 + (yCenter === 0 ? 1 : 0) +
+                         pointsnum2 + (zCenter === 0 ? 1 : 0)
+                       ) * 3;
+
+        if(arraySize > 0){
+            geometry = new THREE.BufferGeometry();
+            var positions = new Float32Array( arraySize );
+            var colors = new Float32Array( arraySize );
+
+            //segment 0 - 3
+            var id = 0;
+            var i = 0;
+            k = 0;
+            x = max.x + 0.1; //TODO : MeshSizes dependent value ?
+            y = max.y;
+            z = max.z;
+            div = ydiv;
+
+            while( y >= min.y ) {
+                if(y===max.y || y===0 || y===min.y){
+                    var sprite = makeTextSprite(
+                                                 y.toFixed(2),
+                                                 { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                 lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+                };
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                y = max.y - k * div;
+            }
+
+            //segment 2 - 3
+            id = k * 3;
+            k = 0;
+            x = max.x;
+            y = min.y-0.1;
+            z = max.z;
+            div = xdiv;
+
+            while( x >= min.x ) {
+
+                if(x===max.x || x===0 || x===min.x){
+                    var sprite = makeTextSprite(
+                                             x.toFixed(2),
+                                             { 'x' : x, 'y' : y-0.1, 'z': z },
+                                             lblParameters
+                                       );
+                    labelsgroup.add( sprite );
+                }
+
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                x = max.x - k * div;
+            }
+
+            //segment 0 - 4
+            id += k * 3;
+            k = 0;
+            x = max.x;
+            y = max.y+0.1;
+            z = max.z;
+            div = zdiv;
+
+            while( z >= min.z ) {
+
+                if(z===max.z || z===0 || z===min.z){
+                    var sprite = makeTextSprite(
+                                                 z.toFixed(2),
+                                                 { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                 lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+                }
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    colors[(3 * k) + id] = pointcolor.r * 5;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                k++;
+                z = max.z - k * div;
+            }
+
+            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions,3) );
+            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3) );
+        }
+
+        return geometry;
     }
 
     /**
@@ -291,24 +448,31 @@
 
     	canvas.width = textWidth + borderThickness * 2;
         canvas.height = fontsize + borderThickness * 2;
-        context.font = "normal " + fontsize + "px " + fontface;
 
-    	//background color
+        //set the param font into context
+        context.font = "normal " + fontsize + "px " + fontface;
+    	//set context background color
     	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
     								  + backgroundColor.b + "," + backgroundColor.a + ")";
-    	//border color
+    	//set context border color
     	context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
     								  + borderColor.b + "," + borderColor.a + ")";
-
-    	//write the message in the canvas
+    	//set border thickness
     	context.lineWidth = borderThickness;
-    	roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, fontsize + borderThickness, 6);
+    	/** //TODO MEMO : (add +x) ~~ go right; (add +y) ~~ go down) ]
+    	   Set the rectangular frame (ctx, top-left, top, width, height, radius of the 4 corners)
+    	*/
+    	roundRect(context,
+    	          borderThickness/2,
+    	          borderThickness/2,
+    	          textWidth + borderThickness,
+    	          fontsize + borderThickness,
+    	          6);
     	context.fillStyle = "rgba(0, 0, 0, 1.0)";
-    	//set starting point in which (borderThickness, fontsize + borderThickness/2) : top left of the canvas
-    	//MEMO_LEGEND : [go +x ~ go right; go +y ~ go down]
+    	/** Set starting point of text, in which pt(borderThickness, fontsize+borderThickness/2) represent the
+    	top left of the top-left corner of the texture text in the canvas. */
     	context.fillText( message, borderThickness, fontsize + borderThickness/2);
-
-    	// canvas contents will be used for a texture
+    	//canvas contents will be used for create a texture
     	var texture = new THREE.Texture(canvas)
     	texture.needsUpdate = true;
     	texture.minFilter = THREE.LinearFilter;
@@ -316,8 +480,6 @@
     	var sprite = new THREE.Sprite( spriteMaterial );
     	sprite.scale.set( textWidth/100, fontsize/100, 1 );
     	sprite.position.set( position.x, position.y, position.z);
-    	//sprite.position.normalize();
-        //sprite.position.multiplyScalar( 500 );
     	return sprite;
     }
 
