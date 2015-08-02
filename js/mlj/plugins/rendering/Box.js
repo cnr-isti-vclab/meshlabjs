@@ -4,10 +4,10 @@
     var DEFAULTS = {
 
             //uniforms
-            minorFactor : 0.1,
-            majorFactor : 0.5,
+            minorFactor : 0.2,
+            //majorFactor : 0.5,
             minorPointSize : 0.10,
-            pntColor : new THREE.Color(1,1,0),
+            pntColor : new THREE.Color('#FF0000'),
 
             //label parameters
             lblParameters : {
@@ -33,10 +33,23 @@
     plug._init = function (guiBuilder) {
         boxMinorFactorWidget = guiBuilder.RangedFloat({
             label: "Minor Factor",
-            tooltip: "The minor factor is the distance between two consecutive measures in non quoted axis",
+            tooltip: "Distance between two consecutive measurations in non quoted axis [Medium factor will be (this * 2) and Major (this * 3)]",
             min: 0.1, step: 0.1, max:0.5,
             defval: DEFAULTS.minorFactor,
             bindTo: "minorFactor"
+        });
+        boxMinorPntSizeWidget = guiBuilder.RangedFloat({
+            label: "Minor Point Size",
+            tooltip: "Size of a point in non quoted axis; Medium and Major point sizes will be related to it",
+            min: 0.05, step: 0.05, max:0.2,
+            defval: DEFAULTS.minorPointSize,
+            bindTo: "minorPointSize"
+        });
+        boxPntColorWidget = guiBuilder.Color({
+            label: "Thicks color",
+            tooltip: "Color of the material related to a point in non quoted axis",
+            color: "#"+DEFAULTS.pntColor.getHexString(),
+            bindTo: "pntColor"
         });
     };
 
