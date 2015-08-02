@@ -7,7 +7,7 @@
             minorFactor : 0.1,
             majorFactor : 0.5,
             minorPointSize : 0.10,
-            pntColor : new THREE.Color(1,0,0),
+            pntColor : new THREE.Color(1,1,0),
 
             //label parameters
             lblParameters : {
@@ -222,8 +222,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 y = max.y - k * div;
             }
@@ -253,8 +253,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 x = max.x - k * div;
             }
@@ -283,8 +283,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 z = max.z - k * div;
             }
@@ -340,8 +340,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 y = max.y - k * div;
             }
@@ -371,8 +371,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 x = max.x - k * div;
             }
@@ -401,8 +401,8 @@
                     positions[(3 * k + 2) + id] = z;
 
                     colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 0;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 0;
+                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
+                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
                 k++;
                 z = max.z - k * div;
             }
