@@ -5,7 +5,7 @@
             //uniforms
             minorFactor : 0.2,
             majorFactor : 0.5,
-            minorPointSize : 0.10,
+            pntSize : 0.10,
             pntColor : new THREE.Color('#FF0000'),
 
             //label parameters
@@ -50,13 +50,13 @@
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
-        boxMinorPntSizeWidget = guiBuilder.RangedFloat({
-            label: "Minor Point Size",
-            tooltip: "Size of a point in non quoted axis; Medium and Major point sizes will be related to it",
+        boxPntSizeWidget = guiBuilder.RangedFloat({
+            label: "Point Size",
+            tooltip: "Size of a point in the 3 axis",
             min: 0.05, step: 0.05, max:0.25,
-            defval: DEFAULTS.minorPointSize,
+            defval: DEFAULTS.pntSize,
             bindTo: function(newPointSize){
-                DEFAULTS.minorPointSize = newPointSize;
+                DEFAULTS.pntSize = newPointSize;
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -121,7 +121,7 @@
                     bboxMax,
                     bboxMin,
                     DEFAULTS.minorFactor,
-                    DEFAULTS.minorPointSize,
+                    DEFAULTS.pntSize,
                     DEFAULTS.pntColor,
                     DEFAULTS.lblParameters,
                     undefined
@@ -136,7 +136,7 @@
                         bboxMax,
                         bboxMin,
                         DEFAULTS.majorFactor,
-                        DEFAULTS.minorPointSize*2,
+                        DEFAULTS.pntSize*2,
                         DEFAULTS.pntColor,
                         DEFAULTS.lblParameters,
                         labelsGroup
@@ -150,7 +150,7 @@
         var pcBuffer = generateExtremesPointcloud (
                         bboxMax,
                         bboxMin,
-                        DEFAULTS.minorPointSize*3,
+                        DEFAULTS.pntSize*3,
                         DEFAULTS.pntColor,
                         DEFAULTS.lblParameters,
                         labelsGroup

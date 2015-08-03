@@ -799,7 +799,7 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Spinner);
  */
 MLJ.gui.component.RangedFloat = function (flags) {
     //local variable for the input parameters
-    var inputparams;
+    var _this = this, inputparams;
     //create root
     var _html = $('<div>').css({position: "relative", float: "left", clear: "none", width: "100%"});
     //create slider node
@@ -889,6 +889,10 @@ MLJ.gui.component.RangedFloat = function (flags) {
 
     this.onChange = function (foo) {          
         _$slider.on( "slide", function( event, ui ) {
+            foo(event,ui);
+        });
+        _$editText.on("change", function( event ) {
+            var ui = { value : _$editText.val() };
             foo(event,ui);
         });
     };
