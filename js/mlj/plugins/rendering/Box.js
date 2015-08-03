@@ -26,6 +26,7 @@
             min: 0.1, step: 0.1, max:100,
             defval: DEFAULTS.minorFactor,
             bindTo: function(newFactor){
+                boxMinorFactorWidget.setValue(newFactor);
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -35,6 +36,7 @@
             min: 0.5, step: 0.1, max:250,
             defval: DEFAULTS.majorFactor,
             bindTo: function(newFactor){
+                boxMajorFactorWidget.setValue(newFactor);
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
