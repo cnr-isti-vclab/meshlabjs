@@ -6,17 +6,7 @@
             minorFactor : 0.2,
             majorFactor : 0.5,
             pntSize : 0.10,
-            pntColor : new THREE.Color('#FF0000'),
-
-            //label parameters
-            lblParameters : {
-                fontFace : "Arial",
-                fontSize : 10,
-                borderThickness : 4,
-                borderColor : {r:0, g:0, b:0, a:0},
-                bgColor : {r:255, g:255, b:255, a:0}
-            }
-
+            pntColor : new THREE.Color('#FF0000')
         };
 
     var plug = new plugin.Rendering({
@@ -26,27 +16,25 @@
         toggle: true,
         on: false,
         updateOnLayerAdded: true
-    }, DEFAULTS );
+    });
 
-    var boxMinorFactorWidget;
+    var boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;
     plug._init = function (guiBuilder) {
         boxMinorFactorWidget = guiBuilder.RangedFloat({
             label: "Minor Factor",
             tooltip: "Distance between two consecutive misurations in non quoted axis",
-            min: 0.1, step: 0.1, max:0.5,
+            min: 0.1, step: 0.1, max:100,
             defval: DEFAULTS.minorFactor,
             bindTo: function(newFactor){
-                DEFAULTS.minorFactor = newFactor;
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
         boxMajorFactorWidget = guiBuilder.RangedFloat({
             label: "Major Factor",
             tooltip: "Distance between two consecutive misurations in quoted axis",
-            min: 0.5, step: 0.1, max:1.5,
+            min: 0.5, step: 0.1, max:250,
             defval: DEFAULTS.majorFactor,
             bindTo: function(newFactor){
-                DEFAULTS.majorFactor = newFactor;
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -56,7 +44,6 @@
             min: 0.05, step: 0.05, max:0.25,
             defval: DEFAULTS.pntSize,
             bindTo: function(newPointSize){
-                DEFAULTS.pntSize = newPointSize;
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -65,8 +52,39 @@
             tooltip: "Color of the material related to a point in non quoted axis",
             color: "#"+DEFAULTS.pntColor.getHexString(),
             bindTo: function(newPointColor){
-                var d = DEFAULTS;
-                DEFAULTS.pntColor = new THREE.Color(newPointColor);
+                boxPntColorWidget.setColor('#'+newPointColor.getHexString());
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
+        });
+
+        boxFontFaceChoiceWidget = guiBuilder.Choice({
+            label: "Font Face",
+            tooltip: "Choose the labels font face",
+            options: [
+                {content: "Helvetiker", value: "0"},
+                {content: "Georgia", value: "1"},
+                {content: "Arial", value: "2"},
+                {content: "Arial", value: "3", selected: true},
+            ],
+            bindTo: function(newFontface){
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
+        });
+
+        boxFontSizeChoiceWidget = guiBuilder.Integer({
+            min: 5, step: 1, defval: 10,
+            label: "Font Size",
+            tooltip: "Choose the labels font size",
+            bindTo: function(newFontsize){
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
+        });
+
+        boxFontBorderThickChoiceWidget = guiBuilder.Integer({
+            min: 0, step: 1, defval: 4,
+            label: "Font Border Thickness",
+            tooltip: "Choose the labels font border thickness",
+            bindTo: function(newFontsize){
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -82,6 +100,15 @@
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
+
+        //label parameters
+        var lblParameters = {
+            fontFace : boxFontFaceChoiceWidget.getContent(),
+            fontSize : boxFontSizeChoiceWidget.getValue(),
+            borderThickness : boxFontBorderThickChoiceWidget.getValue(),
+            borderColor : {r:0, g:0, b:0, a:0},
+            bgColor : {r:255, g:255, b:255, a:0}
+        };
 
         /* postponed (for uniforms spec)
         var params = meshFile.overlaysParams.getByKey(plug.getName());
@@ -120,10 +147,10 @@
         var pcBuffer = generatePointcloud (
                     bboxMax,
                     bboxMin,
-                    DEFAULTS.minorFactor,
-                    DEFAULTS.pntSize,
-                    DEFAULTS.pntColor,
-                    DEFAULTS.lblParameters,
+                    boxMinorFactorWidget.getValue(),
+                    boxPntSizeWidget.getValue(),
+                    boxPntColorWidget.getColor("rgb"),
+                    lblParameters,
                     undefined
                 );
         scene.addOverlayLayer(meshFile, "minQuotes", pcBuffer);
@@ -135,10 +162,10 @@
         pcBuffer = generatePointcloud (
                         bboxMax,
                         bboxMin,
-                        DEFAULTS.majorFactor,
-                        DEFAULTS.pntSize*2,
-                        DEFAULTS.pntColor,
-                        DEFAULTS.lblParameters,
+                        boxMajorFactorWidget.getValue(),
+                        boxPntSizeWidget.getValue()*2,
+                        boxPntColorWidget.getColor("rgb"),
+                        lblParameters,
                         labelsGroup
                     );
         scene.addOverlayLayer(meshFile, "medQuotes", pcBuffer);
@@ -150,9 +177,9 @@
         var pcBuffer = generateExtremesPointcloud (
                         bboxMax,
                         bboxMin,
-                        DEFAULTS.pntSize*3,
-                        DEFAULTS.pntColor,
-                        DEFAULTS.lblParameters,
+                        boxPntSizeWidget.getValue()*3,
+                        boxPntColorWidget.getColor("rgb"),
+                        lblParameters,
                         labelsGroup
                     );
         scene.addOverlayLayer(meshFile, "majQuotes", pcBuffer);
@@ -486,7 +513,7 @@
 
     	//extract label params
     	var fontface = parameters.hasOwnProperty("fontFace") ?
-    	    parameters["fontFace"] : "Arial"; //alternatives = "helvetiker" or "Georgia"...;
+    	    parameters["fontFace"] : "Arial";
     	var fontsize = parameters.hasOwnProperty("fontSize") ?
     		parameters["fontSize"] : 10;
     	var borderThickness = parameters.hasOwnProperty("borderThickness") ?
