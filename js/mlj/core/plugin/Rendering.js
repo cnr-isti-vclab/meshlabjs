@@ -110,9 +110,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 }
             });
 
-        });
-
-        $(document).on("SceneLayerAdded",
+        });             
+        
+        $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
                     if (btn.isOn() === parameters.on) {
@@ -153,8 +153,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 }
             });
         });
-
-        $(document).on("SceneLayerAdded",
+        
+        $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     _this._applyTo(meshFile, true);
                     update();
