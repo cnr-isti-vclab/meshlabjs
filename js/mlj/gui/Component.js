@@ -892,7 +892,18 @@ MLJ.gui.component.RangedFloat = function (flags) {
             foo(event,ui);
         });
         _$editText.on("change", function( event ) {
-            var ui = { value : _$editText.val() };
+            var val = _$editText.val();
+            var min = _$slider.slider("option", "min");
+            var max = _$slider.slider("option", "max");
+            var ui;
+            //validate the boundaries
+            if (val > max)
+                val = max;
+            else if (val < min)
+                val = min;
+            _$editText.val(val);
+            _$slider.slider('value', val);
+            ui = { value : val };
             foo(event,ui);
         });
     };
