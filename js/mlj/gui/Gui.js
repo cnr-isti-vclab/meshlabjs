@@ -97,21 +97,13 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
 };
 
 MLJ.gui.disabledOnCppMesh = function(component) {
-    $(document).on("SceneLayerSelected", function (ev, layer) {
+    $(document).on("SceneLayerSelected SceneLayerAdded", function (ev, layer) {
         if(layer.cpp === true) {
             component.disabled(true);
         } else {
             component.disabled(false);
         }                
-    });            
-
-    $(document).on("SceneLayerAdded", function (ev, layer) {
-        if(layer.cpp === true) {
-            component.disabled(true);
-        } else {
-            component.disabled(false);
-        }                
-    });     
+    });    
 };
 
 (function () {
