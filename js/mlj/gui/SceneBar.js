@@ -57,8 +57,11 @@
                 tooltip: "Reload mesh file",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png"
             });
-            
+                                                          
             MLJ.gui.disabledOnSceneEmpty(reload);
+            //The reload button must be disalbed if the layer is created by a
+            //creation filter            
+            MLJ.gui.disabledOnCppMesh(reload);
 
             var snapshot = new component.Button({
                 tooltip: "Take snapshot",
@@ -87,7 +90,7 @@
             snapshot.onClick(function () {                
                 MLJ.core.Scene.takeSnapshot();
             });
-
+                                             
         }
         
         /**
