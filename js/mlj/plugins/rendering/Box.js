@@ -44,6 +44,7 @@
             min: 0.05, step: 0.05, max:0.25,
             defval: DEFAULTS.pntSize,
             bindTo: function(newPointSize){
+                boxPntSizeWidget.setValue(newPointSize);
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
@@ -61,10 +62,10 @@
             label: "Font Face",
             tooltip: "Choose the labels font face",
             options: [
-                {content: "Helvetiker", value: "0"},
+                {content: "Arial", value: "0", selected: true},
                 {content: "Georgia", value: "1"},
-                {content: "Arial", value: "2"},
-                {content: "Arial", value: "3", selected: true},
+                {content: "Droid Sans", value: "2"},
+                {content: "Droid Serif", value: "3"}
             ],
             bindTo: function(newFontface){
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
