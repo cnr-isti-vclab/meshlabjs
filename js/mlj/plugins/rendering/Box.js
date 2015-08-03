@@ -94,15 +94,14 @@
     };
 
     plug._applyTo = function (meshFile, on) {
+
         if (on === false) {
-            scene.removeOverlayLayer(meshFile, "majLabels");
-            scene.removeOverlayLayer(meshFile, "majQuotes");
-            scene.removeOverlayLayer(meshFile, "medLabels");
-            scene.removeOverlayLayer(meshFile, "medQuotes");
-            scene.removeOverlayLayer(meshFile, "minQuotes");
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
+
+        //var needed to group all (pseudo) "subclasses" of THREE.Mesh
+        var meshesGroup = new THREE.Mesh();
 
         //label parameters
         var lblParameters = {
@@ -126,7 +125,7 @@
         bbHelper.update();
         var bbox = new THREE.BoxHelper(bbHelper);
         bbox.update(meshFile.getThreeMesh());
-        scene.addOverlayLayer(meshFile, plug.getName(), bbox);
+        meshesGroup.add(bbox);
 
         /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 group of
            THREE.Sprite overlays) */
@@ -156,9 +155,8 @@
                     lblParameters,
                     undefined
                 );
-        scene.addOverlayLayer(meshFile, "minQuotes", pcBuffer);
+        meshesGroup.add(pcBuffer);
 
-        //var needed to group labels
         var labelsGroup = new THREE.Mesh();
 
         //adding medium quotes and labels
@@ -171,8 +169,8 @@
                         lblParameters,
                         labelsGroup
                     );
-        scene.addOverlayLayer(meshFile, "medQuotes", pcBuffer);
-        scene.addOverlayLayer(meshFile, "medLabels", labelsGroup);
+        meshesGroup.add(pcBuffer);
+        meshesGroup.add(labelsGroup);
 
         labelsGroup = new THREE.Mesh();
 
@@ -185,8 +183,10 @@
                         lblParameters,
                         labelsGroup
                     );
-        scene.addOverlayLayer(meshFile, "majQuotes", pcBuffer);
-        scene.addOverlayLayer(meshFile, "majLabels", labelsGroup);
+        meshesGroup.add(pcBuffer);
+        meshesGroup.add(labelsGroup);
+
+        scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
     };
 
     /**
