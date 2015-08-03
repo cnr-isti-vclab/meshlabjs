@@ -2,10 +2,9 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-
             //uniforms
             minorFactor : 0.2,
-            //majorFactor : 0.5,
+            majorFactor : 0.5,
             minorPointSize : 0.10,
             pntColor : new THREE.Color('#FF0000'),
 
@@ -33,23 +32,43 @@
     plug._init = function (guiBuilder) {
         boxMinorFactorWidget = guiBuilder.RangedFloat({
             label: "Minor Factor",
-            tooltip: "Distance between two consecutive measurations in non quoted axis [Medium factor will be (this * 2) and Major (this * 3)]",
+            tooltip: "Distance between two consecutive misurations in non quoted axis",
             min: 0.1, step: 0.1, max:0.5,
             defval: DEFAULTS.minorFactor,
-            bindTo: "minorFactor"
+            bindTo: function(newFactor){
+                DEFAULTS.minorFactor = newFactor;
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
+        });
+        boxMajorFactorWidget = guiBuilder.RangedFloat({
+            label: "Major Factor",
+            tooltip: "Distance between two consecutive misurations in quoted axis",
+            min: 0.5, step: 0.1, max:1.5,
+            defval: DEFAULTS.majorFactor,
+            bindTo: function(newFactor){
+                DEFAULTS.majorFactor = newFactor;
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
         });
         boxMinorPntSizeWidget = guiBuilder.RangedFloat({
             label: "Minor Point Size",
             tooltip: "Size of a point in non quoted axis; Medium and Major point sizes will be related to it",
-            min: 0.05, step: 0.05, max:0.2,
+            min: 0.05, step: 0.05, max:0.25,
             defval: DEFAULTS.minorPointSize,
-            bindTo: "minorPointSize"
+            bindTo: function(newPointSize){
+                DEFAULTS.minorPointSize = newPointSize;
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
         });
         boxPntColorWidget = guiBuilder.Color({
             label: "Thicks color",
             tooltip: "Color of the material related to a point in non quoted axis",
             color: "#"+DEFAULTS.pntColor.getHexString(),
-            bindTo: "pntColor"
+            bindTo: function(newPointColor){
+                var d = DEFAULTS;
+                DEFAULTS.pntColor = new THREE.Color(newPointColor);
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
         });
     };
 
@@ -57,19 +76,21 @@
         if (on === false) {
             scene.removeOverlayLayer(meshFile, "majLabels");
             scene.removeOverlayLayer(meshFile, "majQuotes");
-            scene.removeOverlayLayer(meshFile, "medlabels");
+            scene.removeOverlayLayer(meshFile, "medLabels");
             scene.removeOverlayLayer(meshFile, "medQuotes");
             scene.removeOverlayLayer(meshFile, "minQuotes");
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
 
-        /*var params = meshFile.overlaysParams.getByKey(plug.getName());
+        /* postponed (for uniforms spec)
+        var params = meshFile.overlaysParams.getByKey(plug.getName());
         var uniforms = {
             minorFactor: {type: "f", value: params.minorFactor},
-        };*/
+        };
+        */
 
-        /* Overlay bounding box (THREE.BoxHelper) */
+        /* Overlay bounding box (a THREE.BoxHelper overlay) */
 
         var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
         bbHelper.update();
@@ -77,7 +98,8 @@
         bbox.update(meshFile.getThreeMesh());
         scene.addOverlayLayer(meshFile, plug.getName(), bbox);
 
-        /* Overlay quotes (THREE.PointCloud) and overlay labels (THREE.Sprite) */
+        /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 group of
+           THREE.Sprite overlays) */
 
         //calculate bbox
         var geometry = meshFile.getThreeMesh().geometry.clone();
@@ -85,18 +107,14 @@
         var bboxMax = geometry.boundingBox.max;
         var bboxMin = geometry.boundingBox.min;
 
-        /*        5____4
-                1/___0/|
-                | 6__|_7
-                2/___3/
-        0: bboxmax.x, bboxmax.y, bboxmax.z
-        1: bboxmin.x, bboxmax.y, bboxmax.z
-        2: bboxmin.x, bboxmin.y, bboxmax.z
-        3: bboxmax.x, bboxmin.y, bboxmax.z
-        4: bboxmax.x, bboxmax.y, bboxmin.z
-        5: bboxmin.x, bboxmax.y, bboxmin.z
-        6: bboxmin.x, bboxmin.y, bboxmin.z
-        7: bboxmax.x, bboxmin.y, bboxmin.z */
+        /*                      0: bboxmax.x, bboxmax.y, bboxmax.z
+                                1: bboxmin.x, bboxmax.y, bboxmax.z
+                      5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
+                    1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
+         LEJENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
+                    2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
+                                6: bboxmin.x, bboxmin.y, bboxmin.z
+                                7: bboxmax.x, bboxmin.y, bboxmin.z */
 
         //adding minor quotes
         var pcBuffer = generatePointcloud (
@@ -113,7 +131,7 @@
         //var needed to group labels
         var labelsGroup = new THREE.Mesh();
 
-        //adding medium quotes
+        //adding medium quotes and labels
         pcBuffer = generatePointcloud (
                         bboxMax,
                         bboxMin,
@@ -128,7 +146,7 @@
 
         labelsGroup = new THREE.Mesh();
 
-        //adding major quotes
+        //adding major quotes and labels
         var pcBuffer = generateExtremesPointcloud (
                         bboxMax,
                         bboxMin,
@@ -142,51 +160,68 @@
     };
 
     /**
-     * Method to generate a point cloud
-     * @param {Color} color The color of a generic point
-     * @param {Vector3} max The max of the bbox
-     * @param {Vector3} min The min of the bbox
+     * Method to generate a point cloud inside a segment
+     * @param {Vector3} bboxMax The max of the bbox
+     * @param {Vector3} bboxMin The min of the bbox
+     * @param {Number} pointFactor The distance between 2 consecutive points
      * @param {Number} pointSize The size of a generic point
-     * @param {Number} pointfactor The edge subdivisions number
-     * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
+     * @param {Color} pointColor The color of a generic point
+     * @param {Object} lblParameters The parameters needed for a label
+     * @param {THREE.Group} labelsgroup The group wich usage is to add labels in
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
     function generatePointcloud( bboxMax, bboxMin, pointFactor, pointSize, pointColor, lblParameters, labelsgroup) {
 
-        var len0 = bboxMax.y - bboxMin.y; //segm. 0 - 3
-        var len1 = bboxMax.x - bboxMin.x; //segm. 2 - 3
-        var len2 = bboxMax.z - bboxMin.z; //segm. 0 - 4
+        //calculate lengths of the 3 segments taken in exam, respectively segm. 0-3, segm. 2-3 and segm. 0-4
+        var len0 = bboxMax.y - bboxMin.y;
+        var len1 = bboxMax.x - bboxMin.x;
+        var len2 = bboxMax.z - bboxMin.z;
+        var lengths = { 'len03' : len0, 'len23' : len1, 'len04' : len2};
 
-        var lengths = { 'len03' : len0, 'len23' : len1, 'len04' : len2}; //3 segments length
-
+        //calculate pointcloud geometry and material
         var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pointFactor, pointColor, lblParameters, labelsgroup);
-
         var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
-        /*var shaderMaterial = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            attributes: attributes,
-            vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
-            fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
-            alphaTest: 0.9
-        });*/
+        /* postponed shader material to substitute material
+            var shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                attributes: attributes,
+                vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
+                fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
+                alphaTest: 0.9
+            });
+        */
 
         return new THREE.PointCloud(geometry, material );
     }
 
+    /**
+     * Method to generate a point cloud inside a segment but only in 3 points : the extremes of the segment
+     * and in (0,0) if included between extremes.
+     * @param {Vector3} bboxMax The max of the bbox
+     * @param {Vector3} bboxMin The min of the bbox
+     * @param {Number} pointSize The size of a generic point
+     * @param {Color} pointColor The color of a generic point
+     * @param {Object} lblParameters The parameters needed for a label
+     * @param {THREE.Group} labelsgroup The group wich usage is to add labels in
+     * @memberOf MLJ.plugins.rendering.Box
+     * @author Stefano Giammori
+    */
     function generateExtremesPointcloud( bboxMax, bboxMin, pointSize, pointColor, lblParameters, labelsgroup){
-        var geometry = generateBordersPointCloudGeometry(bboxMax, bboxMin, pointColor, lblParameters, labelsgroup);
+        //calculate pointcloud geometry and material
+        var geometry = generateExtremesPointcloudGeometry(bboxMax, bboxMin, pointColor, lblParameters, labelsgroup);
         var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
         return new THREE.PointCloud(geometry, material );
     }
 
     /**
-     * Method to generate the point cloud geometry
-     * @param {Color} color The color of a generic point
+     * Method to generate the point cloud geometry in-segment
      * @param {Vector3} max The max of the bbox
      * @param {Vector3} min The min of the bbox
      * @param {Object} lengths The lengths of the 3 singol edges will be quoted
      * @param {Number} pointfactor The edge subdivisions number
+     * @param {Color} pointcolor The color of a generic point
+     * @param {Object} lblParameters The parameters needed for a label
      * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
@@ -309,7 +344,17 @@
     	return geometry;
     }
 
-    function generateBordersPointCloudGeometry(max, min, pointcolor, lblParameters, labelsgroup){
+    /**
+     * Method to generate the point cloud geometry in-segment extremes and (0,0)
+     * @param {Vector3} max The max of the bbox
+     * @param {Vector3} min The min of the bbox
+     * @param {Color} pointcolor The color of a generic point
+     * @param {Object} lblParameters The parameters needed for a label
+     * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
+     * @memberOf MLJ.plugins.rendering.Box
+     * @author Stefano Giammori
+    */
+    function generateExtremesPointcloudGeometry(max, min, pointcolor, lblParameters, labelsgroup){
         var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
 
         //estimate the number of points (only the extreme points)
