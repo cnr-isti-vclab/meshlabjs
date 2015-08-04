@@ -2,11 +2,11 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-            //uniforms
             minorFactor : 0.2,
             majorFactor : 0.5,
             pntSize : 0.10,
-            pntColor : new THREE.Color('#FF0000')
+            pntColor : new THREE.Color('#FF0000'),
+            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
         };
 
     var plug = new plugin.Rendering({
@@ -15,8 +15,9 @@
         icon: "img/icons/box.png",
         toggle: true,
         on: false,
-        updateOnLayerAdded: true
-    });
+        updateOnLayerAdded: true,
+        loadShader: ["BoxFragment.glsl", "BoxVertex.glsl"]
+    },DEFAULTS);
 
     var boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;
     plug._init = function (guiBuilder) {
@@ -43,21 +44,23 @@
         boxPntSizeWidget = guiBuilder.RangedFloat({
             label: "Point Size",
             tooltip: "Size of a point in the 3 axis",
-            min: 0.05, step: 0.05, max:0.25,
+            min: 0.05, step: 0.05, max:100,
             defval: DEFAULTS.pntSize,
-            bindTo: function(newPointSize){
+            bindTo: "pntSize"
+            /*bindTo: function(newPointSize){
                 boxPntSizeWidget.setValue(newPointSize);
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
-            }
+            }*/
         });
         boxPntColorWidget = guiBuilder.Color({
             label: "Thicks color",
             tooltip: "Color of the material related to a point in non quoted axis",
             color: "#"+DEFAULTS.pntColor.getHexString(),
-            bindTo: function(newPointColor){
+            bindTo: "pntColor"
+            /*bindTo: function(newPointColor){
                 boxPntColorWidget.setColor('#'+newPointColor.getHexString());
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
-            }
+            }*/
         });
 
         boxFontFaceChoiceWidget = guiBuilder.Choice({
@@ -100,8 +103,28 @@
             return;
         }
 
+        var params = meshFile.overlaysParams.getByKey(plug.getName());
+
+        var attributes = {
+            pntType: {type: "f", value: []}
+        };
+
+        var uniforms = {
+            pntColor: {type: "c", value: params.pntColor},
+            pntSize: {type: "f", value: params.pntSize},
+            pntTexture: {type: "t", value: DEFAULTS.pntTexture}
+        };
+
+        var shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                attributes: attributes,
+                vertexShader: this.shaders.getByKey("BoxVertex.glsl"),
+                fragmentShader: this.shaders.getByKey("BoxFragment.glsl"),
+                alphaTest: 0.9
+            });
+
         //var needed to group all (pseudo) "subclasses" of THREE.Mesh
-        var meshesGroup = new THREE.Mesh();
+        var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
 
         //label parameters
         var lblParameters = {
@@ -112,13 +135,6 @@
             bgColor : {r:255, g:255, b:255, a:0}
         };
 
-        /* postponed (for uniforms spec)
-        var params = meshFile.overlaysParams.getByKey(plug.getName());
-        var uniforms = {
-            minorFactor: {type: "f", value: params.minorFactor},
-        };
-        */
-
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
 
         var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
@@ -127,7 +143,7 @@
         bbox.update(meshFile.getThreeMesh());
         meshesGroup.add(bbox);
 
-        /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 group of
+        /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 groups of
            THREE.Sprite overlays) */
 
         //calculate bbox
@@ -140,32 +156,33 @@
                                 1: bboxmin.x, bboxmax.y, bboxmax.z
                       5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
                     1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
-         LEJENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
+         LEGENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
                     2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
                                 6: bboxmin.x, bboxmin.y, bboxmin.z
                                 7: bboxmax.x, bboxmin.y, bboxmin.z */
 
         //adding minor quotes
         var pcBuffer = generatePointcloud (
+                    shaderMaterial,
                     bboxMax,
                     bboxMin,
+                    1.0,
                     boxMinorFactorWidget.getValue(),
-                    boxPntSizeWidget.getValue(),
-                    boxPntColorWidget.getColor("rgb"),
                     lblParameters,
                     undefined
                 );
         meshesGroup.add(pcBuffer);
 
+        //var needed to group labels
         var labelsGroup = new THREE.Mesh();
 
         //adding medium quotes and labels
         pcBuffer = generatePointcloud (
+                        shaderMaterial,
                         bboxMax,
                         bboxMin,
+                        2.0,
                         boxMajorFactorWidget.getValue(),
-                        boxPntSizeWidget.getValue()*2,
-                        boxPntColorWidget.getColor("rgb"),
                         lblParameters,
                         labelsGroup
                     );
@@ -176,10 +193,10 @@
 
         //adding major quotes and labels
         var pcBuffer = generateExtremesPointcloud (
+                        shaderMaterial,
                         bboxMax,
                         bboxMin,
-                        boxPntSizeWidget.getValue()*3,
-                        boxPntColorWidget.getColor("rgb"),
+                        2.5,
                         lblParameters,
                         labelsGroup
                     );
@@ -201,7 +218,7 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointcloud( bboxMax, bboxMin, pointFactor, pointSize, pointColor, lblParameters, labelsgroup) {
+    function generatePointcloud( shaderMaterial, bboxMax, bboxMin, pntType, pointFactor, lblParameters, labelsgroup) {
 
         //calculate lengths of the 3 segments taken in exam, respectively segm. 0-3, segm. 2-3 and segm. 0-4
         var len0 = bboxMax.y - bboxMin.y;
@@ -209,20 +226,11 @@
         var len2 = bboxMax.z - bboxMin.z;
         var lengths = { 'len03' : len0, 'len23' : len1, 'len04' : len2};
 
-        //calculate pointcloud geometry and material
-        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pointFactor, pointColor, lblParameters, labelsgroup);
-        var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
-        /* postponed shader material to substitute material
-            var shaderMaterial = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                attributes: attributes,
-                vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
-                fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
-                alphaTest: 0.9
-            });
-        */
+        //calculate pointcloud geometry
+        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pntType, pointFactor, lblParameters, labelsgroup);
+        //var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
 
-        return new THREE.PointCloud(geometry, material );
+        return new THREE.PointCloud( geometry, shaderMaterial);
     }
 
     /**
@@ -237,11 +245,12 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generateExtremesPointcloud( bboxMax, bboxMin, pointSize, pointColor, lblParameters, labelsgroup){
-        //calculate pointcloud geometry and material
-        var geometry = generateExtremesPointcloudGeometry(bboxMax, bboxMin, pointColor, lblParameters, labelsgroup);
-        var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
-        return new THREE.PointCloud(geometry, material );
+    function generateExtremesPointcloud( shaderMaterial, bboxMax, bboxMin, pntType, lblParameters, labelsgroup){
+
+        //calculate pointcloud geometry
+        var geometry = generateExtremesPointcloudGeometry(bboxMax, bboxMin, pntType, lblParameters, labelsgroup);
+
+        return new THREE.PointCloud(geometry, shaderMaterial );
     }
 
     /**
@@ -256,7 +265,7 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointCloudGeometry(max, min, lengths, pointfactor, pointcolor, lblParameters, labelsgroup){
+    function generatePointCloudGeometry(max, min, lengths, pntType, pointfactor, lblParameters, labelsgroup){
         var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
 
         //estimate the number of points (op segment dependent)
@@ -273,7 +282,7 @@
         if(arraySize > 0){
             geometry = new THREE.BufferGeometry();
             var positions = new Float32Array( arraySize );
-            var colors = new Float32Array( arraySize );
+            var pntTypes = new Float32Array( arraySize/3 );
 
             //segment 0 - 3
             var id = 0;
@@ -299,9 +308,8 @@
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
+                    pntTypes[i++] = pntType;
+
                 k++;
                 y = max.y - k * div;
             }
@@ -330,9 +338,8 @@
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
+                    pntTypes[i++] = pntType;
+
                 k++;
                 x = max.x - k * div;
             }
@@ -360,15 +367,14 @@
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
-                k++;
+                    pntTypes[i++] = pntType;
+
+                    k++;
                 z = max.z - k * div;
             }
 
-            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+            geometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
+            geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
         }
 
     	return geometry;
@@ -384,8 +390,8 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generateExtremesPointcloudGeometry(max, min, pointcolor, lblParameters, labelsgroup){
-        var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
+    function generateExtremesPointcloudGeometry(max, min, pntType, lblParameters, labelsgroup){
+        var geometry, div, x, y, z, j, k, iter, xCenter=0, yCenter=0, zCenter=0;
 
         //estimate the number of points (only the extreme points)
         var pointsnum0 = 2, pointsnum1 = 2, pointsnum2 = 2;
@@ -402,12 +408,13 @@
         if(arraySize > 0){
             geometry = new THREE.BufferGeometry();
             var positions = new Float32Array( arraySize );
-            var colors = new Float32Array( arraySize );
+            var pntTypes = new Float32Array( arraySize / 3 );
 
             //segment 0 - 3
             var id = 0;
             var i = 0;
             k = 0;
+            iter = 0;
             x = max.x + 0.1; //TODO : MeshSizes dependent value ?
             y = max.y;
             z = max.z;
@@ -421,22 +428,23 @@
                                                  lblParameters
                                                );
                     labelsgroup.add( sprite );
-                };
 
                     positions[(3 * k) + id] = x;
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
-                k++;
-                y = max.y - k * div;
+                    pntTypes[i++] = pntType;
+
+                    k++;
+                }
+
+                y = max.y - ++iter * div;
             }
 
             //segment 2 - 3
             id = k * 3;
             k = 0;
+            iter = 0;
             x = max.x;
             y = min.y-0.1;
             z = max.z;
@@ -451,23 +459,23 @@
                                              lblParameters
                                        );
                     labelsgroup.add( sprite );
-                }
-
 
                     positions[(3 * k) + id] = x;
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
-                k++;
-                x = max.x - k * div;
+                    pntTypes[i++] = pntType;
+
+                    k++;
+                }
+
+                x = max.x - ++iter * div;
             }
 
             //segment 0 - 4
             id += k * 3;
             k = 0;
+            iter = 0;
             x = max.x;
             y = max.y+0.1;
             z = max.z;
@@ -482,21 +490,21 @@
                                                  lblParameters
                                                );
                     labelsgroup.add( sprite );
-                }
 
                     positions[(3 * k) + id] = x;
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
 
-                    colors[(3 * k) + id] = pointcolor.r * 5;
-                    colors[(3 * k + 1) + id] = pointcolor.g * 5;
-                    colors[(3 * k + 2) + id] = pointcolor.b * 5;
-                k++;
-                z = max.z - k * div;
+                    pntTypes[i++] = pntType;
+
+                    k++;
+                }
+
+                z = max.z - ++iter * div;
             }
 
             geometry.addAttribute( 'position', new THREE.BufferAttribute( positions,3) );
-            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3) );
+            geometry.addAttribute( 'pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
         }
 
         return geometry;
