@@ -1044,7 +1044,8 @@ MLJ.gui.component.Dialog = function (flags) {
     var _this = this;
     
     this.appendContent = function (content) {        
-        return _this.$.append(content);
+        _this.$.append(content);
+        return this;
     };
     
     this._make = function () {
