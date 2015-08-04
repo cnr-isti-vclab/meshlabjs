@@ -40,7 +40,8 @@
         var LOGO_HEIGHT = 821 * LOGO_WIDTH / 1023;
         var insets = 10;
         var _PiP;
-        var _$dialog;
+        var _dialog = new MLJ.gui.component.Dialog(
+                {title:"About MeshLabJS",draggable: false, width: 500, modal: true, resizable: false});
         
         /**
          * @author Stefano Gabriele 
@@ -50,8 +51,7 @@
 
             var $logo = $('<img id="logo" src="img/vcglogo_196px.png">');
 
-            _$dialog = $('  <div id="dialog" title="About MeshLabJS">\
-                    Copyright(C) 2015<br>\
+            _dialog.appendContent('Copyright(C) 2015<br>\
                     <br>\
                     <a href="http://vcg.isti.cnr.it/%7Ecignoni">Paolo Cignoni</a> <br>\
                     <a href="http://vcg.isti.cnr.it"> Visual Computing Lab</a> <br>\
@@ -66,9 +66,7 @@ Like the original one, MeshLabJS for the mesh processing tasks relies on the \
 Paolo Cignoni (Project Leader) <br> \
 Maurizio Idini<br>\
 Stefano Gabriele <br>\
-Stefano Giammori <br>\
-</div>').hide();
-            $('body').append(_$dialog);
+Stefano Giammori <br>');
 
             $logo.load(function () {
                 _PiP.appendContent(this);
@@ -92,9 +90,8 @@ Stefano Giammori <br>\
                 _PiP.setY(newY);
             });
 
-            $logo.click(function () {
-                $('#dialog').dialog(
-                        {draggable: false, width: 500, modal: true, resizable: false});
+            $logo.click(function () {               
+                  _dialog.show();
             });
 
             return _PiP.$;
