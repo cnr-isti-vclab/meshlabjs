@@ -35,6 +35,13 @@
 MLJ.core.File = {
     ErrorCodes: {
         EXTENSION: 1
+    },
+    SupportedExtensions: {
+        OFF: ".off",
+        OBJ: ".obj",
+        PLY: ".ply",
+        STL: ".stl",
+        VMI: ".vmi"
     }
 };
 
