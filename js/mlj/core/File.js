@@ -219,25 +219,27 @@ MLJ.core.File = {
         });
     };
 
-    this.saveMeshFile = function (meshFile) {
+    this.saveMeshFile = function (meshFile, fileName) {
         
         //Create data file in FS
         var int8buf = new Int8Array(meshFile.ptrMesh());
-        FS.createDataFile("/", meshFile.name, int8buf, true, true);
+        FS.createDataFile("/", fileName, int8buf, true, true);
         
         //call a SaveMesh contructon from c++ Saver.cpp class
         var Save = new Module.SaveMesh(meshFile.ptrMesh());
         //call a saveMesh method from above class
-        var resSave = Save.saveMesh(meshFile.name);
+        var resSave = Save.saveMesh(fileName);
         
         //handle errors ...        
         
         //readFile is a Emscripten function which read a file into memory by path
-        var file = FS.readFile('/'+meshFile.name);
+        var file = FS.readFile(fileName);
         //create a Blob by filestream
         var blob = new Blob([file], {type: "application/octet-stream"});
         //call a saveAs function of FileSaver Library
-        saveAs(blob, meshFile.name);
+        saveAs(blob, fileName);
+        
+        FS.unlink(fileName);
     };        
 
 }).call(MLJ.core.File);
