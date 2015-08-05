@@ -36,6 +36,23 @@
     var _SceneBar = function () {
 
         var _toolBar = new component.ToolBar();
+        var _dialog = new component.Dialog({
+            title:"Save mesh", modal:true, draggable: false, resizable:false
+        });
+        var _html =  "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
+            _html += "<input id='filename' type='text'/>";
+            _html += "<label for='extension'>Extension:</label><br/>";
+            _html += "<select id='extension'>";
+        
+        var ext;
+        for(var key in MLJ.core.File.SupportedExtensions) {
+            ext = MLJ.core.File.SupportedExtensions[key];
+            _html +="<option name='"+key+"'>"+ext+"</option>";
+        }       
+         
+        _html += "</select>";
+        _html += "<div id='button-wrapper'><button id='mlj-save-dialog-button'>Save</button></div></div>";
+        _dialog.appendContent(_html);
 
         function init() {
 
@@ -78,8 +95,9 @@
             });
 
             save.onClick(function () {
-                var meshFile = MLJ.core.Scene.getSelectedLayer();
-                MLJ.core.File.saveMeshFile(meshFile);
+                _dialog.show();
+                //var meshFile = MLJ.core.Scene.getSelectedLayer();
+                //MLJ.core.File.saveMeshFile(meshFile);
             });
 
             reload.onClick(function () {
