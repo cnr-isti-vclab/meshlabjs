@@ -19,8 +19,22 @@
         loadShader: ["BoxFragment.glsl", "BoxVertex.glsl"]
     },DEFAULTS);
 
-    var boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;
+    var boxEnablerQuotes, boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;
     plug._init = function (guiBuilder) {
+
+        boxEnablerQuotes = guiBuilder.Choice({
+            label: "Show quotes",
+            tooltip: "Enable/disable quotes",
+            options: [
+                {content: "on", value: true},
+                {content: "off", value: false, selected: true}
+            ],
+            bindTo: function(enabled){
+                boxEnablerQuotes._changeValue(enabled);
+                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
+            }
+        });
+
         boxMinorFactorWidget = guiBuilder.RangedFloat({
             label: "Minor Factor",
             tooltip: "Distance between two consecutive misurations in non quoted axis",
@@ -47,20 +61,12 @@
             min: 0.05, step: 0.05, max:100,
             defval: DEFAULTS.pntSize,
             bindTo: "pntSize"
-            /*bindTo: function(newPointSize){
-                boxPntSizeWidget.setValue(newPointSize);
-                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
-            }*/
         });
         boxPntColorWidget = guiBuilder.Color({
             label: "Thicks color",
             tooltip: "Color of the material related to a point in non quoted axis",
             color: "#"+DEFAULTS.pntColor.getHexString(),
             bindTo: "pntColor"
-            /*bindTo: function(newPointColor){
-                boxPntColorWidget.setColor('#'+newPointColor.getHexString());
-                $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
-            }*/
         });
 
         boxFontFaceChoiceWidget = guiBuilder.Choice({
@@ -110,6 +116,7 @@
         };
 
         var uniforms = {
+            pntEnable: {},
             pntColor: {type: "c", value: params.pntColor},
             pntSize: {type: "f", value: params.pntSize},
             pntTexture: {type: "t", value: DEFAULTS.pntTexture}
@@ -167,7 +174,8 @@
         //adding internal quotes and labels
         var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
         var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
-        meshesGroup.add(labelsGroup);
+
+        if(boxEnablerQuotes.getValue()) meshesGroup.add(labelsGroup);
         meshesGroup.add(pcBuffer);
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
