@@ -241,7 +241,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         
         //is 'bindTo' property a function?
         if(jQuery.isFunction(paramProp)) {
-            paramProp(value);
+            paramProp(value, overlay);
         }
 
     });

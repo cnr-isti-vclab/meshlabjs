@@ -1,18 +1,17 @@
 CC=emcc
-CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -O3  --bind -s DEMANGLE_SUPPORT=1 
+CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -O3  --bind -s DEMANGLE_SUPPORT=1
 
-OBJ = CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Random.bc ../../vcglib/wrap/ply/plylib.bc  
+OBJ = BoundaryEdges.bc Selection.bc CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Random.bc ../../vcglib/wrap/ply/plylib.bc
 
-%.bc: %.cpp 
-	$(CC) -o $@ $< $(CFLAGS)
-    
+%.bc: %.cpp
+ 	$(CC) -o $@ $< $(CFLAGS)
+
 MeshLabCppCore.js: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
-   
+
 
 clean:
-	rm -f *.bc MeshlabGenJs.js 
-	
+ 	rm -f *.bc MeshlabGenJs.js
+
 install:
 	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
- 
