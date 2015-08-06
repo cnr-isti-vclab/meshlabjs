@@ -40,8 +40,7 @@ MLJ.core.File = {
         OFF: ".off",
         OBJ: ".obj",
         PLY: ".ply",
-        STL: ".stl",
-        VMI: ".vmi"
+        STL: ".stl"        
     }
 };
 
@@ -56,7 +55,6 @@ MLJ.core.File = {
             case ".obj":
             case ".ply":
             case ".stl":
-            case ".vmi":
                 return true;
         }
 
@@ -82,7 +80,7 @@ MLJ.core.File = {
         if (!isExtensionValid(extension)) {
             var err = new MLJ.Error(
                     MLJ.core.File.ErrorCodes.EXTENSION,
-                    "MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again."
+                    "MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again."
                     );
 
             MLJ.setError(err);
