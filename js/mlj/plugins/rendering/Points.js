@@ -44,18 +44,18 @@
         }
 
         var geom = meshFile.getThreeMesh().geometry.clone();
-                
+
         var params = meshFile.overlaysParams.getByKey(plug.getName());
         var attributes = {
             minSize: {type: 'f', value: []}
         };
-                        
+
         var uniforms = {
             color: {type: "c", value: params.color},
             size: {type: "f", value: params.size},
             texture: {type: "t", value: DEFAULTS.texture}
         };
-                        
+
         var shaderMaterial = new THREE.ShaderMaterial({
             uniforms: uniforms,
             attributes: attributes,
@@ -63,10 +63,10 @@
             fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
             alphaTest: 0.9
         });
-                
+
         var points = new THREE.PointCloud(geom, shaderMaterial);
         var values_minSize = attributes.minSize.value;
-        
+
         for (var v = 0, vl = geom.vertices.length; v < vl; v++) {
             values_minSize[ v ] = 10;
         }
