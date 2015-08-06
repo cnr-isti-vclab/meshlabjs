@@ -2,11 +2,17 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
+            //next are code blocked values
+            minPointSize : 0.5,
+            medPointSize : 1.5,
+            majPointSize : 2.0,
+            minSize : 10.0,
+            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
+            //next are settable values
             minorFactor : 0.2,
             majorFactor : 0.5,
             pntSize : 0.10,
-            pntColor : new THREE.Color('#FF0000'),
-            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
+            pntColor : new THREE.Color('#FF0000')
         };
 
     var plug = new plugin.Rendering({
@@ -23,11 +29,11 @@
     plug._init = function (guiBuilder) {
 
         boxEnablerQuotes = guiBuilder.Choice({
-            label: "Show quotes",
+            label: "Quotes",
             tooltip: "Enable/disable quotes",
             options: [
-                {content: "on", value: true},
-                {content: "off", value: false, selected: true}
+                {content: "enable", value: true},
+                {content: "disable", value: false, selected: true}
             ],
             bindTo: function(enabled){
                 boxEnablerQuotes._changeValue(enabled);
@@ -112,6 +118,7 @@
         var params = meshFile.overlaysParams.getByKey(plug.getName());
 
         var attributes = {
+            pntMinSize: {type: 'f', value: []},
             pntType: {type: "f", value: []}
         };
 
@@ -201,6 +208,7 @@
         geometry = new THREE.BufferGeometry();
         var positions = new Array();
         var pntTypes = new Array();
+        var pntMinSizes = new Array();
 
         //segment 0 - 3
         var id = 0;
@@ -211,7 +219,7 @@
         y = max.y;
         z = max.z;
 
-        var epsilon = (max.y - min.y)/15;
+        var epsilon = (max.y - min.y)*5/100;
         //var steps = boxMinorFactorWidget.getStep();
 
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
@@ -223,7 +231,8 @@
                 y = y0;
                 y0 -=minorFactor;
 
-                pntTypes[i++] = 1.0;
+                pntMinSizes[i] = DEFAULTS.minSize;
+                pntTypes[i++] = DEFAULTS.minPointSize;
 
                 positions[(3 * k) + id] = x;
                 positions[(3 * k + 1) + id] = y;
@@ -238,14 +247,18 @@
                 y1 = (ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp) );
                 ysupp = undefined;
 
-                var eqmax = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 );
-                eqmax /= 2;
-                var eqmid = ( y-0>=0 ? +y : -y );
-                eqmid /= 2;
-                var eqmin = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 );
-                eqmin /= 2;
-                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
-                    pntTypes[i++] = 3.0;
+                var maxdistance = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 ) / 2;
+                var middistance = ( y>=0 ? y : -y ) / 2;
+                var mindistance = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 ) / 2;
+
+                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+
+                    if(maxdistance<epsilon) y = max.y;
+                    else if(middistance<epsilon) y = 0;
+                    else y = min.y;
+
+                    pntMinSizes[i] = DEFAULTS.minSize;
+                    pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 y.toFixed(2),
                                                 { 'x' : x+0.1, 'y' : y, 'z': z },
@@ -259,10 +272,9 @@
 
                     k++;
 
-                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 );
-                    segm = segm/2;
+                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 ) / 2;
                     if(ysupp==undefined){
-                        if(y>0 && y1<0 && segm>=epsilon){
+                        if(y>0 && y1<0 && segm<epsilon){
                             ysupp = y1;
                             y1 = 0;
                         }else if(y>min.y && y1<min.y){
@@ -272,17 +284,17 @@
                     }else
                         y1=ysupp;
                 }else{
-                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 );
-                    segm = segm/2;
+                    var ptsdistance = ( y-y1<0 ? (y-y1)*-1 : y-y1 ) / 2;
                     if(ysupp==undefined){
-                        if(y>0 && y1<0 && segm>=epsilon){
+                        if(y>0 && y1<0 && ptsdistance<epsilon){
                             ysupp = y1;
                             y1 = 0;
-                        }else if(y>min.y && y1<min.y && segm<epsilon){
+                        }else if(y>min.y && y1<min.y && ptsdistance<epsilon){
                             ysupp = y1;
                             y1 = min.y;
                         }else{
-                            pntTypes[i++] = 2.0;
+                            pntMinSizes[i] = DEFAULTS.minSize;
+                            pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
                                                         y.toFixed(2),
@@ -297,7 +309,7 @@
 
                             k++;
                             if(ysupp==undefined){
-                                if(y>0 && y1<0 && segm>=epsilon){
+                                if(y>0 && y1<0 && segm<epsilon){
                                     ysupp = y1;
                                     y1 = 0;
                                 }else if(y>min.y && y1<min.y){
@@ -329,7 +341,8 @@
                 x = x0;
                 x0 -=minorFactor;
 
-                pntTypes[i++] = 1.0;
+                pntMinSizes[i] = DEFAULTS.minSize;
+                pntTypes[i++] = DEFAULTS.minPointSize;
 
                 positions[(3 * k) + id] = x;
                 positions[(3 * k + 1) + id] = y;
@@ -344,14 +357,18 @@
                 x1 = (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp) );
                 xsupp = undefined;
 
-                var eqmax = ( x-max.x>=0 ? x-max.x : (x-max.x)*-1 );
-                eqmax /= 2;
-                var eqmid = ( x-0>=0 ? +x : -x );
-                eqmid /= 2;
-                var eqmin = ( x-min.x>=0 ? x-min.x : (x-min.x)*-1 );
-                eqmin /= 2;
-                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
-                    pntTypes[i++] = 3.0;
+                var maxdistance = ( x-max.x>=0 ? x-max.x : (x-max.x)*-1 ) / 2;
+                var middistance = ( x>=0 ? x : -x ) / 2;
+                var mindistance = ( x-min.x>=0 ? x-min.x : (x-min.x)*-1 ) / 2;
+
+                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+
+                    if(maxdistance<epsilon) x = max.x;
+                    else if(middistance<epsilon) x = 0;
+                    else x = min.x;
+
+                    pntMinSizes[i] = DEFAULTS.minSize;
+                    pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 x.toFixed(2),
                                                 { 'x' : x, 'y' : y-0.1, 'z': z },
@@ -365,8 +382,7 @@
 
                     k++;
 
-                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 );
-                    segm = segm/2;
+                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 ) / 2;
                     if(xsupp==undefined){
                         if(x>0 && x1<0 && segm>=epsilon){
                             xsupp = x1;
@@ -378,17 +394,17 @@
                     }else
                         x1=xsupp;
                 }else{
-                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 );
-                    segm = segm/2;
+                    var ptsdistance = ( x-x1<0 ? (x-x1)*-1 : x-x1 ) / 2;
                     if(xsupp==undefined){
-                        if(x>0 && x1<0 && segm>=epsilon){
+                        if(x>0 && x1<0 && ptsdistance<epsilon){
                             xsupp = x1;
                             x1 = 0;
-                        }else if(x>min.x && x1<min.x && segm<epsilon){
+                        }else if(x>min.x && x1<min.x && ptsdistance<epsilon){
                             xsupp = x1;
                             x1 = min.x;
                         }else{
-                            pntTypes[i++] = 2.0;
+                            pntMinSizes[i] = DEFAULTS.minSize;
+                            pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
                                                         x.toFixed(2),
@@ -403,7 +419,7 @@
 
                             k++;
                             if(xsupp==undefined){
-                                if(x>0 && x1<0 && segm>=epsilon){
+                                if(x>0 && x1<0 && segm<epsilon){
                                     xsupp = x1;
                                     x1 = 0;
                                 }else if(x>min.x && x1<min.x){
@@ -435,7 +451,8 @@
                 z = z0;
                 z0 -=minorFactor;
 
-                pntTypes[i++] = 1.0;
+                pntMinSizes[i] = DEFAULTS.minSize;
+                pntTypes[i++] = DEFAULTS.minPointSize;
 
                 positions[(3 * k) + id] = x;
                 positions[(3 * k + 1) + id] = y;
@@ -450,14 +467,18 @@
                 z1 = (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp) );
                 zsupp = undefined;
 
-                var eqmax = ( z-max.z>=0 ? z-max.z : (z-max.z)*-1 );
-                eqmax /= 2;
-                var eqmid = ( z-0>=0 ? +z : -z );
-                eqmid /= 2;
-                var eqmin = ( z-min.z>=0 ? z-min.z : (z-min.z)*-1 );
-                eqmin /= 2;
-                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
-                    pntTypes[i++] = 3.0;
+                var maxdistance = ( z-max.z>=0 ? z-max.z : (z-max.z)*-1 ) / 2;
+                var middistance = ( z>=0 ? z : -z ) / 2;
+                var mindistance = ( z-min.z>=0 ? z-min.z : (z-min.z)*-1 ) / 2;
+
+                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+
+                    if(maxdistance<epsilon) z = max.z;
+                    else if(middistance<epsilon) z = 0;
+                    else z = min.z;
+
+                    pntMinSizes[i] = DEFAULTS.minSize;
+                    pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 z.toFixed(2),
                                                 { 'x' : x, 'y' : y+0.1, 'z': z },
@@ -471,8 +492,7 @@
 
                     k++;
 
-                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 );
-                    segm = segm/2;
+                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 ) / 2;
                     if(zsupp==undefined){
                         if(z>0 && z1<0 && segm>=epsilon){
                             zsupp = z1;
@@ -484,17 +504,17 @@
                     }else
                         z1=zsupp;
                 }else{
-                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 );
-                    segm = segm/2;
+                    var ptsdistance = ( z-z1<0 ? (z-z1)*-1 : z-z1 ) / 2;
                     if(zsupp==undefined){
-                    if(z>0 && z1<0 && segm>=epsilon){
+                        if(z>0 && z1<0 && ptsdistance<epsilon){
                             zsupp = z1;
                             z1 = 0;
-                        }else if(z>min.z && z1<min.z && segm<epsilon){
+                        }else if(z>min.z && z1<min.z && ptsdistance<epsilon){
                             zsupp = z1;
                             z1 = min.z;
                         }else{
-                            pntTypes[i++] = 2.0;
+                            pntMinSizes[i] = DEFAULTS.minSize;
+                            pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
                                                         z.toFixed(2),
@@ -509,7 +529,7 @@
 
                             k++;
                             if(zsupp==undefined){
-                                if(z>0 && z1<0 && segm>=epsilon){
+                                if(z>0 && z1<0 && segm<epsilon){
                                     zsupp = z1;
                                     z1 = 0;
                                 }else if(z>min.z && z1<min.z){
@@ -526,9 +546,11 @@
         }
 
         positions = arrayToF32Array(positions.length, positions);
+        pntMinSizes = arrayToF32Array(pntMinSizes.length, pntMinSizes);
         pntTypes = arrayToF32Array(pntTypes.length, pntTypes);
 
         geometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
+        geometry.addAttribute('pntMinSize', new THREE.BufferAttribute( pntMinSizes, 1 ) );
         geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
 
     	return geometry;
