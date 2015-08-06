@@ -1056,6 +1056,14 @@ MLJ.gui.component.Dialog = function (flags) {
     this.show = function() {        
          _this.$.dialog(flags);
     }
+    
+    this.hide = function() {        
+         _this.$.dialog("close");
+    }
+    
+    this.destroy = function() {
+        _this.$.dialog("destroy");
+    }
             
     MLJ.gui.component.Component.call(this, _html);
 
