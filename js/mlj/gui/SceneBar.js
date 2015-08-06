@@ -39,6 +39,7 @@
         var _dialog = new component.Dialog({
             title:"Save mesh", modal:true, draggable: false, resizable:false
         });
+        
         var _html =  "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
             _html += "<input id='filename' type='text'/>";
             _html += "<label for='extension'>Extension:</label><br/>";
@@ -47,7 +48,7 @@
         var ext;
         for(var key in MLJ.core.File.SupportedExtensions) {
             ext = MLJ.core.File.SupportedExtensions[key];
-            _html +="<option name='"+key+"'>"+ext+"</option>";
+            _html +="<option name='"+ext+"'>"+ext+"</option>";
         }       
          
         _html += "</select>";
@@ -95,10 +96,23 @@
             });
 
             save.onClick(function () {
+                var meshFile = MLJ.core.Scene.getSelectedLayer();
+                //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
+                var meshInfo = meshFile.name.split(".");                
                 _dialog.show();
-                //var meshFile = MLJ.core.Scene.getSelectedLayer();
-                //MLJ.core.File.saveMeshFile(meshFile);
-            });
+                $('#mlj-save-dialog > #filename').val(meshInfo[0]);
+                
+                $('#mlj-save-dialog > #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]')
+                        .attr('selected','selected');
+               
+                $('#mlj-save-dialog-button').click(function() {                    
+                    var name = $('#mlj-save-dialog > #filename').val();
+                    var extension = $('#mlj-save-dialog > #extension').val();
+                    MLJ.core.File.saveMeshFile(meshFile, name+extension);
+                    _dialog.destroy();
+                    $(this).off();
+                });
+            });                        
 
             reload.onClick(function () {
                 var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
