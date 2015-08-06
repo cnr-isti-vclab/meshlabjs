@@ -161,97 +161,17 @@
                                 6: bboxmin.x, bboxmin.y, bboxmin.z
                                 7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        //adding minor quotes
-        var pcBuffer = generatePointcloud (
-                    shaderMaterial,
-                    bboxMax,
-                    bboxMin,
-                    1.0,
-                    boxMinorFactorWidget.getValue(),
-                    lblParameters,
-                    undefined
-                );
-        meshesGroup.add(pcBuffer);
-
         //var needed to group labels
         var labelsGroup = new THREE.Mesh();
 
-        //adding medium quotes and labels
-        pcBuffer = generatePointcloud (
-                        shaderMaterial,
-                        bboxMax,
-                        bboxMin,
-                        2.0,
-                        boxMajorFactorWidget.getValue(),
-                        lblParameters,
-                        labelsGroup
-                    );
-        meshesGroup.add(pcBuffer);
+        //adding internal quotes and labels
+        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
+        var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
         meshesGroup.add(labelsGroup);
-
-        labelsGroup = new THREE.Mesh();
-
-        //adding major quotes and labels
-        var pcBuffer = generateExtremesPointcloud (
-                        shaderMaterial,
-                        bboxMax,
-                        bboxMin,
-                        2.5,
-                        lblParameters,
-                        labelsGroup
-                    );
         meshesGroup.add(pcBuffer);
-        meshesGroup.add(labelsGroup);
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
     };
-
-    /**
-     * Method to generate a point cloud inside a segment
-     * @param {Vector3} bboxMax The max of the bbox
-     * @param {Vector3} bboxMin The min of the bbox
-     * @param {Number} pointFactor The distance between 2 consecutive points
-     * @param {Number} pointSize The size of a generic point
-     * @param {Color} pointColor The color of a generic point
-     * @param {Object} lblParameters The parameters needed for a label
-     * @param {THREE.Group} labelsgroup The group wich usage is to add labels in
-     * @memberOf MLJ.plugins.rendering.Box
-     * @author Stefano Giammori
-    */
-    function generatePointcloud( shaderMaterial, bboxMax, bboxMin, pntType, pointFactor, lblParameters, labelsgroup) {
-
-        //calculate lengths of the 3 segments taken in exam, respectively segm. 0-3, segm. 2-3 and segm. 0-4
-        var len0 = bboxMax.y - bboxMin.y;
-        var len1 = bboxMax.x - bboxMin.x;
-        var len2 = bboxMax.z - bboxMin.z;
-        var lengths = { 'len03' : len0, 'len23' : len1, 'len04' : len2};
-
-        //calculate pointcloud geometry
-        var geometry = generatePointCloudGeometry(bboxMax, bboxMin, lengths, pntType, pointFactor, lblParameters, labelsgroup);
-        //var material = new THREE.PointCloudMaterial({ size: pointSize, vertexColors: THREE.VertexColors } );
-
-        return new THREE.PointCloud( geometry, shaderMaterial);
-    }
-
-    /**
-     * Method to generate a point cloud inside a segment but only in 3 points : the extremes of the segment
-     * and in (0,0) if included between extremes.
-     * @param {Vector3} bboxMax The max of the bbox
-     * @param {Vector3} bboxMin The min of the bbox
-     * @param {Number} pointSize The size of a generic point
-     * @param {Color} pointColor The color of a generic point
-     * @param {Object} lblParameters The parameters needed for a label
-     * @param {THREE.Group} labelsgroup The group wich usage is to add labels in
-     * @memberOf MLJ.plugins.rendering.Box
-     * @author Stefano Giammori
-    */
-    function generateExtremesPointcloud( shaderMaterial, bboxMax, bboxMin, pntType, lblParameters, labelsgroup){
-
-        //calculate pointcloud geometry
-        var geometry = generateExtremesPointcloudGeometry(bboxMax, bboxMin, pntType, lblParameters, labelsgroup);
-
-        return new THREE.PointCloud(geometry, shaderMaterial );
-    }
 
     /**
      * Method to generate the point cloud geometry in-segment
@@ -265,249 +185,358 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointCloudGeometry(max, min, lengths, pntType, pointfactor, lblParameters, labelsgroup){
+    function generatePointCloudGeometry(max, min, minorFactor, majorFactor, lblParameters, labelsgroup){
         var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
 
-        //estimate the number of points (op segment dependent)
-        var pointsnum0 = Math.trunc(lengths.len03/pointfactor);
-        var pointsnum1 = Math.trunc(lengths.len23/pointfactor);
-        var pointsnum2 = Math.trunc(lengths.len04/pointfactor);
+        geometry = new THREE.BufferGeometry();
+        var positions = new Array();
+        var pntTypes = new Array();
 
-        //estimate the size of the 2 array ({positions, color} : each row represent a point)
-        var arraySize =(
-                         (pointsnum0 !== 0 ? (pointsnum0+1) : 0) +
-                         (pointsnum1 !== 0 ? (pointsnum1+1) : 0) +
-                         (pointsnum2 !== 0 ? (pointsnum2+1) : 0)
-                       ) * 3;
-        if(arraySize > 0){
-            geometry = new THREE.BufferGeometry();
-            var positions = new Float32Array( arraySize );
-            var pntTypes = new Float32Array( arraySize/3 );
+        //segment 0 - 3
+        var id = 0;
+        var i = 0;
+        k = 0;
+        //MeshSizes dependent value ?
+        x = max.x + 0.1;
+        y = max.y;
+        z = max.z;
 
-            //segment 0 - 3
-            var id = 0;
-            var i = 0;
-            k = 0;
-            x = max.x + 0.1; //TODO : MeshSizes dependent value ?
-            y = max.y;
-            z = max.z;
-            div = pointfactor;
+        var epsilon = (max.y - min.y)/15;
+        //var steps = boxMinorFactorWidget.getStep();
 
-            while( y >= min.y ) {
+        var y,y0 = max.y, y1 = max.y,ysupp = undefined;
 
-                if(labelsgroup !== undefined && y!==max.y && y!==0 && y!==min.y){
-                    var sprite = makeTextSprite(
-                                                 y.toFixed(2),
-                                                 { 'x' : x+0.1, 'y' : y, 'z': z },
-                                                 lblParameters
-                                               );
-                    labelsgroup.add( sprite );
-                };
+        while(y0>=min.y || y1>=min.y){
 
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
+            //first minore quotes
+            if(y0>=min.y){
+                y = y0;
+                y0 -=minorFactor;
 
-                    pntTypes[i++] = pntType;
+                pntTypes[i++] = 1.0;
+
+                positions[(3 * k) + id] = x;
+                positions[(3 * k + 1) + id] = y;
+                positions[(3 * k + 2) + id] = z;
 
                 k++;
-                y = max.y - k * div;
             }
 
-            //segment 2 - 3
-            id = k * 3;
-            k = 0;
-            x = max.x;
-            y = min.y-0.1;
-            z = max.z;
-            div = pointfactor;
+            //then minore quotes
+            if(y1 >= min.y){
+                y = y1;
+                y1 = (ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp) );
+                ysupp = undefined;
 
-            while( x >= min.x ) {
-
-                if(labelsgroup!=undefined && x!==max.x && x!==0 && x!==min.x){
+                var eqmax = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 );
+                eqmax /= 2;
+                var eqmid = ( y-0>=0 ? +y : -y );
+                eqmid /= 2;
+                var eqmin = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 );
+                eqmin /= 2;
+                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
+                    pntTypes[i++] = 3.0;
                     var sprite = makeTextSprite(
-                                             x.toFixed(2),
-                                             { 'x' : x, 'y' : y-0.1, 'z': z },
-                                             lblParameters
-                                       );
-                    labelsgroup.add( sprite );
-                }
-
-
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
-
-                    pntTypes[i++] = pntType;
-
-                k++;
-                x = max.x - k * div;
-            }
-
-            //segment 0 - 4
-            id += k * 3;
-            k = 0;
-            x = max.x;
-            y = max.y+0.1;
-            z = max.z;
-            div = pointfactor;
-
-            while( z >= min.z ) {
-
-                if(labelsgroup !== undefined  && z!==max.z && z!==0 && z!==min.z){
-                    var sprite = makeTextSprite(
-                                                 z.toFixed(2),
-                                                 { 'x' : x, 'y' : y+0.1, 'z': z },
-                                                 lblParameters
+                                                y.toFixed(2),
+                                                { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                lblParameters
                                                );
                     labelsgroup.add( sprite );
-                }
 
                     positions[(3 * k) + id] = x;
                     positions[(3 * k + 1) + id] = y;
                     positions[(3 * k + 2) + id] = z;
-
-                    pntTypes[i++] = pntType;
 
                     k++;
-                z = max.z - k * div;
+
+                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 );
+                    segm = segm/2;
+                    if(ysupp==undefined){
+                        if(y>0 && y1<0 && segm>=epsilon){
+                            ysupp = y1;
+                            y1 = 0;
+                        }else if(y>min.y && y1<min.y){
+                            ysupp = y1;
+                            y1 = min.y;
+                        }
+                    }else
+                        y1=ysupp;
+                }else{
+                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 );
+                    segm = segm/2;
+                    if(ysupp==undefined){
+                        if(y>0 && y1<0 && segm>=epsilon){
+                            ysupp = y1;
+                            y1 = 0;
+                        }else if(y>min.y && y1<min.y && segm<epsilon){
+                            ysupp = y1;
+                            y1 = min.y;
+                        }else{
+                            pntTypes[i++] = 2.0;
+
+                            var sprite = makeTextSprite(
+                                                        y.toFixed(2),
+                                                        { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                        lblParameters
+                                                       );
+                            labelsgroup.add( sprite );
+
+                            positions[(3 * k) + id] = x;
+                            positions[(3 * k + 1) + id] = y;
+                            positions[(3 * k + 2) + id] = z;
+
+                            k++;
+                            if(ysupp==undefined){
+                                if(y>0 && y1<0 && segm>=epsilon){
+                                    ysupp = y1;
+                                    y1 = 0;
+                                }else if(y>min.y && y1<min.y){
+                                    ysupp = y1;
+                                    y1 = min.y;
+                                }
+                            }else
+                                y1=ysupp;
+                        }
+                    }else
+                        y1=ysupp;
+                }
+            }
+        }
+
+        //segment 2 - 3
+        id = k * 3;
+        k = 0;
+        x = max.x;
+        y = min.y-0.1;
+        z = max.z;
+
+        var x,x0 = max.x, x1 = max.x,xsupp = undefined;
+
+        while(x0>=min.x || x1>=min.x){
+
+            //first minore quotes
+            if(x0>=min.x){
+                x = x0;
+                x0 -=minorFactor;
+
+                pntTypes[i++] = 1.0;
+
+                positions[(3 * k) + id] = x;
+                positions[(3 * k + 1) + id] = y;
+                positions[(3 * k + 2) + id] = z;
+
+                k++;
             }
 
-            geometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
-            geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
+            //then minore quotes
+            if(x1 >= min.x){
+                x = x1;
+                x1 = (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp) );
+                xsupp = undefined;
+
+                var eqmax = ( x-max.x>=0 ? x-max.x : (x-max.x)*-1 );
+                eqmax /= 2;
+                var eqmid = ( x-0>=0 ? +x : -x );
+                eqmid /= 2;
+                var eqmin = ( x-min.x>=0 ? x-min.x : (x-min.x)*-1 );
+                eqmin /= 2;
+                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
+                    pntTypes[i++] = 3.0;
+                    var sprite = makeTextSprite(
+                                                x.toFixed(2),
+                                                { 'x' : x, 'y' : y-0.1, 'z': z },
+                                                lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    k++;
+
+                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 );
+                    segm = segm/2;
+                    if(xsupp==undefined){
+                        if(x>0 && x1<0 && segm>=epsilon){
+                            xsupp = x1;
+                            x1 = 0;
+                        }else if(x>min.x && x1<min.x){
+                            xsupp = x1;
+                            x1 = min.x;
+                        }
+                    }else
+                        x1=xsupp;
+                }else{
+                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 );
+                    segm = segm/2;
+                    if(xsupp==undefined){
+                        if(x>0 && x1<0 && segm>=epsilon){
+                            xsupp = x1;
+                            x1 = 0;
+                        }else if(x>min.x && x1<min.x && segm<epsilon){
+                            xsupp = x1;
+                            x1 = min.x;
+                        }else{
+                            pntTypes[i++] = 2.0;
+
+                            var sprite = makeTextSprite(
+                                                        x.toFixed(2),
+                                                        { 'x' : x, 'y' : y-0.1, 'z': z },
+                                                        lblParameters
+                                                       );
+                            labelsgroup.add( sprite );
+
+                            positions[(3 * k) + id] = x;
+                            positions[(3 * k + 1) + id] = y;
+                            positions[(3 * k + 2) + id] = z;
+
+                            k++;
+                            if(xsupp==undefined){
+                                if(x>0 && x1<0 && segm>=epsilon){
+                                    xsupp = x1;
+                                    x1 = 0;
+                                }else if(x>min.x && x1<min.x){
+                                    xsupp = x1;
+                                    x1 = min.x;
+                                }
+                            }else
+                                x1=xsupp;
+                        }
+                    }else
+                        x1=xsupp;
+                }
+            }
         }
+
+        //segment 0 - 4
+        id += k * 3;
+        k = 0;
+        x = max.x;
+        y = max.y+0.1;
+        z = max.z;
+
+        var z,z0 = max.z, z1 = max.z,zsupp = undefined;
+
+        while(z0>=min.z || z1>=min.z){
+
+            //first minore quotes
+            if(z0>=min.z){
+                z = z0;
+                z0 -=minorFactor;
+
+                pntTypes[i++] = 1.0;
+
+                positions[(3 * k) + id] = x;
+                positions[(3 * k + 1) + id] = y;
+                positions[(3 * k + 2) + id] = z;
+
+                k++;
+            }
+
+            //then minore quotes
+            if(z1 >= min.z){
+                z = z1;
+                z1 = (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp) );
+                zsupp = undefined;
+
+                var eqmax = ( z-max.z>=0 ? z-max.z : (z-max.z)*-1 );
+                eqmax /= 2;
+                var eqmid = ( z-0>=0 ? +z : -z );
+                eqmid /= 2;
+                var eqmin = ( z-min.z>=0 ? z-min.z : (z-min.z)*-1 );
+                eqmin /= 2;
+                if( eqmax<epsilon || eqmid<epsilon || eqmin<epsilon ){
+                    pntTypes[i++] = 3.0;
+                    var sprite = makeTextSprite(
+                                                z.toFixed(2),
+                                                { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    k++;
+
+                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 );
+                    segm = segm/2;
+                    if(zsupp==undefined){
+                        if(z>0 && z1<0 && segm>=epsilon){
+                            zsupp = z1;
+                            z1 = 0;
+                        }else if(z>min.z && z1<min.z){
+                            zsupp = z1;
+                            z1 = min.z;
+                        }
+                    }else
+                        z1=zsupp;
+                }else{
+                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 );
+                    segm = segm/2;
+                    if(zsupp==undefined){
+                    if(z>0 && z1<0 && segm>=epsilon){
+                            zsupp = z1;
+                            z1 = 0;
+                        }else if(z>min.z && z1<min.z && segm<epsilon){
+                            zsupp = z1;
+                            z1 = min.z;
+                        }else{
+                            pntTypes[i++] = 2.0;
+
+                            var sprite = makeTextSprite(
+                                                        z.toFixed(2),
+                                                        { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                        lblParameters
+                                                       );
+                            labelsgroup.add( sprite );
+
+                            positions[(3 * k) + id] = x;
+                            positions[(3 * k + 1) + id] = y;
+                            positions[(3 * k + 2) + id] = z;
+
+                            k++;
+                            if(zsupp==undefined){
+                                if(z>0 && z1<0 && segm>=epsilon){
+                                    zsupp = z1;
+                                    z1 = 0;
+                                }else if(z>min.z && z1<min.z){
+                                    zsupp = z1;
+                                    z1 = min.z;
+                                }
+                            }else
+                                z1=zsupp;
+                        }
+                    }else
+                        z1=zsupp;
+                }
+            }
+        }
+
+        positions = arrayToF32Array(positions.length, positions);
+        pntTypes = arrayToF32Array(pntTypes.length, pntTypes);
+
+        geometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
+        geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
 
     	return geometry;
     }
 
     /**
-     * Method to generate the point cloud geometry in-segment extremes and (0,0)
-     * @param {Vector3} max The max of the bbox
-     * @param {Vector3} min The min of the bbox
-     * @param {Color} pointcolor The color of a generic point
-     * @param {Object} lblParameters The parameters needed for a label
-     * @param {THREE.Group} labelsgroup The group witch usage is to add labels in
-     * @memberOf MLJ.plugins.rendering.Box
-     * @author Stefano Giammori
+      * Make and return a Float32Array from an Array of len indexes
+      * @param {Number} len length of the array
+      * @param {Object} array array to transform
+      * @memberOf MLJ.plugins.rendering.Box
+      * @author Stefano Giammori
     */
-    function generateExtremesPointcloudGeometry(max, min, pntType, lblParameters, labelsgroup){
-        var geometry, div, x, y, z, j, k, iter, xCenter=0, yCenter=0, zCenter=0;
-
-        //estimate the number of points (only the extreme points)
-        var pointsnum0 = 2, pointsnum1 = 2, pointsnum2 = 2;
-        var xdiv = (max.x - min.x) / 2, ydiv = (max.y - min.y) / 2, zdiv = (max.z - min.z) / 2;
-        var xCenter = max.x - xdiv, yCenter = max.y - ydiv, zCenter = max.z - zdiv;
-
-        //estimate the size of the 2 array ({positions, color} : each row represent a point)
-        var arraySize =(
-                         pointsnum0 + (xCenter === 0 ? 1 : 0) +
-                         pointsnum1 + (yCenter === 0 ? 1 : 0) +
-                         pointsnum2 + (zCenter === 0 ? 1 : 0)
-                       ) * 3;
-
-        if(arraySize > 0){
-            geometry = new THREE.BufferGeometry();
-            var positions = new Float32Array( arraySize );
-            var pntTypes = new Float32Array( arraySize / 3 );
-
-            //segment 0 - 3
-            var id = 0;
-            var i = 0;
-            k = 0;
-            iter = 0;
-            x = max.x + 0.1; //TODO : MeshSizes dependent value ?
-            y = max.y;
-            z = max.z;
-            div = ydiv;
-
-            while( y >= min.y ) {
-                if(y===max.y || y===0 || y===min.y){
-                    var sprite = makeTextSprite(
-                                                 y.toFixed(2),
-                                                 { 'x' : x+0.1, 'y' : y, 'z': z },
-                                                 lblParameters
-                                               );
-                    labelsgroup.add( sprite );
-
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
-
-                    pntTypes[i++] = pntType;
-
-                    k++;
-                }
-
-                y = max.y - ++iter * div;
-            }
-
-            //segment 2 - 3
-            id = k * 3;
-            k = 0;
-            iter = 0;
-            x = max.x;
-            y = min.y-0.1;
-            z = max.z;
-            div = xdiv;
-
-            while( x >= min.x ) {
-
-                if(x===max.x || x===0 || x===min.x){
-                    var sprite = makeTextSprite(
-                                             x.toFixed(2),
-                                             { 'x' : x, 'y' : y-0.1, 'z': z },
-                                             lblParameters
-                                       );
-                    labelsgroup.add( sprite );
-
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
-
-                    pntTypes[i++] = pntType;
-
-                    k++;
-                }
-
-                x = max.x - ++iter * div;
-            }
-
-            //segment 0 - 4
-            id += k * 3;
-            k = 0;
-            iter = 0;
-            x = max.x;
-            y = max.y+0.1;
-            z = max.z;
-            div = zdiv;
-
-            while( z >= min.z ) {
-
-                if(z===max.z || z===0 || z===min.z){
-                    var sprite = makeTextSprite(
-                                                 z.toFixed(2),
-                                                 { 'x' : x, 'y' : y+0.1, 'z': z },
-                                                 lblParameters
-                                               );
-                    labelsgroup.add( sprite );
-
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
-
-                    pntTypes[i++] = pntType;
-
-                    k++;
-                }
-
-                z = max.z - ++iter * div;
-            }
-
-            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions,3) );
-            geometry.addAttribute( 'pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
+    function arrayToF32Array(len, array){
+        var f32array = new Float32Array(len);
+        for (i = 0; i < len; i++) {
+            f32array[i] = array[i];
         }
-
-        return geometry;
+        return f32array;
     }
 
     /**
@@ -555,7 +584,7 @@
     								  + borderColor.b + "," + borderColor.a + ")";
     	//set border thickness
     	context.lineWidth = borderThickness;
-    	/** //TODO MEMO : (add +x) ~~ go right; (add +y) ~~ go down) ]
+    	/** //MEMO : (add +x) ~~ go right; (add +y) ~~ go down) ]
     	   Set the rectangular frame (ctx, top-left, top, width, height, radius of the 4 corners)
     	*/
     	roundRect(context,
@@ -630,7 +659,8 @@
         textMaterial = new THREE.MeshFaceMaterial(materialArray)
         textGeo = new THREE.Mesh(textGeo, textMaterial)
 
-        textGeo.position.x = max.x + 0.1; //TODO : MeshSizes dependent
+        //MeshSizes dependent value?
+        textGeo.position.x = max.x + 0.1;
         textGeo.position.y = max.y;
         textGeo.position.z = max.z;
 

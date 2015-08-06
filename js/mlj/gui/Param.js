@@ -249,6 +249,10 @@ MLJ.gui.Param.RangedFloat = function (flags) {
         return parseFloat(this.rangedfloat.getValue());
     };
 
+    /*this.getStep = function () {
+        return parseFloat(this.rangedfloat.getStep());
+    };*/
+
     this.setValue = function (value) {
         this.rangedfloat.setValue(value);
     };

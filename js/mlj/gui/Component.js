@@ -1001,6 +1001,10 @@ MLJ.gui.component.RangedFloat = function (flags) {
         return _$editText.val();
     };
 
+    /*this.getStep = function () {
+        return _$slider.slider( "option", "step" );
+    }*/
+
     this.setValue = function (value) {
         _$editText.val(value);
         _$slider.slider('value', value);
