@@ -56,7 +56,7 @@
                 });
 
                 refresh(select);
-            });
+            });       
 
             return _$searchTool;
         };
@@ -73,6 +73,10 @@
             _elements = MLJ.util.arrayUnique(_elements.concat(split));
             return this;
         };
+        
+        this.focus = function() {
+            _$input.focus();
+        }
 
         MLJ.gui.Widget.call(this);
     };

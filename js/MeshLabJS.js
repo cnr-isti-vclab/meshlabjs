@@ -120,6 +120,29 @@
             height: "100%",
             top: 0
         });
+        
+        var _cmd;
+        $(document).keyup(function(event) {
+            if(event.key === "Meta") {
+                _cmd = false;
+            }
+        });
+                
+        $(document).keydown(function(event) {            
+            if(event.key === "Meta") {
+                _cmd = true;
+            }
+            
+            switch(event.key) {
+                case 'F':
+                case 'f':                                                            
+                    if(_cmd || event.ctrlKey) {
+                        event.preventDefault();                        
+                        MLJ.widget.TabbedPane.selectTab(0);
+                        MLJ.widget.SearchTool.focus();
+                    }             
+            }                                    
+        });        
     };
 
     function splitPane(cl) {
