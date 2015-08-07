@@ -3,11 +3,13 @@
 
     var DEFAULTS = {
             //next are code blocked values
-            minPointSize : 0.5,
-            medPointSize : 1.5,
-            majPointSize : 2.0,
+            minPointSize : 0.2,
+            medPointSize : 1.0,
+            majPointSize : 1.5,
             minSize : 10.0,
             pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
+            epsilonPercentage : 5.0/100.0,
+            spriteOffset : 2.75,
             //next are settable values
             minorFactor : 0.2,
             majorFactor : 0.5,
@@ -183,8 +185,8 @@
             var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
             var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
 
-            meshesGroup.add(labelsGroup);
             meshesGroup.add(pcBuffer);
+            meshesGroup.add(labelsGroup);
         }
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
@@ -219,14 +221,15 @@
         y = max.y;
         z = max.z;
 
-        var epsilon = (max.y - min.y)*5/100;
-        //var steps = boxMinorFactorWidget.getStep();
+        var epsilon = (max.y - min.y) * DEFAULTS.epsilonPercentage;
+        //minorFactor = smartFactor(min.y, max.y, minorFactor);
+        //majorFactor = smartFactor(min.y, max.y, majorFactor);
 
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
 
         while(y0>=min.y || y1>=min.y){
 
-            //first minore quotes
+            //first minor quotes
             if(y0>=min.y){
                 y = y0;
                 y0 -=minorFactor;
@@ -241,7 +244,7 @@
                 k++;
             }
 
-            //then minore quotes
+            //then major quotes
             if(y1 >= min.y){
                 y = y1;
                 y1 = (ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp) );
@@ -260,8 +263,8 @@
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                y.toFixed(2),
-                                                { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -272,9 +275,8 @@
 
                     k++;
 
-                    var segm = ( y-y1<0 ? (y-y1)*-1 : y-y1 ) / 2;
                     if(ysupp==undefined){
-                        if(y>0 && y1<0 && segm<epsilon){
+                        if(y>0 && y1<0){
                             ysupp = y1;
                             y1 = 0;
                         }else if(y>min.y && y1<min.y){
@@ -284,12 +286,11 @@
                     }else
                         y1=ysupp;
                 }else{
-                    var ptsdistance = ( y-y1<0 ? (y-y1)*-1 : y-y1 ) / 2;
                     if(ysupp==undefined){
-                        if(y>0 && y1<0 && ptsdistance<epsilon){
+                        if(y>0 && y1<0){
                             ysupp = y1;
                             y1 = 0;
-                        }else if(y>min.y && y1<min.y && ptsdistance<epsilon){
+                        }else if(y>min.y && y1<min.y){
                             ysupp = y1;
                             y1 = min.y;
                         }else{
@@ -297,8 +298,8 @@
                             pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
-                                                        y.toFixed(2),
-                                                        { 'x' : x+0.1, 'y' : y, 'z': z },
+                                                        (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                        { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
                                                         lblParameters
                                                        );
                             labelsgroup.add( sprite );
@@ -309,7 +310,7 @@
 
                             k++;
                             if(ysupp==undefined){
-                                if(y>0 && y1<0 && segm<epsilon){
+                                if(y>0 && y1<0){
                                     ysupp = y1;
                                     y1 = 0;
                                 }else if(y>min.y && y1<min.y){
@@ -332,11 +333,14 @@
         y = min.y-0.1;
         z = max.z;
 
+        //minorFactor = smartFactor(min.x, max.x, minorFactor);
+        //majorFactor = smartFactor(min.x, max.x, majorFactor);
+
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
 
         while(x0>=min.x || x1>=min.x){
 
-            //first minore quotes
+            //first minor quotes
             if(x0>=min.x){
                 x = x0;
                 x0 -=minorFactor;
@@ -351,7 +355,7 @@
                 k++;
             }
 
-            //then minore quotes
+            //then major quotes
             if(x1 >= min.x){
                 x = x1;
                 x1 = (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp) );
@@ -370,8 +374,8 @@
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                x.toFixed(2),
-                                                { 'x' : x, 'y' : y-0.1, 'z': z },
+                                                (x<0?(x*-1).toFixed(2):x.toFixed(2)),
+                                                { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -382,9 +386,8 @@
 
                     k++;
 
-                    var segm = ( x-x1<0 ? (x-x1)*-1 : x-x1 ) / 2;
                     if(xsupp==undefined){
-                        if(x>0 && x1<0 && segm>=epsilon){
+                        if(x>0 && x1<0){
                             xsupp = x1;
                             x1 = 0;
                         }else if(x>min.x && x1<min.x){
@@ -394,12 +397,11 @@
                     }else
                         x1=xsupp;
                 }else{
-                    var ptsdistance = ( x-x1<0 ? (x-x1)*-1 : x-x1 ) / 2;
                     if(xsupp==undefined){
-                        if(x>0 && x1<0 && ptsdistance<epsilon){
+                        if(x>0 && x1<0){
                             xsupp = x1;
                             x1 = 0;
-                        }else if(x>min.x && x1<min.x && ptsdistance<epsilon){
+                        }else if(x>min.x && x1<min.x){
                             xsupp = x1;
                             x1 = min.x;
                         }else{
@@ -407,8 +409,8 @@
                             pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
-                                                        x.toFixed(2),
-                                                        { 'x' : x, 'y' : y-0.1, 'z': z },
+                                                        (x<0?(x*-1).toFixed(2):x.toFixed(2)),
+                                                        { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                         lblParameters
                                                        );
                             labelsgroup.add( sprite );
@@ -419,7 +421,7 @@
 
                             k++;
                             if(xsupp==undefined){
-                                if(x>0 && x1<0 && segm<epsilon){
+                                if(x>0 && x1<0){
                                     xsupp = x1;
                                     x1 = 0;
                                 }else if(x>min.x && x1<min.x){
@@ -442,11 +444,14 @@
         y = max.y+0.1;
         z = max.z;
 
+        //minorFactor = smartFactor(min.z, max.z, minorFactor);
+        //majorFactor = smartFactor(min.z, max.z, majorFactor);
+
         var z,z0 = max.z, z1 = max.z,zsupp = undefined;
 
         while(z0>=min.z || z1>=min.z){
 
-            //first minore quotes
+            //first minor quotes
             if(z0>=min.z){
                 z = z0;
                 z0 -=minorFactor;
@@ -461,7 +466,7 @@
                 k++;
             }
 
-            //then minore quotes
+            //then major quotes
             if(z1 >= min.z){
                 z = z1;
                 z1 = (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp) );
@@ -480,8 +485,8 @@
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                z.toFixed(2),
-                                                { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                (z<0?(z*-1).toFixed(2):z.toFixed(2)),
+                                                { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -492,9 +497,8 @@
 
                     k++;
 
-                    var segm = ( z-z1<0 ? (z-z1)*-1 : z-z1 ) / 2;
                     if(zsupp==undefined){
-                        if(z>0 && z1<0 && segm>=epsilon){
+                        if(z>0 && z1<0){
                             zsupp = z1;
                             z1 = 0;
                         }else if(z>min.z && z1<min.z){
@@ -504,12 +508,11 @@
                     }else
                         z1=zsupp;
                 }else{
-                    var ptsdistance = ( z-z1<0 ? (z-z1)*-1 : z-z1 ) / 2;
                     if(zsupp==undefined){
-                        if(z>0 && z1<0 && ptsdistance<epsilon){
+                        if(z>0 && z1<0){
                             zsupp = z1;
                             z1 = 0;
-                        }else if(z>min.z && z1<min.z && ptsdistance<epsilon){
+                        }else if(z>min.z && z1<min.z){
                             zsupp = z1;
                             z1 = min.z;
                         }else{
@@ -517,8 +520,8 @@
                             pntTypes[i++] = DEFAULTS.medPointSize;
 
                             var sprite = makeTextSprite(
-                                                        z.toFixed(2),
-                                                        { 'x' : x, 'y' : y+0.1, 'z': z },
+                                                        (z<0?(z*-1).toFixed(2):z.toFixed(2)),
+                                                        { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                         lblParameters
                                                        );
                             labelsgroup.add( sprite );
@@ -529,7 +532,7 @@
 
                             k++;
                             if(zsupp==undefined){
-                                if(z>0 && z1<0 && segm<epsilon){
+                                if(z>0 && z1<0){
                                     zsupp = z1;
                                     z1 = 0;
                                 }else if(z>min.z && z1<min.z){
@@ -553,7 +556,31 @@
         geometry.addAttribute('pntMinSize', new THREE.BufferAttribute( pntMinSizes, 1 ) );
         geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
 
-    	return geometry;
+        return geometry;
+    }
+
+    function smartFactor(a,b,factor) {
+        var minorQuotes = (b - a) / factor;
+        var badInterval = (b - a) / minorQuotes;
+        var smartRoundedInterval = Math.pow(10, Math.floor(Math.log(badInterval) / Math.LN10));
+        var v1 = factor - smartRoundedInterval;
+        var v2 = factor - smartRoundedInterval * 2;
+        var v3 = factor - smartRoundedInterval / 2;
+        var minval = Math.min(v1, v2, v3);
+        switch (minval) {
+            case v1:
+                factor = smartRoundedInterval;
+                break;
+            case v2:
+                factor = smartRoundedInterval * 2;
+                break;
+            case v3:
+                factor = smartRoundedInterval / 2;
+                break;
+            default:
+                factor;
+        }
+        return factor;
     }
 
     /**
