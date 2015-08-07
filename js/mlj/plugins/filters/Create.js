@@ -1,6 +1,36 @@
 
 (function (plugin, scene) {
 
+    var DeleteLayerFilter = new plugin.Filter({
+        name: "Layer Delete",
+        tooltip: "Delete Current Layer.",
+        arity: 2
+    });
+    
+     DeleteLayerFilter._init = function (builder) {
+    };
+    
+    DeleteLayerFilter._applyTo = function (basemeshFile) {
+        scene.removeLayerByName(basemeshFile.name);
+    };
+    plugin.Manager.install(DeleteLayerFilter);
+    
+    var DuplicateLayerFilter = new plugin.Filter({
+        name: "Layer Duplicate",
+        tooltip: "Duplicate current Layer.",
+        arity: 1
+    });
+    
+    DuplicateLayerFilter._init = function (builder) {
+    };
+    
+    DuplicateLayerFilter._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.File.createCppMeshFile(basemeshFile.name);
+        Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
+        scene.addLayer(newmeshFile);
+    };
+    plugin.Manager.install(DuplicateLayerFilter);
+     
     var PlatonicFilter = new plugin.Filter({
         name: "Create Platonic Solid",
         tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
@@ -27,7 +57,7 @@
 
     PlatonicFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile(choiceWidget.getContent());
-        Module.CreatePlatonic(mf.ptrMesh, parseInt(choiceWidget.getValue()));
+        Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
 
@@ -52,7 +82,7 @@
 
     SphereFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Sphere");
-        Module.CreateSphere(mf.ptrMesh, sphereLevWidget.getValue());
+        Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
 
@@ -83,7 +113,7 @@
 
     TorusFilter._applyTo = function () {
         var mf = MLJ.core.File.createCppMeshFile("Torus");
-        Module.CreateTorus(mf.ptrMesh, stepWidget.getValue(), radiusRatioWidget.getValue());
+        Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
 

@@ -254,8 +254,8 @@ MLJ.gui.Param.RangedFloat = function (flags) {
     };
 
     this.onChange = function(foo) {
-        this.rangedfloat.onChange(function() {
-            foo(_this.getValue());
+        this.rangedfloat.onChange(function(event,ui) {
+            foo(parseFloat(ui.value));
         });
     };
 

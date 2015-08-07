@@ -9,6 +9,12 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::UpdateTopology<MyMesh>::FaceFace(m);
+  int nonManifCount = tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m);
+  if(nonManifCount > 0)
+  {
+    printf("Refinement algorithms can be applied only on 2-manifold meshes. Current mesh has %i non manifold edges\n",nonManifCount);
+    return;
+  }
 
   switch(alg)
   {
@@ -35,10 +41,26 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
   printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
 }
 
+void DilateSelection(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceLoose(m);
+  tri::UpdateSelection<MyMesh>::FaceFromVertexLoose(m);
+}
+
+void ErodeSelection(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
+  tri::UpdateSelection<MyMesh>::FaceFromVertexStrict(m);
+}
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(MLRefinePlugin) {
   emscripten::function("RefineMesh", &RefineMesh);
+  emscripten::function("ErodeSelection", &ErodeSelection);
+  emscripten::function("DilateSelection", &DilateSelection);
 }
 #endif

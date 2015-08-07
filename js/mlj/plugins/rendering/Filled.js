@@ -19,8 +19,7 @@
                 "emissive": {type: "c", value: DEFAULTS.emissive},
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
-                "lights": {type: "i", value: DEFAULTS.lights},
-                "wrapRGB": {type: "v3", value: new THREE.Vector3(1, 1, 1)}
+                "lights": {type: "i", value: DEFAULTS.lights}
             }
 
         ])        

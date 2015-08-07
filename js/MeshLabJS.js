@@ -120,6 +120,15 @@
             height: "100%",
             top: 0
         });
+
+
+        $(document).keydown(function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.which === 70) {
+                event.preventDefault();
+                MLJ.widget.TabbedPane.selectTab(0);
+                MLJ.widget.SearchTool.focus();
+            }
+        });
     };
 
     function splitPane(cl) {

@@ -1,11 +1,48 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
  */
 
+/**
+ * @file Component description ...
+ * @author Stefano Gabriele
+ * @author Stefano Giammori
+ */
+
+
+/**
+ * MLJ.gui.component namespace
+ * @namespace MLJ.gui.component
+ * @memberOf MLJ.gui
+ * @author Stefano Gabriele
+ */
 MLJ.gui.component = {};
 
+/**         
+ * @class Component base class
+ * @param {html} html
+ * @param {flags} flags
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Component = function (html, flags) {
     var _flags = flags;
     var _this = this;
@@ -50,6 +87,12 @@ MLJ.gui.component.Component.prototype = {
 };
 
 // GRID ________________________________________________________________________
+
+/**         
+ * @static Grid
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Grid = function () {
     var $table = $('<div></div>')
             .css({
@@ -91,6 +134,11 @@ MLJ.gui.component.Grid = function () {
 
 // Picture in Picture __________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.PiP
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.PiP = function (x, y) {
 
     if (!x) {
@@ -138,6 +186,11 @@ MLJ.gui.component.PiP = function (x, y) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.PiP);
 
 // Color Picker ________________________________________________________________
+/**         
+ * @class MLJ.gui.component.ColorPicker
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.ColorPicker = function (flags) {
     var _html = '<div class="mlj-color-picker"></div>';
     var _$picker = $('<input type="text"/>').addClass("mlj-picker");
@@ -204,6 +257,11 @@ MLJ.gui.component.ColorPicker = function (flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ColorPicker);
 
 // BUTTON _____________________________________________________________________
+/**         
+ * @class MLJ.gui.component.Button
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Button = function (flags) {
     var _html = '<button></button>';
 
@@ -243,7 +301,11 @@ MLJ.gui.component.Button = function (flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Button);
 
 // FILE BUTTON _________________________________________________________________
-
+/**         
+ * @class MLJ.gui.component.FileButton
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.FileButton = function (flags) {
     MLJ.gui.component.Button.call(this, flags);
 
@@ -268,7 +330,11 @@ MLJ.gui.component.FileButton = function (flags) {
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
 
 // TOGGLE BUTTON _______________________________________________________________
-
+/**         
+ * @class MLJ.gui.component.ToggleButton
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.ToggleButton = function (flags) {
     MLJ.gui.component.Button.call(this, flags);
 
@@ -303,8 +369,8 @@ MLJ.gui.component.ToggleButton = function (flags) {
     };
 
     this.onToggle = function (foo) {
-        _this.$.click(function () {
-            foo(_on === 1);
+        _this.$.click(function (event) {
+            foo(_on === 1, event);
         });
     };
 
@@ -323,8 +389,13 @@ MLJ.gui.component.ToggleButton = function (flags) {
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
 
 
-// TOGGLE BUTTON _______________________________________________________________
+// CUSTOM TOGGLE BUTTON ________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.CustomToggleButton
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.CustomToggleButton = function (flags) {
     var _html = $('<div/>').css({
         display: "inline-block",
@@ -356,8 +427,8 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     };
 
     this.onToggle = function (foo) {
-        _toggle.onToggle(function (on) {
-            foo(on);
+        _toggle.onToggle(function (on,event) {
+            foo(on,event);
         });
     };
 
@@ -400,6 +471,11 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.CustomToggleButton);
 
 // CHECKBOX ____________________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.CheckBox
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.CheckBox = function (checked) {
     var _html = '<input type="checkbox" />';
 
@@ -435,7 +511,11 @@ MLJ.gui.component.CheckBox = function (checked) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.CheckBox);
 
 // TEXT FIELD __________________________________________________________________
-
+/**         
+ * @class MLJ.gui.component.TextField
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.TextField = function (txt) {
     var _html = $('<input type="text" class="mlj-text-field"/>')
             .attr("value", txt);
@@ -450,8 +530,13 @@ MLJ.gui.component.TextField = function (txt) {
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.TextField);
 
-// Combobox ____________________________________________________________________
+// ButtonSet __________________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.ButtonSet
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.ButtonSet = function (flags) {
     var _html = '<div></div>';
     var _this = this;
@@ -518,6 +603,11 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ButtonSet);
 
 // Combobox ____________________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.ComboBox
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.ComboBox = function (flags) {
     var _html = '<select></select>';
     var _this = this;
@@ -566,6 +656,11 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ComboBox);
 
 // Tool Bar ____________________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.ToolBar
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.ToolBar = function () {
     var _html = $('<div class="mjs-toolbar"></div>');
 
@@ -587,6 +682,11 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.ToolBar);
 
 // Pane ________________________________________________________________________
 
+/**         
+ * @class MLJ.gui.component.Pane
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Pane = function () {
 
     var _html = '<div class="mlj-pane ui-widget-content"></div>';
@@ -617,7 +717,12 @@ MLJ.gui.component.Pane = function () {
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Pane);
 
-//LABEL
+// LABEL _______________________________________________________________________
+/**         
+ * @class MLJ.gui.component.Label
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Label = function (flags) {
     var _html = "<label></label>";
     this._make = function () {
@@ -646,7 +751,11 @@ MLJ.gui.component.Label = function (flags) {
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Label);
 
 // ACCORDION ___________________________________________________________________
-
+/**         
+ * @class MLJ.gui.component.Accordion
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Accordion = function (flags) {
     var _html = "<div></div>";
     this.addEntry = function () {
@@ -692,6 +801,11 @@ MLJ.gui.component.Accordion = function (flags) {
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Accordion);
 
+/**         
+ * @class MLJ.gui.component.AccordionEntry
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.AccordionEntry = function (flags) {
     this.$title = $('<h3></h3>').css("position", "relative");
     this.$content = $('<div></div>');
@@ -745,6 +859,11 @@ MLJ.gui.component.AccordionEntry = function (flags) {
 };
 
 // SPINNER _____________________________________________________________________
+/**         
+ * @class MLJ.gui.component.Spinner
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
 MLJ.gui.component.Spinner = function (flags) {
     var _html = '<div></div>';
     var _$spinner = $('<input>').css({width: "100%"});
@@ -799,7 +918,7 @@ MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Spinner);
  */
 MLJ.gui.component.RangedFloat = function (flags) {
     //local variable for the input parameters
-    var inputparams;
+    var _this = this, inputparams;
     //create root
     var _html = $('<div>').css({position: "relative", float: "left", clear: "none", width: "100%"});
     //create slider node
@@ -888,7 +1007,22 @@ MLJ.gui.component.RangedFloat = function (flags) {
     };
 
     this.onChange = function (foo) {          
-        _$slider.on( "slidechange", function( event, ui ) {
+        _$slider.on( "slide", function( event, ui ) {
+            foo(event,ui);
+        });
+        _$editText.on("change", function( event ) {
+            var val = _$editText.val();
+            var min = _$slider.slider("option", "min");
+            var max = _$slider.slider("option", "max");
+            var ui;
+            //validate the boundaries
+            if (val > max)
+                val = max;
+            else if (val < min)
+                val = min;
+            _$editText.val(val);
+            _$slider.slider('value', val);
+            ui = { value : val };
             foo(event,ui);
         });
     };
@@ -897,3 +1031,42 @@ MLJ.gui.component.RangedFloat = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.RangedFloat);
+
+
+// DIALOG ______________________________________________________________________
+/**         
+ * @class MLJ.gui.component.Dialog
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
+MLJ.gui.component.Dialog = function (flags) {
+    var _html = "<div></div>";
+    var _this = this;
+    
+    this.appendContent = function (content) {        
+        _this.$.append(content);
+        return this;
+    };
+    
+    this._make = function () {
+        _this.$.hide();
+        $('body').append(_html);
+    };
+
+    this.show = function() {        
+         _this.$.dialog(flags);
+    }
+    
+    this.hide = function() {        
+         _this.$.dialog("close");
+    }
+    
+    this.destroy = function() {
+        _this.$.dialog("destroy");
+    }
+            
+    MLJ.gui.component.Component.call(this, _html);
+
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Dialog);

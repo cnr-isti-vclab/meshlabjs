@@ -35,6 +35,12 @@
 MLJ.core.File = {
     ErrorCodes: {
         EXTENSION: 1
+    },
+    SupportedExtensions: {
+        OFF: ".off",
+        OBJ: ".obj",
+        PLY: ".ply",
+        STL: ".stl"        
     }
 };
 
@@ -49,7 +55,6 @@ MLJ.core.File = {
             case ".obj":
             case ".ply":
             case ".stl":
-            case ".vmi":
                 return true;
         }
 
@@ -75,7 +80,7 @@ MLJ.core.File = {
         if (!isExtensionValid(extension)) {
             var err = new MLJ.Error(
                     MLJ.core.File.ErrorCodes.EXTENSION,
-                    "MeshLabJs allows file format '.off', '.ply', '.vmi', '.obj' and '.stl'. \nTry again."
+                    "MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again."
                     );
 
             MLJ.setError(err);
@@ -109,6 +114,8 @@ MLJ.core.File = {
             var mf = new MLJ.core.MeshFile(file.name, CppMesh);
 
             onLoaded(true, mf);
+            
+            FS.unlink(file.name);
 
         }; //end onloadend
     }
@@ -210,20 +217,27 @@ MLJ.core.File = {
         });
     };
 
-    this.saveMeshFile = function (meshFile) {
+    this.saveMeshFile = function (meshFile, fileName) {
+        
+        //Create data file in FS
+        var int8buf = new Int8Array(meshFile.ptrMesh());
+        FS.createDataFile("/", fileName, int8buf, true, true);
+        
         //call a SaveMesh contructon from c++ Saver.cpp class
-        var Save = new Module.SaveMesh(meshFile.ptrMesh);
+        var Save = new Module.SaveMesh(meshFile.ptrMesh());
         //call a saveMesh method from above class
-        var resSave = Save.saveMesh(meshFile.name);
+        var resSave = Save.saveMesh(fileName);
         
         //handle errors ...        
         
         //readFile is a Emscripten function which read a file into memory by path
-        var file = FS.readFile('/'+meshFile.name);
+        var file = FS.readFile(fileName);
         //create a Blob by filestream
         var blob = new Blob([file], {type: "application/octet-stream"});
         //call a saveAs function of FileSaver Library
-        saveAs(blob, meshFile.name);
+        saveAs(blob, fileName);
+        
+        FS.unlink(fileName);
     };        
 
 }).call(MLJ.core.File);

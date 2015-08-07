@@ -17,10 +17,6 @@
             width: "100%"
         });
 
-//        var _$rendWrapp = $('<div/>').css({
-//            overflow: "auto",
-//            width: "100%"
-//        });
 
         var _$rendPane = $('<div/>').css({
             position: "relative"            
@@ -36,13 +32,6 @@
 
         //Tool bar for rendering pane
         var _renderingTb = new component.ToolBar();
-        //Accordion for rendering pane
-//        var _renderingAccord = new component.Accordion({
-//            heightStyle: 'content',
-//            collapsible: true,
-//            active: false
-//        });
-//        _renderingAccord.$.attr('id', 'accordion-rendering');
 
         function Tab(name) {
             this.name = name;
@@ -91,7 +80,6 @@
             renderingTab
                     .appendContent(_renderingTb.$)
                     .appendContent(_$rendPane);
-//            _$rendWrapp.append(_renderingAccord.$);
 
             _tabs.push(filterTab, renderingTab);
 
@@ -133,12 +121,12 @@
             return _$rendPane;
         };
 
-//        this.getRendAccord = function () {
-//            return _renderingAccord;
-//        };
-
         this.getRendToolBar = function () {
             return _renderingTb;
+        };
+        
+        this.selectTab = function(index) {
+            _$tabbedPane.tabs("option","active",index);
         };
 
         init();

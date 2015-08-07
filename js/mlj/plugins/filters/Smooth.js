@@ -26,7 +26,7 @@
     };
 
     LaplacianSmoothFilter._applyTo = function (meshFile) {
-        Module.LaplacianSmooth(meshFile.ptrMesh, stepLWidget.getValue(), weightWidget.getValue());
+        Module.LaplacianSmooth(meshFile.ptrMesh(), stepLWidget.getValue(), weightWidget.getValue());
         scene.updateLayer(meshFile);
     };
 
@@ -66,7 +66,7 @@
     };
 
     TaubinSmoothFilter._applyTo = function (meshFile) {
-        Module.TaubinSmooth(meshFile.ptrMesh, stepTWidget.getValue(), lambdaWidget.getValue(), muWidget.getValue());
+        Module.TaubinSmooth(meshFile.ptrMesh(), stepTWidget.getValue(), lambdaWidget.getValue(), muWidget.getValue());
         scene.updateLayer(meshFile);
     };
 

@@ -22,27 +22,63 @@
  */
 
 /**
- * @file Defines the functions to manage the scene, e.g. the set of mesh layers that constitute the ''document'' of the MeshLabJS system. 
+ * @file 
+ *
  * @author Stefano Gabriele
  */
 
 /**
- * MLJ.core.Scene namespace
+ * The MLJ.core.Scene namespace defines the functions to manage the scene, 
+ * i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
+ * This namespace also actually stores the set of meshes, the reference to current mesh, 
+ * the threejs container for the scene, the threejs camera and the threejs renderer 
+ * (e.g. the webgl context where the scene is rendered).
+ *
  * @namespace MLJ.core.Scene
  * @memberOf MLJ.core
  * @author Stefano Gabriele
+ *
  */
 MLJ.core.Scene = {};
 
 (function () {
 
-    //Contains all mesh in the scene
+    /**
+     * Associative Array that contains all the meshes in the scene 
+     * @type MLJ.util.AssociativeArray
+     * @memberOf MLJ.core.Scene     
+     */
     var _layers = new MLJ.util.AssociativeArray();
 
-    //Reference to selected layer (type MeshFile)
+    /**
+     * Reference to current layer 
+     * @type MLJ.core.MeshFile
+     * @memberOf MLJ.core.Scene     
+     */
     var _selectedLayer;
 
-    var _scene, _camera, _renderer;
+    /**
+     * It contains the ThreeJs Representation of the current set of layers. 
+     * Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshFile object.
+     * @type THREE.Scene
+     * @memberOf MLJ.core.Scene     
+     */
+    var _scene;
+    
+    /**
+     * The ThreeJs group that contains all the layers. 
+     * It also store the global transformation (scale + translation) 
+     * that brings the global bbox of the scene
+     * in the origin of the camera reference system. 
+     * @type THREE.Object
+     * @memberOf MLJ.core.Scene     
+     */
+    var _group;
+    
+    var  _camera;
+    
+    /// @type {Object}
+    var _renderer;
     var _this = this;
 
     function get3DSize() {
@@ -83,7 +119,9 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         _camera.position.z = 15;
-        
+        _group = new THREE.Object3D();
+        _scene.add(_group);
+
         _renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
             alpha: true, 
@@ -139,22 +177,36 @@ MLJ.core.Scene = {};
 
         $(document).on("MeshFileReloaded",
                 function (event, meshFile) {
-                    MLJ.core.Scene.removeLayerByName(meshFile.name);
-                    _addLayer(meshFile, true);
+                    
+                    var oldMesh = _this.getLayerByName(meshFile.name);
+                    
+                    //remove all overlays from scene
+                    var iter = oldMesh.overlays.iterator();
+                        
+                    while(iter.hasNext()) {
+                        _group.remove(iter.next());
+                    }
+                                                                                
+                    oldMesh.dispose();      
+                                                                               
+                    //replace mesh file
+                    _layers.set(meshFile.name, meshFile);
+                    _selectedLayer = meshFile;                                                                              
+                    
                     /**
-                     *  Triggered when a layer is updated
-                     *  @event MLJ.core.Scene#SceneLayerUpdated
+                     *  Triggered when a layer is reloaded
+                     *  @event MLJ.core.Scene#SceneLayerReloaded
                      *  @type {Object}
-                     *  @property {MLJ.core.MeshFile} meshFile The updated mesh file
+                     *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
                      *  @example
                      *  <caption>Event Interception:</caption>
-                     *  $(document).on("SceneLayerUpdated",
+                     *  $(document).on("SceneLayerReloaded",
                      *      function (event, meshFile) {
                      *          //do something
                      *      }
                      *  );
-                     */
-                    $(document).trigger("SceneLayerUpdated", [meshFile]);
+                     */                    
+                    $(document).trigger("SceneLayerReloaded", [meshFile]);
                 });
     }
     
@@ -165,21 +217,8 @@ MLJ.core.Scene = {};
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
-    function _computeGlobalBBbox() {
-        var iter = _layers.iterator();        
-        
-        var threeMesh;
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            if (threeMesh.scaleFactor) {
-                threeMesh.position.x -= threeMesh.offsetVec.x;
-                threeMesh.position.y -= threeMesh.offsetVec.y;
-                threeMesh.position.z -= threeMesh.offsetVec.z;
-                var scaling = threeMesh.scaleFactor;
-                threeMesh.scale.multiplyScalar(1 / scaling);
-            }
-        }
-
+    function _computeGlobalBBbox()
+    {
         var BBGlobal = new THREE.Box3();
         iter = _layers.iterator();
         while (iter.hasNext()) {
@@ -187,101 +226,15 @@ MLJ.core.Scene = {};
             var bbox = new THREE.Box3().setFromObject(threeMesh);
             BBGlobal.union(bbox);
         }
-
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-            threeMesh.scale.multiplyScalar(scaleFac);
-            threeMesh.scaleFactor = scaleFac;
-        }
-
-        BBGlobal = new THREE.Box3();
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var bbox = new THREE.Box3().setFromObject(threeMesh);
-            BBGlobal.union(bbox);
-        }
-
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var offset = new THREE.Vector3();
-            offset = BBGlobal.center().negate();
-            threeMesh.position.x += offset.x;
-            threeMesh.position.y += offset.y;
-            threeMesh.position.z += offset.z;
-            threeMesh.offsetVec = offset;
-        }
-
+        var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
+        var offset = BBGlobal.center().negate();;
+        _group.scale.set(scaleFac,scaleFac,scaleFac);
+        _group.position.set(offset.x*scaleFac,offset.y*scaleFac,offset.z*scaleFac);
+        _group.updateMatrix();
+//        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
+//        console.log("ScaleFactor:" + scaleFac);
     }
-
-    function _addLayer(meshFile, reloaded) {
-        if (!(meshFile instanceof MLJ.core.MeshFile)) {
-            console.error("The parameter must be an instance of MLJ.core.MeshFile");
-            return;
-        }
-        //Add new mesh to associative array _layers            
-        _layers.set(meshFile.name, meshFile);
-
-        if (meshFile.cpp === true) {
-            meshFile.updateThreeMesh();
-        }
-
-        //Set mesh position
-        var mesh = meshFile.getThreeMesh();
-        var box = new THREE.Box3().setFromObject(mesh);
-        mesh.position = box.center();
-//        _scene.add(mesh);
-
-        _selectedLayer = meshFile;
-
-        //Compute the global bounding box
-        _computeGlobalBBbox();      
-
-        if (!reloaded) {
-            var layersIter = _layers.iterator();
-            var layer, overlaysIter;
-            while(layersIter.hasNext()) {
-                layer = layersIter.next();
-                overlaysIter = layer.overlays.iterator();
-                while(overlaysIter.hasNext()) {
-                    mesh = overlaysIter.next();                
-
-                    mesh.position.set(
-                        meshFile.threeMesh.position.x,
-                        meshFile.threeMesh.position.y,
-                        meshFile.threeMesh.position.z);
-
-                    mesh.scale.set(
-                        meshFile.threeMesh.scale.x,
-                        meshFile.threeMesh.scale.y,
-                        meshFile.threeMesh.scale.z);
-                }
-            }                                   
-            
-            /**
-             *  Triggered when a layer is added
-             *  @event MLJ.core.Scene#SceneLayerAdded
-             *  @type {Object}
-             *  @property {MLJ.core.MeshFile} meshFile The last mesh file added
-             *  @property {Integer} layersNumber The number of layers in the scene
-             *  @example
-             *  <caption>Event Interception:</caption>
-             *  $(document).on("SceneLayerAdded",
-             *      function (event, meshFile, layersNumber) {
-             *          //do something
-             *      }
-             *  );
-             */
-            $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);                       
-        }
-        
-        //render the scene
-        _this.render();
-    }
-
+  
     this.lights = {
         AmbientLight: null,
         Headlight: null
@@ -308,7 +261,7 @@ MLJ.core.Scene = {};
          *      }
          *  );
          */
-        $(document).trigger("SceneLayerSelected", [_selectedLayer]);
+        $(document).trigger("SceneLayerSelected", [_selectedLayer]);        
     };
 
     /**
@@ -339,7 +292,39 @@ MLJ.core.Scene = {};
      * @author Stefano Gabriele
      */
     this.addLayer = function (meshFile) {
-        _addLayer(meshFile, false);
+        if (!(meshFile instanceof MLJ.core.MeshFile)) {
+            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            return;
+        }
+        //Add new mesh to associative array _layers            
+        _layers.set(meshFile.name, meshFile);
+
+        if (meshFile.cpp === true) {
+            meshFile.updateThreeMesh();
+        }
+
+        _selectedLayer = meshFile;
+        
+        _computeGlobalBBbox();              
+
+        /**
+         *  Triggered when a layer is added
+         *  @event MLJ.core.Scene#SceneLayerAdded
+         *  @type {Object}
+         *  @property {MLJ.core.MeshFile} meshFile The last mesh file added
+         *  @property {Integer} layersNumber The number of layers in the scene
+         *  @example
+         *  <caption>Event Interception:</caption>
+         *  $(document).on("SceneLayerAdded",
+         *      function (event, meshFile, layersNumber) {
+         *          //do something
+         *      }
+         *  );
+         */
+        $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
+        
+        //render the scene
+        _this.render();
     };       
     
     this.addOverlayLayer = function(meshFile, name, mesh) {
@@ -348,19 +333,9 @@ MLJ.core.Scene = {};
             return;
         }
         
-        mesh.position.set(
-            meshFile.threeMesh.position.x,
-            meshFile.threeMesh.position.y,
-            meshFile.threeMesh.position.z);
-            
-        mesh.scale.set(
-            meshFile.threeMesh.scale.x,
-            meshFile.threeMesh.scale.y,
-            meshFile.threeMesh.scale.z);
-        
         meshFile.overlays.set(name,mesh);
         mesh.visible = meshFile.getThreeMesh().visible;
-        _scene.add(mesh);
+        _group.add(mesh);
 
         //render the scene
         _this.render();
@@ -372,8 +347,7 @@ MLJ.core.Scene = {};
         if(mesh !== undefined) {
             mesh = meshFile.overlays.remove(name);            
             
-            _scene.remove(mesh);                        
-            
+            _group.remove(mesh);                        
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh.geometry = null;
@@ -413,7 +387,19 @@ MLJ.core.Scene = {};
             //render the scene
             this.render();
 
-            //Trigger event
+            /**
+             *  Triggered when a layer is updated
+             *  @event MLJ.core.Scene#SceneLayerUpdated
+             *  @type {Object}
+             *  @property {MLJ.core.MeshFile} meshFile The updated mesh file
+             *  @example
+             *  <caption>Event Interception:</caption>
+             *  $(document).on("SceneLayerUpdated",
+             *      function (event, meshFile) {
+             *          //do something
+             *      }
+             *  );
+             */
             $(document).trigger("SceneLayerUpdated", [meshFile]);
 
         } else {
@@ -441,12 +427,30 @@ MLJ.core.Scene = {};
      */
     this.removeLayerByName = function (name) {
         var meshFile = this.getLayerByName(name);
-
+        
         if (meshFile !== undefined) {
+            //remove layer from list
             _layers.remove(name);
-
-//            _scene.remove(meshFile.getThreeMesh());
+                             
+            //remove all overlays from scene
+            var iter = meshFile.overlays.iterator();
+                        
+            while(iter.hasNext()) {
+                _group.remove(iter.next());
+            }
+                                                
+            $(document).trigger("SceneLayerRemoved", [meshFile]);
+            
             meshFile.dispose();
+                      
+            if(_layers.size() > 0) {
+                _this.selectLayerByName(_layers.getFirst().name);
+            }
+            
+            _computeGlobalBBbox();
+           
+            
+            MLJ.core.Scene.render(); 
         }
     };
 

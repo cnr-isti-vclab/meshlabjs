@@ -129,7 +129,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             var t0 = performance.now();
             _this._applyTo(meshFile);
             var t1 = performance.now();
-            MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
+            MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 
         if (parameters.arity > 0) {

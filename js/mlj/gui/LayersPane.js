@@ -68,6 +68,7 @@
             $(document).on("SceneLayerSelected",
                     function (event, mesh) {
                         MLJ.gui.getWidget("Info").updateInfo(mesh);
+                        select(mesh.name);
                     });
 
             $(document).on("SceneLayerUpdated",
@@ -78,6 +79,12 @@
                         }
 
                     });
+                    
+            $(document).on("SceneLayerRemoved",
+                function (event, mesh) {
+                    MLJ.widget.LayersPane.removeLayer(mesh.name);
+                    MLJ.gui.getWidget("Info").clear();
+                });
         }
         
         /**
@@ -103,8 +110,8 @@
          * @author Stefano Gabriele
          */
         this.addLayer = function (name) {
-
-            var $wrap = $('<div class="mlj-layers-entry"></div>')
+           
+            var $wrap = $('<div class="mlj-layers-entry" name="mlj-wrap-'+name+'"></div>')
                     .css({position: "relative", width: "100%"});
             var $layer = $('<div class="mlj-layer" name="' + name + '">' + name + '</div>')
                     .css({position: "absolute"});
@@ -130,6 +137,16 @@
                     MLJ.core.Scene.setLayerVisible(name, true);
                 }
             });
+        };
+        
+        /**
+         * Removes a layer
+         * @param {String} name The name of the layer to be removed
+         * @author Stefano Gabriele
+         */
+        this.removeLayer = function (name) {
+           var $sel = _$layers.find("[name='mlj-wrap-" + name + "']");           
+           $sel.remove();          
         };
 
     };

@@ -6,7 +6,6 @@ and open the template in the editor.
 /* 
     Created on : 30-mag-2015, 12.14.41
     Author     : Stefano Gabriele
-    email      : stefano_gabriele@yahoo.it
 */
 
 /*BROWSER RESETS ____________________________________________________________ */
@@ -268,6 +267,20 @@ text-align: center;
     border: solid thin darkgray;
     border-radius: 2px;
 }
+
+
+/* Save dialog style ________________________________________________________ */
+#mlj-save-dialog input,
+#mlj-save-dialog select {
+    margin: 6px 0;
+    width: 100%;
+}
+
+#mlj-save-dialog #button-wrapper {
+    text-align: right;
+    margin: 6px 0; 
+}
+
 
 /* MeshLabJs global styles __________________________________________________ */
 

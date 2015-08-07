@@ -6,50 +6,13 @@
         thickness: 1.5
     };
 
-    //Shader
-    var WIREFRAME = {
-        uniforms: THREE.UniformsUtils.merge([
-            {
-                "thickness": {type: "f", value: DEFAULTS.thickness},
-                "color": {type: "c", value: DEFAULTS.color}
-            }
-        ]),
-        vertexShader: [
-            "attribute vec3 center;",
-            "varying vec3 vCenter;",
-            "void main() {",
-            "   vCenter = center;",
-            "   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-            "   gl_Position.z -= 0.00001;",
-            "}"
-
-        ].join("\n"),
-        fragmentShader: [
-            "#extension GL_OES_standard_derivatives : enable",
-            "varying vec3 vCenter;",
-            "uniform float thickness;",
-            "uniform vec3 color;",
-            "float edgeFactor(){",
-            "   vec3 d = fwidth(vCenter);",
-            "   vec3 a3 = smoothstep(vec3(0.0), d*thickness, vCenter);",
-            "   float edgeDist = min(min(a3.x, a3.y), a3.z);",
-            "   if(edgeDist > 0.5) discard;",
-            "   return 1.0-edgeDist;",
-            "}",
-            "void main() {",
-            "   gl_FragColor = vec4( color, edgeFactor());",
-            "}"
-
-        ].join("\n")
-
-    };
-
     var plug = new plugin.Rendering({
         name: "Wire",
         tooltip: "Wire Tooltip",
         icon: "img/icons/wire.png",
         toggle: true,
-        on: false
+        on: false,
+        loadShader: ["WireFragment.glsl", "WireVertex.glsl"]
     }, DEFAULTS);
 
     var wireColor, thicknessWidget;
@@ -67,12 +30,12 @@
             min: 1, max: 10, step: 0.5,
             defval: DEFAULTS.thickness,
             bindTo: "thickness"
-        });        
+        });
     };
 
     plug._applyTo = function (meshFile, on) {
 
-        if (on == false) {
+        if (on === false) {
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
@@ -86,15 +49,19 @@
             attrVal[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
         }
 
-        var uniforms = THREE.UniformsUtils.clone(WIREFRAME.uniforms);
+        var uniforms = {
+            "thickness": {type: "f", value: DEFAULTS.thickness},
+            "color": {type: "c", value: DEFAULTS.color}
+        };
+
         var params = meshFile.overlaysParams.getByKey(plug.getName());
 
         uniforms.color.value = params.color;
         uniforms.thickness.value = params.thickness;
 
         var parameters = {
-            fragmentShader: WIREFRAME.fragmentShader,
-            vertexShader: WIREFRAME.vertexShader,
+            vertexShader: this.shaders.getByKey("WireVertex.glsl"),
+            fragmentShader: this.shaders.getByKey("WireFragment.glsl"),
             uniforms: uniforms,
             attributes: attributes,
             shading: THREE.FlatShading,
@@ -102,7 +69,7 @@
             side: THREE.DoubleSide
         };
 
-        var mat = new THREE.ShaderMaterial(parameters);
+        var mat = new THREE.RawShaderMaterial(parameters);
         var wireframe = new THREE.Mesh(geom, mat);
 
         scene.addOverlayLayer(meshFile, plug.getName(), wireframe);

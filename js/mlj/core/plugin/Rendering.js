@@ -57,18 +57,26 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     if (parameters.toggle === true) {
 
         //Click on button
-        btn.onToggle(function (on) {
+        btn.onToggle(function (on, event) {            
             //Apply rendering pass to all mesh
-            if (MLJ.gui.isCtrlDown()) {
-                var ptr = MLJ.core.Scene.getLayers().iterator();
-                var layer;
+            if (event.ctrlKey === true) {                
+                var passName = parameters.name;
+                var ptr = MLJ.core.Scene.getLayers().iterator();                
+                //get selected layer
+                var selLayer = MLJ.core.Scene.getSelectedLayer();                
+                //get this rendering pass paramters of selected layer
+                var selParams = selLayer.overlaysParams.getByKey(passName);
+                var layer;             
+                //apply rendering pass with 'selParams' to all layers
                 while (ptr.hasNext()) {
-                    layer = ptr.next();
-                    if (layer.getThreeMesh().visible) {
-                        _this._applyTo(layer, on);
-                        layer.properties.set(parameters.name, on);
+                    layer = ptr.next();    
+                    if (layer.getThreeMesh().visible) {                        
+                        layer.overlaysParams.set(passName,selParams);
+                        layer.properties.set(passName, on);
+                        _this._applyTo(layer, on);                        
                     }
                 }
+                
             } else { //Apply rendering pass to selected layer
                 var selected = MLJ.core.Scene.getSelectedLayer();
                 if (selected !== undefined) {
@@ -102,9 +110,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 }
             });
 
-        });
-
-        $(document).on("SceneLayerAdded",
+        });             
+        
+        $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     //Check if the renderinfg fetaure is on by default
                     if (btn.isOn() === parameters.on) {
@@ -145,8 +153,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 }
             });
         });
-
-        $(document).on("SceneLayerAdded",
+        
+        $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     _this._applyTo(meshFile, true);
                     update();
@@ -199,7 +207,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         var meshFile = MLJ.core.Scene.getSelectedLayer();
         var params = meshFile.overlaysParams.getByKey(_this.getName());
         params[paramProp] = value;
-
+              
         if (parameters.global === true) {
             var iter = meshFile.overlays.iterator();
             var overlay;
@@ -222,12 +230,18 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         if (overlay === undefined) {
             return;
         }
-
-        //is a uniform ?
-        if (overlay.material.uniforms[paramProp] !== undefined) {
+        
+        //is 'bindTo' property a uniform?
+        if (overlay.material.uniforms !== undefined 
+                && overlay.material.uniforms[paramProp] !== undefined) {
             overlay.material.uniforms[paramProp].value = value;
             MLJ.core.Scene.render();
             return;
+        }
+        
+        //is 'bindTo' property a function?
+        if(jQuery.isFunction(paramProp)) {
+            paramProp(value, overlay);
         }
 
     });

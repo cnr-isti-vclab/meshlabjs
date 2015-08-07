@@ -4,6 +4,13 @@
 using namespace vcg;
 using namespace std;
 
+void DuplicateLayer(uintptr_t _baseM, uintptr_t _newM)
+{
+    MyMesh &baseM = *((MyMesh*) _baseM);
+    MyMesh &newM = *((MyMesh*) _newM);
+    tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
+}
+
 void CreatePlatonic(uintptr_t _m, int index)
 {
     MyMesh &m = *((MyMesh*) _m);
@@ -68,5 +75,6 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreatePlatonic", &CreatePlatonic);
     emscripten::function("CreateTorus", &CreateTorus);
     emscripten::function("CreateSphere", &CreateSphere);
+    emscripten::function("DuplicateLayer", &DuplicateLayer);
 }
 #endif

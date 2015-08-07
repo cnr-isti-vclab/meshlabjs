@@ -96,31 +96,19 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
     });
 };
 
+MLJ.gui.disabledOnCppMesh = function(component) {
+    $(document).on("SceneLayerSelected SceneLayerAdded", function (ev, layer) {
+        if(layer.cpp === true) {
+            component.disabled(true);
+        } else {
+            component.disabled(false);
+        }                
+    });    
+};
+
 (function () {
 
     var _counter = 0;    
-    var _ctrlDown = false;
-    
-    function initKeysEventsHandler() {        
-        
-        $(document).keydown(function(event){        
-         _ctrlDown = event.ctrlKey;
-        });
-        
-        $(document).keyup(function(event){        
-         _ctrlDown = event.ctrlKey;                    
-        });
-    }
-        
-    /**
-     * Returns <code>true</code> if control key is pressed
-     * @returns <code>true</code> if control key is pressed, <code>false</code> otherwise
-     * @memberOf MLJ.gui
-     * @author Stefano Gabriele
-     */
-    this.isCtrlDown = function() {
-        return _ctrlDown;
-    }
     
     /**
      * Returns an unique id; useful when it is necessary to add a UID to a GUI component
@@ -154,8 +142,6 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
         }
 
         return MLJ.gui.group.name;
-    }
-    
-    initKeysEventsHandler();
+    }   
     
 }).call(MLJ.gui);

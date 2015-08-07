@@ -18,6 +18,7 @@ int main(int argc, char*argv[])
 {
   CreatePluginTEST();
   SamplingPluginTEST();
+  MeshingPluginTEST();
   printf("Done");
   return 0;
 }

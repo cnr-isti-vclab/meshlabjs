@@ -44,7 +44,6 @@
  */
 MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
-    this.ptrMesh = cppMesh.getMesh();
     this.cppMesh = cppMesh;
     this.VN = this.vert = this.FN = this.face = this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
@@ -55,6 +54,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _isRendered = true;
     var _this = this;   
     
+ 
     function init() {
         console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
@@ -68,13 +68,10 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     }
     
     function buildMeshGeometry() {
-        var meshProp = new Module.MeshLabJs(_this.ptrMesh);
         _this.VN = cppMesh.VN();
-        
-//        _this.VN = meshProp.getVertexNumber();
-        _this.vert = meshProp.getVertexVector();
+        _this.vert = cppMesh.getVertexVector();
         _this.FN = cppMesh.FN();
-        _this.face = meshProp.getFaceVector();
+        _this.face = cppMesh.getFaceVector();
 
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
@@ -132,18 +129,55 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     };
     
     /**
+     * Returns the ptr to the cppMesh object
+     * @returns {THREE.Mesh} this THREE.Mesh object
+     *  
+     */
+    this.ptrMesh = function () {
+        return _this.cppMesh.getMeshPtr();
+    }
+    
+    /**
+     * Returns the THREE.Matrix4 object that is stored with the mesh
+     * @returns {Matrix4}
+     *  
+     */
+    this.ptrMesh = function () {
+        THREE.Matrix4.elements = THREE.Matrix4();
+        return _this.cppMesh.getMeshPtr();
+    }
+    
+    
+    /**
      * Removes the object from memory
      * @author Stefano Gabriele     
      */
     this.dispose = function () {
-        
-        FS.unlink(file.name);
+               
+        var iter = _this.overlays.iterator();
+        var mesh;
+        while(iter.hasNext()) {
+            mesh = iter.next();
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+            
+            if (mesh.texture) {
+                mesh.texture.dispose();            
+                mesh.texture = null;
+            }
+        }
         
         _this.threeMesh.geometry.dispose();
         _this.threeMesh.material.dispose();
+        
+        if (_this.threeMesh.texture) {
+            _this.threeMesh.texture.dispose();            
+            _this.threeMesh.texture = null;
+        }
+        
         _this.cppMesh.delete();
         
-        _this.name = _this.ptrMesh = _this.VN = _this.vert = _this.FN =
+        _this.name = _this.VN = _this.vert = _this.FN =
         _this.face = _this.threeMesh = _this.properties = _this.overlays = 
         _this.overlaysParams =  _this = null;       
     };

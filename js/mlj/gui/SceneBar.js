@@ -36,6 +36,24 @@
     var _SceneBar = function () {
 
         var _toolBar = new component.ToolBar();
+        var _dialog = new component.Dialog({
+            title:"Save mesh", modal:true, draggable: false, resizable:false
+        });
+        
+        var _html =  "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
+            _html += "<input id='filename' type='text'/>";
+            _html += "<label for='extension'>Extension:</label><br/>";
+            _html += "<select id='extension'>";
+        
+        var ext;
+        for(var key in MLJ.core.File.SupportedExtensions) {
+            ext = MLJ.core.File.SupportedExtensions[key];
+            _html +="<option name='"+ext+"'>"+ext+"</option>";
+        }       
+         
+        _html += "</select>";
+        _html += "<div id='button-wrapper'><button id='mlj-save-dialog-button'>Save</button></div></div>";
+        _dialog.appendContent(_html);
 
         function init() {
 
@@ -57,8 +75,11 @@
                 tooltip: "Reload mesh file",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png"
             });
-            
+                                                          
             MLJ.gui.disabledOnSceneEmpty(reload);
+            //The reload button must be disalbed if the layer is created by a
+            //creation filter            
+            MLJ.gui.disabledOnCppMesh(reload);
 
             var snapshot = new component.Button({
                 tooltip: "Take snapshot",
@@ -75,10 +96,23 @@
             });
 
             save.onClick(function () {
-                console.log("Save button clicked");
                 var meshFile = MLJ.core.Scene.getSelectedLayer();
-                MLJ.core.File.saveMeshFile(meshFile);
-            });
+                //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
+                var meshInfo = meshFile.name.split(".");                
+                _dialog.show();
+                $('#mlj-save-dialog > #filename').val(meshInfo[0]);
+                
+                $('#mlj-save-dialog > #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]')
+                        .attr('selected','selected');
+               
+                $('#mlj-save-dialog-button').click(function() {                    
+                    var name = $('#mlj-save-dialog > #filename').val();
+                    var extension = $('#mlj-save-dialog > #extension').val();
+                    MLJ.core.File.saveMeshFile(meshFile, name+extension);
+                    _dialog.destroy();
+                    $(this).off();
+                });
+            });                        
 
             reload.onClick(function () {
                 var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
@@ -88,7 +122,7 @@
             snapshot.onClick(function () {                
                 MLJ.core.Scene.takeSnapshot();
             });
-
+                                             
         }
         
         /**
