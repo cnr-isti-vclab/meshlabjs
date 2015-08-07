@@ -1,7 +1,7 @@
 
 (function (plugin, scene) {
 
-    var filter = new plugin.Filter({
+    var RndDisplacementFilter = new plugin.Filter({
             name:"Random Displacement",
             tooltip:null,
             arity:1
@@ -9,7 +9,7 @@
 
     var displWidget, normalDispWidget;
 
-    filter._init = function (builder) {
+    RndDisplacementFilter._init = function (builder) {
 
         displWidget = builder.Float({
             max: 0.1, min: 0.01, step: 0.01, defval: 0.01,
@@ -24,11 +24,44 @@
 
     };
 
-    filter._applyTo = function (meshFile) {
+    RndDisplacementFilter._applyTo = function (meshFile) {
         Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
         scene.updateLayer(meshFile);
     };
 
-    plugin.Manager.install(filter);
+    plugin.Manager.install(RndDisplacementFilter);
+    
+    /*****/
+    
+    var RndSelectionFilter = new plugin.Filter({
+            name:"Random Selection",
+            tooltip:null,
+            arity:1
+        });
+
+    var faceRatioWidget, verttRatioWidget;
+
+    RndSelectionFilter._init = function (builder) {
+
+
+        faceRatioWidget = builder.RangedFloat({
+            max: 1, min: 0, step: 0.1, defval: 0.5,
+            label: "Face Ratio",
+            tooltip: "Probability that a face is randomly selected"
+        });
+        vertRatioWidget = builder.RangedFloat({
+            max: 1, min: 0, step: 0.1, defval: 0.5,
+            label: "Vertex Ratio",
+            tooltip: "Probability that a vertex is randomly selected"
+        });
+        
+    };
+
+    RndSelectionFilter._applyTo = function (meshFile) {
+        Module.RandomSelection(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
+        scene.updateLayer(meshFile);
+    };
+
+    plugin.Manager.install(RndSelectionFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);
