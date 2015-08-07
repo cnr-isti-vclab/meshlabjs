@@ -10,6 +10,7 @@
         pointColor : new THREE.Color('#FF0000'),
         pointSize : 1,
         faceColor : new THREE.Color('#FF0000'),
+        faceOpacity : 0.5,
         //PRELOADING NEEDED ...
         texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
     };
@@ -101,6 +102,20 @@
             }())
         });
 
+        guiBuilder.RangedFloat({
+            label: "Face Opacity",
+            tooltip: "The opacity of selected faces",
+            min: 0.0, max: 1, step: 0.01,
+            defval: DEFAULTS.faceOpacity,
+            bindTo: (function() {
+                var bindToFun = function (opacity, overlay) {
+                    overlay.selectedFaces.material.opacity = opacity;
+                    scene.render();
+                };
+                bindToFun.toString = function () { return 'opacity'; };
+                return bindToFun;
+            }())
+        });
     };
 
     plug._applyTo = function (meshFile, on) {
@@ -122,13 +137,8 @@
         // this mesh will contain the two meshes
         var selectionsMesh = new THREE.Mesh();
 
-        //var timeStart = performance.now();
-
         selectionsMesh.add(createSelectedFacesMesh.call(this));
         selectionsMesh.add(createSelectedPointsMesh.call(this));
-
-        //var timeEnd = performance.now();
-        //Module.print('It took ' + (timeEnd - timeStart) + ' ms.\n');
 
         scene.addOverlayLayer(meshFile, plug.getName(), selectionsMesh);
 
@@ -165,30 +175,20 @@
             selectedFacesGeometry.addAttribute( 'position', new THREE.BufferAttribute( facesCoordsVec, 3 ) );
 
             // create a material for selected faces
-            var facesMaterial = new THREE.MeshLambertMaterial({});
+            var facesMaterial = new THREE.MeshBasicMaterial();
 
-            facesMaterial.color = new THREE.Color(params.faceColor);
-            facesMaterial.shading = THREE.FlatShading;
+            facesMaterial.color = params.faceColor;
+            facesMaterial.shading = THREE.NoShading;
             facesMaterial.side = THREE.DoubleSide;
 
-            // for transparency: Note: 3js will use depth sorting to render the mesh
-            //facesMaterial.transparent = true;
-            //facesMaterial.opacity = params.faceOpacity;
+            facesMaterial.transparent = true;
+            facesMaterial.opacity = params.faceOpacity;
 
-            //facesMaterial.depthWrite = false;
+            facesMaterial.depthWrite = false;
             //facesMaterial.blending = THREE.AdditiveBlending;
-
-            // use polygonOffset to obtain correct faces visualization on top of solid color base layer
-            facesMaterial.polygonOffset = true;
-            facesMaterial.polygonOffsetFactor = -1.0;
-            facesMaterial.polygonOffsetUnits = -1.0;
 
             // now create the mesh
             var facesMesh = new THREE.Mesh( selectedFacesGeometry, facesMaterial );
-
-            // compute normals for correct lighting
-            facesMesh.geometry.computeFaceNormals();
-            facesMesh.geometry.computeVertexNormals();
 
             // check current visibility option
             if (selectionWidget.getValue() == ONLY_SELECTED_VERTICES) {
@@ -237,8 +237,8 @@
              var selectedPointsGeometry = new THREE.Geometry();
 
              for (var i = 0, numCoords = pointsCoordsVec.length; i != numCoords; i+=3) {
-                var v0 = new THREE.Vector3( pointsCoordsVec[i+0],  pointsCoordsVec[i+1], pointsCoordsVec[i+2] );
-                selectedPointsGeometry.vertices.push(v0);
+             var v0 = new THREE.Vector3( pointsCoordsVec[i+0],  pointsCoordsVec[i+1], pointsCoordsVec[i+2] );
+             selectedPointsGeometry.vertices.push(v0);
              }
 
              Module._free(pointsCoordsPtr);
@@ -271,12 +271,12 @@
             });
 
             /*
-            var values_minSize = attributes.minSize.value;
+             var values_minSize = attributes.minSize.value;
 
-            for (var v = 0, vl = selectedPointsGeometry.vertices.length; v < vl; v++) {
-                values_minSize[ v ] = 10;
-            }
-            */
+             for (var v = 0, vl = selectedPointsGeometry.vertices.length; v < vl; v++) {
+             values_minSize[ v ] = 10;
+             }
+             */
 
             var pointCloud = new THREE.PointCloud(selectedPointsGeometry, shaderMaterial);
 
