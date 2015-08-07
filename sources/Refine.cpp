@@ -41,10 +41,26 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
   printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
 }
 
+void DilateSelection(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceLoose(m);
+  tri::UpdateSelection<MyMesh>::FaceFromVertexLoose(m);
+}
+
+void ErodeSelection(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
+  tri::UpdateSelection<MyMesh>::FaceFromVertexStrict(m);
+}
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(MLRefinePlugin) {
   emscripten::function("RefineMesh", &RefineMesh);
+  emscripten::function("ErodeSelection", &ErodeSelection);
+  emscripten::function("DilateSelection", &DilateSelection);
 }
 #endif

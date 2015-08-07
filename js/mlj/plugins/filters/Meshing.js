@@ -24,7 +24,6 @@
         scene.updateLayer(meshFile);
     };
 
-    plugin.Manager.install(QuadricSimpFilter);
 
     var ClusteringFilter = new plugin.Filter({
         name: "Clustering Simplification",
@@ -51,7 +50,38 @@
         Module.ClusteringSimplification(meshFile.ptrMesh(), clusteringRatioWidget.getValue());
         scene.updateLayer(meshFile);
     };
+    
+    var SelectionDilateFilter = new plugin.Filter({
+        name: "Selection Face Dilate",
+        tooltip: "Perform a morphological dilate operation on the set of the selected faces",
+        arity: 1
+    });
+
+    SelectionDilateFilter._init = function (builder) {  };
+
+    SelectionDilateFilter._applyTo = function (meshFile) {
+        Module.DilateSelection(meshFile.ptrMesh());
+        scene.updateLayer(meshFile);
+    };
+    
+    var SelectionErodeFilter = new plugin.Filter({
+        name: "Selection Face Erode",
+        tooltip: "Perform a morphological erosion operation on the set of the selected faces",
+        arity: 1
+    });
+
+    SelectionErodeFilter._init = function (builder) {  };
+
+    SelectionErodeFilter._applyTo = function (meshFile) {
+        Module.ErodeSelection(meshFile.ptrMesh());
+        scene.updateLayer(meshFile);
+    };
+
+    
+    plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
+    plugin.Manager.install(SelectionDilateFilter);
+    plugin.Manager.install(SelectionErodeFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);
