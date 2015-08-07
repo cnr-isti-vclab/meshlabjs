@@ -66,7 +66,9 @@ Like the original one, MeshLabJS for the mesh processing tasks relies on the \
 Paolo Cignoni (Project Leader) <br> \
 Maurizio Idini<br>\
 Stefano Gabriele <br>\
-Stefano Giammori <br>');
+Stefano Giammori <br>\
+Gian Maria Delogu <br>\
+Davide Busato<br>');
 
             $logo.load(function () {
                 _PiP.appendContent(this);
