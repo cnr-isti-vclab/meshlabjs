@@ -124,11 +124,6 @@
 
         //var timeStart = performance.now();
 
-        debugger;
-
-        var renderer = scene.getRenderer();
-        scene.render();
-
         selectionsMesh.add(createSelectedFacesMesh.call(this));
         selectionsMesh.add(createSelectedPointsMesh.call(this));
 
