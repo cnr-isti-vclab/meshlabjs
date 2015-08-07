@@ -8,7 +8,7 @@
             majPointSize : 1.5,
             minSize : 10.0,
             pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
-            epsilonPercentage : 5.0/100.0,
+            epsilonPercentage : 2.5/100.0,
             spriteOffset : 2.75,
             //next are settable values
             minorFactor : 0.2,
