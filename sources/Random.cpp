@@ -18,7 +18,7 @@ void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalD
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
-void RandomSelection(uintptr_t _m, float vertProb, float faceprob)
+void RandomSelection(uintptr_t _m, float vertprob, float faceprob)
 {
     MyMesh &m = *((MyMesh*) _m);
     math::MarsenneTwisterRNG rnd;

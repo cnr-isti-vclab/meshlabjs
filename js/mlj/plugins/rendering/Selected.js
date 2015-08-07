@@ -114,8 +114,6 @@
             return;
         }
 
-        Module.selectRandom(meshFile.ptrMesh());
-
         var params = meshFile.overlaysParams.getByKey(plug.getName());
 
         // Build two meshes for current selected faces and selected points respectively
@@ -125,6 +123,11 @@
         var selectionsMesh = new THREE.Mesh();
 
         //var timeStart = performance.now();
+
+        debugger;
+
+        var renderer = scene.getRenderer();
+        scene.render();
 
         selectionsMesh.add(createSelectedFacesMesh.call(this));
         selectionsMesh.add(createSelectedPointsMesh.call(this));
