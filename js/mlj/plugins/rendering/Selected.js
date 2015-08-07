@@ -82,7 +82,7 @@
                     overlay.selectedPoints.material.uniforms['size'].value = size;
                     scene.render();
                 };
-                bindToFun.toString = function () { return 'pointSize'; }
+                bindToFun.toString = function () { return 'pointSize'; };
                 return bindToFun;
             }())
         });
@@ -110,10 +110,11 @@
             // free memory used for this plugin.
             // Note: when free is invoked with undefined,it does nothing
             Module._free(meshFile.facesCoordsPtr);
+            Module._free(meshFile.pointsCoordsPtr);
             return;
         }
 
-        //Module.selectRandom(meshFile.ptrMesh());
+        Module.selectRandom(meshFile.ptrMesh());
 
         var params = meshFile.overlaysParams.getByKey(plug.getName());
 
@@ -214,6 +215,9 @@
             // malloc enough space for the points coords buffer
             var pointsCoordsPtr = Module._malloc(numBytes);
 
+            // and store its reference in mesh object for deallocation when the user deactivate this plugin
+            meshFile.pointsCoordsPtr = pointsCoordsPtr;
+
             // call the c++ function which should fill the points coords array from mesh data
             Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh(), pointsCoordsPtr);
 
@@ -227,19 +231,33 @@
             var pointsCoordsVec = new Float32Array(Module.HEAPU8.buffer, pointsCoordsPtr + SIZEOF_FLOAT, numBytesUsefulData / SIZEOF_FLOAT);
 
             // now create a buffer geometry with the data
-            var selectedPointsGeometry = new THREE.Geometry();
+            var selectedPointsGeometry = new THREE.BufferGeometry();
 
-            for (var i = 0, numCoords = pointsCoordsVec.length; i != numCoords; i+=3) {
+            selectedPointsGeometry.addAttribute('position', new THREE.BufferAttribute( pointsCoordsVec, 3 ) );
 
+            /* with buffer geometry:
+             var selectedPointsGeometry = new THREE.Geometry();
+
+             for (var i = 0, numCoords = pointsCoordsVec.length; i != numCoords; i+=3) {
                 var v0 = new THREE.Vector3( pointsCoordsVec[i+0],  pointsCoordsVec[i+1], pointsCoordsVec[i+2] );
                 selectedPointsGeometry.vertices.push(v0);
+             }
+
+             Module._free(pointsCoordsPtr);
+             */
+
+            var minSizes = new Float32Array(numSelectedPoints);
+
+            for (var v = 0, vl = minSizes.length; v != vl; v++) {
+                minSizes[v] = 10;
             }
 
-            Module._free(pointsCoordsPtr);
+            selectedPointsGeometry.addAttribute('minSize',new THREE.BufferAttribute( minSizes, 1 ) );
 
             // create a material for selected points
 
-            var attributes = { minSize: {type: 'f', value: []} };
+            var attributes = { minSize: {type: 'f', value: null} };
+
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
@@ -254,11 +272,13 @@
                 alphaTest: 0.9
             });
 
+            /*
             var values_minSize = attributes.minSize.value;
 
             for (var v = 0, vl = selectedPointsGeometry.vertices.length; v < vl; v++) {
                 values_minSize[ v ] = 10;
             }
+            */
 
             var pointCloud = new THREE.PointCloud(selectedPointsGeometry, shaderMaterial);
 

@@ -41,7 +41,7 @@
                     overlay.edges.material.linewidth = width;
                     scene.render();
                 };
-                bindToFun.toString = function () { return 'width'; }
+                bindToFun.toString = function () { return 'width'; };
                 return bindToFun;
             }())
         });
@@ -71,8 +71,6 @@
             const NUM_BYTES_PER_EDGES = 2 * NUM_BYTES_PER_VERTEX;
             const NUM_BYTES_PER_FACE = 3 * NUM_BYTES_PER_VERTEX;
 
-            debugger;
-
             var startBufferPtr = Module.buildBoundaryEdgesCoordsVec(meshFile.ptrMesh());
 
             meshFile.boundaryBufferPtr = startBufferPtr;
@@ -96,14 +94,19 @@
             var facesCoordsVec = new Float32Array(Module.HEAPU8.buffer, facesCoordsPtr, numFloatsFacesVec);
 
             // now create a buffer geometry for the edges
+            var boundaryEdgesGeometry = new THREE.BufferGeometry();
 
-            var boundaryEdgesGeometry = new THREE.Geometry();
+            boundaryEdgesGeometry.addAttribute('position', new THREE.BufferAttribute( edgesCoordsVec, 3 ) );
 
-            for (var i = 0, numCoords = edgesCoordsVec.length; i != numCoords; i+=3) {
-                var v0 = new THREE.Vector3( edgesCoordsVec[i+0],  edgesCoordsVec[i+1], edgesCoordsVec[i+2] );
-                boundaryEdgesGeometry.vertices.push(v0);
-            }
+            /* with geometry:
 
+                var boundaryEdgesGeometry = new THREE.Geometry();
+
+                 for (var i = 0, numCoords = edgesCoordsVec.length; i != numCoords; i+=3) {
+                    var v0 = new THREE.Vector3( edgesCoordsVec[i+0],  edgesCoordsVec[i+1], edgesCoordsVec[i+2] );
+                    boundaryEdgesGeometry.vertices.push(v0);
+                 }
+            */
 
             var material = new THREE.LineBasicMaterial();
             material.color = params.color;
