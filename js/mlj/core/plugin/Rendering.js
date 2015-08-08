@@ -39,7 +39,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     var pane = new MLJ.gui.component.Pane();
     var UID = MLJ.gui.generateUID();
     pane.$.css("position", "absolute").attr("id", UID);
-    pane.$.hide();
+    pane.$.hide();      
 
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
     var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
@@ -53,11 +53,24 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         group.addItem(btn);
         MLJ.gui.disabledOnSceneEmpty(btn);
     }
+    
+    //Shows the options pane of this rendering feature
+    function _showOptionsPane() {
+        renderingPane.children().each(function (key, val) {
+            if ($(val).attr("id") === UID) {
+                $(val).fadeIn();
+            } else {
+                $(val).fadeOut();
+            }
+        });
+    } 
 
     if (parameters.toggle === true) {
 
         //Click on button
-        btn.onToggle(function (on, event) {            
+        btn.onToggle(function (on, event) {
+            //show options pane
+            
             //Apply rendering pass to all mesh
             if (event.ctrlKey === true) {                
                 var passName = parameters.name;
@@ -102,14 +115,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
         //Click on arrow
         btn.onArrowClicked(function () {
-            renderingPane.children().each(function (key, val) {
-                if ($(val).attr("id") === UID) {
-                    $(val).fadeIn();
-                } else {
-                    $(val).fadeOut();
-                }
-            });
-
+            _showOptionsPane();
         });             
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
@@ -144,14 +150,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
     } else {
         btn.onClick(function () {
-
-            renderingPane.children().each(function (key, val) {
-                if ($(val).attr("id") === UID) {
-                    $(val).fadeIn();
-                } else {
-                    $(val).fadeOut();
-                }
-            });
+            _showOptionsPane();
         });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
