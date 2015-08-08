@@ -19,31 +19,31 @@ class CppMesh
     if(ret!=0) {
         if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
         {
-            printf("Error in opening file '%s' : %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+            printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
         }
-        else 
-        { 
-            printf("Warning in opening file '%s' : %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+        else
+        {
+            printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
             ret=0;
         }
     }
     // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
     return ret;
   }
-  
+
   int VN() { return m.VN();}
   int FN() { return m.FN();}
-  
+
   uintptr_t getMeshPtr(){
     return (uintptr_t)((void*)(&m)) ;
   }
-  
+
   uintptr_t getMatrixPtr()
   {
     return (uintptr_t)((void*)(&tr));
   }
-  
-  inline uintptr_t getVertexVector() { 
+
+  inline uintptr_t getVertexVector() {
     float * v = new float[m.VN()*3];
     int k=0;
     for (int i = 0; i < m.VN(); i++){
@@ -51,11 +51,11 @@ class CppMesh
         v[k] = m.vert[i].cP()[j];
         k++;
       }
-    }  
-    return (uintptr_t)v; 
+    }
+    return (uintptr_t)v;
   }
 
-  inline uintptr_t getFaceVector() { 
+  inline uintptr_t getFaceVector() {
     int * f = new int[m.FN()*3];
     int k=0;
     for (int i = 0; i < m.FN(); i++)
@@ -66,7 +66,7 @@ class CppMesh
     return (uintptr_t)f;
   }
 
-  
+
 };
 
 //Binding code
