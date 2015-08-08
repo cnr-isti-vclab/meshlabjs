@@ -55,11 +55,11 @@ It also use various libraries:
 
 ### Build Instructions
 
-For both Windows and Linux, you need to:
-1.   Download and install [**Emscripten**](https://kripken.github.io/emscripten-site/).
-2.  Download and install a generic webserver (**xammp**, **lamp**), necessary for cross origin requests used in the code.
-3.   Download [**VCG Library**](http://vcg.isti.cnr.it/vcglib/install.html) in the webserver public folder.
-4.  Clone the repository of *MeshLabJS* in the same folder of *vcglib*
+For both Windows and Linux, you need to:  
+1.  Download and install [**Emscripten**](https://kripken.github.io/emscripten-site/).  
+2.  Download and install a generic webserver (**xammp**, **lamp**), necessary for cross origin requests used in the code.  
+3.   Download [**VCG Library**](http://vcg.isti.cnr.it/vcglib/install.html) in the webserver public folder.  
+4.  Clone the repository of *MeshLabJS* in the same folder of *vcglib*.  
 
 After those passages the folder structure should be:
 ```
@@ -93,7 +93,7 @@ Note: not all file are listed above.
 
 ##### Linux
 - open a terminal in *MeshLabJS/sources/*
--   execute the following commands:
+-   execute the following commands:  
     >make -f MakefileJS clean  
     >make -f MakefileJS  
     >make -f MakefileJS install
