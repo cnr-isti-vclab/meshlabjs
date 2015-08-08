@@ -144,7 +144,14 @@ MLJ.core.Scene = {};
         controls.staticMoving = true;
         controls.dynamicDampingFactor = 0.3;
         controls.keys = [65, 83, 68];
-
+        
+        $(document).keydown(function(event) {           
+            if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
+                event.preventDefault();
+                controls.reset();
+            }
+        });
+        
         //INIT LIGHTS 
 //        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
