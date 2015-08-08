@@ -17,9 +17,6 @@ class CppMesh
     int loadmask;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
     if(ret!=0) {
-<<<<<<< HEAD
-      printf("Error in opening file\n");
-=======
         if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
         {
             printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
@@ -29,7 +26,6 @@ class CppMesh
             printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
             ret=0;
         }
->>>>>>> master
     }
     // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
     return ret;
