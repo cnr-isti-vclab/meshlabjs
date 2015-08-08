@@ -250,6 +250,10 @@ MLJ.core.Scene = {};
     this.getCamera = function() {
         return _camera;
     };
+    
+    this.getThreeJsGroup = function() {
+        return _group;
+    }
 
     /**
      * Selects the layer with the name <code>layerName</code>
