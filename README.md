@@ -1,9 +1,7 @@
-meshlabjs
+MeshLabJS
 =========
 
-A javascript client based mesh processing tool. Built using [vcg library](http://vcg.sourceforge.net), emscripten and webgl. Developed by the [Visual Computing Lab](vcg.isti.cnr.it) of [ISTI - CNR](www.isti.cnr.it) and by the students of the FGT course.
+A javascript, client-side, mesh processing tool. Inspired by the well known [MeshLab](http://www.meshlab.net), [MeshLabJS](http://www.meshlabjs.net) is built using, for all the mesh processing tasks, the c++ [vcg library](http://vcg.sourceforge.net)  compiled into asm.js using [emscripten](http://emscripten.org) and it relies on [three.js](http://threejs.org/) for rendering. [MeshLabJS](http://www.meshlabjs.net) is developed by the [Visual Computing Lab](vcg.isti.cnr.it) of [ISTI - CNR](www.isti.cnr.it) and by the students of the FGT course.
 
-[Working Document] (https://docs.google.com/document/d/10KDdoaH_o08_EGuHkqHYlQfGBlww_WYHDS1h0AdPvIc/edit?usp=sharing) with a bit of specs and planning.
-
-See Documentation in [Documentation Page] (http://cignoni.github.io/meshlabjs/jsDoc/)
-Documentation created with [JsDoc] (https://github.com/jsdoc3/jsdoc)
+Some more info on the code are in the [Documentation Page](http://www.meshlabjs.net/doc/html/).
+Issues and bugs can be filed in the github [issue](https://github.com/cnr-isti-vclab/meshlabjs/issues) page.
