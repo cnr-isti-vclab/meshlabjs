@@ -239,6 +239,10 @@ MLJ.core.Scene = {};
         AmbientLight: null,
         Headlight: null
     };
+    
+    this.getCamera = function() {
+        return _camera;
+    };
 
     /**
      * Selects the layer with the name <code>layerName</code>
