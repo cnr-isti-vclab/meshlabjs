@@ -1,5 +1,6 @@
 
 *.o
+*.bc
 
 sources/FilterTest.pro.user
 sources/.qmake.stash
@@ -10,4 +11,3 @@ sources/Makefile
 /nbproject/project.properties
 /nbproject/project.xml
 
-doc/html/

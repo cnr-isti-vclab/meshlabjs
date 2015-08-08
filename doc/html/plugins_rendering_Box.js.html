@@ -1,4 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: plugins/rendering/Box.js</title>
 
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: plugins/rendering/Box.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
@@ -254,16 +282,16 @@
                 var middistance = ( y>=0 ? y : -y ) / 2;
                 var mindistance = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 ) / 2;
 
-                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+                if( maxdistance&lt;epsilon || middistance&lt;epsilon || mindistance&lt;epsilon ){
 
-                    if(maxdistance<epsilon) y = max.y;
-                    else if(middistance<epsilon) y = 0;
+                    if(maxdistance&lt;epsilon) y = max.y;
+                    else if(middistance&lt;epsilon) y = 0;
                     else y = min.y;
 
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                (y&lt;0?(y*-1).toFixed(2):y.toFixed(2)),
                                                 { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
                                                 lblParameters
                                                );
@@ -275,10 +303,10 @@
 
                     k++;
                     if(ysupp==undefined){
-                        if(y>0 && y1<0){
+                        if(y>0 &amp;&amp; y1&lt;0){
                             ysupp = y1;
                             y1 = 0;
-                        }else if(y>min.y && y1<min.y){
+                        }else if(y>min.y &amp;&amp; y1&lt;min.y){
                             ysupp = y1;
                             y1 = min.y;
                         }
@@ -286,10 +314,10 @@
                         y1=ysupp;
                 }else{
                     if(ysupp==undefined){
-                        if(y>0 && y1<0){
+                        if(y>0 &amp;&amp; y1&lt;0){
                             ysupp = y1;
                             y1 = 0;
-                        }else if(y>min.y && y1<min.y){
+                        }else if(y>min.y &amp;&amp; y1&lt;min.y){
                             ysupp = y1;
                             y1 = min.y;
                         }
@@ -298,7 +326,7 @@
                         pntTypes[i++] = DEFAULTS.medPointSize;
 
                         var sprite = makeTextSprite(
-                                                    (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                    (y&lt;0?(y*-1).toFixed(2):y.toFixed(2)),
                                                     { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
@@ -354,16 +382,16 @@
                 var middistance = ( x>=0 ? x : -x ) / 2;
                 var mindistance = ( x-min.x>=0 ? x-min.x : (x-min.x)*-1 ) / 2;
 
-                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+                if( maxdistance&lt;epsilon || middistance&lt;epsilon || mindistance&lt;epsilon ){
 
-                    if(maxdistance<epsilon) x = max.x;
-                    else if(middistance<epsilon) x = 0;
+                    if(maxdistance&lt;epsilon) x = max.x;
+                    else if(middistance&lt;epsilon) x = 0;
                     else x = min.x;
 
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                (x<0?(x*-1).toFixed(2):x.toFixed(2)),
+                                                (x&lt;0?(x*-1).toFixed(2):x.toFixed(2)),
                                                 { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                 lblParameters
                                                );
@@ -376,10 +404,10 @@
                     k++;
 
                     if(xsupp==undefined){
-                        if(x>0 && x1<0){
+                        if(x>0 &amp;&amp; x1&lt;0){
                             xsupp = x1;
                             x1 = 0;
-                        }else if(x>min.x && x1<min.x){
+                        }else if(x>min.x &amp;&amp; x1&lt;min.x){
                             xsupp = x1;
                             x1 = min.x;
                         }
@@ -387,10 +415,10 @@
                         x1=xsupp;
                 }else{
                     if(xsupp==undefined){
-                        if(x>0 && x1<0){
+                        if(x>0 &amp;&amp; x1&lt;0){
                             xsupp = x1;
                             x1 = 0;
-                        }else if(x>min.x && x1<min.x){
+                        }else if(x>min.x &amp;&amp; x1&lt;min.x){
                             xsupp = x1;
                             x1 = min.x;
                         }
@@ -399,7 +427,7 @@
                         pntTypes[i++] = DEFAULTS.medPointSize;
 
                         var sprite = makeTextSprite(
-                                                    (x<0?(x*-1).toFixed(2):x.toFixed(2)),
+                                                    (x&lt;0?(x*-1).toFixed(2):x.toFixed(2)),
                                                     { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                     lblParameters
                                                    );
@@ -455,16 +483,16 @@
                 var middistance = ( z>=0 ? z : -z ) / 2;
                 var mindistance = ( z-min.z>=0 ? z-min.z : (z-min.z)*-1 ) / 2;
 
-                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+                if( maxdistance&lt;epsilon || middistance&lt;epsilon || mindistance&lt;epsilon ){
 
-                    if(maxdistance<epsilon) z = max.z;
-                    else if(middistance<epsilon) z = 0;
+                    if(maxdistance&lt;epsilon) z = max.z;
+                    else if(middistance&lt;epsilon) z = 0;
                     else z = min.z;
 
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
-                                                (z<0?(z*-1).toFixed(2):z.toFixed(2)),
+                                                (z&lt;0?(z*-1).toFixed(2):z.toFixed(2)),
                                                 { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                 lblParameters
                                                );
@@ -477,10 +505,10 @@
                     k++;
 
                     if(zsupp==undefined){
-                        if(z>0 && z1<0){
+                        if(z>0 &amp;&amp; z1&lt;0){
                             zsupp = z1;
                             z1 = 0;
-                        }else if(z>min.z && z1<min.z){
+                        }else if(z>min.z &amp;&amp; z1&lt;min.z){
                             zsupp = z1;
                             z1 = min.z;
                         }
@@ -488,10 +516,10 @@
                         z1=zsupp;
                 }else{
                     if(zsupp==undefined){
-                        if(z>0 && z1<0){
+                        if(z>0 &amp;&amp; z1&lt;0){
                             zsupp = z1;
                             z1 = 0;
-                        }else if(z>min.z && z1<min.z){
+                        }else if(z>min.z &amp;&amp; z1&lt;min.z){
                             zsupp = z1;
                             z1 = min.z;
                         }
@@ -500,7 +528,7 @@
                         pntTypes[i++] = DEFAULTS.medPointSize;
 
                         var sprite = makeTextSprite(
-                                                    (z<0?(z*-1).toFixed(2):z.toFixed(2)),
+                                                    (z&lt;0?(z*-1).toFixed(2):z.toFixed(2)),
                                                     { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
                                                     lblParameters
                                                    );
@@ -561,14 +589,14 @@
     */
     function arrayToF32Array(len, array){
         var f32array = new Float32Array(len);
-        for (i = 0; i < len; i++) {
+        for (i = 0; i &lt; len; i++) {
             f32array[i] = array[i];
         }
         return f32array;
     }
 
     /**
-      * Make a text texture <code>message</code> with HTML approach
+      * Make a text texture &lt;code>message&lt;/code> with HTML approach
       * @param {String} message Message to be applied to texture
       * @param {Vector3} position The position of the texture sprite
       * @param {Object} parameters The sprite's parameters
@@ -655,7 +683,7 @@
     }
 
     /**
-     * Make a text texture <code>message</code> with TextGeometry approach
+     * Make a text texture &lt;code>message&lt;/code> with TextGeometry approach
      * @param {Vector3} max The max of the bbox
      * @param {Vector3} min The min of the bbox
      * @param {Number} pointfactor The edge subdivisions number
@@ -697,4 +725,26 @@
 
     plugin.Manager.install(plug);
 
-})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
+})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

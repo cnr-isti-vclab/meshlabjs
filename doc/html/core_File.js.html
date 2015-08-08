@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: core/File.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: core/File.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Defines the functions to manage files
+ * @author Stefano Gabriele
+ */
+
+/**
+ * MLJ.core.File namespace
+ * @namespace MLJ.core.File
+ * @memberOf MLJ.core
+ * @author Stefano Gabriele
+ */
+MLJ.core.File = {
+    ErrorCodes: {
+        EXTENSION: 1
+    },
+    SupportedExtensions: {
+        OFF: ".off",
+        OBJ: ".obj",
+        PLY: ".ply",
+        STL: ".stl"        
+    }
+};
+
+(function () {
+    var _openedList = new MLJ.util.AssociativeArray();
+    var nameList = new MLJ.util.AssociativeArray();
+
+    function isExtensionValid(extension) {
+
+        switch (extension) {
+            case ".off":
+            case ".obj":
+            case ".ply":
+            case ".stl":
+                return true;
+        }
+
+        return false;
+    }
+
+    function loadFile(file, onLoaded) {
+        console.time("Read mesh file");
+
+        if (!(file instanceof File)) {
+            console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
+            onLoaded(false);
+        }
+
+        //Add file to opened list
+        _openedList.set(file.name, file);
+
+        //Extract file extension
+        var pointPos = file.name.lastIndexOf('.');
+        var extension = file.name.substr(pointPos);
+
+        //Validate file extension
+        if (!isExtensionValid(extension)) {
+            var err = new MLJ.Error(
+                    MLJ.core.File.ErrorCodes.EXTENSION,
+                    "MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again."
+                    );
+
+            MLJ.setError(err);
+
+            onLoaded(false);
+            return;
+        }
+
+        //Read file
+        var fileReader = new FileReader();
+        fileReader.readAsArrayBuffer(file);
+        fileReader.onloadend = function (fileLoadedEvent) {
+            console.log("Read file " + file.name + " size " + fileLoadedEvent.target.result.byteLength + " bytes");
+            console.timeEnd("Read mesh file");
+            //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
+            var int8buf = new Int8Array(fileLoadedEvent.target.result);
+            FS.createDataFile("/", file.name, int8buf, true, true);
+            
+            console.time("Parsing Mesh Time");
+            var CppMesh = new Module.CppMesh();
+            var resOpen = CppMesh.openMesh(file.name);
+            if (resOpen !== 0) {
+                console.log("Ops! Error in Opening File. Try again.");
+                FS.unlink(file.name);
+
+                onLoaded(false);
+            }
+
+            console.timeEnd("Parsing Mesh Time");
+
+            var mf = new MLJ.core.MeshFile(file.name, CppMesh);
+
+            onLoaded(true, mf);
+            
+            FS.unlink(file.name);
+
+        }; //end onloadend
+    }
+
+    /**
+     * Reloads a mesh file by name
+     * @param {String} name The name of the mesh file needs to be reloaded
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileReloaded
+     * @author Stefano Gabriele
+     */
+    this.reloadMeshFileByName = function (name) {
+        var file = _openedList.getByKey(name);
+
+        if (file === undefined) {
+            console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
+            return false;
+        }
+
+        loadFile(file, function (loaded, meshFile) {
+            if (loaded) {
+
+                /**
+                 *  Triggered when a mesh file is reloaded
+                 *  @event MLJ.core.File#MeshFileReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                 *  @example
+                 *  &lt;caption>Event Interception:&lt;/caption>
+                 *  $(document).on("MeshFileReloaded",
+                 *      function (event, meshFile) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("MeshFileReloaded", [meshFile]);
+            } else {
+                //else error in file reading
+                console.log(MLJ.getLastError().message);
+            }
+        });
+    };
+
+    /**
+     * Creates a new mesh file using the c++ functions bound to JavaScript
+     * @param {String} name The name of the new mesh file
+     * @memberOf MLJ.core.File
+     * @returns {MLJ.core.MeshFile} The new mesh file
+     * @author Stefano Gabriele
+     */
+    this.createCppMeshFile = function (name) {
+
+        var nameAmount = nameList.getByKey(name);
+        if (nameAmount === undefined) {
+            nameList.set(name, 0);
+        } else {
+            nameAmount++;
+            nameList.set(name, nameAmount);
+            name += " " + nameAmount;
+        }
+
+        var CppMesh = new Module.CppMesh();
+        var mf = new MLJ.core.MeshFile(name, CppMesh);
+
+        //Indicates that the mesh is created by c++
+        mf.cpp = true;
+        return mf;
+    };
+
+    /**
+     * Opens a mesh file or a list of mesh files     
+     * @param {(File | FileList)} file A single mesh file or a list of mesh files
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileOpened
+     * @author Stefano Gabriele
+     */
+    this.openMeshFile = function (file) {
+        $(file).each(function (key, value) {
+            loadFile(value, function (loaded, meshFile) {
+                if (loaded) {
+                    /**
+                     *  Triggered when a mash file is opened
+                     *  @event MLJ.core.File#MeshFileOpened
+                     *  @type {Object}
+                     *  @property {MLJ.core.MeshFile} meshFile The opened mesh file
+                     *  @example
+                     *  &lt;caption>Event Interception:&lt;/caption>
+                     *  $(document).on("MeshFileOpened",
+                     *      function (event, meshFile) {
+                     *          //do something
+                     *      }
+                     *  );
+                     */
+                    $(document).trigger("MeshFileOpened", [meshFile]);
+                } else {//else error in file reading
+                    console.log(MLJ.getLastError().message);
+                }
+            });
+        });
+    };
+
+    this.saveMeshFile = function (meshFile, fileName) {
+        
+        //Create data file in FS
+        var int8buf = new Int8Array(meshFile.ptrMesh());
+        FS.createDataFile("/", fileName, int8buf, true, true);
+        
+        //call a SaveMesh contructon from c++ Saver.cpp class
+        var Save = new Module.SaveMesh(meshFile.ptrMesh());
+        //call a saveMesh method from above class
+        var resSave = Save.saveMesh(fileName);
+        
+        //handle errors ...        
+        
+        //readFile is a Emscripten function which read a file into memory by path
+        var file = FS.readFile(fileName);
+        //create a Blob by filestream
+        var blob = new Blob([file], {type: "application/octet-stream"});
+        //call a saveAs function of FileSaver Library
+        saveAs(blob, fileName);
+        
+        FS.unlink(fileName);
+    };        
+
+}).call(MLJ.core.File);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

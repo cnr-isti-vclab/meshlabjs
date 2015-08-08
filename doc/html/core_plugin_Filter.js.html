@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: core/plugin/Filter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: core/plugin/Filter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Defines the basic class to create a filter plugin
+ * @author Stefano Gabriele
+ */
+
+
+/**         
+ * @class Creates a new filter
+ * @param {Object} parameters The object contains the initialization parameters 
+ * to create filter plugin&lt;br>
+ * &lt;code> paramters = {&lt;br>
+ * &amp;nbsp name: //the name of filter&lt;br> 
+ * &amp;nbsp tooltip: //the filter description shown if mouse pointer is 
+ * over its name&lt;br>
+ * &amp;nbsp arity: //An integer:&lt;br>
+ * &amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp //0 for a creation filter&lt;br>
+ * &amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp //1 for a generic filter &lt;br>
+ * &amp;nbsp&amp;nbsp&amp;nbsp&amp;nbsp //>1 if the filter doesn't use the current mesh but 
+ * defines its own meshes&lt;br>
+ * }
+ * &lt;/code>
+ * @memberOf MLJ.core.plugin 
+ * @author Stefano Gabriele 
+ * @example
+ * &lt;caption>Refine Filter&lt;/caption>
+ * (function (plugin, scene) {
+ *
+ *      var filter = new plugin.Filter({
+ *          name: "Refine",
+ *          tooltip: "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",
+ *          arity: 1
+ *      });
+ *
+ *      var iterWdg;
+ *      filter._init = function (builder) {
+ *
+ *          iterWdg = builder.Integer({
+ *              max: 5, min: 1, step: 1, defval: 1,
+ *              label: "Step",
+ *              tooltip: "How many refinement iterations are applied to the mesh"
+ *          });
+ *
+ *      };
+ *
+ *      filter._applyTo = function (meshFile) {
+ *          Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue());
+ *          scene.updateLayer(meshFile);
+ *      };
+ *
+ *      plugin.install(filter);
+ *
+ * })(MLJ.core.plugin, MLJ.core.Scene);
+ */
+MLJ.core.plugin.Filter = function (parameters) {
+    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
+    var _this = this;
+
+    var entry = new MLJ.gui.component.AccordionEntry(
+            {label: parameters.name, tooltip: parameters.tooltip});
+
+    //Test if arity is number and is integer
+    if (!(Math.floor(parameters.arity) === parameters.arity &amp;&amp;
+            jQuery.isNumeric(parameters.arity))) {
+        parameters.arity = 1;
+    }
+
+    var filterBuilder = new MLJ.core.plugin.GUIBuilder(entry);
+
+    $(document).on("mljSearchSelect", function (ev, select) {
+        var found = false;
+        var tooltipMatch, nameMatch;
+        for (var i = 0, m = select.length; i &lt; m; i++) {
+            
+            tooltipMatch = parameters.tooltip 
+                ? parameters.tooltip.indexOf(select[i]) != -1 : false;
+            
+            nameMatch = parameters.name.indexOf(select[i]) != -1;
+            
+            if (nameMatch || tooltipMatch) {
+                entry.show();
+                found = true;
+                //exit from for cycle
+                i = select.length;
+            }
+        }
+
+        if (!found) {
+            entry.hide();
+        }
+
+        MLJ.widget.TabbedPane.getFiltersAccord().refresh();
+    });
+
+    this._main = function () {
+        MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
+
+        var apply = new MLJ.gui.component.Button({
+            tooltip: "Apply to selected layer",
+            icon: "img/icons/apply.png",
+        });
+
+        entry.addHeaderButton(apply);
+
+        apply.onClick(function () {
+            var meshFile = MLJ.core.Scene.getSelectedLayer();
+            var t0 = performance.now();
+            _this._applyTo(meshFile);
+            var t1 = performance.now();
+            MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
+        });
+
+        if (parameters.arity > 0) {
+            MLJ.gui.disabledOnSceneEmpty(apply);
+        }
+
+        if (parameters.arity === 1) {
+            var applyAll = new MLJ.gui.component.Button({
+                tooltip: "Apply to all visible layers",
+                icon: "img/icons/apply_all.png",
+            });
+            entry.addHeaderButton(applyAll);
+
+            MLJ.gui.disabledOnSceneEmpty(applyAll);
+
+            applyAll.onClick(function () {
+                var ptr = MLJ.core.Scene.getLayers().iterator();
+                var layer;
+                var t0 = performance.now();
+                while (ptr.hasNext()) {
+                    layer = ptr.next();
+                    if (layer.getThreeMesh().visible) {
+                        _this._applyTo(layer);
+                    }
+                }
+                var t1 = performance.now();
+                MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
+            });
+        }
+
+        _this._init(filterBuilder);
+    };
+};
+
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

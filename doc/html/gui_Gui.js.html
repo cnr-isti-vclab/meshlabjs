@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: gui/Gui.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: gui/Gui.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * MLJLib
+ * MeshLabJS Library
+ * 
+ * Copyright(C) 2015
+ * Paolo Cignoni 
+ * Visual Computing Lab
+ * ISTI - CNR
+ * 
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * (http://www.gnu.org/licenses/gpl.txt) for more details.
+ * 
+ */
+
+/**
+ * @file Defines the functions and classes to create and to manage the 
+ * graphical user interface of MeshLabJS
+ * @author Stefano Gabriele
+ */
+
+/**
+ * MLJ.gui namespace
+ * @namespace MLJ.gui
+ * @memberOf MLJ
+ * @author Stefano Gabriele
+ */
+MLJ.gui = {};
+
+/**
+ * Contains all installed and running widget 
+ * @memberOf MLJ
+ * @type Object
+ */
+MLJ.widget = {};
+
+/**
+ * Installs a widget; technically sets the entry &lt;code> MLJ.widget[name] = widget&lt;/code>
+ * @param {String} name The name of the widget
+ * @param {MLJ.gui.Widget} widget The widget to be installed
+ * @memberOf MLJ.gui 
+ * @author Stefano Gabriele
+ */
+MLJ.gui.installWidget = function (name, widget) {
+    if (widget instanceof MLJ.gui.Widget) {
+        MLJ.widget[name] = widget;
+    } else {
+        console.error("The parameter must be an instance of MLJ.gui.Widget");
+    }
+};
+
+/**
+ * Returns a widget by its name
+ * @param {String} name The name of the widget 
+ * @returns {MLJ.gui.Widget} The widget if it exists in &lt;code>MLJ.widget&lt;/code>,
+ * &lt;code>null&lt;/code> otherwise
+ * @memberOf MLJ.gui
+ * @author Stefano Gabriele
+ */
+MLJ.gui.getWidget = function (name) {
+    if (MLJ.widget[name]) {
+        return MLJ.widget[name];
+    } 
+    
+    console.warn("The widget '" + name + "' is not installed. Check includes.");    
+    return null;    
+};
+
+/**
+ * Utility function to make a component automatically disabled if the scene doesn't contains layers
+ * or automatically enabled if the scene contains at least one layer
+ * @param {MLJ.gui.component.Component} component The component to disable/enable
+ * @memberOf MLJ.gui
+ * @author Stefano Gabriele
+ */
+MLJ.gui.disabledOnSceneEmpty = function (component) {
+
+    $(window).ready(function () {
+        component.disabled(true);
+    });
+
+    $(document).on("SceneLayerAdded", function (ev, layer, layersNum) {
+        if (layersNum > 0) {
+            component.disabled(false);
+        } else {
+            component.disabled(true);
+        }
+    });
+};
+
+MLJ.gui.disabledOnCppMesh = function(component) {
+    $(document).on("SceneLayerSelected SceneLayerAdded", function (ev, layer) {
+        if(layer.cpp === true) {
+            component.disabled(true);
+        } else {
+            component.disabled(false);
+        }                
+    });    
+};
+
+(function () {
+
+    var _counter = 0;    
+    
+    /**
+     * Returns an unique id; useful when it is necessary to add a UID to a GUI component
+     * @returns {String} The UID string     
+     * @memberOf MLJ.gui
+     * @author Stefano Gabriele
+     */
+    this.generateUID = function () {
+        return "mlj-uid-" + _counter++;
+    }
+    
+    this.makeGroup = function (name) {
+
+        var _group = function () {
+            var __items = [];
+
+            this.addItem = function (item) {
+                __items.push(item);
+            };
+
+            this.getItems = function () {
+                return __items;
+            };
+        };
+
+        if (MLJ.gui.group === undefined) {
+            MLJ.gui.group = {};
+            MLJ.gui.group.name = new _group();
+        } else if (MLJ.gui.group.name === undefined) {
+            MLJ.gui.group.name = new _group();
+        }
+
+        return MLJ.gui.group.name;
+    }   
+    
+}).call(MLJ.gui);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
