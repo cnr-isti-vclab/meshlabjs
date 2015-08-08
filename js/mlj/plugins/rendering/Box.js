@@ -2,15 +2,25 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
+<<<<<<< HEAD
             //next are code blocked values
+=======
+            //next values are code blocked values
+>>>>>>> master
             minPointSize : 0.2,
             medPointSize : 1.0,
             majPointSize : 1.5,
             minSize : 10.0,
             pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
+<<<<<<< HEAD
             epsilonPercentage : 2.5/100.0,
             spriteOffset : 2.75,
             //next are settable values
+=======
+            epsilonPercentage : 3.0/100.0,
+            spriteOffset : 2.75,
+            //next are GUI settable values
+>>>>>>> master
             minorFactor : 0.2,
             majorFactor : 0.5,
             pntSize : 0.10,
@@ -180,11 +190,19 @@
 
             //var needed to group labels
             var labelsGroup = new THREE.Mesh();
+<<<<<<< HEAD
 
             //adding internal quotes and labels
             var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
             var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
 
+=======
+
+            //adding internal quotes and labels
+            var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
+            var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
+
+>>>>>>> master
             meshesGroup.add(pcBuffer);
             meshesGroup.add(labelsGroup);
         }
@@ -274,7 +292,10 @@
                     positions[(3 * k + 2) + id] = z;
 
                     k++;
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
                     if(ysupp==undefined){
                         if(y>0 && y1<0){
                             ysupp = y1;
@@ -293,6 +314,7 @@
                         }else if(y>min.y && y1<min.y){
                             ysupp = y1;
                             y1 = min.y;
+<<<<<<< HEAD
                         }else{
                             pntMinSizes[i] = DEFAULTS.minSize;
                             pntTypes[i++] = DEFAULTS.medPointSize;
@@ -320,6 +342,25 @@
                             }else
                                 y1=ysupp;
                         }
+=======
+                        }
+
+                        pntMinSizes[i] = DEFAULTS.minSize;
+                        pntTypes[i++] = DEFAULTS.medPointSize;
+
+                        var sprite = makeTextSprite(
+                                                    (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                    { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
+                                                    lblParameters
+                                                   );
+                        labelsgroup.add( sprite );
+
+                        positions[(3 * k) + id] = x;
+                        positions[(3 * k + 1) + id] = y;
+                        positions[(3 * k + 2) + id] = z;
+
+                        k++;
+>>>>>>> master
                     }else
                         y1=ysupp;
                 }
@@ -404,6 +445,7 @@
                         }else if(x>min.x && x1<min.x){
                             xsupp = x1;
                             x1 = min.x;
+<<<<<<< HEAD
                         }else{
                             pntMinSizes[i] = DEFAULTS.minSize;
                             pntTypes[i++] = DEFAULTS.medPointSize;
@@ -431,6 +473,25 @@
                             }else
                                 x1=xsupp;
                         }
+=======
+                        }
+
+                        pntMinSizes[i] = DEFAULTS.minSize;
+                        pntTypes[i++] = DEFAULTS.medPointSize;
+
+                        var sprite = makeTextSprite(
+                                                    (x<0?(x*-1).toFixed(2):x.toFixed(2)),
+                                                    { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                    lblParameters
+                                                   );
+                        labelsgroup.add( sprite );
+
+                        positions[(3 * k) + id] = x;
+                        positions[(3 * k + 1) + id] = y;
+                        positions[(3 * k + 2) + id] = z;
+
+                        k++;
+>>>>>>> master
                     }else
                         x1=xsupp;
                 }
@@ -515,6 +576,7 @@
                         }else if(z>min.z && z1<min.z){
                             zsupp = z1;
                             z1 = min.z;
+<<<<<<< HEAD
                         }else{
                             pntMinSizes[i] = DEFAULTS.minSize;
                             pntTypes[i++] = DEFAULTS.medPointSize;
@@ -542,6 +604,25 @@
                             }else
                                 z1=zsupp;
                         }
+=======
+                        }
+
+                        pntMinSizes[i] = DEFAULTS.minSize;
+                        pntTypes[i++] = DEFAULTS.medPointSize;
+
+                        var sprite = makeTextSprite(
+                                                    (z<0?(z*-1).toFixed(2):z.toFixed(2)),
+                                                    { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                    lblParameters
+                                                   );
+                        labelsgroup.add( sprite );
+
+                        positions[(3 * k) + id] = x;
+                        positions[(3 * k + 1) + id] = y;
+                        positions[(3 * k + 2) + id] = z;
+
+                        k++;
+>>>>>>> master
                     }else
                         z1=zsupp;
                 }
