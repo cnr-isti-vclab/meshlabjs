@@ -162,27 +162,34 @@
         /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 groups of
            THREE.Sprite overlays) */
 
+        var camera = scene.getCamera();
+        var geometry = meshFile.getThreeMesh().geometry.clone();
+        //calculate bbox
+        if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
+        var bboxmax = geometry.boundingBox.max;
+        var bboxmin = geometry.boundingBox.min;
+
+        var screencenter = camera.position;
+
+/*                      0: bboxmax.x, bboxmax.y, bboxmax.z
+                        1: bboxmin.x, bboxmax.y, bboxmax.z
+              5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
+            1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
+ LEGENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
+            2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
+                        6: bboxmin.x, bboxmin.y, bboxmin.z
+                        7: bboxmax.x, bboxmin.y, bboxmin.z */
+
+        var x = chooseX(meshesGroup, camera, screencenter, bboxmax, bboxmin);
+        var y = chooseY(meshesGroup, camera, screencenter, bboxmax, bboxmin);
+        var z = chooseZ(meshesGroup, camera, screencenter, bboxmax, bboxmin);
+
         if(boxEnablerQuotes.getValue()){
-            //calculate bbox
-            var geometry = meshFile.getThreeMesh().geometry.clone();
-            if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
-            var bboxMax = geometry.boundingBox.max;
-            var bboxMin = geometry.boundingBox.min;
-
-            /*                      0: bboxmax.x, bboxmax.y, bboxmax.z
-                                    1: bboxmin.x, bboxmax.y, bboxmax.z
-                          5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
-                        1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
-             LEGENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
-                        2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
-                                    6: bboxmin.x, bboxmin.y, bboxmin.z
-                                    7: bboxmax.x, bboxmin.y, bboxmin.z */
-
             //var needed to group labels
             var labelsGroup = new THREE.Mesh();
 
             //adding internal quotes and labels
-            var geometry = generatePointCloudGeometry(bboxMax, bboxMin, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
+            geometry = generatePointCloudGeometry(bboxmax, bboxmin, x, y, z, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
             var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
 
             meshesGroup.add(pcBuffer);
@@ -191,6 +198,136 @@
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
     };
+
+    function sqr(x) { return x * x }
+    function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) + sqr(v.z - w.z) }
+    function distToSegment(p, v, w) {
+        var a1 = p.x*v.y + v.x*w.y + w.x*p.y - (p.y*v.x + v.y*w.x + w.y*p.x);
+        var a2 = p.y*v.z + v.y*w.z + w.y*p.z - (p.z*v.y + v.z*w.y + w.z*p.y);
+        var a3 = p.x*v.z + v.x*w.z + w.x*p.z - (p.z*v.x + v.z*w.x + w.z*p.x);
+        var A = 1.0/2.0 * Math.sqrt( sqr(a1) + sqr(a2) + sqr(a3) );
+        var r = Math.sqrt(dist2(w,v));
+        return 2 * A / r;
+    }
+
+    function chooseY(meshesGroup, camera,screencenter,bboxmax,bboxmin){
+        var bbox = new THREE.Box3(bboxmin, bboxmax);
+        var dst = bbox.distanceToPoint (screencenter);
+
+        //axis 1-2
+        var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
+        var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
+        //axis 0-3
+        var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
+        var p3 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmax.z);
+        //axis 4-7
+        var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
+        var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
+        //axis 5-6
+        var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
+        var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
+
+        var x0 = distToSegment(screencenter, p1, p2);
+        var x1 = distToSegment(screencenter, p0, p3);
+        var x2 = distToSegment(screencenter, p4, p7);
+        var x3 = distToSegment(screencenter, p5, p6);
+
+        var max = Math.min(x0,x1,x2,x3);
+
+        switch(max){
+            case x0:
+                return { max:p1, min:p2 };
+                break;
+            case x1:
+                return { max:p0, min:p3 };
+                break;
+            case x2:
+                return { max:p4, min:p7 };
+                break;
+            default:
+                return { max:p5, min:p6 };
+                break;
+        }
+    }
+
+    function chooseX(meshesGroup, camera,screencenter,bboxmax,bboxmin){
+        var bbox = new THREE.Box3(bboxmin, bboxmax);
+        var dst = bbox.distanceToPoint (screencenter);
+
+        //axis 1-0
+        var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
+        var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
+        //axis 2-3
+        var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
+        var p3 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmax.z);
+        //axis 5-4
+        var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
+        var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
+        //axis 6-7
+        var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
+        var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
+
+        var x0 = distToSegment(screencenter, p0, p1);
+        var x1 = distToSegment(screencenter, p3, p2);
+        var x2 = distToSegment(screencenter, p4, p5);
+        var x3 = distToSegment(screencenter, p7, p6);
+
+        var max = Math.min(x0,x1,x2,x3);
+
+        switch(max){
+            case x0:
+                return { max:p0, min:p1 };
+                break;
+            case x1:
+                return { max:p3, min:p2 };
+                break;
+            case x2:
+                return { max:p4, min:p5 };
+                break;
+            default:
+                return { max:p7, min:p6 };
+                break;
+        }
+    }
+
+    function chooseZ(meshesGroup, camera,screencenter,bboxmax,bboxmin){
+        var bbox = new THREE.Box3(bboxmin, bboxmax);
+        var dst = bbox.distanceToPoint (screencenter);
+
+        //axis 0-4
+        var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
+        var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
+        //axis 1-5
+        var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
+        var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
+        //axis 3-7
+        var p3 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmax.z);
+        var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
+        //axis 2-6
+        var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
+        var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
+
+        var x0 = distToSegment(screencenter, p0, p4);
+        var x1 = distToSegment(screencenter, p1, p5);
+        var x2 = distToSegment(screencenter, p3, p7);
+        var x3 = distToSegment(screencenter, p2, p6);
+
+        var max = Math.min(x0,x1,x2,x3);
+
+        switch(max){
+            case x0:
+                return { max:p0, min:p4 };
+                break;
+            case x1:
+                return { max:p1, min:p5 };
+                break;
+            case x2:
+                return { max:p3, min:p7 };
+                break;
+            default:
+                return { max:p2, min:p6 };
+        }
+    }
 
     /**
      * Method to generate the point cloud geometry in-segment
@@ -204,24 +341,27 @@
      * @memberOf MLJ.plugins.rendering.Box
      * @author Stefano Giammori
     */
-    function generatePointCloudGeometry(max, min, minorFactor, majorFactor, lblParameters, labelsgroup){
-        var geometry, div, x, y, z, j, k, xCenter=0, yCenter=0, zCenter=0;
+    function generatePointCloudGeometry(bboxmax, bboxmin, q, w, e, minorFactor, majorFactor, lblParameters, labelsgroup){
+        var x, y, z, k, xCenter=0, yCenter=0, zCenter=0;
 
-        geometry = new THREE.BufferGeometry();
+        var geometry = new THREE.BufferGeometry();
         var positions = new Array();
         var pntTypes = new Array();
         var pntMinSizes = new Array();
 
-        //segment 0 - 3
+        //y axis
+        var max=w.max;
+        var min=w.min;
         var id = 0;
         var i = 0;
         k = 0;
         //MeshSizes dependent value ?
-        x = max.x + 0.1;
+        x = max.x + (max.x==bboxmax.x ? 0.1 : -0.1 );
         y = max.y;
         z = max.z;
 
         var epsilon = (max.y - min.y) * DEFAULTS.epsilonPercentage;
+        var offset = epsilon*DEFAULTS.spriteOffset;
         //minorFactor = smartFactor(min.y, max.y, minorFactor);
         //majorFactor = smartFactor(min.y, max.y, majorFactor);
 
@@ -264,7 +404,7 @@
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +offset : -offset), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -299,7 +439,7 @@
 
                         var sprite = makeTextSprite(
                                                     (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                    { 'x' : x+epsilon*DEFAULTS.spriteOffset, 'y' : y, 'z': z },
+                                                    { 'x' : x + (x==bboxmax.x? offset : -offset), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -315,11 +455,13 @@
             }
         }
 
-        //segment 2 - 3
+        //x axis
+        max=q.max;
+        min=q.min;
         id = k * 3;
         k = 0;
         x = max.x;
-        y = min.y-0.1;
+        y = min.y + (min.x==bboxmin.y ? -0.1 : 0.1 );
         z = max.z;
 
         //minorFactor = smartFactor(min.x, max.x, minorFactor);
@@ -364,7 +506,7 @@
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -400,7 +542,7 @@
 
                         var sprite = makeTextSprite(
                                                     (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                    { 'x' : x, 'y' : y-epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                    { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -416,11 +558,13 @@
             }
         }
 
-        //segment 0 - 4
+        //z axis
+        max=e.max;
+        min=e.min;
         id += k * 3;
         k = 0;
         x = max.x;
-        y = max.y+0.1;
+        y = max.y + (max.x==bboxmax.x ? 0.1 : -0.1);
         z = max.z;
 
         //minorFactor = smartFactor(min.z, max.z, minorFactor);
@@ -465,7 +609,7 @@
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                { 'x' : x, 'y' : y + (max.x==bboxmax.x ? offset : -offset), 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -501,7 +645,7 @@
 
                         var sprite = makeTextSprite(
                                                     (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                    { 'x' : x, 'y' : y+epsilon*DEFAULTS.spriteOffset, 'z': z },
+                                                    { 'x' : x, 'y' : y + (max.x==bboxmax.x ? offset : -offset), 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
