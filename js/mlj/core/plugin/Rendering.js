@@ -60,16 +60,20 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             if ($(val).attr("id") === UID) {
                 $(val).fadeIn();
             } else {
-                $(val).fadeOut();
+                $(val).fadeOut();                
             }
         });
-    } 
+    }
 
     if (parameters.toggle === true) {
-
+        
         //Click on button
-        btn.onToggle(function (on, event) {
-            //show options pane
+        btn.onToggle(function (on, event) {            
+            
+            if(on) {
+                //show the options pane
+                _showOptionsPane();                
+            }
             
             //Apply rendering pass to all mesh
             if (event.ctrlKey === true) {                
@@ -96,7 +100,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     _this._applyTo(selected, on);
                     selected.properties.set(parameters.name, on);
                 }
-            }
+            }                        
         });
 
         //Clicked with mouse right button
@@ -146,19 +150,31 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         $(document).on("SceneLayerUpdated",
                 function (event, meshFile) {
                     reapplay(btn.isOn(),meshFile);                    
+                });                
+        
+        if(parameters.applyOnEvent !== undefined) {
+            $(window).ready(function() {
+                $($('canvas')[0]).on(parameters.applyOnEvent,function() {
+                    if(btn.isOn()) {
+                        var selected = MLJ.core.Scene.getSelectedLayer();
+                        if (selected !== undefined) {
+                            _this._applyTo(selected, true);                            
+                        }
+                    }
                 });
-
+            });
+        }
+        
     } else {
         btn.onClick(function () {
             _showOptionsPane();
         });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
-                function (event, meshFile, layersNumber) {
-                    _this._applyTo(meshFile, true);
-                    update();
-                });
-
+            function (event, meshFile, layersNumber) {
+                _this._applyTo(meshFile, true);
+                update();
+            });            
     }
 
     $(document).on("SceneLayerSelected", function (event, meshFile) {
