@@ -164,12 +164,11 @@
 
         var camera = scene.getCamera();
         var geometry = meshFile.getThreeMesh().geometry.clone();
-        //calculate bbox
-        if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
-        var bboxmax = geometry.boundingBox.max;
-        var bboxmin = geometry.boundingBox.min;
 
         var screencenter = camera.position;
+        var centroid = getcentroid(geometry, meshFile.getThreeMesh().position);
+        var bboxmax = geometry.boundingBox.max;
+        var bboxmin = geometry.boundingBox.min;
 
 /*                      0: bboxmax.x, bboxmax.y, bboxmax.z
                         1: bboxmin.x, bboxmax.y, bboxmax.z
@@ -180,9 +179,9 @@
                         6: bboxmin.x, bboxmin.y, bboxmin.z
                         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        var x = chooseX(camera, screencenter, bboxmax, bboxmin);
-        var y = chooseY(camera, screencenter, bboxmax, bboxmin);
-        var z = chooseZ(camera, screencenter, bboxmax, bboxmin);
+        var x = chooseX(meshesGroup, camera, centroid, bboxmax, bboxmin);
+        var y = chooseY(meshesGroup, camera, centroid, bboxmax, bboxmin);
+        var z = chooseZ(meshesGroup, camera, centroid, bboxmax, bboxmin);
 
         if(boxEnablerQuotes.getValue()){
             //var needed to group labels
@@ -199,6 +198,29 @@
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
     };
 
+    function getcentroid(geometry, position){
+        if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
+        boundingBox = geometry.boundingBox;
+
+        var x0 = boundingBox.min.x;
+        var x1 = boundingBox.max.x;
+        var y0 = boundingBox.min.y;
+        var y1 = boundingBox.max.y;
+        var z0 = boundingBox.min.z;
+        var z1 = boundingBox.max.z;
+
+
+        var bWidth = ( x0 > x1 ) ? x0 - x1 : x1 - x0;
+        var bHeight = ( y0 > y1 ) ? y0 - y1 : y1 - y0;
+        var bDepth = ( z0 > z1 ) ? z0 - z1 : z1 - z0;
+
+        var centroidX = x0 + ( bWidth / 2 ) + position.x;
+        var centroidY = y0 + ( bHeight / 2 )+ position.y;
+        var centroidZ = z0 + ( bDepth / 2 ) + position.z;
+
+        return new THREE.Vector3(centroidX, centroidY, centroidZ);
+    }
+
     function sqr(x) { return x * x }
     function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) + sqr(v.z - w.z) }
     function distToSegment(p, v, w) {
@@ -210,7 +232,11 @@
         return 2 * A / r;
     }
 
-    function chooseY(camera, screencenter, bboxmax, bboxmin){
+    function chooseY(meshesGroup, camera, centroid, bboxmax, bboxmin){
+        var $canvas = $('canvas')[0];
+        var widthHalf = 0.5*$canvas.width;
+        var heightHalf = 0.5*$canvas.height;
+
         //axis 1-2
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
         var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
@@ -224,12 +250,49 @@
         var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
         var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
 
-        var x0 = distToSegment(screencenter, p1, p2);
-        var x1 = distToSegment(screencenter, p0, p3);
-        var x2 = distToSegment(screencenter, p4, p7);
-        var x3 = distToSegment(screencenter, p5, p6);
+        var pcenter = centroid.clone();
+        var pa = p0.clone();
+        var pb = p1.clone();
+        var pc = p2.clone();
+        var pd = p3.clone();
+        var pe = p4.clone();
+        var pf = p5.clone();
+        var pg = p6.clone();
+        var ph = p7.clone();
+        pcenter.project(camera);
+        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
+        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
+        pa.project(camera);
+        pa.x = ( pa.x * widthHalf ) + widthHalf;
+        pa.y = - ( pa.y * heightHalf ) + heightHalf;
+        pb.project(camera);
+        pb.x = ( pb.x * widthHalf ) + widthHalf;
+        pb.y = - ( pb.y * heightHalf ) + heightHalf;
+        pc.project(camera);
+        pc.x = ( pc.x * widthHalf ) + widthHalf;
+        pc.y = - ( pc.y * heightHalf ) + heightHalf;
+        pd.project(camera);
+        pd.x = ( pd.x * widthHalf ) + widthHalf;
+        pd.y = - ( pd.y * heightHalf ) + heightHalf;
+        pe.project(camera);
+        pe.x = ( pe.x * widthHalf ) + widthHalf;
+        pe.y = - ( pe.y * heightHalf ) + heightHalf;
+        pf.project(camera);
+        pf.x = ( pf.x * widthHalf ) + widthHalf;
+        pf.y = - ( pf.y * heightHalf ) + heightHalf;
+        pg.project(camera);
+        pg.x = ( pg.x * widthHalf ) + widthHalf;
+        pg.y = - ( pg.y * heightHalf ) + heightHalf;
+        ph.project(camera);
+        ph.x = ( ph.x * widthHalf ) + widthHalf;
+        ph.y = - ( ph.y * heightHalf ) + heightHalf;
 
-        var max = Math.min(x0,x1,x2,x3);
+        var x0 = distToSegment(centroid, pb, pc);
+        var x1 = distToSegment(centroid, pa, pd);
+        var x2 = distToSegment(centroid, pe, ph);
+        var x3 = distToSegment(centroid, pf, pg);
+
+        var max = Math.max(x0,x1,x2,x3);
 
         switch(max){
             case x0:
@@ -247,7 +310,11 @@
         }
     }
 
-    function chooseX(camera, screencenter, bboxmax,bboxmin){
+    function chooseX(meshesGroup, camera, centroid, bboxmax, bboxmin){
+        var $canvas = $('canvas')[0];
+        var widthHalf = 0.5*$canvas.width;
+        var heightHalf = 0.5*$canvas.height;
+
         //axis 1-0
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
@@ -261,12 +328,49 @@
         var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
         var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
 
-        var x0 = distToSegment(screencenter, p0, p1);
-        var x1 = distToSegment(screencenter, p3, p2);
-        var x2 = distToSegment(screencenter, p4, p5);
-        var x3 = distToSegment(screencenter, p7, p6);
+        var pcenter = centroid.clone();
+        var pa = p0.clone();
+        var pb = p1.clone();
+        var pc = p2.clone();
+        var pd = p3.clone();
+        var pe = p4.clone();
+        var pf = p5.clone();
+        var pg = p6.clone();
+        var ph = p7.clone();
+        pcenter.project(camera);
+        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
+        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
+        pa.project(camera);
+        pa.x = ( pa.x * widthHalf ) + widthHalf;
+        pa.y = - ( pa.y * heightHalf ) + heightHalf;
+        pb.project(camera);
+        pb.x = ( pb.x * widthHalf ) + widthHalf;
+        pb.y = - ( pb.y * heightHalf ) + heightHalf;
+        pc.project(camera);
+        pc.x = ( pc.x * widthHalf ) + widthHalf;
+        pc.y = - ( pc.y * heightHalf ) + heightHalf;
+        pd.project(camera);
+        pd.x = ( pd.x * widthHalf ) + widthHalf;
+        pd.y = - ( pd.y * heightHalf ) + heightHalf;
+        pe.project(camera);
+        pe.x = ( pe.x * widthHalf ) + widthHalf;
+        pe.y = - ( pe.y * heightHalf ) + heightHalf;
+        pf.project(camera);
+        pf.x = ( pf.x * widthHalf ) + widthHalf;
+        pf.y = - ( pf.y * heightHalf ) + heightHalf;
+        pg.project(camera);
+        pg.x = ( pg.x * widthHalf ) + widthHalf;
+        pg.y = - ( pg.y * heightHalf ) + heightHalf;
+        ph.project(camera);
+        ph.x = ( ph.x * widthHalf ) + widthHalf;
+        ph.y = - ( ph.y * heightHalf ) + heightHalf;
 
-        var max = Math.min(x0,x1,x2,x3);
+        var x0 = distToSegment(centroid, pa, pb);
+        var x1 = distToSegment(centroid, pd, pc);
+        var x2 = distToSegment(centroid, pe, pf);
+        var x3 = distToSegment(centroid, ph, pg);
+
+        var max = Math.max(x0,x1,x2,x3);
 
         switch(max){
             case x0:
@@ -284,7 +388,11 @@
         }
     }
 
-    function chooseZ(camera, screencenter, bboxmax, bboxmin){
+    function chooseZ(meshesGroup, camera, centroid, bboxmax, bboxmin){
+        var $canvas = $('canvas')[0];
+        var widthHalf = 0.5*$canvas.width;
+        var heightHalf = 0.5*$canvas.height;
+
         //axis 0-4
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
@@ -298,12 +406,57 @@
         var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
         var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
 
-        var x0 = distToSegment(screencenter, p0, p4);
-        var x1 = distToSegment(screencenter, p1, p5);
-        var x2 = distToSegment(screencenter, p3, p7);
-        var x3 = distToSegment(screencenter, p2, p6);
+        var pcenter = centroid.clone();
+        var pa = p0.clone();
+        var pb = p1.clone();
+        var pc = p2.clone();
+        var pd = p3.clone();
+        var pe = p4.clone();
+        var pf = p5.clone();
+        var pg = p6.clone();
+        var ph = p7.clone();
+        pcenter.project(camera);
+        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
+        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
+        pa.project(camera);
+        pa.x = ( pa.x * widthHalf ) + widthHalf;
+        pa.y = - ( pa.y * heightHalf ) + heightHalf;
+        pb.project(camera);
+        pb.x = ( pb.x * widthHalf ) + widthHalf;
+        pb.y = - ( pb.y * heightHalf ) + heightHalf;
+        pc.project(camera);
+        pc.x = ( pc.x * widthHalf ) + widthHalf;
+        pc.y = - ( pc.y * heightHalf ) + heightHalf;
+        pd.project(camera);
+        pd.x = ( pd.x * widthHalf ) + widthHalf;
+        pd.y = - ( pd.y * heightHalf ) + heightHalf;
+        pe.project(camera);
+        pe.x = ( pe.x * widthHalf ) + widthHalf;
+        pe.y = - ( pe.y * heightHalf ) + heightHalf;
+        pf.project(camera);
+        pf.x = ( pf.x * widthHalf ) + widthHalf;
+        pf.y = - ( pf.y * heightHalf ) + heightHalf;
+        pg.project(camera);
+        pg.x = ( pg.x * widthHalf ) + widthHalf;
+        pg.y = - ( pg.y * heightHalf ) + heightHalf;
+        ph.project(camera);
+        ph.x = ( ph.x * widthHalf ) + widthHalf;
+        ph.y = - ( ph.y * heightHalf ) + heightHalf;
 
-        var max = Math.min(x0,x1,x2,x3);
+        var x0 = distToSegment(centroid, pa, pe);
+        var x1 = distToSegment(centroid, pb, pf);
+        var x2 = distToSegment(centroid, pd, ph);
+        var x3 = distToSegment(centroid, pc, pg);
+
+        /*var geo = new THREE.Geometry();
+        geo.vertices.push(
+        	centroid, bboxmax
+        );
+        var mat = new THREE.LineBasicMaterial({ color: 0x0000ff });
+        var line = new THREE.Line( geo, mat );
+        meshesGroup.add(line);*/
+
+        var max = Math.max(x0,x1,x2,x3);
 
         switch(max){
             case x0:
