@@ -210,7 +210,7 @@
         return 2 * A / r;
     }
 
-    function chooseY(camera,screencenter,bboxmax,bboxmin){
+    function chooseY(camera, screencenter, bboxmax, bboxmin){
         //axis 1-2
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
         var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
@@ -247,7 +247,7 @@
         }
     }
 
-    function chooseX(meshesGroup, camera,screencenter,bboxmax,bboxmin){
+    function chooseX(camera, screencenter, bboxmax,bboxmin){
         //axis 1-0
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
@@ -284,7 +284,7 @@
         }
     }
 
-    function chooseZ(meshesGroup, camera,screencenter,bboxmax,bboxmin){
+    function chooseZ(camera, screencenter, bboxmax, bboxmin){
         //axis 0-4
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
