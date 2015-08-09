@@ -180,9 +180,9 @@
                         6: bboxmin.x, bboxmin.y, bboxmin.z
                         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        var x = chooseX(meshesGroup, camera, screencenter, bboxmax, bboxmin);
-        var y = chooseY(meshesGroup, camera, screencenter, bboxmax, bboxmin);
-        var z = chooseZ(meshesGroup, camera, screencenter, bboxmax, bboxmin);
+        var x = chooseX(camera, screencenter, bboxmax, bboxmin);
+        var y = chooseY(camera, screencenter, bboxmax, bboxmin);
+        var z = chooseZ(camera, screencenter, bboxmax, bboxmin);
 
         if(boxEnablerQuotes.getValue()){
             //var needed to group labels
@@ -210,10 +210,7 @@
         return 2 * A / r;
     }
 
-    function chooseY(meshesGroup, camera,screencenter,bboxmax,bboxmin){
-        var bbox = new THREE.Box3(bboxmin, bboxmax);
-        var dst = bbox.distanceToPoint (screencenter);
-
+    function chooseY(camera,screencenter,bboxmax,bboxmin){
         //axis 1-2
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
         var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
@@ -251,9 +248,6 @@
     }
 
     function chooseX(meshesGroup, camera,screencenter,bboxmax,bboxmin){
-        var bbox = new THREE.Box3(bboxmin, bboxmax);
-        var dst = bbox.distanceToPoint (screencenter);
-
         //axis 1-0
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
@@ -291,9 +285,6 @@
     }
 
     function chooseZ(meshesGroup, camera,screencenter,bboxmax,bboxmin){
-        var bbox = new THREE.Box3(bboxmin, bboxmax);
-        var dst = bbox.distanceToPoint (screencenter);
-
         //axis 0-4
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
@@ -362,8 +353,6 @@
 
         var epsilon = (max.y - min.y) * DEFAULTS.epsilonPercentage;
         var offset = epsilon*DEFAULTS.spriteOffset;
-        //minorFactor = smartFactor(min.y, max.y, minorFactor);
-        //majorFactor = smartFactor(min.y, max.y, majorFactor);
 
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
 
@@ -463,9 +452,6 @@
         x = max.x;
         y = min.y + (min.x==bboxmin.y ? -0.1 : 0.1 );
         z = max.z;
-
-        //minorFactor = smartFactor(min.x, max.x, minorFactor);
-        //majorFactor = smartFactor(min.x, max.x, majorFactor);
 
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
 
@@ -567,9 +553,6 @@
         y = max.y + (max.x==bboxmax.x ? 0.1 : -0.1);
         z = max.z;
 
-        //minorFactor = smartFactor(min.z, max.z, minorFactor);
-        //majorFactor = smartFactor(min.z, max.z, majorFactor);
-
         var z,z0 = max.z, z1 = max.z,zsupp = undefined;
 
         while(z0>=min.z || z1>=min.z){
@@ -670,30 +653,6 @@
         geometry.addAttribute('pntType', new THREE.BufferAttribute( pntTypes, 1 ) );
 
         return geometry;
-    }
-
-    function smartFactor(a,b,factor) {
-        var minorQuotes = (b - a) / factor;
-        var badInterval = (b - a) / minorQuotes;
-        var smartRoundedInterval = Math.pow(10, Math.floor(Math.log(badInterval) / Math.LN10));
-        var v1 = factor - smartRoundedInterval;
-        var v2 = factor - smartRoundedInterval * 2;
-        var v3 = factor - smartRoundedInterval / 2;
-        var minval = Math.min(v1, v2, v3);
-        switch (minval) {
-            case v1:
-                factor = smartRoundedInterval;
-                break;
-            case v2:
-                factor = smartRoundedInterval * 2;
-                break;
-            case v3:
-                factor = smartRoundedInterval / 2;
-                break;
-            default:
-                factor;
-        }
-        return factor;
     }
 
     /**
