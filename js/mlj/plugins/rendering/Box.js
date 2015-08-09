@@ -450,7 +450,7 @@
         id = k * 3;
         k = 0;
         x = max.x;
-        y = min.y + (min.x==bboxmin.y ? -0.1 : 0.1 );
+        y = min.y + (min.y==bboxmin.y ? -0.1 : 0.1 );
         z = max.z;
 
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
@@ -550,7 +550,7 @@
         id += k * 3;
         k = 0;
         x = max.x;
-        y = max.y + (max.x==bboxmax.x ? 0.1 : -0.1);
+        y = max.y + (max.y==bboxmax.y ? 0.1 : -0.1);
         z = max.z;
 
         var z,z0 = max.z, z1 = max.z,zsupp = undefined;
@@ -592,7 +592,7 @@
                     pntTypes[i++] = DEFAULTS.majPointSize;
                     var sprite = makeTextSprite(
                                                 (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                { 'x' : x, 'y' : y + (max.x==bboxmax.x ? offset : -offset), 'z': z },
+                                                { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -628,7 +628,7 @@
 
                         var sprite = makeTextSprite(
                                                     (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                    { 'x' : x, 'y' : y + (max.x==bboxmax.x ? offset : -offset), 'z': z },
+                                                    { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
