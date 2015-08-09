@@ -36,41 +36,42 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
+            Module._free(meshFile.attributesVecPtr);
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
-        var geom = meshFile.getThreeMesh().geometry.clone();
 
-        //setup attributes
-        var attributes = {center: {type: 'v3', boundTo: 'faceVertices', value: []}};
-        var attrVal = attributes.center.value;
+        const SIZEOF_FLOAT = 4;
+        const NUM_VERTICES_PER_FACE = 3;
+        const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
 
-        for (var f = 0; f < geom.faces.length; f++) {
-            attrVal[ f ] = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
-        }
-
-        var uniforms = {
-            "thickness": {type: "f", value: DEFAULTS.thickness},
-            "color": {type: "c", value: DEFAULTS.color}
-        };
-
+        var positionPtr = Module.buildAttributesVecForWireframeRendering(meshFile.ptrMesh());
+        meshFile.attributesVecPtr = positionPtr;
+        var centerPtr = positionPtr + meshFile.FN * NUM_VERTICES_PER_FACE * NUM_BYTES_PER_VERTEX;
+        var numFloats = (meshFile.FN * NUM_VERTICES_PER_FACE * NUM_BYTES_PER_VERTEX) / SIZEOF_FLOAT;
+        var positions = new Float32Array(Module.HEAPU8.buffer, positionPtr, numFloats);
+        var centers = new Float32Array(Module.HEAPU8.buffer, centerPtr, numFloats);
+        var bufferGeometry = new THREE.BufferGeometry();
+        bufferGeometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
+        bufferGeometry.addAttribute('center', new THREE.BufferAttribute( centers, 3 ) );
         var params = meshFile.overlaysParams.getByKey(plug.getName());
-
-        uniforms.color.value = params.color;
-        uniforms.thickness.value = params.thickness;
+        var attributes = {center: {type: 'v3', value: []}};
+        var uniforms = {
+            "thickness": {type: "f", value: params.thickness},
+            "color": {type: "c", value: params.color}
+        };
 
         var parameters = {
             vertexShader: this.shaders.getByKey("WireVertex.glsl"),
             fragmentShader: this.shaders.getByKey("WireFragment.glsl"),
             uniforms: uniforms,
             attributes: attributes,
-            shading: THREE.FlatShading,
             transparent: true,
             side: THREE.DoubleSide
         };
 
         var mat = new THREE.RawShaderMaterial(parameters);
-        var wireframe = new THREE.Mesh(geom, mat);
+        var wireframe = new THREE.Mesh(bufferGeometry, mat);
 
         scene.addOverlayLayer(meshFile, plug.getName(), wireframe);
     };

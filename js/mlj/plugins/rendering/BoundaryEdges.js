@@ -50,8 +50,8 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
-            scene.removeOverlayLayer(meshFile, plug.getName());
             Module._free(meshFile.boundaryBufferPtr);
+            scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
 
