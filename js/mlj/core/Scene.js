@@ -163,8 +163,9 @@ MLJ.core.Scene = {};
         $canvas.addEventListener('mousewheel', controls.update.bind(controls), false);        
         $canvas.addEventListener('DOMMouseScroll', controls.update.bind(controls), false ); // firefox
         
-        controls.addEventListener('change', function () {                  
+        controls.addEventListener('change', function () {            
             MLJ.core.Scene.render();
+            $($canvas).trigger('onControlsChange');
         });
 
         $(window).resize(function () {
