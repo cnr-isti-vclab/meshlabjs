@@ -73,7 +73,11 @@ MLJ.core.plugin.Manager = {
      * @author Stefano Gabriele
      */
     this.run = function () {
-        var ptr = _filters.iterator();
+        
+        //sort filters in alphabetical order
+        _filters.sortByKey();
+        
+        var ptr = _filters.iterator();        
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
