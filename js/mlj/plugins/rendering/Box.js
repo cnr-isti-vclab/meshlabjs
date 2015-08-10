@@ -4,16 +4,16 @@
     var DEFAULTS = {
             //next values are code blocked values
             minPointSize : 0.2,
-            medPointSize : 1.0,
-            majPointSize : 1.5,
+            medPointSize : 1,
+            majPointSize : 2,
             minSize : 5,
             pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
-            epsilonPercentage : 1.0/100.0,
-            spriteOffset : 2.75,
+            epsilonPercentage : 1.5/100.0,
+            spriteOffset : 2.5,
             //next are GUI settable values
             minorFactor : 0.2,
             majorFactor : 0.5,
-            pntSize : 0.10,
+            pntSize : 5,
             pntColor : new THREE.Color('#FF0000')
         };
 
@@ -448,7 +448,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -484,7 +484,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                    { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -510,6 +510,7 @@
         y = max.y;
         z = max.z + (max.z==bboxmax.z ? +epsilon/0.2 : -epsilon/0.2 );
 
+        start=true;
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
 
         startingPoint = Math.floor( max.y / majorFactor);
@@ -555,7 +556,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                { 'x' : x + (max.x==bboxmax.x ? +offset : -offset), 'y' : y, 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -590,7 +591,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                    { 'x' : x + (x==bboxmax.x? offset : -offset), 'y' : y, 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -661,7 +662,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -697,7 +698,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                    { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -806,7 +807,7 @@
     	var spriteMaterial = new THREE.SpriteMaterial({ map: texture, useScreenCoordinates: false, color: 0xffffff, fog: true } );
     	var sprite = new THREE.Sprite( spriteMaterial );
     	sprite.scale.set( textWidth/100, fontsize/100, 1 );
-    	sprite.position.set( position.x, position.y, position.z);
+    	sprite.position.set( position.x , position.y, position.z);
     	return sprite;
     }
 
