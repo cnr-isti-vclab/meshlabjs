@@ -420,22 +420,9 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
  * @author Stefano Gabriele 
  */
 MLJ.gui.component.CustomToggleButton = function (flags) {
-    var _html = $('<div/>').css({
-        display: "inline-block",
-        paddingBottom: "8px",
-        position: "relative"
-    });
+    var _html = $('<div/>').addClass("mlj-custom-toggle-button");
 
-    var _$arrow = $('<div/>').css({
-        width: "0px",
-        height: "0px",
-        borderLeft: "6px solid transparent",
-        borderRight: "6px solid transparent",
-        borderTop: "6px solid black",
-        position: "absolute",
-        bottom: "0px",
-        left: "5px"
-    });
+    var _$arrow = $('<div/>').addClass("mlj-custom-toggle-button-arrow");
 
     var _arrowHandler = null;
 
