@@ -132,6 +132,29 @@ MLJ.gui.component.Grid = function () {
 
 };
 
+// Group _______________________________________________________________________
+
+/**         
+ * @static Group
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
+MLJ.gui.component.Group = function () {
+    var $div = $('<div></div>');
+    
+    for (var i = 0, m = arguments.length; i < m; i++) {
+        arg = arguments[i];
+        
+        if (arg instanceof MLJ.gui.component.Component) {
+            $div.append(arg.$);
+        } else {
+            $div.append(arg);
+        }        
+    }
+
+    return $div;
+};
+
 // Picture in Picture __________________________________________________________
 
 /**         
