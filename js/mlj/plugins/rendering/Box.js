@@ -181,9 +181,9 @@
                         6: bboxmin.x, bboxmin.y, bboxmin.z
                         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        var x = chooseX(camera, centroid, bboxmax, bboxmin);
-        var y = chooseY(camera, centroid, bboxmax, bboxmin);
-        var z = chooseZ(camera, centroid, bboxmax, bboxmin);
+        var x = chooseX(camera, centroid.clone(), bboxmax, bboxmin);
+        var y = chooseY(camera, centroid.clone(), bboxmax, bboxmin);
+        var z = chooseZ(camera, centroid.clone(), bboxmax, bboxmin);
 
         if(boxEnablerQuotes.getValue()){
             //var needed to group labels
@@ -223,15 +223,17 @@
     }
 
     function sqr(x) { return x * x }
-    function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) + sqr(v.z - w.z) }
-    function distToSegment(p, v, w) {
-        var a1 = p.x*v.y + v.x*w.y + w.x*p.y - (p.y*v.x + v.y*w.x + w.y*p.x);
-        var a2 = p.y*v.z + v.y*w.z + w.y*p.z - (p.z*v.y + v.z*w.y + w.z*p.y);
-        var a3 = p.x*v.z + v.x*w.z + w.x*p.z - (p.z*v.x + v.z*w.x + w.z*p.x);
-        var A = 1.0/2.0 * Math.sqrt( sqr(a1) + sqr(a2) + sqr(a3) );
-        var r = Math.sqrt(dist2(w,v));
-        return 2 * A / r;
+    function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+    function distToSegmentSquared(p, v, w) {
+      var l2 = dist2(v, w);
+      if (l2 == 0) return dist2(p, v);
+      var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+      if (t < 0) return dist2(p, v);
+      if (t > 1) return dist2(p, w);
+      return dist2(p, { x: v.x + t * (w.x - v.x),
+                        y: v.y + t * (w.y - v.y) });
     }
+    function distToSegment(p, v, w) { return Math.sqrt(distToSegmentSquared(p, v, w)); }
 
     function chooseX(camera, centroid, bboxmax, bboxmin){
         //axis 1-0
