@@ -158,7 +158,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     if(btn.isOn()) {
                         var selected = MLJ.core.Scene.getSelectedLayer();
                         if (selected !== undefined) {
-                            _this._applyTo(selected, true);                            
+                            reapplay(true, selected);
                         }
                     }
                 });

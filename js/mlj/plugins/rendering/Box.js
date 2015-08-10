@@ -24,7 +24,8 @@
         toggle: true,
         on: false,
         updateOnLayerAdded: true,
-        loadShader: ["BoxFragment.glsl", "BoxVertex.glsl"]
+        loadShader: ["BoxFragment.glsl", "BoxVertex.glsl"],
+        applyOnEvent: "onControlsChange"
     },DEFAULTS);
 
     var boxEnablerQuotes, boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;
