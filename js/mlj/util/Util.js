@@ -239,4 +239,19 @@ MLJ.util.AssociativeArray = function () {
     this.iterator = function () {
         return new _Iterator();
     };
+    
+    /**
+     * Sorts the items of the <code>AssociativeArray</code> rearranging its keys
+     * in ascending (default) or descending order.
+     * @param {String} order The sort order: ascending (<code>up</code>) or 
+     * descending (<code>down</code>) 
+     * @author Stefano Gabriele
+     */
+    this.sortByKey = function(order) {
+        keys.sort();
+         
+        if(order === "down") {           
+            keys.reverse();        
+        }                
+    };
 };
