@@ -56,6 +56,18 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     
     //Shows the options pane of this rendering feature
     function _showOptionsPane() {
+        
+        btn.setArrowSelected(true);
+            
+        var items = group.getItems();
+        var item;
+        for (var key in items) {
+            item = items[key];
+            if (item !== btn) {
+                item.setArrowSelected(false);
+            }
+        }
+        
         renderingPane.children().each(function (key, val) {
             if ($(val).attr("id") === UID) {
                 $(val).fadeIn();
@@ -119,7 +131,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
         //Click on arrow
         btn.onArrowClicked(function () {
-            _showOptionsPane();
+            _showOptionsPane();            
         });             
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",

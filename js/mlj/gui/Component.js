@@ -456,7 +456,15 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
             foo();
         });
     };
-
+    
+    this.setArrowSelected = function(selected) {
+        if(selected === true) {
+            _$arrow.addClass("arrow-selected");
+        } else {
+            _$arrow.removeClass("arrow-selected");
+        }
+    };
+    
     this._make = function () {
         this.$.append(_toggle.$, _$arrow);
     };

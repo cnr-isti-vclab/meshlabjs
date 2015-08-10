@@ -294,12 +294,15 @@ html,body{
     height: 0px;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid black;
+    border-top: 6px solid rgba(0,0,0,0.2);
     position: absolute;
     bottom: 0px;
     left: 5px;
 }
 
+.mlj-custom-toggle-button-arrow.arrow-selected {
+    border-top: 6px solid black;
+}
 
 /* MeshLabJs global styles __________________________________________________ */
 
