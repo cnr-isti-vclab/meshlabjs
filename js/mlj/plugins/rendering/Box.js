@@ -180,9 +180,9 @@
                         6: bboxmin.x, bboxmin.y, bboxmin.z
                         7: bboxmax.x, bboxmin.y, bboxmin.z */
 
-        var x = chooseX(meshesGroup, camera, centroid, bboxmax, bboxmin);
-        var y = chooseY(meshesGroup, camera, centroid, bboxmax, bboxmin);
-        var z = chooseZ(meshesGroup, camera, centroid, bboxmax, bboxmin);
+        var x = chooseX(camera, centroid, bboxmax, bboxmin);
+        var y = chooseY(camera, centroid, bboxmax, bboxmin);
+        var z = chooseZ(camera, centroid, bboxmax, bboxmin);
 
         if(boxEnablerQuotes.getValue()){
             //var needed to group labels
@@ -233,7 +233,7 @@
         return 2 * A / r;
     }
 
-    function chooseY(meshesGroup, camera, centroid, bboxmax, bboxmin){
+    function chooseY(camera, centroid, bboxmax, bboxmin){
         var $canvas = $('canvas')[0];
         var widthHalf = 0.5*$canvas.width;
         var heightHalf = 0.5*$canvas.height;
@@ -311,7 +311,7 @@
         }
     }
 
-    function chooseX(meshesGroup, camera, centroid, bboxmax, bboxmin){
+    function chooseX(camera, centroid, bboxmax, bboxmin){
         var $canvas = $('canvas')[0];
         var widthHalf = 0.5*$canvas.width;
         var heightHalf = 0.5*$canvas.height;
@@ -389,7 +389,7 @@
         }
     }
 
-    function chooseZ(meshesGroup, camera, centroid, bboxmax, bboxmin){
+    function chooseZ(camera, centroid, bboxmax, bboxmin){
         var $canvas = $('canvas')[0];
         var widthHalf = 0.5*$canvas.width;
         var heightHalf = 0.5*$canvas.height;
@@ -508,7 +508,13 @@
         var epsilon = (max.y - min.y) * DEFAULTS.epsilonPercentage;
         var offset = epsilon*DEFAULTS.spriteOffset;
 
+        var start = true;
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
+
+        var startingPoint = Math.floor( max.y / majorFactor);
+        if(startingPoint == 0){
+            startingPoint = -majorFactor;
+        }
 
         while(y0>=min.y || y1>=min.y){
 
@@ -530,7 +536,8 @@
             //then major quotes
             if(y1 >= min.y){
                 y = y1;
-                y1 = (ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp) );
+                y1 = ( start ? startingPoint*majorFactor:(ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp)) );
+                if(start) start=false;
                 ysupp = undefined;
 
                 var maxdistance = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 ) / 2;
@@ -607,7 +614,13 @@
         y = min.y + (min.y==bboxmin.y ? -0.1 : 0.1 );
         z = max.z;
 
+        start = true;
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
+
+        var startingPoint = Math.floor( max.x / majorFactor);
+        if(startingPoint == 0){
+            startingPoint = -majorFactor;
+        }
 
         while(x0>=min.x || x1>=min.x){
 
@@ -629,7 +642,8 @@
             //then major quotes
             if(x1 >= min.x){
                 x = x1;
-                x1 = (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp) );
+                x1 = ( start ? startingPoint*majorFactor : (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp)) );
+                if(start) start=false;
                 xsupp = undefined;
 
                 var maxdistance = ( x-max.x>=0 ? x-max.x : (x-max.x)*-1 ) / 2;
@@ -707,7 +721,13 @@
         y = max.y + (max.y==bboxmax.y ? 0.1 : -0.1);
         z = max.z;
 
+        start=true;
         var z,z0 = max.z, z1 = max.z,zsupp = undefined;
+
+        var startingPoint = Math.floor( max.z / majorFactor);
+        if(startingPoint == 0){
+            startingPoint = -majorFactor;
+        }
 
         while(z0>=min.z || z1>=min.z){
 
@@ -729,7 +749,8 @@
             //then major quotes
             if(z1 >= min.z){
                 z = z1;
-                z1 = (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp) );
+                z1 = ( start ? startingPoint*majorFactor : (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp)) );
+                if(start) start=false;
                 zsupp = undefined;
 
                 var maxdistance = ( z-max.z>=0 ? z-max.z : (z-max.z)*-1 ) / 2;
