@@ -6,9 +6,9 @@
             minPointSize : 0.2,
             medPointSize : 1.0,
             majPointSize : 1.5,
-            minSize : 10.0,
+            minSize : 5,
             pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
-            epsilonPercentage : 3.0/100.0,
+            epsilonPercentage : 1.0/100.0,
             spriteOffset : 2.75,
             //next are GUI settable values
             minorFactor : 0.2,
@@ -150,6 +150,7 @@
             borderThickness : boxFontBorderThickChoiceWidget.getValue(),
             borderColor : {r:0, g:0, b:0, a:0},
             bgColor : {r:255, g:255, b:255, a:0}
+
         };
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
@@ -203,21 +204,20 @@
         if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
         boundingBox = geometry.boundingBox;
 
-        var x0 = boundingBox.min.x;
-        var x1 = boundingBox.max.x;
-        var y0 = boundingBox.min.y;
-        var y1 = boundingBox.max.y;
-        var z0 = boundingBox.min.z;
-        var z1 = boundingBox.max.z;
+        var xmin = boundingBox.min.x;
+        var xmax = boundingBox.max.x;
+        var ymin = boundingBox.min.y;
+        var ymax = boundingBox.max.y;
+        var zmin = boundingBox.min.z;
+        var zmax = boundingBox.max.z;
 
+        var bWidth = ( xmin > xmax ) ? xmin - xmax : xmax - xmin;
+        var bHeight = ( ymin > ymax ) ? ymin - ymax : ymax - ymin;
+        var bDepth = ( zmin > zmax ) ? zmin - zmax : zmax - zmin;
 
-        var bWidth = ( x0 > x1 ) ? x0 - x1 : x1 - x0;
-        var bHeight = ( y0 > y1 ) ? y0 - y1 : y1 - y0;
-        var bDepth = ( z0 > z1 ) ? z0 - z1 : z1 - z0;
-
-        var centroidX = x0 + ( bWidth / 2 ) + position.x;
-        var centroidY = y0 + ( bHeight / 2 )+ position.y;
-        var centroidZ = z0 + ( bDepth / 2 ) + position.z;
+        var centroidX = xmin + ( bWidth / 2 ) + position.x;
+        var centroidY = ymin + ( bHeight / 2 )+ position.y;
+        var centroidZ = zmin + ( bDepth / 2 ) + position.z;
 
         return new THREE.Vector3(centroidX, centroidY, centroidZ);
     }
@@ -233,89 +233,7 @@
         return 2 * A / r;
     }
 
-    function chooseY(camera, centroid, bboxmax, bboxmin){
-        var $canvas = $('canvas')[0];
-        var widthHalf = 0.5*$canvas.width;
-        var heightHalf = 0.5*$canvas.height;
-
-        //axis 1-2
-        var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
-        var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
-        //axis 0-3
-        var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
-        var p3 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmax.z);
-        //axis 4-7
-        var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
-        var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
-        //axis 5-6
-        var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
-        var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
-
-        var pcenter = centroid.clone();
-        var pa = p0.clone();
-        var pb = p1.clone();
-        var pc = p2.clone();
-        var pd = p3.clone();
-        var pe = p4.clone();
-        var pf = p5.clone();
-        var pg = p6.clone();
-        var ph = p7.clone();
-        pcenter.project(camera);
-        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
-        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
-        pa.project(camera);
-        pa.x = ( pa.x * widthHalf ) + widthHalf;
-        pa.y = - ( pa.y * heightHalf ) + heightHalf;
-        pb.project(camera);
-        pb.x = ( pb.x * widthHalf ) + widthHalf;
-        pb.y = - ( pb.y * heightHalf ) + heightHalf;
-        pc.project(camera);
-        pc.x = ( pc.x * widthHalf ) + widthHalf;
-        pc.y = - ( pc.y * heightHalf ) + heightHalf;
-        pd.project(camera);
-        pd.x = ( pd.x * widthHalf ) + widthHalf;
-        pd.y = - ( pd.y * heightHalf ) + heightHalf;
-        pe.project(camera);
-        pe.x = ( pe.x * widthHalf ) + widthHalf;
-        pe.y = - ( pe.y * heightHalf ) + heightHalf;
-        pf.project(camera);
-        pf.x = ( pf.x * widthHalf ) + widthHalf;
-        pf.y = - ( pf.y * heightHalf ) + heightHalf;
-        pg.project(camera);
-        pg.x = ( pg.x * widthHalf ) + widthHalf;
-        pg.y = - ( pg.y * heightHalf ) + heightHalf;
-        ph.project(camera);
-        ph.x = ( ph.x * widthHalf ) + widthHalf;
-        ph.y = - ( ph.y * heightHalf ) + heightHalf;
-
-        var x0 = distToSegment(centroid, pb, pc);
-        var x1 = distToSegment(centroid, pa, pd);
-        var x2 = distToSegment(centroid, pe, ph);
-        var x3 = distToSegment(centroid, pf, pg);
-
-        var max = Math.max(x0,x1,x2,x3);
-
-        switch(max){
-            case x0:
-                return { max:p1, min:p2 };
-                break;
-            case x1:
-                return { max:p0, min:p3 };
-                break;
-            case x2:
-                return { max:p4, min:p7 };
-                break;
-            default:
-                return { max:p5, min:p6 };
-                break;
-        }
-    }
-
     function chooseX(camera, centroid, bboxmax, bboxmin){
-        var $canvas = $('canvas')[0];
-        var widthHalf = 0.5*$canvas.width;
-        var heightHalf = 0.5*$canvas.height;
-
         //axis 1-0
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
@@ -329,71 +247,71 @@
         var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
         var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
 
-        var pcenter = centroid.clone();
-        var pa = p0.clone();
-        var pb = p1.clone();
-        var pc = p2.clone();
-        var pd = p3.clone();
-        var pe = p4.clone();
-        var pf = p5.clone();
-        var pg = p6.clone();
-        var ph = p7.clone();
-        pcenter.project(camera);
-        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
-        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
-        pa.project(camera);
-        pa.x = ( pa.x * widthHalf ) + widthHalf;
-        pa.y = - ( pa.y * heightHalf ) + heightHalf;
-        pb.project(camera);
-        pb.x = ( pb.x * widthHalf ) + widthHalf;
-        pb.y = - ( pb.y * heightHalf ) + heightHalf;
-        pc.project(camera);
-        pc.x = ( pc.x * widthHalf ) + widthHalf;
-        pc.y = - ( pc.y * heightHalf ) + heightHalf;
-        pd.project(camera);
-        pd.x = ( pd.x * widthHalf ) + widthHalf;
-        pd.y = - ( pd.y * heightHalf ) + heightHalf;
-        pe.project(camera);
-        pe.x = ( pe.x * widthHalf ) + widthHalf;
-        pe.y = - ( pe.y * heightHalf ) + heightHalf;
-        pf.project(camera);
-        pf.x = ( pf.x * widthHalf ) + widthHalf;
-        pf.y = - ( pf.y * heightHalf ) + heightHalf;
-        pg.project(camera);
-        pg.x = ( pg.x * widthHalf ) + widthHalf;
-        pg.y = - ( pg.y * heightHalf ) + heightHalf;
-        ph.project(camera);
-        ph.x = ( ph.x * widthHalf ) + widthHalf;
-        ph.y = - ( ph.y * heightHalf ) + heightHalf;
+        var pts = getVerticesIn2dScreenCoord(
+                                             camera,
+                                             centroid,
+                                             p0.clone(), p1.clone(), p2.clone(), p3.clone(),
+                                             p4.clone(), p5.clone(), p6.clone(), p7.clone()
+                                            );
 
-        var x0 = distToSegment(centroid, pa, pb);
-        var x1 = distToSegment(centroid, pd, pc);
-        var x2 = distToSegment(centroid, pe, pf);
-        var x3 = distToSegment(centroid, ph, pg);
+        var x0 = distToSegment(centroid, pts[0], pts[1]);
+        var x1 = distToSegment(centroid, pts[3], pts[2]);
+        var x2 = distToSegment(centroid, pts[4], pts[5]);
+        var x3 = distToSegment(centroid, pts[7], pts[6]);
 
         var max = Math.max(x0,x1,x2,x3);
 
         switch(max){
-            case x0:
-                return { max:p0, min:p1 };
-                break;
-            case x1:
-                return { max:p3, min:p2 };
-                break;
-            case x2:
-                return { max:p4, min:p5 };
-                break;
-            default:
-                return { max:p7, min:p6 };
-                break;
+            case x0: return { max:p0, min:p1 };
+                     break;
+            case x1: return { max:p3, min:p2 };
+                     break;
+            case x2: return { max:p4, min:p5 };
+                     break;
+            default: return { max:p7, min:p6 };
+        }
+    }
+
+    function chooseY(camera, centroid, bboxmax, bboxmin){
+        //axis 1-2
+        var p1 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmax.z);
+        var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
+        //axis 0-3
+        var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
+        var p3 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmax.z);
+        //axis 4-7
+        var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
+        var p7 = new THREE.Vector3(bboxmax.x, bboxmin.y, bboxmin.z);
+        //axis 5-6
+        var p5 = new THREE.Vector3(bboxmin.x, bboxmax.y, bboxmin.z);
+        var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
+
+        var pts = getVerticesIn2dScreenCoord(
+                                             camera,
+                                             centroid,
+                                             p0.clone(), p1.clone(), p2.clone(), p3.clone(),
+                                             p4.clone(), p5.clone(), p6.clone(), p7.clone()
+                                            );
+
+        var x0 = distToSegment(centroid, pts[1], pts[2]);
+        var x1 = distToSegment(centroid, pts[0], pts[3]);
+        var x2 = distToSegment(centroid, pts[4], pts[7]);
+        var x3 = distToSegment(centroid, pts[5], pts[6]);
+
+        var max = Math.max(x0,x1,x2,x3);
+
+        switch(max){
+            case x0: return { max:p1, min:p2 };
+                     break;
+            case x1: return { max:p0, min:p3 };
+                     break;
+            case x2: return { max:p4, min:p7 };
+                     break;
+            default: return { max:p5, min:p6 };
         }
     }
 
     function chooseZ(camera, centroid, bboxmax, bboxmin){
-        var $canvas = $('canvas')[0];
-        var widthHalf = 0.5*$canvas.width;
-        var heightHalf = 0.5*$canvas.height;
-
         //axis 0-4
         var p0 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmax.z);
         var p4 = new THREE.Vector3(bboxmax.x, bboxmax.y, bboxmin.z);
@@ -407,71 +325,49 @@
         var p2 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmax.z);
         var p6 = new THREE.Vector3(bboxmin.x, bboxmin.y, bboxmin.z);
 
-        var pcenter = centroid.clone();
-        var pa = p0.clone();
-        var pb = p1.clone();
-        var pc = p2.clone();
-        var pd = p3.clone();
-        var pe = p4.clone();
-        var pf = p5.clone();
-        var pg = p6.clone();
-        var ph = p7.clone();
-        pcenter.project(camera);
-        pcenter.x = ( pcenter.x * widthHalf ) + widthHalf;
-        pcenter.y = - ( pcenter.y * heightHalf ) + heightHalf;
-        pa.project(camera);
-        pa.x = ( pa.x * widthHalf ) + widthHalf;
-        pa.y = - ( pa.y * heightHalf ) + heightHalf;
-        pb.project(camera);
-        pb.x = ( pb.x * widthHalf ) + widthHalf;
-        pb.y = - ( pb.y * heightHalf ) + heightHalf;
-        pc.project(camera);
-        pc.x = ( pc.x * widthHalf ) + widthHalf;
-        pc.y = - ( pc.y * heightHalf ) + heightHalf;
-        pd.project(camera);
-        pd.x = ( pd.x * widthHalf ) + widthHalf;
-        pd.y = - ( pd.y * heightHalf ) + heightHalf;
-        pe.project(camera);
-        pe.x = ( pe.x * widthHalf ) + widthHalf;
-        pe.y = - ( pe.y * heightHalf ) + heightHalf;
-        pf.project(camera);
-        pf.x = ( pf.x * widthHalf ) + widthHalf;
-        pf.y = - ( pf.y * heightHalf ) + heightHalf;
-        pg.project(camera);
-        pg.x = ( pg.x * widthHalf ) + widthHalf;
-        pg.y = - ( pg.y * heightHalf ) + heightHalf;
-        ph.project(camera);
-        ph.x = ( ph.x * widthHalf ) + widthHalf;
-        ph.y = - ( ph.y * heightHalf ) + heightHalf;
+        var pts = getVerticesIn2dScreenCoord(
+                                             camera,
+                                             centroid,
+                                             p0.clone(), p1.clone(), p2.clone(), p3.clone(),
+                                             p4.clone(), p5.clone(), p6.clone(), p7.clone()
+                                            );
 
-        var x0 = distToSegment(centroid, pa, pe);
-        var x1 = distToSegment(centroid, pb, pf);
-        var x2 = distToSegment(centroid, pd, ph);
-        var x3 = distToSegment(centroid, pc, pg);
-
-        /*var geo = new THREE.Geometry();
-        geo.vertices.push(
-        	centroid, bboxmax
-        );
-        var mat = new THREE.LineBasicMaterial({ color: 0x0000ff });
-        var line = new THREE.Line( geo, mat );
-        meshesGroup.add(line);*/
+        var x0 = distToSegment(centroid, pts[0], pts[4]);
+        var x1 = distToSegment(centroid, pts[1], pts[5]);
+        var x2 = distToSegment(centroid, pts[3], pts[7]);
+        var x3 = distToSegment(centroid, pts[2], pts[6]);
 
         var max = Math.max(x0,x1,x2,x3);
 
         switch(max){
-            case x0:
-                return { max:p0, min:p4 };
-                break;
-            case x1:
-                return { max:p1, min:p5 };
-                break;
-            case x2:
-                return { max:p3, min:p7 };
-                break;
-            default:
-                return { max:p2, min:p6 };
+            case x3: return { max:p2, min:p6 };
+                     break;
+            case x2: return { max:p3, min:p7 };
+                     break;
+            case x1: return { max:p1, min:p5 };
+                     break;
+            default: return { max:p0, min:p4 };
         }
+    }
+
+    function getVerticesIn2dScreenCoord(camera, centroid, pts){
+        var screenCoordPts = new Array();
+        var $canvas = $('canvas')[0];
+        var widthHalf = 0.5*$canvas.width;
+        var heightHalf = 0.5*$canvas.height;
+
+        centroid.project(camera);
+        centroid.x = ( centroid.x * widthHalf ) + widthHalf;
+        centroid.y = - ( centroid.y * heightHalf ) + heightHalf;
+
+        var start = 2;
+        for(var i=start; i<arguments.length; ++i){
+            arguments[i].project(camera);
+            arguments[i].x = ( arguments[i].x * widthHalf ) + widthHalf;
+            arguments[i].y = - ( arguments[i].y * heightHalf ) + heightHalf;
+            screenCoordPts[i-start] = arguments[i];
+        }
+        return screenCoordPts;
     }
 
     /**
@@ -494,133 +390,24 @@
         var pntTypes = new Array();
         var pntMinSizes = new Array();
 
-        //y axis
-        var max=w.max;
-        var min=w.min;
+        //x axis
+        var max=q.max;
+        var min=q.min;
+        var epsilon = (max.x - min.x) * DEFAULTS.epsilonPercentage;
+        var offset = epsilon*DEFAULTS.spriteOffset;
         var id = 0;
         var i = 0;
         k = 0;
-        //MeshSizes dependent value ?
-        x = max.x + (max.x==bboxmax.x ? 0.1 : -0.1 );
-        y = max.y;
-        z = max.z;
-
-        var epsilon = (max.y - min.y) * DEFAULTS.epsilonPercentage;
-        var offset = epsilon*DEFAULTS.spriteOffset;
+        x = max.x;
+        y = min.y + (min.y==bboxmin.y ? -epsilon/0.2 : +epsilon/0.2 );
+        z = max.z + (max.z==bboxmax.z ? +epsilon/0.2 : -epsilon/0.2 );
 
         var start = true;
-        var y,y0 = max.y, y1 = max.y,ysupp = undefined;
-
-        var startingPoint = Math.floor( max.y / majorFactor);
-        if(startingPoint == 0){
-            startingPoint = -majorFactor;
-        }
-
-        while(y0>=min.y || y1>=min.y){
-
-            //first minor quotes
-            if(y0>=min.y){
-                y = y0;
-                y0 -=minorFactor;
-
-                pntMinSizes[i] = DEFAULTS.minSize;
-                pntTypes[i++] = DEFAULTS.minPointSize;
-
-                positions[(3 * k) + id] = x;
-                positions[(3 * k + 1) + id] = y;
-                positions[(3 * k + 2) + id] = z;
-
-                k++;
-            }
-
-            //then major quotes
-            if(y1 >= min.y){
-                y = y1;
-                y1 = ( start ? startingPoint*majorFactor:(ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp)) );
-                if(start) start=false;
-                ysupp = undefined;
-
-                var maxdistance = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 ) / 2;
-                var middistance = ( y>=0 ? y : -y ) / 2;
-                var mindistance = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 ) / 2;
-
-                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
-
-                    if(maxdistance<epsilon) y = max.y;
-                    else if(middistance<epsilon) y = 0;
-                    else y = min.y;
-
-                    pntMinSizes[i] = DEFAULTS.minSize;
-                    pntTypes[i++] = DEFAULTS.majPointSize;
-                    var sprite = makeTextSprite(
-                                                (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                { 'x' : x + (max.x==bboxmax.x ? +offset : -offset), 'y' : y, 'z': z },
-                                                lblParameters
-                                               );
-                    labelsgroup.add( sprite );
-
-                    positions[(3 * k) + id] = x;
-                    positions[(3 * k + 1) + id] = y;
-                    positions[(3 * k + 2) + id] = z;
-
-                    k++;
-                    if(ysupp==undefined){
-                        if(y>0 && y1<0){
-                            ysupp = y1;
-                            y1 = 0;
-                        }else if(y>min.y && y1<min.y){
-                            ysupp = y1;
-                            y1 = min.y;
-                        }
-                    }else
-                        y1=ysupp;
-                }else{
-                    if(ysupp==undefined){
-                        if(y>0 && y1<0){
-                            ysupp = y1;
-                            y1 = 0;
-                        }else if(y>min.y && y1<min.y){
-                            ysupp = y1;
-                            y1 = min.y;
-                        }
-
-                        pntMinSizes[i] = DEFAULTS.minSize;
-                        pntTypes[i++] = DEFAULTS.medPointSize;
-
-                        var sprite = makeTextSprite(
-                                                    (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                    { 'x' : x + (x==bboxmax.x? offset : -offset), 'y' : y, 'z': z },
-                                                    lblParameters
-                                                   );
-                        labelsgroup.add( sprite );
-
-                        positions[(3 * k) + id] = x;
-                        positions[(3 * k + 1) + id] = y;
-                        positions[(3 * k + 2) + id] = z;
-
-                        k++;
-                    }else
-                        y1=ysupp;
-                }
-            }
-        }
-
-        //x axis
-        max=q.max;
-        min=q.min;
-        id = k * 3;
-        k = 0;
-        x = max.x;
-        y = min.y + (min.y==bboxmin.y ? -0.1 : 0.1 );
-        z = max.z;
-
-        start = true;
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
 
         var startingPoint = Math.floor( max.x / majorFactor);
-        if(startingPoint == 0){
-            startingPoint = -majorFactor;
-        }
+        if(startingPoint == 0) startingPoint = -1;
+        else if(startingPoint*majorFactor == max.x) start = false;
 
         while(x0>=min.x || x1>=min.x){
 
@@ -658,6 +445,7 @@
 
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
+                    lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (x<0?(x*-1).toFixed(2):x.toFixed(2)),
                                                 { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
@@ -693,7 +481,7 @@
 
                         pntMinSizes[i] = DEFAULTS.minSize;
                         pntTypes[i++] = DEFAULTS.medPointSize;
-
+                        lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (x<0?(x*-1).toFixed(2):x.toFixed(2)),
                                                     { 'x' : x, 'y' : y + (min.y==bboxmin.y ? -offset : offset), 'z': z },
@@ -712,22 +500,127 @@
             }
         }
 
+        //y axis
+        max=w.max;
+        min=w.min;
+        id = k * 3;
+        k = 0;
+        //MeshSizes dependent value ?
+        x = max.x + (max.x==bboxmax.x ? +epsilon/0.2 : -epsilon/0.2 );
+        y = max.y;
+        z = max.z + (max.z==bboxmax.z ? +epsilon/0.2 : -epsilon/0.2 );
+
+        var y,y0 = max.y, y1 = max.y,ysupp = undefined;
+
+        startingPoint = Math.floor( max.y / majorFactor);
+        if(startingPoint == 0) startingPoint = -1;
+        else if(startingPoint*majorFactor == max.y) start = false;
+
+        while(y0>=min.y || y1>=min.y){
+
+            //first minor quotes
+            if(y0>=min.y){
+                y = y0;
+                y0 -=minorFactor;
+
+                pntMinSizes[i] = DEFAULTS.minSize;
+                pntTypes[i++] = DEFAULTS.minPointSize;
+
+                positions[(3 * k) + id] = x;
+                positions[(3 * k + 1) + id] = y;
+                positions[(3 * k + 2) + id] = z;
+
+                k++;
+            }
+
+            //then major quotes
+            if(y1 >= min.y){
+                y = y1;
+                y1 = ( start ? startingPoint*majorFactor:(ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp)) );
+                if(start) start=false;
+                ysupp = undefined;
+
+                var maxdistance = ( y-max.y>=0 ? y-max.y : (y-max.y)*-1 ) / 2;
+                var middistance = ( y>=0 ? y : -y ) / 2;
+                var mindistance = ( y-min.y>=0 ? y-min.y : (y-min.y)*-1 ) / 2;
+
+                if( maxdistance<epsilon || middistance<epsilon || mindistance<epsilon ){
+
+                    if(maxdistance<epsilon) y = max.y;
+                    else if(middistance<epsilon) y = 0;
+                    else y = min.y;
+
+                    pntMinSizes[i] = DEFAULTS.minSize;
+                    pntTypes[i++] = DEFAULTS.majPointSize;
+                    lblParameters.fontWeight = "bold";
+                    var sprite = makeTextSprite(
+                                                (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                { 'x' : x + (max.x==bboxmax.x ? +offset : -offset), 'y' : y, 'z': z },
+                                                lblParameters
+                                               );
+                    labelsgroup.add( sprite );
+
+                    positions[(3 * k) + id] = x;
+                    positions[(3 * k + 1) + id] = y;
+                    positions[(3 * k + 2) + id] = z;
+
+                    k++;
+                    if(ysupp==undefined){
+                        if(y>0 && y1<0){
+                            ysupp = y1;
+                            y1 = 0;
+                        }else if(y>min.y && y1<min.y){
+                            ysupp = y1;
+                            y1 = min.y;
+                        }
+                    }else
+                        y1=ysupp;
+                }else{
+                    if(ysupp==undefined){
+                        if(y>0 && y1<0){
+                            ysupp = y1;
+                            y1 = 0;
+                        }else if(y>min.y && y1<min.y){
+                            ysupp = y1;
+                            y1 = min.y;
+                        }
+
+                        pntMinSizes[i] = DEFAULTS.minSize;
+                        pntTypes[i++] = DEFAULTS.medPointSize;
+                        lblParameters.fontWeight = "normal";
+                        var sprite = makeTextSprite(
+                                                    (y<0?(y*-1).toFixed(2):y.toFixed(2)),
+                                                    { 'x' : x + (x==bboxmax.x? offset : -offset), 'y' : y, 'z': z },
+                                                    lblParameters
+                                                   );
+                        labelsgroup.add( sprite );
+
+                        positions[(3 * k) + id] = x;
+                        positions[(3 * k + 1) + id] = y;
+                        positions[(3 * k + 2) + id] = z;
+
+                        k++;
+                    }else
+                        y1=ysupp;
+                }
+            }
+        }
+
         //z axis
         max=e.max;
         min=e.min;
         id += k * 3;
         k = 0;
-        x = max.x;
-        y = max.y + (max.y==bboxmax.y ? 0.1 : -0.1);
+        x = max.x + (max.x==bboxmax.x ? +epsilon/0.2 : -epsilon/0.2 );
+        y = max.y + (max.y==bboxmax.y ? +epsilon/0.2 : -epsilon/0.2 );
         z = max.z;
 
         start=true;
         var z,z0 = max.z, z1 = max.z,zsupp = undefined;
 
-        var startingPoint = Math.floor( max.z / majorFactor);
-        if(startingPoint == 0){
-            startingPoint = -majorFactor;
-        }
+        startingPoint = Math.floor( max.z / majorFactor);
+        if(startingPoint == 0) startingPoint = -1;
+        else if(startingPoint*majorFactor == max.z) start = false;
 
         while(z0>=min.z || z1>=min.z){
 
@@ -765,6 +658,7 @@
 
                     pntMinSizes[i] = DEFAULTS.minSize;
                     pntTypes[i++] = DEFAULTS.majPointSize;
+                    lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (z<0?(z*-1).toFixed(2):z.toFixed(2)),
                                                 { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
@@ -800,7 +694,7 @@
 
                         pntMinSizes[i] = DEFAULTS.minSize;
                         pntTypes[i++] = DEFAULTS.medPointSize;
-
+                        lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (z<0?(z*-1).toFixed(2):z.toFixed(2)),
                                                     { 'x' : x, 'y' : y + (max.y==bboxmax.y ? offset : -offset), 'z': z },
@@ -862,6 +756,8 @@
     	    parameters["fontFace"] : "Arial";
     	var fontsize = parameters.hasOwnProperty("fontSize") ?
     		parameters["fontSize"] : 10;
+        var fontweight = parameters.hasOwnProperty("fontWeight") ?
+            parameters["fontWeight"] : "normal" //white, visible
     	var borderThickness = parameters.hasOwnProperty("borderThickness") ?
     		parameters["borderThickness"] : 4;
     	var borderColor = parameters.hasOwnProperty("borderColor") ?
@@ -872,7 +768,7 @@
         //prepare label
     	var canvas = document.createElement('canvas');
     	var context = canvas.getContext('2d');
-    	context.font = "normal " + fontsize + "px " + fontface;
+    	context.font = fontweight + " " + fontsize + "px " + fontface;
 
     	// get size data (height depends only on font size)
     	var textWidth = context.measureText(message).width;
