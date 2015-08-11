@@ -3,17 +3,17 @@
 
     var DEFAULTS = {
             //next values are code blocked values
-            minPointSize : 0.2,
-            medPointSize : 1,
-            majPointSize : 2,
-            minSize : 5,
-            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
+            minPointSize : 0.1,
+            medPointSize : 0.25,
+            majPointSize : 0.5,
+            minSize : 1.5,
+            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/square.png"),
             epsilonPercentage : 1.5/100.0,
             spriteOffset : 2.5,
             //next are GUI settable values
             minorFactor : 0.2,
             majorFactor : 0.5,
-            pntSize : 5,
+            pntSize : 3,
             pntColor : new THREE.Color('#FF0000')
         };
 
@@ -93,7 +93,7 @@
         });
 
         boxFontSizeChoiceWidget = guiBuilder.Integer({
-            min: 5, step: 1, defval: 10,
+            min: 10, step: 1, defval: 10,
             label: "Font Size",
             tooltip: "Choose the labels font size",
             bindTo: function(newFontsize){
@@ -137,7 +137,10 @@
                 attributes: attributes,
                 vertexShader: this.shaders.getByKey("BoxVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("BoxFragment.glsl"),
-                alphaTest: 0.9
+                alphaTest: 0.5,
+                depthTest: true,
+                depthWrite: false,
+                transparent: true
             });
 
         //var needed to group all (pseudo) "subclasses" of THREE.Mesh
@@ -778,7 +781,7 @@
         canvas.height = fontsize + borderThickness * 2;
 
         //set the param font into context
-        context.font = "normal " + fontsize + "px " + fontface;
+        context.font = fontweight + " " + fontsize + "px " + fontface;
     	//set context background color
     	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
     								  + backgroundColor.b + "," + backgroundColor.a + ")";
@@ -796,7 +799,7 @@
     	          textWidth + borderThickness,
     	          fontsize + borderThickness,
     	          6);
-    	context.fillStyle = "rgba(0, 0, 0, 1.0)";
+    	context.fillStyle = "rgba(255, 255, 255, 1.0)";
     	/** Set starting point of text, in which pt(borderThickness, fontsize+borderThickness/2) represent the
     	top left of the top-left corner of the texture text in the canvas. */
     	context.fillText( message, borderThickness, fontsize + borderThickness/2);
