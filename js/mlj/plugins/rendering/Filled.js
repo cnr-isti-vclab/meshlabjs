@@ -53,7 +53,7 @@
             bindTo: "emissive"
         });
 
-        shininessWidget = guiBuilder.Integer({
+        shininessWidget = guiBuilder.RangedFloat({
             label: "Shininess",
             tooltip: "How shiny the specular highlight is. A higher value gives a sharper highlight",
             min: 0, max: 100, step: 1,
@@ -86,7 +86,7 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on) {
-            var geom = meshFile.getThreeMesh().geometry.clone();
+            var geom = meshFile.getThreeMesh().geometry;
             geom.computeFaceNormals();
             geom.computeVertexNormals();
 
