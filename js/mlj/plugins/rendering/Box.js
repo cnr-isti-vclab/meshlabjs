@@ -114,7 +114,6 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
-            bboxed = false;
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
@@ -154,9 +153,11 @@
 
         };
 
-        /* Overlay bounding box (a THREE.BoxHelper overlay) */
         //var needed to group all (pseudo) "subclasses" of THREE.Mesh
         var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
+
+        /* Overlay bounding box (a THREE.BoxHelper overlay) */
+
         var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
         bbHelper.update();
         var bbox = new THREE.BoxHelper(bbHelper);
@@ -201,7 +202,6 @@
         }
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
-
     };
 
     function getcentroid(boundingBox, position){
@@ -509,7 +509,7 @@
         //MeshSizes dependent value ?
         x = max.x + (max.x==bboxmax.x ? +epsilon/0.2 : -epsilon/0.2 );
         y = max.y;
-        z = max.z + (max.z==bboxmax.z ? +epsilon/0.2 : -epsilon/0.2 );
+        z = max.z;
 
         start=true;
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
