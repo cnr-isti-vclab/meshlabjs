@@ -1,8 +1,6 @@
 
 (function (plugin, core, scene) {
 
-    var bboxed = false;
-
     var DEFAULTS = {
             //next values are code blocked values
             minPointSize : 0.1,
@@ -146,9 +144,6 @@
                 transparent: true
             });
 
-        //var needed to group all (pseudo) "subclasses" of THREE.Mesh
-        var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
-
         //label parameters
         var lblParameters = {
             fontFace : boxFontFaceChoiceWidget.getContent(),
@@ -160,24 +155,23 @@
         };
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
-        if(!bboxed){
-            var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
-            bbHelper.update();
-            var bbox = new THREE.BoxHelper(bbHelper);
-            bbox.update(meshFile.getThreeMesh());
-            meshesGroup.add(bbox);
-            bboxed = true;
-        }
+        //var needed to group all (pseudo) "subclasses" of THREE.Mesh
+        var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
+        var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
+        bbHelper.update();
+        var bbox = new THREE.BoxHelper(bbHelper);
+        bbox.update(meshFile.getThreeMesh());
+        meshesGroup.add(bbox);
 
-        /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 groups of
-           THREE.Sprite overlays) */
+        /* Overlays related to quotes (a THREE.PointCloud overlay) and overlay labels (a groups of
+           THREE.Sprite overlay) */
 
         if(boxEnablerQuotes.getValue()){
             var camera = scene.getCamera();
-            var geometry = meshFile.getThreeMesh().geometry.clone();
+            var geometry = meshFile.getThreeMesh().geometry;
 
             var screencenter = camera.position;
-            var centroid = getcentroid(geometry, meshFile.getThreeMesh().position);
+            var centroid = getcentroid(geometry.boundingBox, meshFile.getThreeMesh().position);
             var bboxmax = geometry.boundingBox.max;
             var bboxmin = geometry.boundingBox.min;
 
@@ -203,15 +197,14 @@
 
             meshesGroup.add(pcBuffer);
             meshesGroup.add(labelsGroup);
+            scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
         }
 
         scene.addOverlayLayer(meshFile, plug.getName(), meshesGroup);
+
     };
 
-    function getcentroid(geometry, position){
-        if ( geometry.boundingBox === null ) geometry.computeBoundingBox();
-        boundingBox = geometry.boundingBox;
-
+    function getcentroid(boundingBox, position){
         var xmin = boundingBox.min.x;
         var xmax = boundingBox.max.x;
         var ymin = boundingBox.min.y;
