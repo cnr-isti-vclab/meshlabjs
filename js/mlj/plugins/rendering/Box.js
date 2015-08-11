@@ -1,6 +1,8 @@
 
 (function (plugin, core, scene) {
 
+    var bboxed = false;
+
     var DEFAULTS = {
             //next values are code blocked values
             minPointSize : 0.1,
@@ -114,6 +116,7 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
+            bboxed = false;
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
@@ -157,38 +160,40 @@
         };
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
-
-        var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
-        bbHelper.update();
-        var bbox = new THREE.BoxHelper(bbHelper);
-        bbox.update(meshFile.getThreeMesh());
-        meshesGroup.add(bbox);
+        if(!bboxed){
+            var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
+            bbHelper.update();
+            var bbox = new THREE.BoxHelper(bbHelper);
+            bbox.update(meshFile.getThreeMesh());
+            meshesGroup.add(bbox);
+            bboxed = true;
+        }
 
         /* Overlays related to quotes (3 THREE.PointCloud overlay) and overlay labels (2 groups of
            THREE.Sprite overlays) */
 
-        var camera = scene.getCamera();
-        var geometry = meshFile.getThreeMesh().geometry.clone();
-
-        var screencenter = camera.position;
-        var centroid = getcentroid(geometry, meshFile.getThreeMesh().position);
-        var bboxmax = geometry.boundingBox.max;
-        var bboxmin = geometry.boundingBox.min;
-
-/*                      0: bboxmax.x, bboxmax.y, bboxmax.z
-                        1: bboxmin.x, bboxmax.y, bboxmax.z
-              5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
-            1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
- LEGENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
-            2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
-                        6: bboxmin.x, bboxmin.y, bboxmin.z
-                        7: bboxmax.x, bboxmin.y, bboxmin.z */
-
-        var x = chooseX(camera, centroid.clone(), bboxmax, bboxmin);
-        var y = chooseY(camera, centroid.clone(), bboxmax, bboxmin);
-        var z = chooseZ(camera, centroid.clone(), bboxmax, bboxmin);
-
         if(boxEnablerQuotes.getValue()){
+            var camera = scene.getCamera();
+            var geometry = meshFile.getThreeMesh().geometry.clone();
+
+            var screencenter = camera.position;
+            var centroid = getcentroid(geometry, meshFile.getThreeMesh().position);
+            var bboxmax = geometry.boundingBox.max;
+            var bboxmin = geometry.boundingBox.min;
+
+    /*                      0: bboxmax.x, bboxmax.y, bboxmax.z
+                            1: bboxmin.x, bboxmax.y, bboxmax.z
+                  5____4    2: bboxmin.x, bboxmin.y, bboxmax.z
+                1/___0/|    3: bboxmax.x, bboxmin.y, bboxmax.z
+     LEGENDA:   | 6__|_7    4: bboxmax.x, bboxmax.y, bboxmin.z
+                2/___3/     5: bboxmin.x, bboxmax.y, bboxmin.z
+                            6: bboxmin.x, bboxmin.y, bboxmin.z
+                            7: bboxmax.x, bboxmin.y, bboxmin.z */
+
+            var x = chooseX(camera, centroid.clone(), bboxmax, bboxmin);
+            var y = chooseY(camera, centroid.clone(), bboxmax, bboxmin);
+            var z = chooseZ(camera, centroid.clone(), bboxmax, bboxmin);
+
             //var needed to group labels
             var labelsGroup = new THREE.Mesh();
 
