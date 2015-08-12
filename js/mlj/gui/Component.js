@@ -954,21 +954,24 @@ MLJ.gui.component.RangedFloat = function (flags) {
         var maxval = this.flag("max");
         var defval = this.flag("defval");
         var stepval = this.flag("step");
+        //check & assignment
         inputparams = {
             minvalue: (minval !== undefined ? minval : 0),
             maxvalue: (maxval !== undefined ? maxval : 100),
             defvalue: (defval !== undefined ? defval : 50),
             stepvalue: (stepval !== undefined ? stepval : 0.01)
         };
+        //insert the labels html code
         _pmin.html(inputparams.minvalue);
         _pmax.html(inputparams.maxvalue);
+        //append the labels
         this.$.append(_pmin);
         this.$.append(_pmax);
         //append the slider to the root
         this.$.append(_$slider);
         //append the edit text to the root
         this.$.append(_$editText);
-        //slider init
+        //slider initialization
         _$slider.slider({
             min: inputparams.minvalue,
             max: inputparams.maxvalue,
@@ -977,17 +980,28 @@ MLJ.gui.component.RangedFloat = function (flags) {
             //onCreate event callback
             create: function (event, ui) {
                 _$editText.val(inputparams.defvalue);
-            },
-            //onSlide event callback
-            slide: function (event, ui) {
-                _$slider.slider('value', ui.value);
-                _$editText.val(ui.value);
             }
         });
-        //set EditText's event callback when text changed
-        _$editText.change(function () {
-            //inserted value
-            var val = $(this).val();
+    };
+
+    this.getValue = function () {
+        return _$editText.val();
+    };
+
+    this.setValue = function (value) {
+        _$editText.val(value);
+        _$slider.slider('value', value);
+    };
+
+    this.onChange = function (foo) {
+        _$slider.on( "slide", function( event, ui ) {
+            //call rangedfloat's setValue method
+            _this.setValue(ui.value);
+            foo(event,ui);
+        });
+        _$editText.on("change", function( event ) {
+            //take inserted value
+            var val = _this.getValue();
             //validation pattern
             var pattern = /^([-+]?\d+(\.\d+)?)/;
             //trunk in groups the string
@@ -1002,45 +1016,14 @@ MLJ.gui.component.RangedFloat = function (flags) {
             var min = _$slider.slider("option", "min");
             var max = _$slider.slider("option", "max");
             //validate the boundaries
-            if (val > max) {
-                _$editText.val(max);
-                _$slider.slider('value', max);
-            } else if (val < min) {
-                _$editText.val(min);
-                _$slider.slider('value', min);
-            } else {
-                _$editText.val(val);
-                _$slider.slider('value', val);
-            }
-        });
-    };
-
-    this.getValue = function () {
-        return _$editText.val();
-    };
-
-    this.setValue = function (value) {
-        _$editText.val(value);
-        _$slider.slider('value', value);
-    };
-
-    this.onChange = function (foo) {          
-        _$slider.on( "slide", function( event, ui ) {
-            foo(event,ui);
-        });
-        _$editText.on("change", function( event ) {
-            var val = _$editText.val();
-            var min = _$slider.slider("option", "min");
-            var max = _$slider.slider("option", "max");
-            var ui;
-            //validate the boundaries
             if (val > max)
                 val = max;
             else if (val < min)
                 val = min;
-            _$editText.val(val);
-            _$slider.slider('value', val);
-            ui = { value : val };
+            //call rangedfloat's setValue method
+            _this.setValue(val);
+            //var needed by foo
+            var ui = { value : val };
             foo(event,ui);
         });
     };

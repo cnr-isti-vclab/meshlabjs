@@ -54,6 +54,7 @@
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
+
         boxMajorFactorWidget = guiBuilder.RangedFloat({
             label: "Major Factor",
             tooltip: "Distance between two consecutive misurations in quoted axis",
@@ -64,6 +65,7 @@
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
+
         boxPntSizeWidget = guiBuilder.RangedFloat({
             label: "Point Size",
             tooltip: "Size of a point in the 3 axis",
@@ -71,6 +73,7 @@
             defval: DEFAULTS.pntSize,
             bindTo: "pntSize"
         });
+
         boxPntColorWidget = guiBuilder.Color({
             label: "Thicks color",
             tooltip: "Color of the material related to a point in non quoted axis",
@@ -395,13 +398,14 @@
         var max=q.max;
         var min=q.min;
         var epsilon = (max.x - min.x) * DEFAULTS.epsilonPercentage;
-        var offset = epsilon*DEFAULTS.spriteOffset;
+        var quoteOffset = epsilon/0.2;
+        var labelOffset = epsilon*DEFAULTS.spriteOffset*3.0/2.0;
         var id = 0;
         var i = 0;
         k = 0;
         x = max.x;
-        y = min.y + (min.y==bboxmin.y ? -epsilon/0.2 : +epsilon/0.2 );
-        z = max.z + (max.z==bboxmax.z ? +epsilon/0.2 : -epsilon/0.2 );
+        y = min.y + (min.y==bboxmin.y ? -quoteOffset : +quoteOffset );
+        z = max.z + (min.z==bboxmin.z ? -quoteOffset : +quoteOffset );
 
         var start = true;
         var x,x0 = max.x, x1 = max.x,xsupp = undefined;
@@ -430,10 +434,11 @@
             //then major quotes
             if(x1 >= min.x){
                 x = x1;
-                x1 = ( start ? startingPoint*majorFactor : (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp)) );
+                x1 = (start ? startingPoint*majorFactor : (xsupp==undefined? x1 - majorFactor : (xsupp==x1?x1-majorFactor:xsupp)) );
                 if(start) start=false;
                 xsupp = undefined;
 
+                //calculate the neighborhood between x and rispectively max.x, 0, min.x values
                 var maxdistance = ( x-max.x>=0 ? x-max.x : (x-max.x)*-1 ) / 2;
                 var middistance = ( x>=0 ? x : -x ) / 2;
                 var mindistance = ( x-min.x>=0 ? x-min.x : (x-min.x)*-1 ) / 2;
@@ -449,7 +454,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -485,7 +490,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (x<0?(x*-1).toFixed(2):x.toFixed(2)),
-                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -506,10 +511,9 @@
         min=w.min;
         id = k * 3;
         k = 0;
-        //MeshSizes dependent value ?
-        x = max.x + (max.x==bboxmax.x ? +epsilon/0.2 : -epsilon/0.2 );
+        x = max.x + (max.x==bboxmax.x ? +quoteOffset : -quoteOffset );
         y = max.y;
-        z = max.z;
+        z = max.z + (min.z==bboxmin.z ? -quoteOffset : +quoteOffset );
 
         start=true;
         var y,y0 = max.y, y1 = max.y,ysupp = undefined;
@@ -538,7 +542,7 @@
             //then major quotes
             if(y1 >= min.y){
                 y = y1;
-                y1 = ( start ? startingPoint*majorFactor:(ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp)) );
+                y1 = (start ? startingPoint*majorFactor:(ysupp==undefined? y1 - majorFactor : (ysupp==y1?y1-majorFactor:ysupp)) );
                 if(start) start=false;
                 ysupp = undefined;
 
@@ -557,7 +561,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -592,7 +596,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (y<0?(y*-1).toFixed(2):y.toFixed(2)),
-                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -613,8 +617,8 @@
         min=e.min;
         id += k * 3;
         k = 0;
-        x = max.x + (max.x==bboxmax.x ? +epsilon/0.2 : -epsilon/0.2 );
-        y = max.y + (max.y==bboxmax.y ? +epsilon/0.2 : -epsilon/0.2 );
+        x = max.x + (max.x==bboxmax.x ? +quoteOffset : -quoteOffset );
+        y = max.y + (max.y==bboxmax.y ? +quoteOffset : -quoteOffset );
         z = max.z;
 
         start=true;
@@ -644,7 +648,7 @@
             //then major quotes
             if(z1 >= min.z){
                 z = z1;
-                z1 = ( start ? startingPoint*majorFactor : (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp)) );
+                z1 = (start ? startingPoint*majorFactor : (zsupp==undefined? z1 - majorFactor : (zsupp==z1?z1-majorFactor:zsupp)) );
                 if(start) start=false;
                 zsupp = undefined;
 
@@ -663,7 +667,7 @@
                     lblParameters.fontWeight = "bold";
                     var sprite = makeTextSprite(
                                                 (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                 lblParameters
                                                );
                     labelsgroup.add( sprite );
@@ -699,7 +703,7 @@
                         lblParameters.fontWeight = "normal";
                         var sprite = makeTextSprite(
                                                     (z<0?(z*-1).toFixed(2):z.toFixed(2)),
-                                                    { 'x' : x + (max.x==bboxmax.x ? +offset*3.0/2.0 : -offset*3.0/2.0), 'y' : y, 'z': z },
+                                                    { 'x' : x + (max.x==bboxmax.x ? +labelOffset : -labelOffset), 'y' : y, 'z': z },
                                                     lblParameters
                                                    );
                         labelsgroup.add( sprite );
@@ -863,7 +867,7 @@
         textMaterial = new THREE.MeshFaceMaterial(materialArray)
         textGeo = new THREE.Mesh(textGeo, textMaterial)
 
-        //MeshSizes dependent value?
+        //MeshSizes dependent value! (0.1 is not always correct)
         textGeo.position.x = max.x + 0.1;
         textGeo.position.y = max.y;
         textGeo.position.z = max.z;
