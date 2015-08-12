@@ -149,11 +149,11 @@
                 break;
 
             case FACE_NORMALS:
-                normals.vertexNormals.visible = false;
+                normalsMesh.vertexNormals.visible = false;
                 break;
 
             case VERTEX_NORMALS:
-                normals.faceNormals.visible = false;
+                normalsMesh.faceNormals.visible = false;
                 break;
         }
 
