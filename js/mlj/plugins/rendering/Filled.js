@@ -6,7 +6,8 @@
         emissive: new THREE.Color('#404040'),
         shininess: 15.0,
         lights: true,
-        shading: THREE.FlatShading       
+        shading: THREE.FlatShading,
+        sides : THREE.DoubleSide
     };
     
     var PHONG = {
@@ -80,7 +81,23 @@
             ],
             bindTo: "lights"
         });
-                
+
+        guiBuilder.Choice({
+            label: "Back Face Culling",
+            tooltip: "Activate/Deactivate Back Face Culling",
+            options: [
+                {content: "Off", value: THREE.DoubleSide, selected: true},
+                {content: "On", value: THREE.FrontSide }
+            ],
+            bindTo: (function() {
+                var bindToFun = function (sideValue, overlay) {
+                    overlay.material.side = sideValue;
+                    scene.render();
+                };
+                bindToFun.toString = function () { return 'sides'; };
+                return bindToFun;
+            }())
+        });
     };
 
     plug._applyTo = function (meshFile, on) {
@@ -105,7 +122,7 @@
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
                 lights: true,
-                side: THREE.DoubleSide
+                side: params.sides
             };
 
             var mat = new THREE.RawShaderMaterial(parameters);
