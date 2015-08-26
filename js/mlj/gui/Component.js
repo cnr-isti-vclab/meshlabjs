@@ -1071,3 +1071,44 @@ MLJ.gui.component.Dialog = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Dialog);
+
+/**         
+ * @class Layer selection component, rendered as a ComboBox menu.
+ * @param {flags} flags
+ * @memberOf MLJ.gui.component
+ */
+MLJ.gui.component.LayerSelection = function(flags) {
+    var _html = "<select></select>";
+    var _this = this;
+
+    $(document).on("SceneLayerAdded", function(event, meshFile) {
+        if (_this.$.find("option").length === 0) {
+            _this.$.selectmenu("enable");
+        }
+        var $option = $("<option />").attr("value", meshFile.name).append(meshFile.name);
+        _this.$.append($option);
+        _this.$.selectmenu("refresh");
+    });
+
+    $(document).on("SceneLayerRemoved", function(event, meshFile) {
+        _this.$.find("option[value=\"" + meshFile.name + "\"]").remove();
+        if (_this.$.find("option").length === 0) {
+            _this.$.selectmenu("disable");
+        }        
+        _this.$.selectmenu("refresh");
+    });
+
+    this._make = function() {
+        _this.$.selectmenu({width: "100%", disabled: true})
+            .selectmenu("menuWidget")
+                .addClass("overflow");
+    };
+
+    this.getSelectedEntry = function() {
+        return _this.$.find(":selected").val();
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.LayerSelection);

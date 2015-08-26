@@ -182,6 +182,13 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         
         return rangedfloat;
     };
+    this.LayerSelection = function(flags) {
+        var layerSelection = new MLJ.gui.Param.LayerSelection(flags);
+        component.appendContent(layerSelection._make());
+        _this.params.set(flags.bindTo, layerSelection);
+        
+        return layerSelection;
+    };
 
     this.setOnParamChange = function (foo) {
         _onChange = foo;
