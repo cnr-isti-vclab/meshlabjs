@@ -5,6 +5,7 @@ using namespace vcg;
 using namespace std;
 
 
+#define NUM_VERTICES_PER_EDGE 2
 #define NUM_VERTICES_PER_FACE 3
 #define NUM_FLOATS_PER_VERTEX 3
 
@@ -93,9 +94,11 @@ uintptr_t buildSelectedPointsCoordsVec(uintptr_t _mIn) {
 uintptr_t buildBoundaryEdgesCoordsVec(uintptr_t _mIn) {
 
 	MyMesh &mIn = *((MyMesh*) _mIn);
-	vector<Point3f> boundaryEdgesPoints, adjacentFacesPoints;
 
 	tri::UpdateFlags<MyMesh>::FaceBorderFromNone(mIn);
+
+	size_t numBoundaryEdges = 0;
+	size_t numAdjacentFaces = 0;
 
 	for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
 
@@ -105,34 +108,71 @@ uintptr_t buildBoundaryEdgesCoordsVec(uintptr_t _mIn) {
 			if(fi->IsB(i))
 			{
 				isB = true;
-
-				boundaryEdgesPoints.push_back(fi->V0(i)->P());
-				boundaryEdgesPoints.push_back(fi->V1(i)->P());
+				++numBoundaryEdges;
 			}
 		}
 
 		if(isB)
 		{
-			adjacentFacesPoints.push_back(fi->V(0)->P());
-			adjacentFacesPoints.push_back(fi->V(1)->P());
-			adjacentFacesPoints.push_back(fi->V(2)->P());
+			++numAdjacentFaces;
         }
 
 	}
 
-	size_t totalSizeInBytes = sizeof(Point3f) * (boundaryEdgesPoints.size() + adjacentFacesPoints.size());
-	size_t numFloats = totalSizeInBytes / sizeof(float);
+	size_t totalSizeInBytes = sizeof(float) * (2 + (numBoundaryEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX) +
+							  (numAdjacentFaces * NUM_VERTICES_PER_FACE * NUM_FLOATS_PER_VERTEX));
 
-	float *startBuffer = (float *)malloc(sizeof(float) * numFloats); // new float[numFloats]
+	float *startBuffer = (float *)malloc(totalSizeInBytes);
 
-	*startBuffer = (float)(boundaryEdgesPoints.size()/2); 	// write number of boundary edges
-	*(startBuffer + 1) = (float)(adjacentFacesPoints.size()/3);	// write number of adjacent faces
+	*startBuffer = (float)(numBoundaryEdges); 	// write number of boundary edges
+	*(startBuffer + 1) = (float)(numAdjacentFaces);	// write number of adjacent faces
 
-	float *coordsEdgesVec = startBuffer + 2;
-	float *coordsFacesVec = coordsEdgesVec + (sizeof(Point3f) / sizeof(float)) * boundaryEdgesPoints.size();
+	float *coordsEdgesVecPtr = startBuffer + 2;
+	float *coordsFacesVecPtr = coordsEdgesVecPtr + (numBoundaryEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX);
 
-	memcpy(coordsEdgesVec, &boundaryEdgesPoints[0], sizeof(Point3f) * boundaryEdgesPoints.size());
-	memcpy(coordsFacesVec, &adjacentFacesPoints[0], sizeof(Point3f) * adjacentFacesPoints.size());
+	for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+
+    		bool isB=false;
+
+    		for(int i=0;i<3;++i) {
+    			if(fi->IsB(i))
+    			{
+    				isB = true;
+
+    				Point3f p0 = fi->V0(i)->P();
+    				Point3f p1 = fi->V1(i)->P();
+
+    				*coordsEdgesVecPtr++ = p0[0];
+    				*coordsEdgesVecPtr++ = p0[1];
+    				*coordsEdgesVecPtr++ = p0[2];
+
+    				*coordsEdgesVecPtr++ = p1[0];
+                    *coordsEdgesVecPtr++ = p1[1];
+                    *coordsEdgesVecPtr++ = p1[2];
+    			}
+    		}
+
+    		if(isB)
+    		{
+    			Point3f p0 = fi->V(0)->P();
+                Point3f p1 = fi->V(1)->P();
+                Point3f p2 = fi->V(2)->P();
+
+    			*coordsFacesVecPtr++ = p0[0];
+                *coordsFacesVecPtr++ = p0[1];
+                *coordsFacesVecPtr++ = p0[2];
+
+                *coordsFacesVecPtr++ = p1[0];
+                *coordsFacesVecPtr++ = p1[1];
+                *coordsFacesVecPtr++ = p1[2];
+
+                *coordsFacesVecPtr++ = p2[0];
+                *coordsFacesVecPtr++ = p2[1];
+                *coordsFacesVecPtr++ = p2[2];
+            }
+
+    }
+
 
 	return (uintptr_t)((void *)startBuffer);
 }

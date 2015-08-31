@@ -2,8 +2,9 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        color : new THREE.Color('#00FF00'),
-        width : 1
+        color : new THREE.Color('#00FF00'), // edges color
+        width : 1,  // edges width
+        faceOpacity : 0.1
     };
 
     var plug = new plugin.Rendering({
@@ -32,7 +33,7 @@
         });
 
         guiBuilder.RangedFloat({
-            label: "Width",
+            label: "Edges Width",
             tooltip: "The width of boundary edges",
             min: 1, max: 5, step: 0.5,
             defval: DEFAULTS.width,
@@ -42,6 +43,21 @@
                     scene.render();
                 };
                 bindToFun.toString = function () { return 'width'; };
+                return bindToFun;
+            }())
+        });
+
+        guiBuilder.RangedFloat({
+            label: "Faces Opacity",
+            tooltip: "The opacity of faces adjacent to boundary edges",
+            min: 0, max: 1, step: 0.01,
+            defval: DEFAULTS.faceOpacity,
+            bindTo: (function() {
+                var bindToFun = function (opacity, overlay) {
+                    overlay.faces.material.opacity = opacity;
+                    scene.render();
+                };
+                bindToFun.toString = function () { return 'faceOpacity'; };
                 return bindToFun;
             }())
         });
@@ -83,6 +99,7 @@
             var facesCoordsPtr = edgesCoordsPtr + numBoundaryEdges * NUM_BYTES_PER_EDGES;
 
             Module.print(numBoundaryEdges + ' boundary edges');
+            Module.print(numFaces + ' adjacent faces');
 
             if (numBoundaryEdges === 0) return null;
 
@@ -98,16 +115,6 @@
 
             boundaryEdgesGeometry.addAttribute('position', new THREE.BufferAttribute( edgesCoordsVec, 3 ) );
 
-            /* with geometry:
-
-                var boundaryEdgesGeometry = new THREE.Geometry();
-
-                 for (var i = 0, numCoords = edgesCoordsVec.length; i != numCoords; i+=3) {
-                    var v0 = new THREE.Vector3( edgesCoordsVec[i+0],  edgesCoordsVec[i+1], edgesCoordsVec[i+2] );
-                    boundaryEdgesGeometry.vertices.push(v0);
-                 }
-            */
-
             var material = new THREE.LineBasicMaterial();
             material.color = params.color;
             material.linewidth = params.width;
@@ -115,30 +122,16 @@
             var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces);
 
             // now create a buffer geometry for the faces
-
             var boundaryFacesGeometry = new THREE.BufferGeometry();
             boundaryFacesGeometry.addAttribute( 'position', new THREE.BufferAttribute( facesCoordsVec, 3 ) );
-
-            /*
-            var boundaryFacesGeometry = new THREE.Geometry();
-
-            for (var i = 0, numCoords = facesCoordsVec.length; i != numCoords; i+=3) {
-                var v0 = new THREE.Vector3( facesCoordsVec[i+0],  facesCoordsVec[i+1], facesCoordsVec[i+2] );
-                boundaryFacesGeometry.vertices.push(v0);
-            }
-            */
 
             var facesMaterial = new THREE.MeshBasicMaterial();
 
             facesMaterial.transparent = true;
             facesMaterial.color = params.color;
-            facesMaterial.opacity = 0.1;
+            facesMaterial.opacity = params.faceOpacity;
             facesMaterial.shading = THREE.FlatShading;
             facesMaterial.side = THREE.DoubleSide;
-
-            //facesMaterial.polygonOffset = true;
-            //facesMaterial.polygonOffsetFactor = -1.0;
-            //facesMaterial.polygonOffsetUnits = -1.0;
 
             // now create the mesh
             var facesMesh = new THREE.Mesh( boundaryFacesGeometry, facesMaterial );
