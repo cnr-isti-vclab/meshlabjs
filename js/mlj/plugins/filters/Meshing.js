@@ -1,6 +1,10 @@
 
 (function (plugin, scene) {
-
+    
+    const USE_BOTH = 0,
+          USE_FACE = 1,
+          USE_VERT = 2;
+          
     var QuadricSimpFilter = new plugin.Filter({
         name: "Quadric Simplification",
         tooltip: "Simplify (decimate) a mesh according to a edge collapse strategy driven by a quadric based error evaluation strategy.",
@@ -76,12 +80,104 @@
         Module.ErodeSelection(meshFile.ptrMesh());
         scene.updateLayer(meshFile);
     };
+    
+    var SelectionAllFilter = new plugin.Filter({
+        name: "Selection All",
+        tooltip: "Select all the element of the mesh. Can works on faces, vertex or both.",
+        arity: 1
+    });
+    var SelectionAllWidget;
+    
+    SelectionAllFilter._init = function (builder) { 
+    SelectionAllWidget = builder.Choice({
+            label: "Element",
+            tooltip: "Select to what element the filter should be applied",
+            options: [
+                {content: "Both", value: USE_BOTH, selected: true},
+                {content: "Face", value: USE_FACE},
+                {content: "Vert", value: USE_VERT}
+            ]
+        });
+    };
 
+    SelectionAllFilter._applyTo = function (meshFile) {
+        var vertFlag,faceFlag;
+        switch(SelectionAllWidget.getValue()) {
+            case USE_BOTH: vertFlag = true;  faceFlag = true; break;
+            case USE_FACE: vertFlag = false; faceFlag = false; break;
+            case USE_VERT: vertFlag = true;  faceFlag = false; break;
+        }
+        Module.SelectionAll(meshFile.ptrMesh(),vertFlag,faceFlag);
+        scene.updateLayer(meshFile);
+    };
+    
+    var SelectionNoneFilter = new plugin.Filter({
+        name: "Selection None",
+        tooltip: "Clear current selection.",
+        arity: 1
+    });
+    var SelectionNoneWidget;
+    SelectionNoneFilter._init = function (builder) {  
+    SelectionNoneWidget = builder.Choice({
+            label: "Element",
+            tooltip: "Select to what element the filter should be applied",
+            options: [
+                {content: "Both", value: USE_BOTH, selected: true},
+                {content: "Face", value: USE_FACE},
+                {content: "Vert", value: USE_VERT}
+            ]
+        });
+    };
+
+    SelectionNoneFilter._applyTo = function (meshFile) {
+        var vertFlag,faceFlag;
+        switch(SelectionAllWidget.getValue()) {
+            case USE_BOTH: vertFlag = true;  faceFlag = true; break;
+            case USE_FACE: vertFlag = false; faceFlag = false; break;
+            case USE_VERT: vertFlag = true;  faceFlag = false; break;
+        }
+        Module.SelectionNone(meshFile.ptrMesh(),vertFlag,faceFlag);
+        scene.updateLayer(meshFile);
+    };
+    
+    var SelectionInvertFilter = new plugin.Filter({
+        name: "Selection Invert",
+        tooltip: "Invert the current selection",
+        arity: 1
+    });
+
+    var SelectionInvertWidget;
+    SelectionInvertFilter._init = function (builder) { 
+    SelectionInvertWidget = builder.Choice({
+            label: "Element",
+            tooltip: "Select to what element the filter should be applied",
+            options: [
+                {content: "Both", value: USE_BOTH, selected: true},
+                {content: "Face", value: USE_FACE},
+                {content: "Vert", value: USE_VERT}
+            ]
+        });
+    };
+
+    SelectionInvertFilter._applyTo = function (meshFile) {
+        var vertFlag,faceFlag;
+        switch(SelectionAllWidget.getValue()) {
+            case USE_BOTH: vertFlag = true;  faceFlag = true; break;
+            case USE_FACE: vertFlag = false; faceFlag = false; break;
+            case USE_VERT: vertFlag = true;  faceFlag = false; break;
+        }
+        Module.SelectionInvert(meshFile.ptrMesh(),vertFlag,faceFlag);
+        scene.updateLayer(meshFile);
+    };
+    
     
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
     plugin.Manager.install(SelectionDilateFilter);
     plugin.Manager.install(SelectionErodeFilter);
+    plugin.Manager.install(SelectionAllFilter);
+    plugin.Manager.install(SelectionNoneFilter);
+    plugin.Manager.install(SelectionInvertFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);
