@@ -29,16 +29,26 @@
 
 /**         
  * @class Creates a new filter
+ * @description
+ * This class provides the basic method for adding new processing functionalities
+ * to meshlabjs. The main idea is that a filter is a kind of blackbox processing 
+ * function that take in input meshes (eventually none) parameters and give back 
+ * processed meshes. When you add a filter to meshlab it will end up in the filter 
+ * list tab.
+ * You have to redefine three functions:
+ *  * the constructor
+ *  * the {@link _init} where you define the parameters  
+ *  * the {@link _applyTo} where you define the behaviour of the function 
  * @param {Object} parameters The object contains the initialization parameters 
  * to create filter plugin<br>
- * <code> paramters = {<br>
- * &nbsp name: //the name of filter<br> 
- * &nbsp tooltip: //the filter description shown if mouse pointer is 
+ * <code> parameters = {<br>
+ * &nbsp; name: //the name of filter<br> 
+ * &nbsp; tooltip: //the filter description shown if mouse pointer is 
  * over its name<br>
- * &nbsp arity: //An integer:<br>
- * &nbsp&nbsp&nbsp&nbsp //0 for a creation filter<br>
- * &nbsp&nbsp&nbsp&nbsp //1 for a generic filter <br>
- * &nbsp&nbsp&nbsp&nbsp //>1 if the filter doesn't use the current mesh but 
+ * &nbsp; arity: //An integer:<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //0 for a creation filter<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //1 for a generic filter <br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //>1 if the filter doesn't use the current mesh but 
  * defines its own meshes<br>
  * }
  * </code>
