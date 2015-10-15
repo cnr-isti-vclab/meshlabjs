@@ -95,7 +95,6 @@
         const NUM_VERTICES_PER_FACE = 3;
         const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
 
-        debugger;
 
         var positionPtr = Module.buildAttributesVecForWireframeRendering(meshFile.ptrMesh());
         meshFile.attributesVecPtr = positionPtr;
