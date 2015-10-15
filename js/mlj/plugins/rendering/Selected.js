@@ -20,7 +20,7 @@
         tooltip: "Show Selected Face and vertices",
         icon: "img/icons/selected.png",
         toggle: true,
-        on: false,
+        on: true,
         loadShader: ["PointsFragment.glsl", "PointsVertex.glsl"]
     }, DEFAULTS);
 
