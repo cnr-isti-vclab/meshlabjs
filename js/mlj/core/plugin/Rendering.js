@@ -57,7 +57,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     //Shows the options pane of this rendering feature
     function _showOptionsPane() {
         
-        btn.setArrowSelected(true);
+        if (btn instanceof MLJ.gui.component.CustomToggleButton) {
+            btn.setArrowSelected(true);
+        }
             
         var items = group.getItems();
         var item;
