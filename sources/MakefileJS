@@ -1,7 +1,7 @@
 CC=emcc
 CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -O3  --bind -s DEMANGLE_SUPPORT=1
 
-OBJ = Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Random.bc ../../vcglib/wrap/ply/plylib.bc
+OBJ = Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Selection.bc ../../vcglib/wrap/ply/plylib.bc
 
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)

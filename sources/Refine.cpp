@@ -48,10 +48,5 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(MLRefinePlugin) {
   emscripten::function("RefineMesh", &RefineMesh);
-  emscripten::function("SelectionErode", &SelectionErode);
-  emscripten::function("SelectionDilate", &SelectionDilate);
-  emscripten::function("SelectionInvert", &SelectionInvert);
-  emscripten::function("SelectionAll",  &SelectionAll);
-  emscripten::function("SelectionNone", &SelectionNone);
 }
 #endif

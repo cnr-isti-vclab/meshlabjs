@@ -79,5 +79,10 @@ void SelectionNone(uintptr_t _baseM, bool vertFlag, bool faceFlag)
 EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("RandomDisplacement", &RandomDisplacement);
     emscripten::function("RandomSelection", &RandomSelection);
+    emscripten::function("SelectionErode", &SelectionErode);
+    emscripten::function("SelectionDilate", &SelectionDilate);
+    emscripten::function("SelectionInvert", &SelectionInvert);
+    emscripten::function("SelectionAll",  &SelectionAll);
+    emscripten::function("SelectionNone", &SelectionNone);
 }
 #endif
