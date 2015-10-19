@@ -368,3 +368,15 @@ html,body{
 .colpick {
     z-index: 999;
 }
+
+/* Histogram labels ______________________________________________________________ */
+.mlj-hist-label {    
+    /*overflow: auto;*/
+    padding: 4px;    
+    background-color: rgba(0,0,0,0.5);    
+    color: white;
+    font-size: 65%;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 4px;
+}

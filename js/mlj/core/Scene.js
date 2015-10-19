@@ -76,6 +76,9 @@ MLJ.core.Scene = {};
     var _group;
     
     var  _camera;
+
+    var _scene2D;
+    var _camera2D;
     
     /// @type {Object}
     var _renderer;
@@ -121,6 +124,10 @@ MLJ.core.Scene = {};
         _camera.position.z = 15;
         _group = new THREE.Object3D();
         _scene.add(_group);
+
+        _scene2D = new THREE.Scene();
+        _camera2D = new THREE.OrthographicCamera(0 , _3DSize.width / _3DSize.height, 1, 0, -1, 1);
+        _camera2D.position.z = -1;
 
         _renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
@@ -175,6 +182,9 @@ MLJ.core.Scene = {};
             _camera.updateProjectionMatrix();
             _renderer.setSize(size.width, size.height);
 
+            _camera2D.left = size.width / size.height;
+            _camera2D.updateProjectionMatrix;
+
             MLJ.core.Scene.render();
         });
 
@@ -192,7 +202,15 @@ MLJ.core.Scene = {};
                     var iter = oldMesh.overlays.iterator();
                         
                     while(iter.hasNext()) {
-                        _group.remove(iter.next());
+                        var overlay = iter.next();
+                        _group.remove(overlay);
+                        _scene2D.remove(overlay);
+                    }
+
+                    if (oldMesh.histogram !== undefined) {
+                        $(window).off("resize", oldMesh.histogram.listener);
+                        oldMesh.histogram.$tl.remove();
+                        oldMesh.histogram.$bl.remove();
                     }
                                                                                 
                     oldMesh.dispose();      
@@ -297,6 +315,17 @@ MLJ.core.Scene = {};
         while(iter.hasNext()) {
             iter.next().visible = visible;
         }
+
+        // if histogram overlay is defined show/hide labels
+        if (layer.histogram !== undefined) {
+            if (visible) {
+                layer.histogram.$tl.show();
+                layer.histogram.$bl.show();
+            } else {
+                layer.histogram.$tl.hide();
+                layer.histogram.$bl.hide();
+            }
+        }
         
         MLJ.core.Scene.render();
     };
@@ -343,7 +372,7 @@ MLJ.core.Scene = {};
         _this.render();
     };       
     
-    this.addOverlayLayer = function(meshFile, name, mesh) {
+    this.addOverlayLayer = function(meshFile, name, mesh, useOrthographicProjection) {
         if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
@@ -351,7 +380,11 @@ MLJ.core.Scene = {};
         
         meshFile.overlays.set(name,mesh);
         mesh.visible = meshFile.getThreeMesh().visible;
-        _group.add(mesh);
+        if (useOrthographicProjection === true) {
+            _scene2D.add(mesh);
+        } else {
+            _group.add(mesh);
+        }
 
         //render the scene
         _this.render();
@@ -364,6 +397,7 @@ MLJ.core.Scene = {};
             mesh = meshFile.overlays.remove(name);            
             
             _group.remove(mesh);                        
+            _scene2D.remove(mesh);                        
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh.geometry = null;
@@ -452,7 +486,15 @@ MLJ.core.Scene = {};
             var iter = meshFile.overlays.iterator();
                         
             while(iter.hasNext()) {
-                _group.remove(iter.next());
+                var overlay = iter.next();
+                _group.remove(overlay);
+                _scene2D.remove(overlay);
+            }
+
+            if (meshFile.histogram !== undefined) {
+                $(window).off("resize", meshFile.histogram.listener);
+                meshFile.histogram.$tl.remove();
+                meshFile.histogram.$bl.remove();
             }
                                                 
             $(document).trigger("SceneLayerRemoved", [meshFile]);
@@ -490,6 +532,9 @@ MLJ.core.Scene = {};
         return _layers;
     };
 
+    this.get3DSize = function() { return get3DSize(); };
+    this.getRenderer = function() { return _renderer; };
+
     /**
      * Renders the scene
      * @memberOf MLJ.core.Scene
@@ -497,6 +542,9 @@ MLJ.core.Scene = {};
      */
     this.render = function () {
         _renderer.render(_scene, _camera);
+        _renderer.autoClear = false;
+        _renderer.render(_scene2D, _camera2D);
+        _renderer.autoClear = true;
     };
     
     this.takeSnapshot = function() {
