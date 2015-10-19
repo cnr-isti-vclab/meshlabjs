@@ -7,7 +7,8 @@
         shininess: 15.0,
         lights: true,
         shading: THREE.FlatShading,
-        sides : THREE.DoubleSide
+        sides : THREE.DoubleSide,
+        meshColorMapping: ColorMapping.Uniform
     };
     
     var PHONG = {
@@ -20,7 +21,8 @@
                 "emissive": {type: "c", value: DEFAULTS.emissive},
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
-                "lights": {type: "i", value: DEFAULTS.lights}
+                "lights": {type: "i", value: DEFAULTS.lights},
+                "meshColorMapping": {type: "i", value: DEFAULTS.meshColorMapping}
             }
 
         ])        
@@ -116,13 +118,15 @@
             uniforms.lights.value = params.lights;
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
+            uniforms.meshColorMapping.value = colorParams.meshColorMapping;
 
             var parameters = {
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
                 lights: true,
-                side: params.sides
+                side: params.sides,
+                vertexColors: colorParams.colorMode
             };
 
             var mat = new THREE.RawShaderMaterial(parameters);

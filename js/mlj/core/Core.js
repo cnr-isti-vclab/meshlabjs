@@ -76,8 +76,9 @@ MLJ.core = {
  */
 MLJ.core.AmbientLight = function (scene, camera, renderer) {
 
-    var _on = false;
-    var _light = new THREE.AmbientLight("#ffffff");
+    var _on = true;
+    //var _light = new THREE.AmbientLight("#ffffff");
+    var _light = new THREE.AmbientLight("#404040");
     
     /**
      * Returns <code>true</code> if this ambient light is on

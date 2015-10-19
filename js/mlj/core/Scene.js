@@ -153,7 +153,7 @@ MLJ.core.Scene = {};
         });
         
         //INIT LIGHTS 
-//        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS

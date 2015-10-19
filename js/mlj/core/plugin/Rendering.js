@@ -138,8 +138,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
-                    //Check if the renderinfg fetaure is on by default
-                    if (btn.isOn() === parameters.on) {
+                    //Check if the rendering fetaure is on by default
+                    if (parameters.on) {
+                        btn.toggle("on");
                         _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
                         update();
@@ -246,6 +247,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 //check if overlay has this uniform defined
                 if (overlay.material.uniforms[paramProp] !== undefined) {
                     overlay.material.uniforms[paramProp].value = value;
+                } else if (jQuery.isFunction(paramProp)) {
+                    paramProp(value, overlay, params);
                 }
             }
 

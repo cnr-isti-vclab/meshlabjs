@@ -31,8 +31,8 @@ class CppMesh
     return ret;
   }
 
-  int VN() { return m.VN();}
-  int FN() { return m.FN();}
+  int VN() { return m.VN(); }
+  int FN() { return m.FN(); }
 
   uintptr_t getMeshPtr(){
     return (uintptr_t)((void*)(&m)) ;
@@ -66,18 +66,41 @@ class CppMesh
     return (uintptr_t)f;
   }
 
+  inline uintptr_t getVertexColorVector() {
+    uint8_t *c = new uint8_t[m.VN()*4];
+    int k = 0;
+    for (int i = 0; i < m.VN(); ++i) {
+      for (int j = 0; j < 4; ++j) {
+        c[k++] = m.vert[i].cC()[j];
+      }
+    }
+    return (uintptr_t) c;
+  }
 
+  inline uintptr_t getFaceColorVector() {
+    uint8_t *c = new uint8_t[m.FN()*4];
+    int k = 0;
+    for (int i = 0; i < m.FN(); ++i) {
+      for (int j = 0; j < 4; ++j) {
+        c[k++] = m.face[i].cC()[j];
+      }
+    }
+    return (uintptr_t) c;
+  }
+  
 };
 
 //Binding code
 EMSCRIPTEN_BINDINGS(CppMesh) {
   class_<CppMesh>("CppMesh")
     .constructor<>()
-    .function("openMesh",        &CppMesh::openMesh)
-    .function("getMeshPtr",      &CppMesh::getMeshPtr)
-    .function("getMatrixPtr",    &CppMesh::getMatrixPtr)
-    .function("getVertexVector", &CppMesh::getVertexVector)
-    .function("getFaceVector",   &CppMesh::getFaceVector)
+    .function("openMesh",             &CppMesh::openMesh)
+    .function("getMeshPtr",           &CppMesh::getMeshPtr)
+    .function("getMatrixPtr",         &CppMesh::getMatrixPtr)
+    .function("getVertexVector",      &CppMesh::getVertexVector)
+    .function("getVertexColorVector", &CppMesh::getVertexColorVector)
+    .function("getFaceVector",        &CppMesh::getFaceVector)
+    .function("getFaceColorVector",   &CppMesh::getFaceColorVector)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;

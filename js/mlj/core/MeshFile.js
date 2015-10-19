@@ -73,6 +73,9 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.FN = cppMesh.FN();
         _this.face = cppMesh.getFaceVector();
 
+        var vertexColors = cppMesh.getVertexColorVector();
+        var faceColors = cppMesh.getFaceColorVector();
+
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
             var v1 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
@@ -82,17 +85,49 @@ MLJ.core.MeshFile = function (name, cppMesh) {
             var v3 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
             geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
         }
-        for (var i = 0; i < _this.FN * 3; i++) {
+
+        // helper function to get the correct numerical value of unsigned chars
+        // that are read from the memory pool
+        var _as_uchar = function (v) { return v >= 0 ? v : (256+v); }
+
+        for (var i = 0, k = 0; i < _this.FN * 3; i++, k++) {
             var a = Module.getValue(_this.face + parseInt(i * 4), '*');
             i++;
             var b = Module.getValue(_this.face + parseInt(i * 4), '*');
             i++;
             var c = Module.getValue(_this.face + parseInt(i * 4), '*');
-            geometry.faces.push(new THREE.Face3(a, b, c));
+
+            var face = new THREE.Face3(a, b, c);
+
+            var rFace = _as_uchar(Module.getValue(faceColors + (k*4), 'i8') );
+            var gFace = _as_uchar(Module.getValue(faceColors + (k*4) + 1, 'i8') );
+            var bFace = _as_uchar(Module.getValue(faceColors + (k*4) + 2, 'i8') );
+
+            face.color = new THREE.Color(rFace/255.0, gFace/255.0, bFace/255.0);
+
+            var rVert1 = _as_uchar(Module.getValue(vertexColors + (a*4), 'i8') );
+            var gVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 1, 'i8') );
+            var bVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 2, 'i8') );
+
+            var rVert2 = _as_uchar(Module.getValue(vertexColors + (b*4), 'i8') );
+            var gVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 1, 'i8') );
+            var bVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 2, 'i8') );
+
+            var rVert3 = _as_uchar(Module.getValue(vertexColors + (c*4), 'i8') );
+            var gVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 1, 'i8') );
+            var bVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 2, 'i8') );
+
+            face.vertexColors[0] = new THREE.Color(rVert1/255.0, gVert1/255.0, bVert1/255.0);
+            face.vertexColors[1] = new THREE.Color(rVert2/255.0, gVert2/255.0, bVert2/255.0);
+            face.vertexColors[2] = new THREE.Color(rVert3/255.0, gVert3/255.0, bVert3/255.0);
+
+            geometry.faces.push(face);
         }
 
-        geometry.dynamic = true;
+        Module._free(vertexColors);
+        Module._free(faceColors);
 
+        geometry.dynamic = true;
         return geometry;
     }
     
