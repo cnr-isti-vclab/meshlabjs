@@ -7,6 +7,7 @@
 #include <vcg/complex/algorithms/update/topology.h>
 #include <vcg/complex/algorithms/update/normal.h>
 #include <vcg/complex/algorithms/clean.h>
+#include <vcg/complex/algorithms/create/platonic.h>
 
 class MyVertex; class MyEdge; class MyFace;
 struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,

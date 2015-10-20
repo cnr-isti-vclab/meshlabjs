@@ -3,22 +3,7 @@
 using namespace vcg;
 using namespace std;
 
-void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalDirected)
-{
-    MyMesh &m = *((MyMesh*) _m);
-    math::MarsenneTwisterRNG rnd;
-    tri::UpdateNormal<MyMesh>::NormalizePerVertex(m);
-    rnd.initialize(time(NULL));
-    for(unsigned int i = 0; i< m.vert.size(); i++){
-      if(normalDirected)
-        m.vert[i].P() +=  m.vert[i].N()* rnd.generateRange(-1.0f,1.0f)*max_displacement;
-        else
-        m.vert[i].P() +=  math::GeneratePointInUnitBallUniform<float,math::MarsenneTwisterRNG>(rnd)*max_displacement;
-    }
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
-}
-
-void RandomSelection(uintptr_t _m, float vertprob, float faceprob)
+void SelectionRandom(uintptr_t _m, float vertprob, float faceprob)
 {
     MyMesh &m = *((MyMesh*) _m);
     math::MarsenneTwisterRNG rnd;
@@ -73,12 +58,15 @@ void SelectionNone(uintptr_t _baseM, bool vertFlag, bool faceFlag)
   if(faceFlag) tri::UpdateSelection<MyMesh>::FaceClear(m);
 }
 
+void SelectionPluginTEST()
+{
+
+}
 
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
-    emscripten::function("RandomDisplacement", &RandomDisplacement);
-    emscripten::function("RandomSelection", &RandomSelection);
+    emscripten::function("SelectionRandom", &RandomSelection);
     emscripten::function("SelectionErode", &SelectionErode);
     emscripten::function("SelectionDilate", &SelectionDilate);
     emscripten::function("SelectionInvert", &SelectionInvert);

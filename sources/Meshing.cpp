@@ -1,7 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 #include <vcg/complex/algorithms/clustering.h>
-#include <vcg/complex/algorithms/create/platonic.h>
+
 
 using namespace vcg;
 using namespace std;

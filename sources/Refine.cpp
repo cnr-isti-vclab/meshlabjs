@@ -41,7 +41,18 @@ void RefineMesh(uintptr_t _baseM, int step, int alg)
   printf("Refined mesh %i vert - %i face \n",m.VN(),m.FN());
 }
 
-
+void RefinePluginTEST()
+{
+  for(int i=0;i<3;++i)
+    for(int j=1;j<4;++j)
+    {
+      MyMesh m;
+      tri::Icosahedron(m);
+      int fn = m.fn;
+      RefineMesh(uintptr_t(&m),j,i);
+      assert(m.fn == fn * pow(4,j));
+    }
+}
 
 #ifdef __EMSCRIPTEN__
 //Binding code

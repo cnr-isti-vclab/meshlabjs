@@ -1,7 +1,4 @@
 #include "mesh_def.h"
-
-#include <vcg/complex/algorithms/update/bounding.h>
-#include <vcg/complex/algorithms/update/topology.h>
 #include <vcg/complex/algorithms/inertia.h>
 #include <vcg/complex/algorithms/stat.h>
 
@@ -23,10 +20,10 @@ void ComputeGeometricMeasures(uintptr_t meshPtr)
     float area = tri::Stat<MyMesh>::ComputeMeshArea(m);
     printf("Mesh volume %f\n", volume);
     printf("Mesh surface is %f\n", area);
-    
+
     Point3f bc = tri::Stat<MyMesh>::ComputeShellBarycenter(m);
     printf("Thin shell barycenter %9.6f  %9.6f  %9.6f\n", bc[0], bc[1], bc[2]);
-    
+
     if (volume <= 0) {
         printf("Mesh is not 'solid', no information on barycenter and inertia tensor\n");
     } else {
@@ -47,7 +44,7 @@ void ComputeGeometricMeasures(uintptr_t meshPtr)
         printf("  | %9.6f  %9.6f  %9.6f |\n", pca[2][0], pca[2][1], pca[2][2]);
 
         printf("Axes momenta are :\n");
-        printf("  | %9.6f  %9.6f  %9.6f |\n", pcav[0], pcav[1], pcav[2]); 
+        printf("  | %9.6f  %9.6f  %9.6f |\n", pcav[0], pcav[1], pcav[2]);
     }
 }
 
