@@ -75,9 +75,15 @@
 
             //Add mesh info to info widget
             this.append(mesh.name);
-            this.append(mesh.VN+" V" );
-            this.append(mesh.FN+" F" );
-        };
+            var vertString = "V: " + mesh.VN;
+            if(mesh.cppMesh.hasPerVertexColor()) vertString +=(" VC");
+            var faceString = "F: " + mesh.FN;
+            if(mesh.cppMesh.hasPerFaceColor()) vertString +=(" FC");
+        
+            this.append(vertString);
+            this.append(faceString);
+        }
+            
         /**
          * Appends text to the Info area
          * @param {String} text The text to append
