@@ -64,7 +64,7 @@
     SelectionDilateFilter._init = function (builder) {  };
 
     SelectionDilateFilter._applyTo = function (meshFile) {
-        Module.DilateSelection(meshFile.ptrMesh());
+        Module.SelectionDilate(meshFile.ptrMesh());
         scene.updateLayer(meshFile);
     };
     
@@ -77,7 +77,7 @@
     SelectionErodeFilter._init = function (builder) {  };
 
     SelectionErodeFilter._applyTo = function (meshFile) {
-        Module.ErodeSelection(meshFile.ptrMesh());
+        Module.SelectionErode(meshFile.ptrMesh());
         scene.updateLayer(meshFile);
     };
     
