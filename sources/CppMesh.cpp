@@ -13,8 +13,19 @@ class CppMesh
   public:
     MyMesh m;
     Matrix44f tr;
-  int openMesh(string fileName) {
     int loadmask;
+
+    CppMesh()
+    {
+      loadmask =0;
+      tr.SetIdentity();
+    }
+
+    bool hasPerVertexColor() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
+
+    bool hasPerFaceColor() const { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
+
+    int openMesh(string fileName) {
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
     if(ret!=0) {
         if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
@@ -87,7 +98,7 @@ class CppMesh
     }
     return (uintptr_t) c;
   }
-  
+
 };
 
 //Binding code
@@ -101,6 +112,8 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getVertexColorVector", &CppMesh::getVertexColorVector)
     .function("getFaceVector",        &CppMesh::getFaceVector)
     .function("getFaceColorVector",   &CppMesh::getFaceColorVector)
+    .function("hasPerVertexColor",    &CppMesh::hasPerVertexColor)
+    .function("hasPerFaceColor",      &CppMesh::hasPerFaceColor)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;
