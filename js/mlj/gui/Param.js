@@ -290,7 +290,15 @@ MLJ.gui.Param.LayerSelection = function (flags) {
         return MLJ.core.Scene.getLayerByName(this.selector.getSelectedEntry());
     };
 
-    MLJ.gui.Param.call(this);
-};
+    /**
+         * Returns a pointer to the cppMesh corresponding to the layer currently selected from the widget.
+         * Useful to pass this value in plugins when calling the module cpp functions.
+         * @returns {Module.CppMesh}    
+         */
+        this.getSelectedPtrMesh = function() {
+            return MLJ.core.Scene.getLayerByName(this.selector.getSelectedEntry()).ptrMesh();
+        };
+        MLJ.gui.Param.call(this);
+    };
 
 MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.LayerSelection);
