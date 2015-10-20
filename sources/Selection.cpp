@@ -66,11 +66,11 @@ void SelectionPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
-    emscripten::function("SelectionRandom", &RandomSelection);
-    emscripten::function("SelectionErode", &SelectionErode);
+    emscripten::function("SelectionRandom", &SelectionRandom);
+    emscripten::function("SelectionErode",  &SelectionErode);
     emscripten::function("SelectionDilate", &SelectionDilate);
     emscripten::function("SelectionInvert", &SelectionInvert);
-    emscripten::function("SelectionAll",  &SelectionAll);
-    emscripten::function("SelectionNone", &SelectionNone);
+    emscripten::function("SelectionAll",    &SelectionAll);
+    emscripten::function("SelectionNone",   &SelectionNone);
 }
 #endif
