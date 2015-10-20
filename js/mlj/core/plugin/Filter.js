@@ -166,7 +166,7 @@ MLJ.core.plugin.Filter = function (parameters) {
                     }
                 }
                 var t1 = performance.now();
-                MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
+                MLJ.widget.Log.append(name + " execution time " + Math.round(t1 - t0) + " ms");
             });
         }
 
