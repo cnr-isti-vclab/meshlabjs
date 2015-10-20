@@ -2,6 +2,7 @@
 #define FILTERTEST_H
 void CreatePluginTEST();
 void MeshingPluginTEST();
+void MeasurePluginTEST();
 void RefinePluginTEST();
 void SamplingPluginTEST();
 void SelectionPluginTEST();

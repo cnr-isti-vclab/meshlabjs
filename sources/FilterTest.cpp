@@ -18,6 +18,7 @@ int main(int /*argc*/, char*/*argv*/[])
 {
   CreatePluginTEST();
   MeshingPluginTEST();
+  MeasurePluginTEST();
   RefinePluginTEST();
   SamplingPluginTEST();
   SelectionPluginTEST();

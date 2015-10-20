@@ -1,6 +1,8 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/inertia.h>
 #include <vcg/complex/algorithms/stat.h>
+#include <vcg/complex/algorithms/point_sampling.h>
+
 
 using namespace vcg;
 using namespace std;
@@ -93,9 +95,41 @@ void ComputeTopologicalMeasures(uintptr_t meshPtr)
     }
 }
 
+void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, int sampleNum, float distUpperBound)
+{
+  MyMesh &src = *((MyMesh*) srcPtr);
+  MyMesh &trg = *((MyMesh*) trgPtr);
+
+  HausdorffSampler<MyMesh> hs(&trg);
+  hs.dist_upper_bound = distUpperBound;
+  printf("Sampled  mesh has %7i vert %7i face\n",src.vn,src.fn);
+  printf("Searched mesh has %7i vert %7i face\n",trg.vn,trg.fn);
+  printf("Max sampling distance %f on a bbox diag of %f\n",distUpperBound,trg.bbox.Diag());
+
+  tri::SurfaceSampling<MyMesh,HausdorffSampler<MyMesh> >::VertexUniform(src,hs,sampleNum);
+  tri::SurfaceSampling<MyMesh,HausdorffSampler<MyMesh> >::Montecarlo(src,hs,sampleNum);
+
+  printf("Hausdorff Distance computed\n");
+  printf("     Sampled %i pts (rng: 0)  on %s searched closest on %s \n",hs.n_total_samples,src.label.c_str(),trg.label.c_str());
+  printf("     min : %f   max %f   mean : %f   RMS : %f \n",hs.getMinDist(),hs.getMaxDist(),hs.getMeanDist(),hs.getRMSDist());
+  float d = src.bbox.Diag();
+  printf("Values w.r.t. BBox Diag (%f)\n",d);
+  printf("     min : %f   max %f   mean : %f   RMS : %f\n",hs.getMinDist()/d,hs.getMaxDist()/d,hs.getMeanDist()/d,hs.getRMSDist()/d);
+}
+
+void MeasurePluginTEST()
+{
+  MyMesh m0,m1;
+  tri::Sphere(m0,3);
+  tri::Sphere(m1,4);
+
+  ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),1000,0.1);
+}
+
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(MLMeasurePlugin) {
-    emscripten::function("ComputeGeometricMeasures", &ComputeGeometricMeasures);
+    emscripten::function("ComputeGeometricMeasures",   &ComputeGeometricMeasures);
     emscripten::function("ComputeTopologicalMeasures", &ComputeTopologicalMeasures);
+    emscripten::function("ComputeHausdorffDistance",   &ComputeHausdorffDistance);
 }
 #endif
