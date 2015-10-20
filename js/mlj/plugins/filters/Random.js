@@ -58,7 +58,7 @@
     };
 
     RndSelectionFilter._applyTo = function (meshFile) {
-        Module.RandomSelection(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
+        Module.SelectionRandom(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
         scene.updateLayer(meshFile);
     };
 
