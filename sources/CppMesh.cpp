@@ -12,13 +12,15 @@ class CppMesh
 {
   public:
     MyMesh m;
-    Matrix44f tr;
     int loadmask;
-
     CppMesh()
     {
       loadmask =0;
-      tr.SetIdentity();
+      m.tr.SetIdentity();
+    }
+    void setLabel(string label)
+    {
+      m.label = label;
     }
 
     bool hasPerVertexColor() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
@@ -26,6 +28,7 @@ class CppMesh
     bool hasPerFaceColor() const { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
 
     int openMesh(string fileName) {
+    m.label=fileName;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
     if(ret!=0) {
         if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
@@ -51,7 +54,7 @@ class CppMesh
 
   uintptr_t getMatrixPtr()
   {
-    return (uintptr_t)((void*)(&tr));
+    return (uintptr_t)((void*)(&m.tr));
   }
 
   inline uintptr_t getVertexVector() {
@@ -106,6 +109,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
   class_<CppMesh>("CppMesh")
     .constructor<>()
     .function("openMesh",             &CppMesh::openMesh)
+    .function("setLabel",             &CppMesh::setLabel)
     .function("getMeshPtr",           &CppMesh::getMeshPtr)
     .function("getMatrixPtr",         &CppMesh::getMatrixPtr)
     .function("getVertexVector",      &CppMesh::getVertexVector)

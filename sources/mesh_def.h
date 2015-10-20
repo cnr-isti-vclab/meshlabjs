@@ -18,10 +18,14 @@ class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f, vcg::ve
                                                    vcg::vertex::Qualityf, vcg::vertex::VFAdj,   vcg::vertex::Mark,
                                                    vcg::vertex::BitFlags > {};
 class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj,     vcg::face::VFAdj, vcg::face::Color4b,
-                                                   vcg::face::Normal3f,  vcg::face::VertexRef,
+                                                   vcg::face::Normal3f,  vcg::face::VertexRef, vcg::face::Mark,
                                                    vcg::face::BitFlags > {};
 class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
 
-class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {};
+class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {
+public:
+  vcg::Matrix44f tr;
+  std::string label;
+};
 
 bool IsWaterTight(MyMesh &m);
