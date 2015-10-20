@@ -45,7 +45,7 @@
 MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
     this.cppMesh = cppMesh;
-    this.VN = this.vert = this.FN = this.face = this.threeMesh = null;
+    this.VN = this.FN = this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
     //is updated by MLJ.core.Scene and contains overlaying mesh
     this.overlays = new MLJ.util.AssociativeArray();
@@ -67,22 +67,30 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         
     }
     
+    /* buildMeshGeometry
+     * 
+     * Build the threejs geometry corresponding to the current vcg::trimesh
+     * Called by init after the loading and by update after each filter run
+     * This function get vectors of coords from cpp and use them to build the 
+     * threejs 
+     */
+    
     function buildMeshGeometry() {
         _this.VN = cppMesh.VN();
-        _this.vert = cppMesh.getVertexVector();
+        var vertexCoord = cppMesh.getVertexVector();
         _this.FN = cppMesh.FN();
-        _this.face = cppMesh.getFaceVector();
+        var faceIndexVec = cppMesh.getFaceVector();
 
         var vertexColors = cppMesh.getVertexColorVector();
         var faceColors = cppMesh.getFaceColorVector();
 
         var geometry = new THREE.Geometry();
         for (var i = 0; i < _this.VN * 3; i++) {
-            var v1 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
+            var v1 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
             i++;
-            var v2 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
+            var v2 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
             i++;
-            var v3 = Module.getValue(_this.vert + parseInt(i * 4), 'float');
+            var v3 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
             geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
         }
 
@@ -91,11 +99,11 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         var _as_uchar = function (v) { return v >= 0 ? v : (256+v); }
 
         for (var i = 0, k = 0; i < _this.FN * 3; i++, k++) {
-            var a = Module.getValue(_this.face + parseInt(i * 4), '*');
+            var a = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
             i++;
-            var b = Module.getValue(_this.face + parseInt(i * 4), '*');
+            var b = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
             i++;
-            var c = Module.getValue(_this.face + parseInt(i * 4), '*');
+            var c = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
 
             var face = new THREE.Face3(a, b, c);
 
@@ -126,6 +134,8 @@ MLJ.core.MeshFile = function (name, cppMesh) {
 
         Module._free(vertexColors);
         Module._free(faceColors);
+        Module._free(vertexCoord);
+        Module._free(faceIndexVec);
 
         geometry.dynamic = true;
         return geometry;
@@ -212,8 +222,8 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         
         _this.cppMesh.delete();
         
-        _this.name = _this.VN = _this.vert = _this.FN =
-        _this.face = _this.threeMesh = _this.properties = _this.overlays = 
+        _this.name = _this.VN = _this.FN =
+        _this.threeMesh = _this.properties = _this.overlays = 
         _this.overlaysParams =  _this = null;       
     };
     
