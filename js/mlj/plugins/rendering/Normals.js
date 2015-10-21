@@ -1,6 +1,7 @@
 
 (function (plugin, core, scene) {
-
+    var fnb = null;
+            
     const BOTH_NORMALS = 0,
           FACE_NORMALS = 1,
           VERTEX_NORMALS = 2;
@@ -160,31 +161,25 @@
         scene.addOverlayLayer(meshFile, plug.getName(), normalsMesh);
 
         function buildFaceNormals() {
-            const SIZEOF_FLOAT = 4;
-            const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
+            if(fnb != null) fnb.delete();
+            fnb = new Module.FaceNormalBuilder();
+            fnb.init(meshFile.ptrMesh());
 
-            var startBuffer = Module.buildFaceNormalsVec(meshFile.ptrMesh());
-            meshFile.faceNormalsPtr = startBuffer;
-
-            var centroidsCoordsPtr = startBuffer;
-            var masksPtr = startBuffer + meshFile.FN * 2 * NUM_BYTES_PER_VERTEX;
-            var normalsCoordsPtr = startBuffer + (meshFile.FN * 2 * NUM_BYTES_PER_VERTEX + meshFile.FN * 2 * SIZEOF_FLOAT);
-
-            var centroids = new Float32Array(Module.HEAPU8.buffer, centroidsCoordsPtr, (meshFile.FN * 2 * NUM_BYTES_PER_VERTEX) / SIZEOF_FLOAT);
-            var masks = new Float32Array(Module.HEAPU8.buffer, masksPtr, meshFile.FN * 2);
-            var normals = new Float32Array(Module.HEAPU8.buffer, normalsCoordsPtr, (meshFile.FN * 2 * NUM_BYTES_PER_VERTEX) / SIZEOF_FLOAT);
-
+            var centroidArray = new Float32Array(Module.HEAPU8.buffer, fnb.getCentroidBuf(), meshFile.FN * 6);
+            var normalArray   = new Float32Array(Module.HEAPU8.buffer, fnb.getNormalBuf(),   meshFile.FN * 6);
+            var masksArray    = new Float32Array(Module.HEAPU8.buffer, fnb.getMaskBuf(),     meshFile.FN * 2);
+            
             var faceNormalsGeometry = new THREE.BufferGeometry();
 
-            faceNormalsGeometry.addAttribute('position', new THREE.BufferAttribute( centroids, 3 ) );
-            faceNormalsGeometry.addAttribute('normal', new THREE.BufferAttribute( normals, 3 ) );
-            faceNormalsGeometry.addAttribute('mask', new THREE.BufferAttribute( masks, 1 ) );
+            faceNormalsGeometry.addAttribute('position', new THREE.BufferAttribute( centroidArray, 3 ) );
+            faceNormalsGeometry.addAttribute('normal',   new THREE.BufferAttribute( normalArray,   3 ) );
+            faceNormalsGeometry.addAttribute('mask',     new THREE.BufferAttribute( masksArray,    1 ) );
 
-            var attributes = {
+            var attributeFN = {
                 mask: {type: 'f', value: []}
             };
 
-            var uniforms = {
+            var uniformFN = {
                 size: {type: "f", value: params.normalFaceSize},
                 color: {type: "c", value: params.normalFaceColor}
             };
@@ -192,19 +187,17 @@
             var parameters = {
                 vertexShader: this.shaders.getByKey("NormalsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("NormalsFragment.glsl"),
-                attributes: attributes,
-                uniforms: uniforms,
+                attributes: attributeFN,
+                uniforms: uniformFN,
                 wireframe : true,
                 transparent: true,
                 side: THREE.DoubleSide
             };
 
             var faceNormalsMat = new THREE.RawShaderMaterial(parameters);
-            var faceNormals = new THREE.Mesh(faceNormalsGeometry, faceNormalsMat);
-
+            var faceNormals    = new THREE.Mesh(faceNormalsGeometry, faceNormalsMat);
 
             return faceNormals;
-
         }
 
         function buildVertexNormals() {

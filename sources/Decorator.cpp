@@ -177,63 +177,57 @@ uintptr_t buildBoundaryEdgesCoordsVec(uintptr_t _mIn) {
 	return (uintptr_t)((void *)startBuffer);
 }
 
-uintptr_t buildFaceNormalsVec(uintptr_t _mIn) {
+/* buildFaceNormalsVec 
+ * 
+ * builds the three buffers needed for face normal rendering
+ *  - Centroid 
+ *  - Normal 
+ *  - Mask
+ * 
+ * Centroid and Normal contains duplicated entries, and Mask is an alternating 0/1.
+ * The main idea is that the length of the normal is controlled by an attribute,
+ * so that the position of the endpoint of the normal is computed in the vertex shader as
+ * 
+ *  pos = centroid + mask*length*normal 
+ * 
+ */
 
-	MyMesh &mIn = *((MyMesh*)_mIn);
-
-	tri::UpdateNormal<MyMesh>::PerFaceNormalized(mIn);
-
-	size_t numBytesCentroidsCoords = mIn.FN() * 2 * NUM_FLOATS_PER_VERTEX * sizeof(float);
-	size_t numBytesMasks = mIn.FN() * 2 * sizeof(float);
-	size_t numByesNormalsCoords = mIn.FN() * 2 * NUM_FLOATS_PER_VERTEX * sizeof(float);
-
-	float *startBuffer = (float *)malloc(numBytesCentroidsCoords + numBytesMasks + numByesNormalsCoords);
-
-	float *centroidsCoordsPtr = startBuffer;
-	float *masksPtr = startBuffer + numBytesCentroidsCoords / sizeof(float);
-	float *normalsCoordsPtr = startBuffer + (numBytesCentroidsCoords + numBytesMasks) / sizeof(float);
-
-	for (MyMesh::FaceIterator fi = mIn.face.begin(); fi != mIn.face.end(); ++fi) {
-
-		Point3f c = (fi->V(0)->P() + fi->V(1)->P() + fi->V(2)->P()) / 3.0f;
-
-		*centroidsCoordsPtr++ = c[0];
-		*centroidsCoordsPtr++ = c[1];
-		*centroidsCoordsPtr++ = c[2];
-
-		*centroidsCoordsPtr++ = c[0];
-        *centroidsCoordsPtr++ = c[1];
-        *centroidsCoordsPtr++ = c[2];
-
-		*masksPtr++ = 0;
-		*masksPtr++ = 1;
-
-		Point3f n = fi->N();
-
-		//normalsCoordsPtr++;
-		//normalsCoordsPtr++;
-		//normalsCoordsPtr++;
-		*normalsCoordsPtr++ = n[0];
-	    *normalsCoordsPtr++ = n[1];
-        *normalsCoordsPtr++ = n[2];
-
-		*normalsCoordsPtr++ = n[0];
-        *normalsCoordsPtr++ = n[1];
-        *normalsCoordsPtr++ = n[2];
-
-	}
-
-	return (uintptr_t)((void *)startBuffer);
-
+class FaceNormalBuilder
+{
+  public: 
+      vector<Point3f> centroidVec;
+      vector<Point3f> normalVec;
+      vector<float> maskVec;
+      
+      uintptr_t getCentroidBuf(){ return (uintptr_t)((void *)&(centroidVec[0][0])); }
+      uintptr_t getNormalBuf()  { return (uintptr_t)((void *)&(normalVec[0][0])); }
+      uintptr_t getMaskBuf()    { return (uintptr_t)((void *)&(maskVec[0])); }
+      
+void init(uintptr_t _mIn) {
+	MyMesh &m = *((MyMesh*)_mIn);
+        tri::RequireCompactness(m);
+	tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
+        centroidVec.resize(m.fn*2);
+        normalVec.resize(m.fn*2);
+        maskVec.resize(m.fn*2);
+	for(int i=0;i<m.fn;++i) {
+            centroidVec[i*2] = Barycenter(m.face[i]);
+            centroidVec[i*2+1] = centroidVec[i*2];
+            normalVec[i*2] = m.face[i].N();
+            normalVec[i*2+1] = m.face[i].N();
+            maskVec[i*2]=0;         
+            maskVec[i*2+1]=1;                     
+        }
 }
 
+}; // end FaceNormalBuilder class
 
 uintptr_t buildVertexNormalsVec(uintptr_t _mIn) {
 
 	MyMesh &mIn = *((MyMesh*)_mIn);
 
 	tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(mIn);
-    tri::UpdateNormal<MyMesh>::NormalizePerVertex(mIn);
+        tri::UpdateNormal<MyMesh>::NormalizePerVertex(mIn);
 
 	size_t numBytesPointsCoords = mIn.VN() * 2 * NUM_FLOATS_PER_VERTEX * sizeof(float);
 	size_t numBytesMasks = mIn.VN() * 2 * sizeof(float);
@@ -324,14 +318,24 @@ uintptr_t buildAttributesVecForWireframeRendering(uintptr_t _mIn) {
 	return (uintptr_t)((void *)startBuffer);
 }
 
+
 #ifdef __EMSCRIPTEN__
+using namespace emscripten;
+
 //Binding code
 EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
-	emscripten::function("buildSelectedFacesCoordsVec", &buildSelectedFacesCoordsVec);
-	emscripten::function("buildSelectedPointsCoordsVec", &buildSelectedPointsCoordsVec);
-	emscripten::function("buildBoundaryEdgesCoordsVec", &buildBoundaryEdgesCoordsVec);
-	emscripten::function("buildFaceNormalsVec", &buildFaceNormalsVec);
-	emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
-	emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
+    class_<FaceNormalBuilder>("FaceNormalBuilder")
+    .constructor<>()
+    .function("init",             &FaceNormalBuilder::init)
+    .function("getCentroidBuf",   &FaceNormalBuilder::getCentroidBuf)
+    .function("getNormalBuf",     &FaceNormalBuilder::getNormalBuf)
+    .function("getMaskBuf",       &FaceNormalBuilder::getMaskBuf)
+    ;
+    
+    emscripten::function("buildSelectedFacesCoordsVec", &buildSelectedFacesCoordsVec);
+    emscripten::function("buildSelectedPointsCoordsVec", &buildSelectedPointsCoordsVec);
+    emscripten::function("buildBoundaryEdgesCoordsVec", &buildBoundaryEdgesCoordsVec);
+    emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
+    emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
 }
 #endif
