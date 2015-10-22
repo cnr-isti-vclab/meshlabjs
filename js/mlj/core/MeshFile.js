@@ -52,13 +52,15 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     this.overlays = new MLJ.util.AssociativeArray();
     //contains overlaying mesh parameters
     this.overlaysParams = new MLJ.util.AssociativeArray();
-    var _isRendered = true;
+
+    
     var _this = this;   
     
  
     this.init = function () {
         console.time("Time to create mesh: ");
-        _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
+        _this.threeMesh = new THREE.Mesh();
+        buildMeshGeometry();
         console.timeEnd("Time to create mesh: ");
         
         for(var name in MLJ.core.defaults) {
@@ -101,7 +103,9 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         var vertexColors = cppMesh.getVertexColorVector();
         var faceColors = cppMesh.getFaceColorVector();
 
-        var geometry = new THREE.Geometry();
+        _this.threeMesh.geometry = new THREE.Geometry();
+        var geometry = _this.threeMesh.geometry;
+        
         for (var i = 0; i < _this.VN * 3; i++) {
             var v1 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
             i++;
@@ -155,17 +159,8 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         Module._free(faceIndexVec);
 
         geometry.dynamic = true;
-        return geometry;
     }
-    
-    function geometryNeedUpdate() {
-        _this.threeMesh.geometry.verticesNeedUpdate = true;
-        _this.threeMesh.geometry.elementsNeedUpdate = true;
-        _this.threeMesh.geometry.normalsNeedUpdate = true;
-        _this.threeMesh.geometry.computeFaceNormals();
-        _this.threeMesh.geometry.computeVertexNormals();
-    }    
-    
+        
     /**
      * Returns this THREE.Mesh object
      * @returns {THREE.Mesh} this THREE.Mesh object
@@ -176,18 +171,12 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     };
 
     /**
-     * Update (rebuild) this THREE.Mesh geometry
+     * updateThreeMesh (rebuild) this THREE.Mesh geometry
      * @author Stefano Gabriele        
      */
     this.updateThreeMesh = function () {
-
-        //Free memory
         _this.threeMesh.geometry.dispose();
-
-        //Rebuild mesh geometry
-        _this.threeMesh.geometry = buildMeshGeometry();
-
-        geometryNeedUpdate();
+        buildMeshGeometry();
     };
     
     /**
@@ -197,19 +186,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      */
     this.ptrMesh = function () {
         return _this.cppMesh.getMeshPtr();
-    }
-    
-    /**
-     * Returns the THREE.Matrix4 object that is stored with the mesh
-     * @returns {Matrix4}
-     * @TODO THIS ONE SEEMS WRONG
-     *  
-     */
-    this.ptrMesh = function () {
-        THREE.Matrix4.elements = THREE.Matrix4();
-        return _this.cppMesh.getMeshPtr();
-    }
-    
+    }    
     
     /**
      * Removes the object from memory
