@@ -99,22 +99,16 @@ MLJ.core.File = {
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
             
+            var mf = MLJ.core.File.createCppMeshFile(file.name);
             console.time("Parsing Mesh Time");
-            var CppMesh = new Module.CppMesh();
-            var resOpen = CppMesh.openMesh(file.name);
+            var resOpen = mf.cppMesh.openMesh(file.name);
             if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
-
                 onLoaded(false);
             }
-
-            console.timeEnd("Parsing Mesh Time");
-
-            var mf = new MLJ.core.MeshFile(file.name, CppMesh);
-
-            onLoaded(true, mf);
-            
+            console.timeEnd("Parsing Mesh Time");            
+            onLoaded(true, mf);            
             FS.unlink(file.name);
 
         }; //end onloadend
