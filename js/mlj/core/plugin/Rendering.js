@@ -138,8 +138,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
-                    //Check if the rendering fetaure is on by default
-                    if (parameters.on) {
+                    //Check if the rendering feature is enabled
+                    if (!(meshFile.properties.getByKey(parameters.name) === false) && 
+                            (parameters.on || meshFile.properties.getByKey(parameters.name)) ) {
                         btn.toggle("on");
                         _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
@@ -172,6 +173,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 $($('canvas')[0]).on(parameters.applyOnEvent,function() {
                     if(btn.isOn()) {
                         var selected = MLJ.core.Scene.getSelectedLayer();
+                        console.log(selected.name);
                         if (selected !== undefined) {
                             reapplay(true, selected);
                         }

@@ -1,14 +1,15 @@
 /**
- * To support the different color modes (uniform, per vertex or per face),
- * client plugins should be affected by the value of the colorMode and 
- * meshColorMapping parameters.
+ * To support different color modes (uniform, per vertex or per face),
+ * client plugins should query the value of the colorMode and meshColorMapping
+ * parameters of 'ColorWheel'.
  *
- * colorMode defines the value to assign the attribute vertexColors of a
- * ThreeJS material (cfr. ThreeJS MeshBasicMaterial documentation).
+ * 'colorMode' defines the value that should be assigned to the 'vertexColor'
+ * attribute of a ThreeJS material (cfr. ThreeJS MeshBasicMaterial
+ * documentation).
  * 
- * meshColorMapping is a uniform that should be used in the shaders to
- * generate the appropriate color:
- *   0  color is per mesh, stored in the 'diffuse' uniform 
+ * 'meshColorMapping' is a uniform that should be included in the shaders
+ * to compute a color, depending on its value:
+ *   0  color is per mesh, stored in the 'diffuse' uniform
  *   1  color is per vertex/face, stored in the 'color' vertex attribute of a
  *      vertex shader as vec3
  */

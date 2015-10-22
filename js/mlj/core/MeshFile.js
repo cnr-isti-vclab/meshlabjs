@@ -65,6 +65,22 @@ MLJ.core.MeshFile = function (name, cppMesh) {
             _this.overlaysParams.set(name,
                 jQuery.extend(true, {}, MLJ.core.defaults[name]));                        
         }
+
+        // Select the appropriate color mode
+        var cw = _this.overlaysParams.getByKey("ColorWheel");
+        if (cppMesh.hasPerFaceColor()) {
+            cw.meshColorMapping = ColorMapping.Attribute;
+            cw.colorMode = THREE.FaceColors;
+        } else  if (cppMesh.hasPerVertexColor()) {
+            cw.meshColorMapping = ColorMapping.Attribute;
+            cw.colorMode = THREE.VertexColors;
+        }
+
+        // If the mesh is a point cloud, enable the "Points" rendering mode
+        if (_this.VN > 0 && _this.FN === 0) {
+            _this.properties.set("Filled", false);
+            _this.properties.set("Points", true);
+        }
         
     }
     
