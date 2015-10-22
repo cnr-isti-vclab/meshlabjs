@@ -56,7 +56,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _this = this;   
     
  
-    function init() {
+    this.init = function () {
         console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh(buildMeshGeometry());
         console.timeEnd("Time to create mesh: ");
@@ -68,12 +68,12 @@ MLJ.core.MeshFile = function (name, cppMesh) {
 
         // Select the appropriate color mode
         var cw = _this.overlaysParams.getByKey("ColorWheel");
-        if (cppMesh.hasPerFaceColor()) {
-            cw.meshColorMapping = ColorMapping.Attribute;
-            cw.colorMode = THREE.FaceColors;
-        } else  if (cppMesh.hasPerVertexColor()) {
+        if (cppMesh.hasPerVertexColor()) {
             cw.meshColorMapping = ColorMapping.Attribute;
             cw.colorMode = THREE.VertexColors;
+        } else if (cppMesh.hasPerFaceColor()) {
+            cw.meshColorMapping = ColorMapping.Attribute;
+            cw.colorMode = THREE.FaceColors;
         }
 
         // If the mesh is a point cloud, enable the "Points" rendering mode
@@ -245,5 +245,4 @@ MLJ.core.MeshFile = function (name, cppMesh) {
         _this.overlaysParams =  _this = null;       
     };
     
-    init();
 }
