@@ -99,7 +99,8 @@ MLJ.core.File = {
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
             
-            var mf = MLJ.core.File.createCppMeshFile(file.name, true);  
+            var mf = MLJ.core.File.createCppMeshFile(file.name);
+            mf.cpp = false;
             console.time("Parsing Mesh Time");
             var resOpen = mf.cppMesh.openMesh(file.name);
             if (resOpen !== 0) {
@@ -107,8 +108,7 @@ MLJ.core.File = {
                 FS.unlink(file.name);
                 onLoaded(false);
             }
-            console.timeEnd("Parsing Mesh Time"); 
-            mf.init();         
+            console.timeEnd("Parsing Mesh Time");
             onLoaded(true, mf);            
             FS.unlink(file.name);
 
@@ -157,12 +157,11 @@ MLJ.core.File = {
     /**
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
-     * @param {Bool} deferInit If true, MeshFile.init() is not called
      * @memberOf MLJ.core.File
      * @returns {MLJ.core.MeshFile} The new mesh file
      * @author Stefano Gabriele
      */
-    this.createCppMeshFile = function (name, deferInit) {
+    this.createCppMeshFile = function (name) {
 
         var nameAmount = nameList.getByKey(name);
         if (nameAmount === undefined) {
@@ -178,7 +177,6 @@ MLJ.core.File = {
 
         //Indicates that the mesh is created by c++
         mf.cpp = true;
-        if (!(deferInit===true)) mf.init();
         return mf;
     };
 

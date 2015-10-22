@@ -341,15 +341,14 @@ MLJ.core.Scene = {};
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
             return;
         }
+        
+        // Initialize the THREE geometry used by overlays and rendering params
+        meshFile.initializeRenderingAttributes();
+
         //Add new mesh to associative array _layers            
         _layers.set(meshFile.name, meshFile);
-
-        if (meshFile.cpp === true) {
-            meshFile.updateThreeMesh();
-        }
-
         _selectedLayer = meshFile;
-        
+
         _computeGlobalBBbox();              
 
         /**

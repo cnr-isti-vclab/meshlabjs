@@ -57,7 +57,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     var _this = this;   
     
  
-    this.init = function () {
+    this.initializeRenderingAttributes = function () {
         console.time("Time to create mesh: ");
         _this.threeMesh = new THREE.Mesh();
         buildMeshGeometry();
