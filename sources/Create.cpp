@@ -9,6 +9,7 @@ void DuplicateLayer(uintptr_t _baseM, uintptr_t _newM)
     MyMesh &baseM = *((MyMesh*) _baseM);
     MyMesh &newM = *((MyMesh*) _newM);
     tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
+    newM.tr = baseM.tr;
 }
 
 void CreatePlatonic(uintptr_t _m, int index)
