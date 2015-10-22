@@ -45,6 +45,7 @@
 MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
     this.cppMesh = cppMesh;
+    this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;
     this.properties = new MLJ.util.AssociativeArray();
     //is updated by MLJ.core.Scene and contains overlaying mesh
@@ -185,6 +186,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
     /**
      * Returns the THREE.Matrix4 object that is stored with the mesh
      * @returns {Matrix4}
+     * @TODO THIS ONE SEEMS WRONG
      *  
      */
     this.ptrMesh = function () {

@@ -110,7 +110,7 @@ void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, int sampleNum,
   tri::SurfaceSampling<MyMesh,HausdorffSampler<MyMesh> >::Montecarlo(src,hs,sampleNum);
 
   printf("Hausdorff Distance computed\n");
-  printf("     Sampled %i pts (rng: 0)  on %s searched closest on %s \n",hs.n_total_samples,src.label.c_str(),trg.label.c_str());
+  printf("     Sampled %i pts (rng: 0)  on %s searched closest on %s \n",hs.n_total_samples,src.meshName.c_str(),trg.meshName.c_str());
   printf("     min : %f   max %f   mean : %f   RMS : %f \n",hs.getMinDist(),hs.getMaxDist(),hs.getMeanDist(),hs.getRMSDist());
   float d = src.bbox.Diag();
   printf("Values w.r.t. BBox Diag (%f)\n",d);

@@ -25,7 +25,7 @@ class MyEdge    : public vcg::Edge<   MyUsedTypes> {};
 class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<MyFace> , std::vector<MyEdge>  > {
 public:
   vcg::Matrix44f tr;
-  std::string label;
+  std::string meshName;
 };
 
 bool IsWaterTight(MyMesh &m);

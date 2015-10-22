@@ -18,9 +18,12 @@ class CppMesh
       loadmask =0;
       m.tr.SetIdentity();
     }
-    void setLabel(string label)
-    {
-      m.label = label;
+    void setMeshName(string meshName) {
+      m.meshName = meshName;
+    }
+    
+    std::string getMeshName() { 
+      return m.meshName;
     }
 
     bool hasPerVertexColor() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
@@ -28,7 +31,7 @@ class CppMesh
     bool hasPerFaceColor() const { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
 
     int openMesh(string fileName) {
-    m.label=fileName;
+    m.meshName=fileName;
     int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
     if(ret!=0) {
         if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
@@ -47,7 +50,8 @@ class CppMesh
 
   int VN() { return m.VN(); }
   int FN() { return m.FN(); }
-
+  
+  
   uintptr_t getMeshPtr(){
     return (uintptr_t)((void*)(&m)) ;
   }
@@ -109,7 +113,8 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
   class_<CppMesh>("CppMesh")
     .constructor<>()
     .function("openMesh",             &CppMesh::openMesh)
-    .function("setLabel",             &CppMesh::setLabel)
+    .function("setMeshName",          &CppMesh::setMeshName)
+    .function("getMeshName",          &CppMesh::getMeshName)
     .function("getMeshPtr",           &CppMesh::getMeshPtr)
     .function("getMatrixPtr",         &CppMesh::getMatrixPtr)
     .function("getVertexVector",      &CppMesh::getVertexVector)
