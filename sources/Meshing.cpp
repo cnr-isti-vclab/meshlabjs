@@ -1,6 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 #include <vcg/complex/algorithms/clustering.h>
+#include <vcg/complex/algorithms/convex_hull.h>
 
 
 using namespace vcg;
@@ -75,11 +76,20 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   printf("Completed Simplification\n");
 }
 
+
+void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  MyMesh &ch = *((MyMesh*) _newM);
+  ch.Clear();
+  tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
+}
+
 void MeshingPluginTEST()
 {
   for(int i=1;i<5;++i)
   {
-    MyMesh mq,mc;
+    MyMesh mq,mc,ch;
     Torus(mq,10*i,5*i);
     Torus(mc,10*i,5*i);
     int t0=clock();
@@ -89,6 +99,9 @@ void MeshingPluginTEST()
     ClusteringSimplification(uintptr_t(&mc),0.01f);
     int t2=clock();
     printf("Clustering simplification in  %6.3f sec\n",float(t2-t1)/CLOCKS_PER_SEC);
+    ConvexHullFilter(uintptr_t(&mc),uintptr_t(&ch));
+    int t3=clock();
+    printf("Computed Convex Hull %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t3-t2)/CLOCKS_PER_SEC);
   }
 }
 
@@ -96,6 +109,7 @@ void MeshingPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
+    emscripten::function("ConvexHullFilter", &ConvexHullFilter);
     emscripten::function("QuadricSimplification", &QuadricSimplification);
     emscripten::function("ClusteringSimplification", &ClusteringSimplification);
 }

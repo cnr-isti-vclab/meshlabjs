@@ -1,4 +1,6 @@
 
+/* global MLJ, Module */
+
 (function (plugin, scene) {
     
     const USE_BOTH = 0,
@@ -170,6 +172,24 @@
         scene.updateLayer(meshFile);
     };
     
+    var ConvexHullFilter = new plugin.Filter({
+        name: "Convex Hull",
+        tooltip: "Create a new layer with the convex hull of the vertexes of the current mesh. "+
+                 "It uses a slight variant of the quickhull algorithm.",
+        arity: 1
+    });
+
+    ConvexHullFilter._init = function (builder) {
+    };
+
+    ConvexHullFilter._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.File.createCppMeshFile("ConvexHull of "+basemeshFile.name);
+        Module.ConvexHullFilter(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
+        scene.addLayer(newmeshFile);
+    };
+
+    
+    
     
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
@@ -178,6 +198,7 @@
     plugin.Manager.install(SelectionAllFilter);
     plugin.Manager.install(SelectionNoneFilter);
     plugin.Manager.install(SelectionInvertFilter);
-
+    plugin.Manager.install(ConvexHullFilter);
+    
 
 })(MLJ.core.plugin, MLJ.core.Scene);
