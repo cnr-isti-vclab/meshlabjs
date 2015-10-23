@@ -64,7 +64,7 @@ MLJ.core.File = {
     /**
      * Loads 'file' in the virtual file system as an Int8Array and reads in into the layer 'mf'
      */
-    function loadMeshFromVirtualFS(file, onLoaded, mf) {
+    function loadMeshFromVirtualFS(file, mf, onLoaded) {
         var fileReader = new FileReader();
         fileReader.readAsArrayBuffer(file);
         fileReader.onloadend = function (fileLoadedEvent) {
@@ -150,7 +150,7 @@ MLJ.core.File = {
             mf.cpp = false;
             mf.fileName = ""+file.name; 
 
-            loadMeshFromVirtualFS(file, function (loaded, meshFile) {
+            loadMeshFromVirtualFS(file, mf, function (loaded, meshFile) {
                 if (loaded) {
                     /**
                      *  Triggered when a mash file is opened
@@ -167,7 +167,7 @@ MLJ.core.File = {
                      */
                     $(document).trigger("MeshFileOpened", [meshFile]);
                 }
-            }, mf);
+            });
         });
     };
 
@@ -186,27 +186,24 @@ MLJ.core.File = {
             return;
         }
 
-        loadMeshFromVirtualFS(
-            file,
-            function (loaded, meshFile) {
-                if (loaded) {
-                    /**
-                     *  Triggered when a mesh file is reloaded
-                     *  @event MLJ.core.File#MeshFileReloaded
-                     *  @type {Object}
-                     *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
-                     *  @example
-                     *  <caption>Event Interception:</caption>
-                     *  $(document).on("MeshFileReloaded",
-                     *      function (event, meshFile) {
-                     *          //do something
-                     *      }
-                     *  );
-                     */
-                    $(document).trigger("MeshFileReloaded", [meshFile]);
-                }
-            },
-            mf);
+        loadMeshFromVirtualFS(file, mf, function (loaded, meshFile) {
+            if (loaded) {
+                /**
+                 *  Triggered when a mesh file is reloaded
+                 *  @event MLJ.core.File#MeshFileReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                 *  @example
+                 *  <caption>Event Interception:</caption>
+                 *  $(document).on("MeshFileReloaded",
+                 *      function (event, meshFile) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("MeshFileReloaded", [meshFile]);
+            }
+        });
     };
 
     this.saveMeshFile = function (meshFile, fileName) {
