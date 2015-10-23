@@ -1,10 +1,10 @@
 (function(plugin, scene) {
 
-	/*** Colorize by vertex quality TEST ***/
+	/*** TEST generates per vertex and per face colors ***/
 
 	var ColorFilter = new plugin.Filter({
 		name: "ColorFilter",
-		tooltip: "",
+		tooltip: "TEST",
 		arity: 1
 	});
 

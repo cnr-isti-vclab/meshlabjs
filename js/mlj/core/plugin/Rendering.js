@@ -173,7 +173,6 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 $($('canvas')[0]).on(parameters.applyOnEvent,function() {
                     if(btn.isOn()) {
                         var selected = MLJ.core.Scene.getSelectedLayer();
-                        console.log(selected.name);
                         if (selected !== undefined) {
                             reapplay(true, selected);
                         }

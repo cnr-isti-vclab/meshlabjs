@@ -78,7 +78,9 @@
                                                           
             MLJ.gui.disabledOnSceneEmpty(reload);
             //The reload button must be disalbed if the layer is created by a
-            //creation filter            
+            //creation filter
+            // TODO change this to reflect the fact that layers created by a filter
+            // now simply do not have the fileName field defined   
             MLJ.gui.disabledOnCppMesh(reload);
 
             var snapshot = new component.Button({
@@ -115,8 +117,8 @@
             });                        
 
             reload.onClick(function () {
-                var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
-                MLJ.core.File.reloadMeshFileByName(name);
+                var mf = MLJ.core.Scene.getSelectedLayer();
+                MLJ.core.File.reloadMeshFile(mf);
             });
 
             snapshot.onClick(function () {                

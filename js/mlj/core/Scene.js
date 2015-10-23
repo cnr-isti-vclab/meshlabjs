@@ -195,11 +195,8 @@ MLJ.core.Scene = {};
 
         $(document).on("MeshFileReloaded",
                 function (event, meshFile) {
-                    
-                    var oldMesh = _this.getLayerByName(meshFile.name);
-                    
                     //remove all overlays from scene
-                    var iter = oldMesh.overlays.iterator();
+                    var iter = meshFile.overlays.iterator();
                         
                     while(iter.hasNext()) {
                         var overlay = iter.next();
@@ -207,18 +204,15 @@ MLJ.core.Scene = {};
                         _scene2D.remove(overlay);
                     }
 
-                    if (oldMesh.histogram !== undefined) {
-                        $(window).off("resize", oldMesh.histogram.listener);
-                        oldMesh.histogram.$tl.remove();
-                        oldMesh.histogram.$bl.remove();
+                    if (meshFile.histogram !== undefined) {
+                        $(window).off("resize", meshFile.histogram.listener);
+                        meshFile.histogram.$tl.remove();
+                        meshFile.histogram.$bl.remove();
                     }
-                                                                                
-                    oldMesh.dispose();      
-                                                                               
-                    //replace mesh file
-                    _layers.set(meshFile.name, meshFile);
-                    _selectedLayer = meshFile;                                                                              
-                    
+
+                    // Restore three geometry to reflect the new state of the vcg mesh
+                    meshFile.updateThreeMesh();
+
                     /**
                      *  Triggered when a layer is reloaded
                      *  @event MLJ.core.Scene#SceneLayerReloaded

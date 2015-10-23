@@ -346,6 +346,12 @@ MLJ.gui.component.FileButton = function (flags) {
     this.onChange = function (foo) {
         $(_$file.change(function () {
             foo(this);
+
+            // hack to clear the input form, otherwise the same file cannot
+            // be loaded a second time because the change event won't be triggered
+            _$file.wrap('<form>').closest('form').get(0).reset();
+            _$file.unwrap();
+            event.preventDefault();
         }));
     };
 };
