@@ -46,7 +46,6 @@ MLJ.core.File = {
 
 (function () {
     var _openedList = new MLJ.util.AssociativeArray();
-    var nameList = new MLJ.util.AssociativeArray();
 
     function isExtensionValid(extension) {
 
@@ -62,9 +61,9 @@ MLJ.core.File = {
     }
 
     /**
-     * Loads 'file' in the virtual file system as an Int8Array and reads in into the layer 'mf'
+     * Loads 'file' in the virtual file system as an Int8Array and reads it into the layer 'mf'
      */
-    function loadMeshFromVirtualFS(file, mf, onLoaded) {
+    function loadMeshDataFromFile(file, mf, onLoaded) {
         var fileReader = new FileReader();
         fileReader.readAsArrayBuffer(file);
         fileReader.onloadend = function (fileLoadedEvent) {
@@ -87,6 +86,30 @@ MLJ.core.File = {
         };
     }
 
+    function disambiguateName(meshName) {
+        var prefix, ext;
+        var ptIndex = meshName.lastIndexOf('.');
+        if (ptIndex > 0) {
+            prefix = meshName.substr(0, ptIndex);
+            ext = meshName.substr(ptIndex);
+        } else {
+            prefix = meshName;
+            ext = "";
+        }
+
+        var maxNumTag = 0;
+        while (true) {
+            var collision = false;
+            var layerIterator = MLJ.core.Scene.getLayers().iterator();
+            while (layerIterator.hasNext() && !collision) {
+                if (meshName === layerIterator.next().name) collision = true;
+            }
+            if (collision) meshName = prefix + "[" + ++maxNumTag + "]" + ext;
+            else break;
+        }
+        return meshName;
+    }
+
     /**
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
@@ -97,18 +120,11 @@ MLJ.core.File = {
      // TODO Rename this, now loading from file and creating from filters use the same code path
     this.createCppMeshFile = function (name) {
 
-        var nameAmount = nameList.getByKey(name);
-        if (nameAmount === undefined) {
-            nameList.set(name, 0);
-        } else {
-            nameAmount++;
-            nameList.set(name, nameAmount);
-            name += " " + nameAmount;
-        }
+        var layerName = disambiguateName(name);
 
         // TODO maybe refactor cppmesh allocation inside MeshFile ?
         var CppMesh = new Module.CppMesh();
-        var mf = new MLJ.core.MeshFile(name, CppMesh);
+        var mf = new MLJ.core.MeshFile(layerName, CppMesh);
 
         //Indicates that the mesh is created by c++
         //TODO useless, remove this
@@ -145,12 +161,11 @@ MLJ.core.File = {
                 return;
             }
 
-            // name can be altered in case of duplicates, so use copies
-            var mf = MLJ.core.File.createCppMeshFile(""+file.name);
+            var mf = MLJ.core.File.createCppMeshFile(file.name);
             mf.cpp = false;
-            mf.fileName = ""+file.name; 
+            mf.fileName = file.name; 
 
-            loadMeshFromVirtualFS(file, mf, function (loaded, meshFile) {
+            loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
                 if (loaded) {
                     /**
                      *  Triggered when a mash file is opened
@@ -186,7 +201,7 @@ MLJ.core.File = {
             return;
         }
 
-        loadMeshFromVirtualFS(file, mf, function (loaded, meshFile) {
+        loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
             if (loaded) {
                 /**
                  *  Triggered when a mesh file is reloaded

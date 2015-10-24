@@ -31,21 +31,21 @@ class CppMesh
     bool hasPerFaceColor() const { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
 
     int openMesh(string fileName) {
-    m.meshName=fileName;
-    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
-    if(ret!=0) {
-        if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
-        {
-            printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
-        }
-        else
-        {
-            printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
-            ret=0;
-        }
-    }
-    // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
-    return ret;
+      m.meshName=fileName;
+      int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
+      if(ret!=0) {
+          if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
+          {
+              printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+          }
+          else
+          {
+              printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+              ret=0;
+          }
+      }
+      // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
+      return ret;
   }
 
   int VN() { return m.VN(); }

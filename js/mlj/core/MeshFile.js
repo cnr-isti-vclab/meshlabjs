@@ -44,6 +44,7 @@
  */
 MLJ.core.MeshFile = function (name, cppMesh) {
     this.name = name;
+    this.filename = "";
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;
@@ -83,8 +84,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
             _this.properties.set("Filled", false);
             _this.properties.set("Points", true);
         }
-        
-    }
+    };
     
     /* buildMeshGeometry
      * 
@@ -186,7 +186,7 @@ MLJ.core.MeshFile = function (name, cppMesh) {
      */
     this.ptrMesh = function () {
         return _this.cppMesh.getMeshPtr();
-    }    
+    };
     
     /**
      * Removes the object from memory
