@@ -57,7 +57,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     //Shows the options pane of this rendering feature
     function _showOptionsPane() {
         
-        if (btn instanceof MLJ.gui.component.CustomToggleButton) {
+        if (parameters.toggle === true) {
             btn.setArrowSelected(true);
         }
             
@@ -147,6 +147,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         update();
                     } else {
                         btn.toggle("off");
+                        if (btn.isArrowSelected()) update();
                     }
                     
                     //if the rendering pass need to be updated when a 

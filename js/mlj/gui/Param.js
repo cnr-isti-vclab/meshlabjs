@@ -61,7 +61,8 @@ MLJ.gui.Param.Number = function (flags) {
     };
 
     this._onChange = function (foo) {
-        this.spinner.onSpinStop(foo);
+        this.spinner.onChange(foo);
+        //this.spinner.onSpinStop(foo);
     };
 
     this.setValue = function (value) {

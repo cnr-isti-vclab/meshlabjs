@@ -3,7 +3,7 @@
 
     var DEFAULTS = {
         specular: new THREE.Color('#505050'),
-        emissive: new THREE.Color('#404040'),
+        emissive: new THREE.Color('#000000'),
         shininess: 15.0,
         lights: true,
         shading: THREE.FlatShading,

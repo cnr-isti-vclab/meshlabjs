@@ -470,6 +470,10 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
             _$arrow.removeClass("arrow-selected");
         }
     };
+
+    this.isArrowSelected = function () {
+        return _$arrow.hasClass("arrow-selected");
+    };
     
     this._make = function () {
         this.$.append(_toggle.$, _$arrow);
@@ -892,8 +896,14 @@ MLJ.gui.component.Spinner = function (flags) {
     var _html = '<div></div>';
     var _$spinner = $('<input>').css({width: "100%"});
 
+    var _this = this;
+
     this.onChange = function (callback) {
         _$spinner.on("spinchange", function (event, ui) {
+            if (_this.getValue() == "" || isNaN(_this.getValue())) {
+                console.warn('Warning(Spinner): value is not a number, reset to default');
+                _this.setValue(_this.flag("defval"));
+            }
             callback(event, ui);
         });
     };
