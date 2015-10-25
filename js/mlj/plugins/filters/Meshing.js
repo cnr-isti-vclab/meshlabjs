@@ -188,7 +188,30 @@
         scene.addLayer(newmeshFile);
     };
 
+     var SelectionByQualityFilter = new plugin.Filter({
+        name: "Selection by Quality",
+        tooltip: "Select in the current layer the vertex/face whose quality is below a given threshold.",
+        arity: 1
+    });
     
+    var thresholdWidget,vertexFaceWidget;
+    SelectionByQualityFilter._init = function (builder) {
+         thresholdWidget = builder.RangedFloat({
+            max: 1.0, min: 0.0, step: 0.01, defval: 0.5,
+            label: "Threshold %",
+            tooltip: "As a percentage of the range of the quality"
+        });
+           vertexFaceWidget = builder.Bool({
+            defval: true,
+            label: "Per vertex",
+            tooltip: "If true, vertex quality is used and vertexes are selected, otherwise the filter work by face."
+        });
+    };
+
+    SelectionByQualityFilter._applyTo = function (basemeshFile) {
+        Module.SelectionByQuality(basemeshFile.ptrMesh(),thresholdWidget.getValue(),vertexFaceWidget.getValue());
+        scene.updateLayer(basemeshFile);
+    };
     
     
     plugin.Manager.install(QuadricSimpFilter);
@@ -198,6 +221,7 @@
     plugin.Manager.install(SelectionAllFilter);
     plugin.Manager.install(SelectionNoneFilter);
     plugin.Manager.install(SelectionInvertFilter);
+    plugin.Manager.install(SelectionByQualityFilter);
     plugin.Manager.install(ConvexHullFilter);
     
 

@@ -1,4 +1,7 @@
 #include "mesh_def.h"
+#include <vcg/complex/algorithms/point_outlier.h>
+#include <vcg/complex/algorithms/convex_hull.h>
+#include <vcg/complex/algorithms/stat.h>
 
 using namespace vcg;
 using namespace std;
@@ -58,6 +61,42 @@ void SelectionNone(uintptr_t _baseM, bool vertFlag, bool faceFlag)
   if(faceFlag) tri::UpdateSelection<MyMesh>::FaceClear(m);
 }
 
+void SelectionByQuality(uintptr_t _baseM, float threshold, bool vertFlag)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  int cnt=0;
+  std::pair<float,float> minmax;
+
+  if(vertFlag) {
+    minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    cnt = tri::UpdateSelection<MyMesh>::VertexFromQualityRange(m,-std::numeric_limits<float>::max(),
+                                                               minmax.first + threshold * (minmax.second-minmax.first));
+  }
+  else {
+    minmax = tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m);
+    cnt = tri::UpdateSelection<MyMesh>::FaceFromQualityRange(m,-std::numeric_limits<float>::max(),
+                                                       minmax.first + threshold * (minmax.second-minmax.first));
+  }
+  printf("Selected %i elems where quality was lower than %f in a range %f %f\n",cnt,
+         minmax.first + threshold * (minmax.second-minmax.first),minmax.first,minmax.second);
+}
+
+
+
+void QualitybyPointOutlier(uintptr_t _baseM, int kNearestNum)
+{
+  MyMesh &mesh = *((MyMesh*) _baseM);
+  VertexConstDataWrapper<MyMesh> ww(mesh);
+
+  KdTree<float> kdTree(ww);
+  OutlierRemoval<MyMesh>::ComputeLoOPScore(mesh, kdTree, kNearestNum);
+
+  MyMesh::PerVertexAttributeHandle<float> outlierScore = vcg::tri::Allocator<MyMesh>::GetPerVertexAttribute<float>(mesh, std::string("outlierScore"));
+
+  for(MyMesh::VertexIterator vi=mesh.vert.begin();vi!=mesh.vert.end();++vi)
+    vi->Q() = outlierScore[vi];
+}
+
 void SelectionPluginTEST()
 {
 
@@ -72,5 +111,7 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("SelectionInvert", &SelectionInvert);
     emscripten::function("SelectionAll",    &SelectionAll);
     emscripten::function("SelectionNone",   &SelectionNone);
+    emscripten::function("SelectionByQuality",   &SelectionByQuality);
+    emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);
 }
 #endif
