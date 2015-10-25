@@ -1,5 +1,15 @@
 
 (function (plugin, core, scene) {
+
+    var DEFAULTS = {
+        histogramQualitySelection: "V",
+        histogramBins: 256,
+        histogramAreaWeighted: false,
+        histogramFixedWidth: false,
+        histogramRangeMin: 0,
+        histogramRangeMax: 0,
+        histogramWidth: 0
+    };
     
     var plug = new plugin.Rendering({
         name: "Histogram",        
@@ -7,21 +17,128 @@
         icon: "img/icons/histogram.png",
         toggle: true,
         on: false
-    });
+    }, DEFAULTS);
 
-    var listeners = new MLJ.util.AssociativeArray();
+    // TODO this is the same as 'reapply' defined in Rendering.js, maybe refactor it
+    plug._onHistogramParamChange = function () { 
+        var currentLayer = MLJ.core.Scene.getSelectedLayer();
+        if (currentLayer.properties.getByKey("Histogram") === true) {
+            this._applyTo(currentLayer, false);
+            this._applyTo(currentLayer, true);
+        }
+    };
+
+    var qualitySelection, nBins, areaWeighted, fixedWidth, histogramWidth, rangeMin, rangeMax;
+
+    plug._init = function (guiBuilder) {
+
+        qualitySelection = guiBuilder.Choice({
+            label: "Quality",
+            tooltip: "The quality attribute used to compute the histogram",
+            options: [
+                { content: "Vertex", value: "V", selected: true },
+                { content: "Face", value: "F" }
+            ],
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramQualitySelection"; };
+                return bindToFun;
+            })()
+        });
+
+        nBins = guiBuilder.Integer({
+            label: "Histogram Bins",
+            tooltip: "",
+            defval: "256",
+            min: 2,
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramBins"; };
+                return bindToFun;
+            })()
+        });
+
+        areaWeighted = guiBuilder.Bool({
+            label: "Area Weighted",
+            tooltip: "If checked, the quality values are weighted according to the surface area of the involved component. \
+                      Face qualities are weighted with the face surface area, while vertex qualities are weighted with the \
+                      sum of 1/3 of the surface area of each face incident to the vertex.",
+            defval: false,
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramAreaWeighted"; };
+                return bindToFun;
+            })()
+        });
+
+        fixedWidth = guiBuilder.Bool({
+            label: "Use Fixed Width",
+            tooltip: "If checked, the histogram height is scaled with the <b><i>Histogram Width</i></b> parameter instead of \
+                    using the element count of the largest bin.",
+            defval: false,
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramFixedWidth"; };
+                return bindToFun;
+            })()
+        });
+
+        rangeMin = guiBuilder.Float({
+            label: "Range Min",
+            tooltip: "",
+            step: 0.5, defval: "0.0",
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramRangeMin"; };
+                return bindToFun;
+            })()
+        });
+
+        rangeMax = guiBuilder.Float({
+            label: "Range Max",
+            tooltip: "",
+            step: 0.5, defval: "0.0",
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramRangeMax"; };
+                return bindToFun;
+            })()
+        });
+
+        histogramWidth = guiBuilder.Float({
+            label: "Histogram Width",
+            tooltip: "If non-zero, the height of the histogram is scaled as if this was the element count \
+                      of the largest bin.",
+            step: 0.5, defval: "0.0",
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
+                bindToFun.toString = function () { return "histogramWidth"; };
+                return bindToFun;
+            })()
+        });
+    };
 
     var _escapeId = function (name) {
         return name.replace(/(:|\.)/g, "\\$1");
-    }
+    };
 
     plug._applyTo = function(meshFile, on) {
         if (on) {
             var sz = scene.get3DSize();
 
-            var ch = Module.ComputeColorHistogram(meshFile.ptrMesh());
+            var ch = Module.ComputeColorHistogram(
+                meshFile.ptrMesh(),
+                qualitySelection.getValue() == "V",
+                nBins.getValue(),
+                areaWeighted.getValue(),
+                fixedWidth.getValue(),
+                rangeMin.getValue(),
+                rangeMax.getValue()
+            );
+
             var len = ch.maxV() - ch.minV();
-            var maxCount = ch.maxCount();
+            var maxCount = fixedWidth.getValue() ? histogramWidth.getValue() : ch.maxCount();
+            if (maxCount === 0) maxCount = ch.maxCount();
             var bn = ch.binNum();
 
             var borderX = 0.05;
@@ -116,6 +233,7 @@
                 meshFile.histogram.$bl.hide();
             }
 
+            ch.delete();
         } else {
             scene.removeOverlayLayer(meshFile, plug.getName());
             if (meshFile.histogram !== undefined) {
