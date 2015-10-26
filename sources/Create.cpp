@@ -1,5 +1,8 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/create/platonic.h>
+#include <vcg/math/perlin_noise.h>
+#include <vcg/complex/algorithms/create/marching_cubes.h>
+#include <vcg/complex/algorithms/create/mc_trivial_walker.h>
 
 using namespace vcg;
 using namespace std;
@@ -41,6 +44,28 @@ void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
+void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
+{
+  MyMesh &m = *((MyMesh*) _m);
+  SimpleVolume<SimpleVoxel<float> > 	volume;
+
+  typedef vcg::tri::TrivialWalker<MyMesh, SimpleVolume<SimpleVoxel<float> >	> MyWalker;
+  typedef vcg::tri::MarchingCubes<MyMesh, MyWalker>	MyMarchingCubes;
+  MyWalker walker;
+
+  // Simple initialization of the volume with some cool perlin noise
+  volume.Init(Point3i(gridSize,gridSize,gridSize), Box3f(Point3f(0,0,0),Point3f(1,1,1)));
+  for(int i=0;i<gridSize;i++)
+    for(int j=0;j<gridSize;j++)
+      for(int k=0;k<gridSize;k++)
+        volume.Val(i,j,k)=(j-gridSize/2)*(j-gridSize/2)+(k-gridSize/2)*(k-gridSize/2) + i*gridSize/5*(float)math::Perlin::Noise(i*.2,j*.2,k*.2);
+
+  printf("[MARCHING CUBES] Building mesh...");
+  MyMarchingCubes mc(m, walker);
+  walker.BuildMesh<MyMarchingCubes>(m, volume, mc, (gridSize*gridSize)/10);
+}
+
+
 void CreatePluginTEST()
 {
   for(int i=0;i<5;++i)
@@ -77,5 +102,6 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreateTorus", &CreateTorus);
     emscripten::function("CreateSphere", &CreateSphere);
     emscripten::function("DuplicateLayer", &DuplicateLayer);
+    emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);
 }
 #endif

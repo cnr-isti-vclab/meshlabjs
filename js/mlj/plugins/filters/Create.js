@@ -1,6 +1,6 @@
 
 (function (plugin, scene) {
-
+/******************************************************************************/
     var DeleteLayerFilter = new plugin.Filter({
         name: "Layer Delete",
         tooltip: "Delete Current Layer.",
@@ -13,8 +13,7 @@
     DeleteLayerFilter._applyTo = function (basemeshFile) {
         scene.removeLayerByName(basemeshFile.name);
     };
-    plugin.Manager.install(DeleteLayerFilter);
-    
+/******************************************************************************/
     var DuplicateLayerFilter = new plugin.Filter({
         name: "Layer Duplicate",
         tooltip: "Duplicate current Layer.",
@@ -29,8 +28,7 @@
         Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
-    plugin.Manager.install(DuplicateLayerFilter);
-     
+/******************************************************************************/     
     var PlatonicFilter = new plugin.Filter({
         name: "Create Platonic Solid",
         tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
@@ -38,7 +36,6 @@
     });
 
     var choiceWidget;
-
     PlatonicFilter._init = function (builder) {
 
         choiceWidget = builder.Choice({
@@ -52,7 +49,6 @@
                 {content: "Icosahedron", value: "4"}
             ]
         });
-
     };
 
     PlatonicFilter._applyTo = function () {
@@ -60,17 +56,13 @@
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
-
-    plugin.Manager.install(PlatonicFilter);
-
-
+/******************************************************************************/
     var SphereFilter = new plugin.Filter({
         name: "Create Sphere ",
         tooltip: "Create a sphere with the desired level of subdivision",
         arity: 0});
 
     var sphereLevWidget;
-
     SphereFilter._init = function (builder) {
 
         sphereLevWidget = builder.Integer({
@@ -85,17 +77,13 @@
         Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
-
-    plugin.Manager.install(SphereFilter);
-
+/******************************************************************************/
     var TorusFilter = new plugin.Filter({
         name: "Create Torus ",
         tooltip: "Create a torus with the desired level of subdivisions and ratio between inner and outer radius",
         arity: 0});
 
-    var stepWidget;
-    var radiusRatioWidget;
-
+    var stepWidget, radiusRatioWidget;
     TorusFilter._init = function (builder) {
 
         stepWidget = builder.Integer({
@@ -116,9 +104,35 @@
         Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
+/******************************************************************************/
+    var NoisyIsoFilter = new plugin.Filter({
+        name: "Create Noisy Isosurface ",
+        tooltip: "Create a isosurface from a cylindrical scalar field perturbed by perlin noise",
+        arity: 0});
 
+    var isoResWidget;
+    NoisyIsoFilter._init = function (builder) {
+        isoResWidget = builder.Integer({
+            min: 16, step: 16, defval: 32,
+            label: "Resolution",
+            tooltip: "Resolution of the grid where the isosurface is defined"
+        });        
+    };
+
+    NoisyIsoFilter._applyTo = function () {
+        var mf = MLJ.core.File.createCppMeshFile("Noisy Isosurf");
+        Module.CreateNoisyIsosurface(mf.ptrMesh(), isoResWidget.getValue());
+        scene.addLayer(mf);
+    };
+
+
+/******************************************************************************/
+
+    plugin.Manager.install(DeleteLayerFilter);
+    plugin.Manager.install(DuplicateLayerFilter);
+    plugin.Manager.install(SphereFilter);
+    plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
-
-    
+    plugin.Manager.install(NoisyIsoFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);
