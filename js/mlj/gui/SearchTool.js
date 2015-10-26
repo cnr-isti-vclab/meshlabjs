@@ -41,6 +41,7 @@
 
         function refresh(select) {
             $(document).trigger("mljSearchSelect", [select]);
+            MLJ.widget.TabbedPane.getFiltersAccord().refresh();
         }
 
         /**

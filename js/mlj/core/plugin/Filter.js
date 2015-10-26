@@ -121,7 +121,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             entry.hide();
         }
 
-        MLJ.widget.TabbedPane.getFiltersAccord().refresh();
+        //MLJ.widget.TabbedPane.getFiltersAccord().refresh();
     });
 
     this._main = function () {
