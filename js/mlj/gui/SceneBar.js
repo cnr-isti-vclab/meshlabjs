@@ -89,12 +89,26 @@
             });
             
             MLJ.gui.disabledOnSceneEmpty(snapshot);
+
+            var openWeb = new component.Button({
+                tooltip: "Load a mesh file from the web. Warning: the destination \
+                          server must support Cross-Origin Resource Sharing requests",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0202-sphere.png"
+            });
             
-            _toolBar.add(open, save, reload, snapshot);
+            _toolBar.add(open, openWeb, save, reload, snapshot);
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
                 MLJ.core.File.openMeshFile(input.files);
+            });
+
+            openWeb.onClick(function () {
+                var url = prompt("Resource location:");
+                if (url) {
+                    console.log("Attempting to load mesh from " + url);
+                    MLJ.core.File.openFromWeb(url);
+                }
             });
 
             save.onClick(function () {

@@ -73,7 +73,7 @@
 
         fixedWidth = guiBuilder.Bool({
             label: "Use Fixed Width",
-            tooltip: "If checked, the histogram height is scaled with the <b><i>Histogram Width</i></b> parameter instead of \
+            tooltip: "If checked, the histogram height is scaled with the <b>Histogram Width</b> parameter instead of \
                     using the element count of the largest bin.",
             defval: false,
             bindTo: (function () {

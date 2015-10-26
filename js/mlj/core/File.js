@@ -144,7 +144,7 @@ MLJ.core.File = {
             console.time("Read mesh file");
 
             if (!(file instanceof File)) {
-                console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
+                console.error("MLJ.file.openMeshFile(file): the parameter 'file' must be a File instace.");
                 return;
             }
 
@@ -184,6 +184,29 @@ MLJ.core.File = {
                 }
             });
         });
+    };
+
+    //TODO sanity checks, port to jquery
+    this.openFromWeb = function (url) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+
+        xhr.onload = function (ev) {
+            var arrayBuffer = xhr.response;
+            if (arrayBuffer) {
+                var name = url.substr(url.lastIndexOf('/')+1);
+                var file = new File([arrayBuffer], "[WEB]"+name);
+                MLJ.core.File.openMeshFile(file);
+            } else {
+                console.warn("Http Request returned no data");
+            }
+        }
+        xhr.onerror = function () {
+            console.log("Http Request failed" + ((xhr.statusText) ? (" with status " + xhr.statusText) : ""));
+        };
+        xhr.send();
+
     };
 
     /**
