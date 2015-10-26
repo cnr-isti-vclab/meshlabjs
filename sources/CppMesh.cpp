@@ -26,10 +26,17 @@ class CppMesh
       return m.meshName;
     }
 
-    bool hasPerVertexColor() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
+    bool hasPerVertexColor() const    { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
+    bool hasPerFaceColor() const      { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
+    bool hasPerVertexQuality() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTQUALITY; }
+    bool hasPerFaceQuality() const    { return loadmask & vcg::tri::io::Mask::IOM_FACEQUALITY; }
 
-    bool hasPerFaceColor() const { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
+    void addPerVertexColor()     { loadmask |= vcg::tri::io::Mask::IOM_VERTCOLOR; }
+    void addPerFaceColor()       { loadmask |= vcg::tri::io::Mask::IOM_FACECOLOR; }
+    void addPerVertexQuality()   { loadmask |= vcg::tri::io::Mask::IOM_VERTQUALITY; }
+    void addPerFaceQuality()     { loadmask |= vcg::tri::io::Mask::IOM_FACEQUALITY; }
 
+    
     int openMesh(string fileName) {
       m.meshName=fileName;
       int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
@@ -122,7 +129,13 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceVector",        &CppMesh::getFaceVector)
     .function("getFaceColorVector",   &CppMesh::getFaceColorVector)
     .function("hasPerVertexColor",    &CppMesh::hasPerVertexColor)
+    .function("hasPerVertexQuality",  &CppMesh::hasPerVertexColor)
     .function("hasPerFaceColor",      &CppMesh::hasPerFaceColor)
+    .function("hasPerFaceQuality",    &CppMesh::hasPerFaceColor)
+    .function("addPerVertexColor",    &CppMesh::hasPerVertexColor)
+    .function("addPerVertexQuality",  &CppMesh::hasPerVertexColor)
+    .function("addPerFaceColor",      &CppMesh::hasPerFaceColor)
+    .function("addPerFaceQuality",    &CppMesh::hasPerFaceColor)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;

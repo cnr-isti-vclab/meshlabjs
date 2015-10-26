@@ -76,9 +76,12 @@
             //Add mesh info to info widget
             this.append(mesh.name);
             var vertString = "V: " + mesh.VN;
-            if(mesh.cppMesh.hasPerVertexColor()) vertString +=(" VC");
+            if(mesh.cppMesh.hasPerVertexColor())   vertString +=(" VC");
+            if(mesh.cppMesh.hasPerVertexQuality()) vertString +=(" VQ");
+            
             var faceString = "F: " + mesh.FN;
-            if(mesh.cppMesh.hasPerFaceColor()) vertString +=(" FC");
+            if(mesh.cppMesh.hasPerFaceColor())   vertString +=(" FC");
+            if(mesh.cppMesh.hasPerFaceQuality()) vertString +=(" FQ");
         
             this.append(vertString);
             this.append(faceString);
