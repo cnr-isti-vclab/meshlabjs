@@ -97,6 +97,10 @@ MLJ.core.File = {
             ext = "";
         }
 
+        if (/\[(\d+)\]$/.test(prefix)) {
+            prefix = prefix.substr(0, prefix.lastIndexOf("["));
+        }
+
         var maxNumTag = 0;
         while (true) {
             var collision = false;
