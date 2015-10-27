@@ -76,6 +76,19 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   printf("Completed Simplification\n");
 }
 
+void RemoveUnreferencedVertices(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  int rvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
+  tri::Allocator<MyMesh>::CompactVertexVector(m);
+  printf("Removed %i unreferenced vertices\n",rvn);
+}
+
+void RemoveDuplicatedVertices(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
+}
 
 void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
 {
@@ -109,9 +122,11 @@ void MeshingPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
-    emscripten::function("ConvexHullFilter", &ConvexHullFilter);
-    emscripten::function("QuadricSimplification", &QuadricSimplification);
-    emscripten::function("ClusteringSimplification", &ClusteringSimplification);
+    emscripten::function("ConvexHullFilter",           &ConvexHullFilter);
+    emscripten::function("QuadricSimplification",      &QuadricSimplification);
+    emscripten::function("ClusteringSimplification",   &ClusteringSimplification);
+    emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
+    emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
 }
 #endif
 
