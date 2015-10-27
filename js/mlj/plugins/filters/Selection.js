@@ -1,6 +1,8 @@
 
 (function (plugin, scene) {
-
+    const USE_BOTH = 0,
+          USE_FACE = 1,
+          USE_VERT = 2;
 /******************************************************************************/
     var SelectionDilateFilter = new plugin.Filter({
         name: "Selection Face Dilate",
@@ -167,10 +169,6 @@
         scene.updateLayer(basemeshFile);
     };
 /******************************************************************************/
-    
-   
-
-
     plugin.Manager.install(SelectionDilateFilter);
     plugin.Manager.install(SelectionErodeFilter);
     plugin.Manager.install(SelectionAllFilter);
