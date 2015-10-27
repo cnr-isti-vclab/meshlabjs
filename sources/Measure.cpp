@@ -27,7 +27,8 @@ void ComputeGeometricMeasures(uintptr_t meshPtr)
     printf("Thin shell barycenter %9.6f  %9.6f  %9.6f\n", bc[0], bc[1], bc[2]);
 
     if (volume <= 0) {
-        printf("Mesh is not 'solid', no information on barycenter and inertia tensor\n");
+        printf("Volume is negative, Mesh is not 'solid' (non manifold, non watertight, non consistently oriented)\n"
+               "No information on barycenter and inertia tensor can be reported\n");
     } else {
         printf("Center of mass is %f %f %f\n", I.CenterOfMass()[0], I.CenterOfMass()[1], I.CenterOfMass()[2]);
         Matrix33f it;
@@ -93,6 +94,8 @@ void ComputeTopologicalMeasures(uintptr_t meshPtr)
         printf("Mesh has a undefined number of holes (non 2-manifold mesh)\n");
         printf("Genus is undefined (non 2-manifold mesh)\n");
     }
+    tri::UpdateSelection<MyMesh>::VertexClear(m);
+    tri::UpdateSelection<MyMesh>::FaceClear(m);
 }
 
 void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, int sampleNum, float distUpperBound)

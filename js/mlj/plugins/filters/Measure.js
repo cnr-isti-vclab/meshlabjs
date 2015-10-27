@@ -1,49 +1,40 @@
 (function(plugin, scene) {
-    var Measure = { GEOMETRIC: "Geometric", TOPOLOGICAL: "Topological" };
-
-    var MeasureFilter = new plugin.Filter({
-        name: "Compute Measures",
-        tooltip: "Compute geometric or topological measures of the selected mesh.",
+/******************************************************************************/  
+    var MeasureTopoFilter = new plugin.Filter({
+        name: "Compute Topological Measures",
+        tooltip: "Report topological/combinatorial information of the selected mesh:<br>"
+                +"Vertex, Edge, Face, Unreferenced Vertices, Boundary Edges, "
+                +"Boundary Loops, Genus, Non Manifol Edges, "
+                +"Non Manifold vertices, Connected Components.",
         arity: 1
     });
+    MeasureTopoFilter._init = function(builder) {   };
 
-    var measureChoice;
-
-    MeasureFilter._init = function(builder) {
-        measureChoice = new builder.Choice({
-            label: "Measures",
-            tooltip: "Select the type of measures to compute.",
-            options: [
-                { content: "Geometric", value: Measure.GEOMETRIC, selected: true },
-                { content: "Topological", value: Measure.TOPOLOGICAL }
-            ]
-        });
-    };
-
-    MeasureFilter._applyTo = function(meshfile) {
-        switch (measureChoice.getValue()) {
-        case Measure.GEOMETRIC:
-            Module.ComputeGeometricMeasures(meshfile.ptrMesh());
-            break;
-
-        case Measure.TOPOLOGICAL:
-            Module.ComputeTopologicalMeasures(meshfile.ptrMesh());
-            break;
-
-        default:
-            console.error("Compute Measures: unexpected measure type parameter.");
-        }
+    MeasureTopoFilter._applyTo = function(meshfile) {
+        Module.ComputeTopologicalMeasures(meshfile.ptrMesh());
     }
+/******************************************************************************/  
+    var MeasureGeomFilter = new plugin.Filter({
+        name: "Compute Geometric Measures",
+        tooltip: "Report Geometric information of the selected mesh: <br> "
+                +"Bounding Box, Volume, Surface, Barycenter, Thin Shell Barycenter, "
+                +"Principal Axis, Inertia Moment, ",
+        arity: 1
+    });
+    MeasureGeomFilter._init = function(builder) {   };
 
-    plugin.Manager.install(MeasureFilter);
-    
+    MeasureGeomFilter._applyTo = function(meshfile) {
+        Module.ComputeGeometricMeasures(meshfile.ptrMesh());
+    }
+/******************************************************************************/  
     var HausdorffFilter = new plugin.Filter({
         name: "Compute Hausdorff Distance ",
-        tooltip: "Compute the Hausdorff distance between two meshes. Hausdorff distance is the standard technique for measuring the geometric difference between two surfaces.",
+        tooltip: "Compute the Hausdorff distance between two meshes. <br>"
+                +"Hausdorff distance is the standard technique for measuring the "
+                +"geometric difference between two surfaces.",
         arity: 2});
 
     var srcMeshWidget,trgMeshWidget,sampleNumWidget,maxDistWidget;
-
     HausdorffFilter._init = function (builder) {
 
         srcMeshWidget = builder.LayerSelection({
@@ -75,8 +66,9 @@
                                         trgMeshWidget.getSelectedPtrMesh(),
                                         sampleNumWidget.getValue(),maxDistWidget.getValue());
     };
-
+/******************************************************************************/  
+    plugin.Manager.install(MeasureTopoFilter);
+    plugin.Manager.install(MeasureGeomFilter);
     plugin.Manager.install(HausdorffFilter);
-    
 
 })(MLJ.core.plugin, MLJ.core.Scene);
