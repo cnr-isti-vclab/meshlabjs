@@ -496,16 +496,10 @@ function disambiguateName(meshName) {
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
-     // TODO Rename this, now loading from file and creating from filters use the same code path
     this.createCppMeshFile = function (name) {
-
         var layerName = disambiguateName(name);
         var CppMesh = new Module.CppMesh();
         var layer = new MLJ.core.Layer(layerName, CppMesh);
-
-        //Indicates that the mesh is created by c++
-        //TODO useless, remove this
-        layer.cpp = true;
         return layer;
     };
     

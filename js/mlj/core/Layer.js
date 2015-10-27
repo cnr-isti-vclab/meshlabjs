@@ -36,7 +36,7 @@
  */
 MLJ.core.Layer = function (name, cppMesh) {
     this.name = name;
-    this.filename = "";
+    this.fileName = "";
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;

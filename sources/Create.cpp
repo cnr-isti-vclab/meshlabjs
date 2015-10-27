@@ -60,7 +60,7 @@ void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
       for(int k=0;k<gridSize;k++)
         volume.Val(i,j,k)=(j-gridSize/2)*(j-gridSize/2)+(k-gridSize/2)*(k-gridSize/2) + i*gridSize/5*(float)math::Perlin::Noise(i*.2,j*.2,k*.2);
 
-  printf("[MARCHING CUBES] Building mesh...");
+  printf("[MARCHING CUBES] Building mesh...\n");
   MyMarchingCubes mc(m, walker);
   walker.BuildMesh<MyMarchingCubes>(m, volume, mc, (gridSize*gridSize)/10);
 }

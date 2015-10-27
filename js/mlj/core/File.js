@@ -118,7 +118,6 @@ MLJ.core.File = {
             }
 
             var mf = MLJ.core.Scene.createCppMeshFile(file.name);
-            mf.cpp = false;
             mf.fileName = file.name; 
 
             loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
