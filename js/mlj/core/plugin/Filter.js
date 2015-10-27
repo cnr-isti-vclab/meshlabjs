@@ -40,15 +40,19 @@
  *  * the {@link _init} where you define the parameters  
  *  * the {@link _applyTo} where you define the behaviour of the function 
  * @param {Object} parameters The object contains the initialization parameters 
- * to create filter plugin<br>
+ * to create filter plugin
+ * 
  * <code> parameters = {<br>
  * &nbsp; name: //the name of filter<br> 
  * &nbsp; tooltip: //the filter description shown if mouse pointer is 
  * over its name<br>
  * &nbsp; arity: //An integer:<br>
  * &nbsp;&nbsp;&nbsp;&nbsp; //0 for a creation filter<br>
- * &nbsp;&nbsp;&nbsp;&nbsp; //1 for a generic filter <br>
- * &nbsp;&nbsp;&nbsp;&nbsp; //>1 if the filter doesn't use the current mesh but 
+ * &nbsp;&nbsp;&nbsp;&nbsp; //1 for a generic single mesh filter, e.g. a filter 
+ * &nbsp;&nbsp;&nbsp;&nbsp;     that takes a mesh, some parameters and modify just that single mesh. <br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //2 for a filter that take one or more mesh and/or create other layers.
+ * &nbsp;&nbsp;&nbsp;&nbsp; //3 for a filter that works on all visible layers. 
+ * 
  * defines its own meshes<br>
  * }
  * </code>
@@ -77,7 +81,6 @@
  *
  *      filter._applyTo = function (layer) {
  *          Module.RefineMesh(layer.ptrMesh,iterWdg.getValue());
- *          scene.updateLayer(layer);
  *      };
  *
  *      plugin.install(filter);
@@ -136,7 +139,9 @@ MLJ.core.plugin.Filter = function (parameters) {
 
         apply.onClick(function () {
             var t0 = performance.now();
-            if(_this.parameters.arity === 0) {
+            // Creation filters and filters that works on all layers ignore the current layer
+            // so we do not pass it
+            if( (_this.parameters.arity === 0) || (_this.parameters.arity===3) ) {
                 _this._applyTo();               
             }
             else {
