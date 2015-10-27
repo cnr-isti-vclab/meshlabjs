@@ -80,7 +80,7 @@ MLJ.core.plugin.Plugin.prototype = {
     /**
      * This function should be overridden to define the code that will
      * be executed after that apply or apply to all visible buttons was clicked
-     * @param {MLJ.core.MeshFile} meshFile The mesh file that should be affected
+     * @param {MLJ.core.Layer} meshFile The mesh file that should be affected
      * by the code defined in this function
      * @abstract       
      * @author Stefano Gabriele

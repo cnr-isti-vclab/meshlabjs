@@ -52,7 +52,7 @@ MLJ.core.Scene = {};
 
     /**
      * Reference to current layer 
-     * @type MLJ.core.MeshFile
+     * @type MLJ.core.Layer
      * @memberOf MLJ.core.Scene     
      */
     var _selectedLayer;
@@ -75,7 +75,7 @@ MLJ.core.Scene = {};
      */
     var _group;
     
-    var  _camera;
+    var _camera;
 
     var _scene2D;
     var _camera2D;
@@ -189,14 +189,14 @@ MLJ.core.Scene = {};
         });
 
         $(document).on("MeshFileOpened",
-                function (event, meshFile) {
-                    MLJ.core.Scene.addLayer(meshFile);
+                function (event, layer) {
+                    MLJ.core.Scene.addLayer(layer);
                 });
 
         $(document).on("MeshFileReloaded",
-                function (event, meshFile) {
+                function (event, layer) {
                     //remove all overlays from scene
-                    var iter = meshFile.overlays.iterator();
+                    var iter = layer.overlays.iterator();
                         
                     while(iter.hasNext()) {
                         var overlay = iter.next();
@@ -204,20 +204,20 @@ MLJ.core.Scene = {};
                         _scene2D.remove(overlay);
                     }
 
-                    if (meshFile.histogram !== undefined) {
-                        $(window).off("resize", meshFile.histogram.listener);
-                        meshFile.histogram.$tl.remove();
-                        meshFile.histogram.$bl.remove();
+                    if (layer.histogram !== undefined) {
+                        $(window).off("resize", layer.histogram.listener);
+                        layer.histogram.$tl.remove();
+                        layer.histogram.$bl.remove();
                     }
 
                     // Restore three geometry to reflect the new state of the vcg mesh
-                    meshFile.updateThreeMesh();
+                    layer.updateThreeMesh();
 
                     /**
                      *  Triggered when a layer is reloaded
                      *  @event MLJ.core.Scene#SceneLayerReloaded
                      *  @type {Object}
-                     *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                     *  @property {MLJ.core.Layer} layer The reloaded mesh file
                      *  @example
                      *  <caption>Event Interception:</caption>
                      *  $(document).on("SceneLayerReloaded",
@@ -226,7 +226,7 @@ MLJ.core.Scene = {};
                      *      }
                      *  );
                      */                    
-                    $(document).trigger("SceneLayerReloaded", [meshFile]);
+                    $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
     
@@ -280,7 +280,7 @@ MLJ.core.Scene = {};
          *  Triggered when a layer is selected
          *  @event MLJ.core.Scene#SceneLayerSelected
          *  @type {Object}
-         *  @property {MLJ.core.MeshFile} meshFile The selected mesh file
+         *  @property {MLJ.core.Layer} meshFile The selected mesh file
          *  @example
          *  <caption>Event Interception:</caption>
          *  $(document).on("SceneLayerSelected",
@@ -326,22 +326,22 @@ MLJ.core.Scene = {};
 
     /**
      * Adds a new layer in the scene
-     * @param {MLJ.core.MeshFile} meshFile The mesh file to add
+     * @param {MLJ.core.Layer} meshFile The mesh file to add
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele
      */
-    this.addLayer = function (meshFile) {
-        if (!(meshFile instanceof MLJ.core.MeshFile)) {
+    this.addLayer = function (layer) {
+        if (!(layer instanceof MLJ.core.Layer)) {
             console.error("The parameter must be an instance of MLJ.core.MeshFile");
             return;
         }
         
         // Initialize the THREE geometry used by overlays and rendering params
-        meshFile.initializeRenderingAttributes();
+        layer.initializeRenderingAttributes();
 
         //Add new mesh to associative array _layers            
-        _layers.set(meshFile.name, meshFile);
-        _selectedLayer = meshFile;
+        _layers.set(layer.name, layer);
+        _selectedLayer = layer;
 
         _computeGlobalBBbox();              
 
@@ -349,30 +349,30 @@ MLJ.core.Scene = {};
          *  Triggered when a layer is added
          *  @event MLJ.core.Scene#SceneLayerAdded
          *  @type {Object}
-         *  @property {MLJ.core.MeshFile} meshFile The last mesh file added
+         *  @property {MLJ.core.Layer} layer The last mesh file added
          *  @property {Integer} layersNumber The number of layers in the scene
          *  @example
          *  <caption>Event Interception:</caption>
          *  $(document).on("SceneLayerAdded",
-         *      function (event, meshFile, layersNumber) {
+         *      function (event, layer, layersNumber) {
          *          //do something
          *      }
          *  );
          */
-        $(document).trigger("SceneLayerAdded", [meshFile, _layers.size()]);
+        $(document).trigger("SceneLayerAdded", [layer, _layers.size()]);
         
         //render the scene
         _this.render();
     };       
     
-    this.addOverlayLayer = function(meshFile, name, mesh, useOrthographicProjection) {
+    this.addOverlayLayer = function(layer, name, mesh, useOrthographicProjection) {
         if(!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Mesh");
             return;
         }
         
-        meshFile.overlays.set(name,mesh);
-        mesh.visible = meshFile.getThreeMesh().visible;
+        layer.overlays.set(name,mesh);
+        mesh.visible = layer.getThreeMesh().visible;
         if (useOrthographicProjection === true) {
             _scene2D.add(mesh);
         } else {
@@ -383,11 +383,11 @@ MLJ.core.Scene = {};
         _this.render();
     };
     
-    this.removeOverlayLayer = function(meshFile, name) {        
-        var mesh = meshFile.overlays.getByKey(name);
+    this.removeOverlayLayer = function(layer, name) {        
+        var mesh = layer.overlays.getByKey(name);
         
         if(mesh !== undefined) {
-            mesh = meshFile.overlays.remove(name);            
+            mesh = layer.overlays.remove(name);            
             
             _group.remove(mesh);                        
             _scene2D.remove(mesh);                        
@@ -408,7 +408,7 @@ MLJ.core.Scene = {};
     /**
      * Updates a layer. This function should be called if the <code>meshFile</code>
      * geometry or properties was modified.
-     * @param {MLJ.core.MeshFile} meshFile The mesh file corresponding to the level
+     * @param {MLJ.core.Layer} meshFile The mesh file corresponding to the level
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      * @example
@@ -417,15 +417,15 @@ MLJ.core.Scene = {};
      * //The filter has changed mesh geometry ...
      * scene.updateLayer(meshFile);
      */
-    this.updateLayer = function (meshFile) {
-        if (meshFile instanceof MLJ.core.MeshFile) {
+    this.updateLayer = function (layer) {
+        if (layer instanceof MLJ.core.Layer) {
 
-            if (_layers.getByKey(meshFile.name) === undefined) {
-                console.warn("Trying to update a mesh not in the scene.");
+            if (_layers.getByKey(layer.name) === undefined) {
+                console.warn("Trying to update a layer not in the scene.");
                 return;
             }
 
-            meshFile.updateThreeMesh();
+            layer.updateThreeMesh();
 
             //render the scene
             this.render();
@@ -434,7 +434,7 @@ MLJ.core.Scene = {};
              *  Triggered when a layer is updated
              *  @event MLJ.core.Scene#SceneLayerUpdated
              *  @type {Object}
-             *  @property {MLJ.core.MeshFile} meshFile The updated mesh file
+             *  @property {MLJ.core.Layer} meshFile The updated mesh file
              *  @example
              *  <caption>Event Interception:</caption>
              *  $(document).on("SceneLayerUpdated",
@@ -443,10 +443,10 @@ MLJ.core.Scene = {};
              *      }
              *  );
              */
-            $(document).trigger("SceneLayerUpdated", [meshFile]);
+            $(document).trigger("SceneLayerUpdated", [layer]);
 
         } else {
-            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            console.error("The parameter must be an instance of MLJ.core.Layer");
         }
     };
 
@@ -454,7 +454,7 @@ MLJ.core.Scene = {};
      * Returns the layer corresponding to the given name
      * @param {String} name The name of the layer     
      * @memberOf MLJ.core.Scene
-     * @return {MLJ.core.MeshFile} The layer corresponding to the given name
+     * @return {MLJ.core.Layer} The layer corresponding to the given name
      * @author Stefano Gabriele     
      */
     this.getLayerByName = function (name) {
@@ -493,7 +493,7 @@ function disambiguateName(meshName) {
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
      * @memberOf MLJ.core.File
-     * @returns {MLJ.core.MeshFile} The new mesh file
+     * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
      // TODO Rename this, now loading from file and creating from filters use the same code path
@@ -501,12 +501,12 @@ function disambiguateName(meshName) {
 
         var layerName = disambiguateName(name);
         var CppMesh = new Module.CppMesh();
-        var mf = new MLJ.core.MeshFile(layerName, CppMesh);
+        var layer = new MLJ.core.Layer(layerName, CppMesh);
 
         //Indicates that the mesh is created by c++
         //TODO useless, remove this
-        mf.cpp = true;
-        return mf;
+        layer.cpp = true;
+        return layer;
     };
     
     /**
@@ -516,14 +516,14 @@ function disambiguateName(meshName) {
      * @author Stefano Gabriele     
      */
     this.removeLayerByName = function (name) {
-        var meshFile = this.getLayerByName(name);
+        var layer = this.getLayerByName(name);
         
-        if (meshFile !== undefined) {
+        if (layer !== undefined) {
             //remove layer from list
             _layers.remove(name);
                              
             //remove all overlays from scene
-            var iter = meshFile.overlays.iterator();
+            var iter = layer.overlays.iterator();
                         
             while(iter.hasNext()) {
                 var overlay = iter.next();
@@ -531,15 +531,15 @@ function disambiguateName(meshName) {
                 _scene2D.remove(overlay);
             }
 
-            if (meshFile.histogram !== undefined) {
-                $(window).off("resize", meshFile.histogram.listener);
-                meshFile.histogram.$tl.remove();
-                meshFile.histogram.$bl.remove();
+            if (layer.histogram !== undefined) {
+                $(window).off("resize", layer.histogram.listener);
+                layer.histogram.$tl.remove();
+                layer.histogram.$bl.remove();
             }
                                                 
-            $(document).trigger("SceneLayerRemoved", [meshFile]);
+            $(document).trigger("SceneLayerRemoved", [layer]);
             
-            meshFile.dispose();
+            layer.dispose();
                       
             if(_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
@@ -554,7 +554,7 @@ function disambiguateName(meshName) {
 
     /**
      * Returns the currently selected layer     
-     * @returns {MLJ.core.MeshFile} The currently selected layer
+     * @returns {MLJ.core.Layer} The currently selected layer
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele     
      */

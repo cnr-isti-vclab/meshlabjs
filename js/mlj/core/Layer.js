@@ -22,27 +22,19 @@
  */
 
 /**
- * @file Defines the MeshFile class
+ * @file Defines the Layer class
  * @author Stefano Gabriele
  */
 
 
 /**         
- * @class Creates a new MeshFile 
+ * @class Creates a new Layer 
  * @param {String} name The name of the mesh file
  * @param {CppMesh} cppMesh the CppMesh object
  * @memberOf MLJ.core
- * @author Stefano Gabriele 
  * @example
- * var CppMesh = new Module.CppMesh();
- * var resOpen = Opener.openMesh(file.name);
- * if (resOpen != 0) {
- *      // error in opening ...
- * } else { 
- *      var mf = new MLJ.core.MeshFile(file.name, CppMesh); 
- * } 
  */
-MLJ.core.MeshFile = function (name, cppMesh) {
+MLJ.core.Layer = function (name, cppMesh) {
     this.name = name;
     this.filename = "";
     this.cppMesh = cppMesh;

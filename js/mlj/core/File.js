@@ -127,7 +127,7 @@ MLJ.core.File = {
                      *  Triggered when a mash file is opened
                      *  @event MLJ.core.File#MeshFileOpened
                      *  @type {Object}
-                     *  @property {MLJ.core.MeshFile} meshFile The opened mesh file
+                     *  @property {MLJ.core.Layer} meshFile The opened mesh file
                      *  @example
                      *  <caption>Event Interception:</caption>
                      *  $(document).on("MeshFileOpened",
@@ -168,7 +168,7 @@ MLJ.core.File = {
     /**
      * Reloads an existing layer, that is recovers the file linked to the layer
      * and reinitializes the cppMesh of the layer with it
-     * @param {MLJ.core.MeshFile} mf the MeshFile to be reloaded
+     * @param {MLJ.core.Layer} mf the MeshFile to be reloaded
      * @memberOf MLJ.core.File
      * @fires MLJ.core.File#MeshFileReloaded
      */
@@ -186,7 +186,7 @@ MLJ.core.File = {
                  *  Triggered when a mesh file is reloaded
                  *  @event MLJ.core.File#MeshFileReloaded
                  *  @type {Object}
-                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
+                 *  @property {MLJ.core.Layer} meshFile The reloaded mesh file
                  *  @example
                  *  <caption>Event Interception:</caption>
                  *  $(document).on("MeshFileReloaded",

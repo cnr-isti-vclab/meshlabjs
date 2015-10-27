@@ -37,7 +37,7 @@ Code Structure
 -------------
 The main namespace is {@link MLJ.core} and the two main elements are the {@link MLJ.core.Scene}
  namespace that holds the whole document concept of the system, e.g. the set of meshes on which
- you work, and the {@link MLJ.core.MeshFile} class that actually holds each one of the mesh.
+ you work, and the {@link MLJ.core.Layer} class that actually holds each one of the mesh.
 
 Two part of MeshLabJs are designed for extendibility, *filters* and *rendering passes*.
 
