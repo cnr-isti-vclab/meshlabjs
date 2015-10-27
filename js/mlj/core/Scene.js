@@ -537,7 +537,7 @@ function disambiguateName(meshName) {
                 layer.histogram.$bl.remove();
             }
                                                 
-            $(document).trigger("SceneLayerRemoved", [layer]);
+            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
             
             layer.dispose();
                       

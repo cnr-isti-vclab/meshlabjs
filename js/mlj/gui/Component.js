@@ -315,6 +315,9 @@ MLJ.gui.component.Button = function (flags) {
     };
 
     this._disabled = function (bool) {
+        // when disabling the component close the tooltip
+        // since if it's open it will remain on screen indefinitely
+        if (bool) this.$.tooltip("close");
         this.$.button({disabled: bool});
     };
 

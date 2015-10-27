@@ -87,7 +87,7 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
         component.disabled(true);
     });
 
-    $(document).on("SceneLayerAdded", function (ev, layer, layersNum) {
+    $(document).on("SceneLayerAdded SceneLayerRemoved", function (ev, layer, layersNum) {
         if (layersNum > 0) {
             component.disabled(false);
         } else {
