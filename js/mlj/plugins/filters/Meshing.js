@@ -21,7 +21,6 @@
 
     QuadricSimpFilter._applyTo = function (meshFile) {
         Module.QuadricSimplification(meshFile.ptrMesh(), ratioW.getValue(), 0, true);
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/  
     var ClusteringFilter = new plugin.Filter({
@@ -44,7 +43,6 @@
 
     ClusteringFilter._applyTo = function (meshFile) {
         Module.ClusteringSimplification(meshFile.ptrMesh(), clusteringRatioWidget.getValue());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/  
     var ConvexHullFilter = new plugin.Filter({
@@ -74,7 +72,6 @@
 
     RemoveUnrefVert._applyTo = function (basemeshFile) {
         Module.RemoveUnreferencedVertices(basemeshFile.ptrMesh());
-        scene.updateLayer(basemeshFile);
     };
 /******************************************************************************/  
     var RemoveDupVert = new plugin.Filter({
@@ -88,7 +85,6 @@
 
     RemoveDupVert._applyTo = function (basemeshFile) {
         Module.RemoveDuplicatedVertices(basemeshFile.ptrMesh());
-        scene.updateLayer(basemeshFile);
     };
 
     plugin.Manager.install(QuadricSimpFilter);

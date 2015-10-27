@@ -1097,17 +1097,17 @@ MLJ.gui.component.LayerSelection = function(flags) {
     var _html = "<select></select>";
     var _this = this;
 
-    $(document).on("SceneLayerAdded", function(event, meshFile) {
+    $(document).on("SceneLayerAdded", function(event, layer) {
         if (_this.$.find("option").length === 0) {
             _this.$.selectmenu("enable");
         }
-        var $option = $("<option />").attr("value", meshFile.name).append(meshFile.name);
+        var $option = $("<option />").attr("value", layer.name).append(layer.name);
         _this.$.append($option);
         _this.$.selectmenu("refresh");
     });
 
-    $(document).on("SceneLayerRemoved", function(event, meshFile) {
-        _this.$.find("option[value=\"" + meshFile.name + "\"]").remove();
+    $(document).on("SceneLayerRemoved", function(event, layer) {
+        _this.$.find("option[value=\"" + layer.name + "\"]").remove();
         if (_this.$.find("option").length === 0) {
             _this.$.selectmenu("disable");
         }        

@@ -12,7 +12,6 @@
 
 	ColorFilter._applyTo = function (meshFile) {
 		Module.ColorizeByVertexQualityTEST(meshFile.ptrMesh());
-		scene.updateLayer(meshFile);
 	};
 
 	plugin.Manager.install(ColorFilter);
@@ -53,7 +52,6 @@
 
 	ColorFromVertexQualityFilter._applyTo = function(meshFile) {
 		Module.ColorizeByVertexQuality(meshFile.ptrMesh(), qMin.getValue(), qMax.getValue(), percentile.getValue(), zeroSym.getValue());
-		scene.updateLayer(meshFile);
 	};
 
 	plugin.Manager.install(ColorFromVertexQualityFilter);
@@ -71,7 +69,6 @@
 
 	ColorFromBorderDistFilter._applyTo = function (meshFile) {
 		Module.ColorizeByBorderDistance(meshFile.ptrMesh());
-		scene.updateLayer(meshFile);
 	};
 
 	plugin.Manager.install(ColorFromBorderDistFilter)

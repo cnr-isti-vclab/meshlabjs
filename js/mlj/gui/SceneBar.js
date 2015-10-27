@@ -112,9 +112,9 @@
             });
 
             save.onClick(function () {
-                var meshFile = MLJ.core.Scene.getSelectedLayer();
+                var layer = MLJ.core.Scene.getSelectedLayer();
                 //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
-                var meshInfo = meshFile.name.split(".");                
+                var meshInfo = layer.name.split(".");                
                 _dialog.show();
                 $('#mlj-save-dialog > #filename').val(meshInfo[0]);
                 
@@ -124,7 +124,7 @@
                 $('#mlj-save-dialog-button').click(function() {                    
                     var name = $('#mlj-save-dialog > #filename').val();
                     var extension = $('#mlj-save-dialog > #extension').val();
-                    MLJ.core.File.saveMeshFile(meshFile, name+extension);
+                    MLJ.core.File.saveMeshFile(layer, name+extension);
                     _dialog.destroy();
                     $(this).off();
                 });

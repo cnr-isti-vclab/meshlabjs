@@ -29,7 +29,6 @@
 
     filter._applyTo = function (meshFile) {
         Module.RefineMesh(meshFile.ptrMesh(),iterWdg.getValue(),parseInt(refineTypeWidget.getValue()));
-        scene.updateLayer(meshFile);
     };
 
     plugin.Manager.install(filter);

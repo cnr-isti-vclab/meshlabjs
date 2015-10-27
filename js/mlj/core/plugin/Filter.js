@@ -75,9 +75,9 @@
  *
  *      };
  *
- *      filter._applyTo = function (meshFile) {
- *          Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue());
- *          scene.updateLayer(meshFile);
+ *      filter._applyTo = function (layer) {
+ *          Module.RefineMesh(layer.ptrMesh,iterWdg.getValue());
+ *          scene.updateLayer(layer);
  *      };
  *
  *      plugin.install(filter);
@@ -135,9 +135,15 @@ MLJ.core.plugin.Filter = function (parameters) {
         entry.addHeaderButton(apply);
 
         apply.onClick(function () {
-            var meshFile = MLJ.core.Scene.getSelectedLayer();
             var t0 = performance.now();
-            _this._applyTo(meshFile);
+            if(_this.parameters.arity === 0) {
+                _this._applyTo();               
+            }
+            else {
+                var layer = MLJ.core.Scene.getSelectedLayer();
+                _this._applyTo(layer);
+                MLJ.core.Scene.updateLayer(layer);
+            }
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
@@ -163,6 +169,7 @@ MLJ.core.plugin.Filter = function (parameters) {
                     layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer);
+                        MLJ.core.Scene.updateLayer(layer);
                     }
                 }
                 var t1 = performance.now();

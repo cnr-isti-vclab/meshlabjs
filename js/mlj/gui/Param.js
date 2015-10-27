@@ -287,7 +287,7 @@ MLJ.gui.Param.LayerSelection = function (flags) {
      * Returns a reference to the MLJ.core.Layer object of the layer currently selected from the widget.
      * @returns {MLJ.core.Layer}    
      */
-    this.getSelectedMeshFile = function() {
+    this.getSelectedLayer = function() {
         return MLJ.core.Scene.getLayerByName(this.selector.getSelectedEntry());
     };
 

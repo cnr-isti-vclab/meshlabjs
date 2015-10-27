@@ -14,7 +14,6 @@
 
     SelectionDilateFilter._applyTo = function (meshFile) {
         Module.SelectionDilate(meshFile.ptrMesh());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/
     var SelectionErodeFilter = new plugin.Filter({
@@ -27,7 +26,6 @@
 
     SelectionErodeFilter._applyTo = function (meshFile) {
         Module.SelectionErode(meshFile.ptrMesh());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/  
     var SelectionAllFilter = new plugin.Filter({
@@ -56,7 +54,6 @@
             case USE_VERT: vertFlag = true;  faceFlag = false; break;
         }
         Module.SelectionAll(meshFile.ptrMesh(),vertFlag,faceFlag);
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/    
     var SelectionNoneFilter = new plugin.Filter({
@@ -85,7 +82,6 @@
             case USE_VERT: vertFlag = true;  faceFlag = false; break;
         }
         Module.SelectionNone(meshFile.ptrMesh(),vertFlag,faceFlag);
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/    
     var SelectionInvertFilter = new plugin.Filter({
@@ -115,7 +111,6 @@
             case USE_VERT: vertFlag = true;  faceFlag = false; break;
         }
         Module.SelectionInvert(meshFile.ptrMesh(),vertFlag,faceFlag);
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/        
     var RndSelectionFilter = new plugin.Filter({
@@ -141,7 +136,6 @@
 
     RndSelectionFilter._applyTo = function (meshFile) {
         Module.SelectionRandom(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/
      var SelectionByQualityFilter = new plugin.Filter({
@@ -166,7 +160,6 @@
 
     SelectionByQualityFilter._applyTo = function (basemeshFile) {
         Module.SelectionByQuality(basemeshFile.ptrMesh(),thresholdWidget.getValue(),vertexFaceWidget.getValue());
-        scene.updateLayer(basemeshFile);
     };
 /******************************************************************************/
     plugin.Manager.install(SelectionDilateFilter);

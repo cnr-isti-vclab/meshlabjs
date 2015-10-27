@@ -221,7 +221,7 @@ MLJ.core.Scene = {};
                      *  @example
                      *  <caption>Event Interception:</caption>
                      *  $(document).on("SceneLayerReloaded",
-                     *      function (event, meshFile) {
+                     *      function (event, layer) {
                      *          //do something
                      *      }
                      *  );
@@ -280,11 +280,11 @@ MLJ.core.Scene = {};
          *  Triggered when a layer is selected
          *  @event MLJ.core.Scene#SceneLayerSelected
          *  @type {Object}
-         *  @property {MLJ.core.Layer} meshFile The selected mesh file
+         *  @property {MLJ.core.Layer} layer The selected mesh file
          *  @example
          *  <caption>Event Interception:</caption>
          *  $(document).on("SceneLayerSelected",
-         *      function (event, meshFile) {
+         *      function (event, layer) {
          *          //do something
          *      }
          *  );
@@ -326,7 +326,7 @@ MLJ.core.Scene = {};
 
     /**
      * Adds a new layer in the scene
-     * @param {MLJ.core.Layer} meshFile The mesh file to add
+     * @param {MLJ.core.Layer} layer The mesh file to add
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele
      */
@@ -406,16 +406,16 @@ MLJ.core.Scene = {};
     };  
 
     /**
-     * Updates a layer. This function should be called if the <code>meshFile</code>
+     * Updates a layer. This function should be called if the <code>layer</code>
      * geometry or properties was modified.
-     * @param {MLJ.core.Layer} meshFile The mesh file corresponding to the level
+     * @param {MLJ.core.Layer} layer The mesh file corresponding to the level
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      * @example
      * //Apply Laplacian smooth filter
-     * Module.LaplacianSmooth(meshFile.ptrMesh, 1, false);
+     * Module.LaplacianSmooth(layer.ptrMesh, 1, false);
      * //The filter has changed mesh geometry ...
-     * scene.updateLayer(meshFile);
+     * scene.updateLayer(layer);
      */
     this.updateLayer = function (layer) {
         if (layer instanceof MLJ.core.Layer) {
@@ -434,11 +434,11 @@ MLJ.core.Scene = {};
              *  Triggered when a layer is updated
              *  @event MLJ.core.Scene#SceneLayerUpdated
              *  @type {Object}
-             *  @property {MLJ.core.Layer} meshFile The updated mesh file
+             *  @property {MLJ.core.Layer} layer The updated mesh file
              *  @example
              *  <caption>Event Interception:</caption>
              *  $(document).on("SceneLayerUpdated",
-             *      function (event, meshFile) {
+             *      function (event, layer) {
              *          //do something
              *      }
              *  );

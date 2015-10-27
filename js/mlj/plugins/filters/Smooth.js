@@ -23,7 +23,6 @@
 
     LaplacianSmoothFilter._applyTo = function (meshFile) {
         Module.LaplacianSmooth(meshFile.ptrMesh(), stepLWidget.getValue(), weightWidget.getValue());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/
     var TaubinSmoothFilter = new plugin.Filter({
@@ -55,7 +54,6 @@
 
     TaubinSmoothFilter._applyTo = function (meshFile) {
         Module.TaubinSmooth(meshFile.ptrMesh(), stepTWidget.getValue(), lambdaWidget.getValue(), muWidget.getValue());
-        scene.updateLayer(meshFile);
     };
 /******************************************************************************/
     var RndDisplacementFilter = new plugin.Filter({
@@ -77,12 +75,10 @@
             label: "Normal Directed Displ.",
             tooltip: "If true, the displacement is directed along the normal of the surface, otherwise it is in a random direction."
         });
-
     };
 
     RndDisplacementFilter._applyTo = function (meshFile) {
         Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
-        scene.updateLayer(meshFile);
     };
 
 /******************************************************************************/
