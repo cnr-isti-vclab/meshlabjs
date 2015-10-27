@@ -123,7 +123,8 @@ void MeasurePluginTEST()
   tri::Sphere(m0,3);
   tri::Sphere(m1,4);
 
-  ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),1000,0.1);
+  ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),10000,0.1);
+  ComputeHausdorffDistance(uintptr_t(&m1),uintptr_t(&m0),10000,0.1);
 }
 
 #ifdef __EMSCRIPTEN__
