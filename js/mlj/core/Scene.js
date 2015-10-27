@@ -460,8 +460,55 @@ MLJ.core.Scene = {};
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
     };
+function disambiguateName(meshName) {
+        var prefix, ext;
+        var ptIndex = meshName.lastIndexOf('.');
+        if (ptIndex > 0) {
+            prefix = meshName.substr(0, ptIndex);
+            ext = meshName.substr(ptIndex);
+        } else {
+            prefix = meshName;
+            ext = "";
+        }
 
+        if (/\[(\d+)\]$/.test(prefix)) {
+            prefix = prefix.substr(0, prefix.lastIndexOf("["));
+        }
 
+        var maxNumTag = 0;
+        while (true) {
+            var collision = false;
+            var layerIterator = MLJ.core.Scene.getLayers().iterator();
+            while (layerIterator.hasNext() && !collision) {
+                if (meshName === layerIterator.next().name) collision = true;
+            }
+            if (collision) meshName = prefix + "[" + ++maxNumTag + "]" + ext;
+            else break;
+        }
+        return meshName;
+    }
+
+    
+/**
+     * Creates a new mesh file using the c++ functions bound to JavaScript
+     * @param {String} name The name of the new mesh file
+     * @memberOf MLJ.core.File
+     * @returns {MLJ.core.MeshFile} The new mesh file
+     * @author Stefano Gabriele
+     */
+     // TODO Rename this, now loading from file and creating from filters use the same code path
+    this.createCppMeshFile = function (name) {
+
+        var layerName = disambiguateName(name);
+        var CppMesh = new Module.CppMesh();
+        var mf = new MLJ.core.MeshFile(layerName, CppMesh);
+
+        //Indicates that the mesh is created by c++
+        //TODO useless, remove this
+        mf.cpp = true;
+        return mf;
+    };
+    
     /**
      * Removes the layer corresponding to the given name
      * @param {String} name The name of the layer which must be removed  

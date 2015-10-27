@@ -3,9 +3,7 @@
 
 (function (plugin, scene) {
     
-    const USE_BOTH = 0,
-          USE_FACE = 1,
-          USE_VERT = 2;
+    
           
     var QuadricSimpFilter = new plugin.Filter({
         name: "Quadric Simplification",
@@ -69,7 +67,7 @@
     };
 
     ConvexHullFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.File.createCppMeshFile("ConvexHull of "+basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("ConvexHull of "+basemeshFile.name);
         Module.ConvexHullFilter(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };

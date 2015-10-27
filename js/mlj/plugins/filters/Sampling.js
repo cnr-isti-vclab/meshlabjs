@@ -21,7 +21,7 @@
     };
 
     MontecarloSamplingFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.File.createCppMeshFile("Montecarlo Samples");
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Montecarlo Samples");
         Module.MontecarloSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(), sampleNumMCWidget.getValue());
         scene.addLayer(newmeshFile);
     };
@@ -57,7 +57,7 @@
 
     PoissonDiskSamplingFilter._applyTo = function (basemeshFile) {
 
-        var newmeshFile = MLJ.core.File.createCppMeshFile("Poisson Disk Samples");
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Poisson Disk Samples");
         Module.PoissonDiskSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),
                                    radiusWidget.getValue(),sampleNumPDWidget.getValue(),  0);
         scene.addLayer(newmeshFile);
