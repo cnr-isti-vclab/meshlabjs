@@ -87,7 +87,9 @@ void RemoveUnreferencedVertices(uintptr_t _baseM)
 void RemoveDuplicatedVertices(uintptr_t _baseM)
 {
   MyMesh &m = *((MyMesh*) _baseM);
-  tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
+  int cnt = tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
+  printf("Removed %i duplicated vertices\n",cnt);
+  tri::Allocator<MyMesh>::CompactEveryVector(m);
 }
 
 void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)

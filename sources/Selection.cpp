@@ -54,6 +54,56 @@ void SelectionAll(uintptr_t _baseM, bool vertFlag, bool faceFlag)
   if(faceFlag) tri::UpdateSelection<MyMesh>::FaceAll(m);
 }
 
+void SelectionDeleteVertex(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::FaceClear(m);
+  tri::UpdateSelection<MyMesh>::FaceFromVertexLoose(m);
+  for(MyMesh::FaceIterator fi=m.face.begin();fi!=m.face.end();++fi)
+      if((*fi).IsS()) tri::Allocator<MyMesh>::DeleteFace(m,*fi);
+
+  for(MyMesh::VertexIterator vi=m.vert.begin();vi!=m.vert.end();++vi)
+    if(vi->IsS()) tri::Allocator<MyMesh>::DeleteVertex(m,*vi);
+  tri::Allocator<MyMesh>::CompactEveryVector(m);
+}
+
+void SelectionDeleteFace(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateSelection<MyMesh>::VertexClear(m);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
+
+  for(MyMesh::FaceIterator fi=m.face.begin();fi!=m.face.end();++fi)
+    if(fi->IsS()) tri::Allocator<MyMesh>::DeleteFace(m,*fi);
+
+  for(MyMesh::VertexIterator vi=m.vert.begin();vi!=m.vert.end();++vi)
+    if(vi->IsS()) tri::Allocator<MyMesh>::DeleteVertex(m,*vi);
+
+  tri::Allocator<MyMesh>::CompactEveryVector(m);
+}
+void SelectionMoveToNewLayer(uintptr_t _baseM, uintptr_t _newM,bool deleteOriginalFaceFlag)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  MyMesh &newm = *((MyMesh*) _newM);
+  tri::UpdateSelection<MyMesh>::VertexClear(m);
+  tri::UpdateSelection<MyMesh>::VertexFromFaceLoose(m);
+  tri::Append<MyMesh,MyMesh>::Mesh(newm, m, true);
+
+  if(deleteOriginalFaceFlag)
+  {
+    tri::UpdateSelection<MyMesh>::VertexClear(m);
+    tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
+
+    for(MyMesh::FaceIterator fi=m.face.begin();fi!=m.face.end();++fi)
+      if(fi->IsS()) tri::Allocator<MyMesh>::DeleteFace(m,*fi);
+
+    for(MyMesh::VertexIterator vi=m.vert.begin();vi!=m.vert.end();++vi)
+      if(vi->IsS()) tri::Allocator<MyMesh>::DeleteVertex(m,*vi);
+
+    tri::Allocator<MyMesh>::CompactEveryVector(m);
+  }
+}
+
 void SelectionNone(uintptr_t _baseM, bool vertFlag, bool faceFlag)
 {
   MyMesh &m = *((MyMesh*) _baseM);
@@ -111,6 +161,9 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("SelectionInvert", &SelectionInvert);
     emscripten::function("SelectionAll",    &SelectionAll);
     emscripten::function("SelectionNone",   &SelectionNone);
+    emscripten::function("SelectionDeleteVertex",    &SelectionDeleteVertex);
+    emscripten::function("SelectionDeleteFace",   &SelectionDeleteFace);
+    emscripten::function("SelectionMoveToNewLayer",   &SelectionMoveToNewLayer);
     emscripten::function("SelectionByQuality",   &SelectionByQuality);
     emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);
 }

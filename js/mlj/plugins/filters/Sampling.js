@@ -5,7 +5,7 @@
         name: "Montecarlo Random Sampling",
         tooltip: "Create a new layer populated with a point sampling of the current mesh;" +
                 " samples are generated in a randomly uniform way, or with a distribution biased by the per-vertex quality values of the mesh.",
-        arity: 1
+        arity: 2
     });
 
     var sampleNumMCWidget;
@@ -35,7 +35,7 @@
                 "samples are generated according to a Poisson-disk distribution using the algorithm described in:<br>" +
                 "<b>'Efficient and Flexible Sampling with Blue Noise Properties of Triangular Meshes'</b><br>" +
                 " Massimiliano Corsini, Paolo Cignoni, Roberto Scopigno<br>IEEE TVCG 2012",
-        arity: 1
+        arity: 2
     });
 
     var sampleNumPDWidget, radiusWidget;

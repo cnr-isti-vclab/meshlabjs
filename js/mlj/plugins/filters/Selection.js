@@ -161,6 +161,51 @@
     SelectionByQualityFilter._applyTo = function (basemeshFile) {
         Module.SelectionByQuality(basemeshFile.ptrMesh(),thresholdWidget.getValue(),vertexFaceWidget.getValue());
     };
+/******************************************************************************/    
+    var SelectionDeleteVertex = new plugin.Filter({
+        name: "Delete Selected Vertices",
+        tooltip: "Delete all the selected vertices. For sake of consistency all "
+                +"the faces that are incident on selected vertices are deleted too",
+        arity: 1
+    });
+    SelectionDeleteVertex._init = function (builder) {} 
+    SelectionDeleteVertex._applyTo = function (meshFile) {
+        Module.SelectionDeleteVertex(meshFile.ptrMesh());
+    };
+/******************************************************************************/    
+    var SelectionDeleteFace = new plugin.Filter({
+        name: "Delete Selected Faces",
+        tooltip: "All the Selected Faces are deleted. For sake of consistency we delete"
+                +"also all the vertices that would become isolated after the "
+                +"deletion of the faces.",
+        arity: 1
+    });
+    SelectionDeleteFace._init = function (builder) {} 
+    SelectionDeleteFace._applyTo = function (meshFile) {
+        Module.SelectionDeleteFace(meshFile.ptrMesh());
+    };
+/******************************************************************************/    
+    var SelectionMoveToNewLayer = new plugin.Filter({
+        name: "Move Selection to New Layer",
+        tooltip: "Move the selected vertices and faces onto a new layer. "
+                +"All the selected faces are moved and all the vertices that "
+                +"are selected <b>or</b> incident on a selcted face. ",
+        arity: 2
+    });
+    var deleteOrigFaceWidget;
+    SelectionMoveToNewLayer._init = function (builder) {
+            deleteOrigFaceWidget = builder.Bool({
+            defval: true,
+            label: "Delete Orig. Face",
+            tooltip: "If true, the selected face in the initial mesh are deleted"
+        });
+
+    } 
+    SelectionMoveToNewLayer._applyTo = function (basemeshFile) {
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Selection of "+basemeshFile.name);
+        Module.SelectionMoveToNewLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),deleteOrigFaceWidget.getValue());
+        scene.addLayer(newmeshFile);
+    };
 /******************************************************************************/
     plugin.Manager.install(SelectionDilateFilter);
     plugin.Manager.install(SelectionErodeFilter);
@@ -169,5 +214,8 @@
     plugin.Manager.install(SelectionInvertFilter);
     plugin.Manager.install(RndSelectionFilter);
     plugin.Manager.install(SelectionByQualityFilter);
+    plugin.Manager.install(SelectionDeleteFace);
+    plugin.Manager.install(SelectionDeleteVertex);
+    plugin.Manager.install(SelectionMoveToNewLayer);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

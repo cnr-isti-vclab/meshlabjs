@@ -28,6 +28,29 @@
         Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
+/******************************************************************************/
+    var FlattenLayerFilter = new plugin.Filter({
+        name: "Flatten Visible Layer",
+        tooltip: "Merge all the visible layer onto a single layer",
+        arity: 3
+    });
+    
+    FlattenLayerFilter._init = function (builder) { };
+    
+    FlattenLayerFilter._applyTo = function () {
+        var mergedLayers = MLJ.core.Scene.createCppMeshFile("Merged Layers");
+        
+        var ptr = MLJ.core.Scene.getLayers().iterator();
+                var layerCur;
+                while (ptr.hasNext()) {
+                    layerCur = ptr.next();
+                    if (layerCur.getThreeMesh().visible) {
+                        Module.AddLayerToLayer(layerCur.ptrMesh(), mergedLayers.ptrMesh());
+                    }
+                }
+                
+        scene.addLayer(mergedLayers);
+    };
 /******************************************************************************/     
     var PlatonicFilter = new plugin.Filter({
         name: "Create Platonic Solid",
@@ -130,6 +153,7 @@
 
     plugin.Manager.install(DeleteLayerFilter);
     plugin.Manager.install(DuplicateLayerFilter);
+    plugin.Manager.install(FlattenLayerFilter);
     plugin.Manager.install(SphereFilter);
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);

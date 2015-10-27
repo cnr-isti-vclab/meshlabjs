@@ -52,8 +52,7 @@
         arity: 2
     });
 
-    ConvexHullFilter._init = function (builder) {
-    };
+    ConvexHullFilter._init = function (builder) {};
 
     ConvexHullFilter._applyTo = function (basemeshFile) {
         var newmeshFile = MLJ.core.Scene.createCppMeshFile("ConvexHull of "+basemeshFile.name);
@@ -67,8 +66,7 @@
         arity: 1
     });
 
-    RemoveUnrefVert._init = function (builder) {
-    };
+    RemoveUnrefVert._init = function (builder) {};
 
     RemoveUnrefVert._applyTo = function (basemeshFile) {
         Module.RemoveUnreferencedVertices(basemeshFile.ptrMesh());
@@ -80,12 +78,12 @@
         arity: 1
     });
 
-    RemoveDupVert._init = function (builder) {
-    };
+    RemoveDupVert._init = function (builder) {};
 
     RemoveDupVert._applyTo = function (basemeshFile) {
         Module.RemoveDuplicatedVertices(basemeshFile.ptrMesh());
     };
+/******************************************************************************/  
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
