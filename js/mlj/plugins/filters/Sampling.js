@@ -8,7 +8,7 @@
         arity: 2
     });
 
-    var sampleNumMCWidget;
+    var sampleNumMCWidget,perFaceNormalWidget;
 
     MontecarloSamplingFilter._init = function (builder) {
 
@@ -16,6 +16,11 @@
             min: 1, step: 1000, defval: 1000,
             label: "Sample Num",
             tooltip: "Number of samples that are randomly chosen over the surface of the mesh."
+        });
+           perFaceNormalWidget = builder.Bool({
+            defval: true,
+            label: "Per Face Normal",
+            tooltip: "if true the sample normal is the face normal, otherwise it is interpolated."
         });
 
     };

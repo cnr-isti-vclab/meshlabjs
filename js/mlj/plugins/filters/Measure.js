@@ -2,7 +2,7 @@
 /******************************************************************************/  
     var MeasureTopoFilter = new plugin.Filter({
         name: "Compute Topological Measures",
-        tooltip: "Report topological/combinatorial information of the selected mesh:<br>"
+        tooltip: "Report topological/combinatorial information of the current mesh:<br>"
                 +"Vertex, Edge, Face, Unreferenced Vertices, Boundary Edges, "
                 +"Boundary Loops, Genus, Non Manifol Edges, "
                 +"Non Manifold vertices, Connected Components.",
@@ -16,7 +16,7 @@
 /******************************************************************************/  
     var MeasureGeomFilter = new plugin.Filter({
         name: "Compute Geometric Measures",
-        tooltip: "Report Geometric information of the selected mesh: <br> "
+        tooltip: "Report Geometric information of the current mesh: <br> "
                 +"Bounding Box, Volume, Surface, Barycenter, Thin Shell Barycenter, "
                 +"Principal Axis, Inertia Moment, ",
         arity: 1
