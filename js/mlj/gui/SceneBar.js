@@ -79,9 +79,7 @@
             MLJ.gui.disabledOnSceneEmpty(reload);
             //The reload button must be disalbed if the layer is created by a
             //creation filter
-            // TODO change this to reflect the fact that layers created by a filter
-            // now simply do not have the fileName field defined   
-            MLJ.gui.disabledOnCppMesh(reload);
+            MLJ.gui.disabledOnCreationFilterMesh(reload);
 
             var snapshot = new component.Button({
                 tooltip: "Take snapshot",
@@ -89,8 +87,15 @@
             });
             
             MLJ.gui.disabledOnSceneEmpty(snapshot);
+
+            var deleteLayer = new component.Button({
+                tooltip: "Delete current layer",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
+            });
             
-            _toolBar.add(open, save, reload, snapshot);
+            MLJ.gui.disabledOnSceneEmpty(deleteLayer);
+            
+            _toolBar.add(open, save, reload, snapshot, deleteLayer);
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
@@ -124,6 +129,10 @@
             snapshot.onClick(function () {                
                 MLJ.core.Scene.takeSnapshot();
             });
+
+            deleteLayer.onClick(function() {
+                MLJ.core.Scene.removeLayerByName(MLJ.core.Scene.getSelectedLayer().name)
+            })
                                              
         }
         

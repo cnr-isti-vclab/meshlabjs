@@ -426,6 +426,7 @@ MLJ.core.Scene = {};
             }
 
             layer.updateThreeMesh();
+            _computeGlobalBBbox();
 
             //render the scene
             this.render();

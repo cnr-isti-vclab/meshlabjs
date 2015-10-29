@@ -368,25 +368,28 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
  * @author Stefano Gabriele 
  */
 MLJ.gui.component.ToggleButton = function (flags) {
+    if (flags.on !== true && flags.on !== false) {
+        console.log("Warning(MLJ.gui.Component.TogggleButton): forcing flags.on to false");
+        flags.on = false;
+    }
     MLJ.gui.component.Button.call(this, flags);
 
-    var _on = this.flag("on") !== undefined
-            ? this.flag("on") ^ 1
-            : 0;
-
     var _this = this;
+    var _on = this.flag("on");
+    var _toggleCallback = null;
 
-    this.toggle = function (param, click) {
-
+    /* NOTE: the callback specified with onToggle() is not called if the 'ev' 
+             parameter is omitted */
+    this.toggle = function (param, ev) {
         switch (param) {
             case "on":
-                _on = 1;
+                _on = true;
                 break;
             case "off":
-                _on = 0;
+                _on = false;
                 break;
-            default:
-                _on ^= 1;
+            default: // just toggle it
+                _on = !_on;
         }
 
         if (_on) {
@@ -395,27 +398,22 @@ MLJ.gui.component.ToggleButton = function (flags) {
             _this.$.removeClass("mlj-toggle-on");
         }
 
-        if (click === true) {
-            _this.$.click();
+        if (ev !== undefined && _toggleCallback) {
+            _toggleCallback(_on === true, ev);
         }
     };
 
     this.onToggle = function (foo) {
-        _this.$.click(function (event) {
-            foo(_on === 1, event);
-        });
+        _toggleCallback = foo;
     };
 
     this.isOn = function () {
-        return _on === 1;
+        return _on === true;
     };
 
-    this.$.click(function () {
-        _this.toggle();
+    this.$.click(function (event) {
+        _this.toggle(null, event);
     });
-
-    //init        
-    _this.toggle();
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
@@ -437,8 +435,8 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
-    this.toggle = function (param, click) {
-        _toggle.toggle(param, click);
+    this.toggle = function (param, event) {
+        _toggle.toggle(param, event);
     };
 
     this.isOn = function () {
@@ -454,7 +452,7 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     this.onRightButtonClicked = function (foo) {
         _toggle.$.mouseup(function (event) {
             if (event.which === 3) {
-                foo();
+                foo(event);
             }
         });
     };
