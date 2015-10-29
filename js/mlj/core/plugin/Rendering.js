@@ -136,13 +136,25 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         //Click on arrow
         btn.onArrowClicked(function () {
             _showOptionsPane();            
-        });             
+        });
+
+        $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
+            if (layer.properties.getByKey(parameters.name) === true) {
+                layer.properties.set(parameters.name, false);
+                _this._applyTo(layer, false); // Remove the pass
+            }
+        });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
+                    if (event.type === "SceneLayerReloaded") {
+                        if (meshFile.properties.getByKey(parameters.name) === true) {
+                            _this._applyTo(meshFile, false);
+                        }
+                    }
                     //Check if the rendering feature is enabled
                     if (!(meshFile.properties.getByKey(parameters.name) === false) && 
-                            (parameters.on || meshFile.properties.getByKey(parameters.name)) ) {
+                            (parameters.on || meshFile.properties.getByKey(parameters.name) === true) ) {
                         btn.toggle("on");
                         _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
@@ -171,13 +183,14 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     reapply(btn.isOn(),meshFile);                    
                 });                
         
-        if(parameters.applyOnEvent !== undefined) {
+        if (parameters.applyOnEvent !== undefined) {
             $(window).ready(function() {
-                $($('canvas')[0]).on(parameters.applyOnEvent,function() {
-                    if(btn.isOn()) {
-                        var selected = MLJ.core.Scene.getSelectedLayer();
-                        if (selected !== undefined) {
-                            reapply(true, selected);
+                $($('canvas')[0]).on(parameters.applyOnEvent, function() {
+                    var it = MLJ.core.Scene.getLayers().iterator();
+                    while (it.hasNext()) {
+                        var layer = it.next();
+                        if (layer.properties.getByKey(parameters.name) === true) {
+                            reapply(true, layer);
                         }
                     }
                 });
