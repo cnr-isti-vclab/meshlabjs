@@ -195,21 +195,7 @@ MLJ.core.Scene = {};
 
         $(document).on("MeshFileReloaded",
                 function (event, layer) {
-                    //remove all overlays from scene
-                    var iter = layer.overlays.iterator();
-                        
-                    while(iter.hasNext()) {
-                        var overlay = iter.next();
-                        _group.remove(overlay);
-                        _scene2D.remove(overlay);
-                    }
-
-                    if (layer.histogram !== undefined) {
-                        $(window).off("resize", layer.histogram.listener);
-                        layer.histogram.$tl.remove();
-                        layer.histogram.$bl.remove();
-                    }
-
+                    
                     // Restore three geometry to reflect the new state of the vcg mesh
                     layer.updateThreeMesh();
 
@@ -426,6 +412,7 @@ MLJ.core.Scene = {};
             }
 
             layer.updateThreeMesh();
+            _computeGlobalBBbox();
 
             //render the scene
             this.render();
@@ -460,7 +447,8 @@ MLJ.core.Scene = {};
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
     };
-function disambiguateName(meshName) {
+
+    function disambiguateName(meshName) {
         var prefix, ext;
         var ptIndex = meshName.lastIndexOf('.');
         if (ptIndex > 0) {
@@ -489,7 +477,7 @@ function disambiguateName(meshName) {
     }
 
     
-/**
+    /**
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
      * @memberOf MLJ.core.File
@@ -515,21 +503,6 @@ function disambiguateName(meshName) {
         if (layer !== undefined) {
             //remove layer from list
             _layers.remove(name);
-                             
-            //remove all overlays from scene
-            var iter = layer.overlays.iterator();
-                        
-            while(iter.hasNext()) {
-                var overlay = iter.next();
-                _group.remove(overlay);
-                _scene2D.remove(overlay);
-            }
-
-            if (layer.histogram !== undefined) {
-                $(window).off("resize", layer.histogram.listener);
-                layer.histogram.$tl.remove();
-                layer.histogram.$bl.remove();
-            }
                                                 
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
             
@@ -537,6 +510,8 @@ function disambiguateName(meshName) {
                       
             if(_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
+            } else {
+                _this._selectedLayer = undefined;
             }
             
             _computeGlobalBBbox();

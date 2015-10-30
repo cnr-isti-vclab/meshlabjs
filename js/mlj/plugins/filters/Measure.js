@@ -34,7 +34,7 @@
                 +"geometric difference between two surfaces.",
         arity: 2});
 
-    var srcMeshWidget,trgMeshWidget,sampleNumWidget,maxDistWidget;
+    var srcMeshWidget,trgMeshWidget,sampleNumWidget,maxDistWidget,createSampleWidget;
     HausdorffFilter._init = function (builder) {
 
         srcMeshWidget = builder.LayerSelection({
@@ -58,13 +58,34 @@
             label: "Max Dist.",
             tooltip: "The distance cutoff expressed as percentage of the bbox diagonal"
         });
-       
+        
+        createSampleWidget = builder.Bool({
+            defval: false,
+            label: "Save Sample",
+            tooltip: "If true the sample points chosen in the source mesh are saved "
+                    +"onto a new layer. The samples contain in the quality the "
+                    +"recorded distance so they can be used to plot histogram "
+                    +"distribution of the difference."
+        });
     };
 
     HausdorffFilter._applyTo = function () {
+        var sampleMeshPtr = 0;
+        var sampleLayer;
+        if(createSampleWidget.getValue())
+        {
+            sampleLayer = MLJ.core.Scene.createCppMeshFile("Hausdorff Samples");
+            sampleMeshPtr = sampleLayer.ptrMesh();
+            sampleLayer.cppMesh.addPerVertexQuality();
+        }
+        
         Module.ComputeHausdorffDistance(srcMeshWidget.getSelectedPtrMesh(),
                                         trgMeshWidget.getSelectedPtrMesh(),
+                                        sampleMeshPtr,
                                         sampleNumWidget.getValue(),maxDistWidget.getValue());
+                                        
+        if(createSampleWidget.getValue()) 
+            scene.addLayer(sampleLayer);
     };
 /******************************************************************************/  
     plugin.Manager.install(MeasureTopoFilter);

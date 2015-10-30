@@ -98,13 +98,15 @@ void ComputeTopologicalMeasures(uintptr_t meshPtr)
     tri::UpdateSelection<MyMesh>::FaceClear(m);
 }
 
-void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, int sampleNum, float distUpperBound)
+void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, uintptr_t _sampleMeshPtr, int sampleNum, float distUpperBound)
 {
   MyMesh &src = *((MyMesh*) srcPtr);
   MyMesh &trg = *((MyMesh*) trgPtr);
+  MyMesh *sampleMeshPtr = ((MyMesh*) _sampleMeshPtr);
 
   HausdorffSampler<MyMesh> hs(&trg);
   hs.dist_upper_bound = distUpperBound;
+  hs.init(sampleMeshPtr,0);
   printf("Sampled  mesh has %7i vert %7i face\n",src.vn,src.fn);
   printf("Searched mesh has %7i vert %7i face\n",trg.vn,trg.fn);
   printf("Max sampling distance %f on a bbox diag of %f\n",distUpperBound,trg.bbox.Diag());
@@ -118,6 +120,11 @@ void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, int sampleNum,
   float d = src.bbox.Diag();
   printf("Values w.r.t. BBox Diag (%f)\n",d);
   printf("     min : %f   max %f   mean : %f   RMS : %f\n",hs.getMinDist()/d,hs.getMaxDist()/d,hs.getMeanDist()/d,hs.getRMSDist()/d);
+
+  if(sampleMeshPtr)
+  {
+    printf("Created Sample Mesh with %i samples\n",sampleMeshPtr->vn);
+  }
 }
 
 void MeasurePluginTEST()
@@ -126,8 +133,8 @@ void MeasurePluginTEST()
   tri::Sphere(m0,3);
   tri::Sphere(m1,4);
 
-  ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),10000,0.1);
-  ComputeHausdorffDistance(uintptr_t(&m1),uintptr_t(&m0),10000,0.1);
+  ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),0,10000,0.1);
+  ComputeHausdorffDistance(uintptr_t(&m1),uintptr_t(&m0),0,10000,0.1);
 }
 
 #ifdef __EMSCRIPTEN__
