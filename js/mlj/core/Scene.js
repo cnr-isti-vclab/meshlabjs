@@ -51,6 +51,14 @@ MLJ.core.Scene = {};
     var _layers = new MLJ.util.AssociativeArray();
 
     /**
+     * Associative array that contains all the scene level "background" 
+     * decorators (axes, background grid etc..)
+     * @type MLJ.util.AssociativeArray
+     * @memberOf MLJ.core.Scene
+     */
+    var _decorators = new MLJ.util.AssociativeArray();
+
+    /**
      * Reference to current layer 
      * @type MLJ.core.Layer
      * @memberOf MLJ.core.Scene     
@@ -225,7 +233,7 @@ MLJ.core.Scene = {};
      */
     function _computeGlobalBBbox()
     {
-        var BBGlobal = new THREE.Box3();
+        var BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         iter = _layers.iterator();
         while (iter.hasNext()) {
             threeMesh = iter.next().getThreeMesh();
@@ -239,6 +247,11 @@ MLJ.core.Scene = {};
         _group.updateMatrix();
 //        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
 //        console.log("ScaleFactor:" + scaleFac);
+        return BBGlobal;
+    }
+
+    this.getBBox = function () {
+        return _computeGlobalBBbox();
     }
   
     this.lights = {
@@ -519,6 +532,31 @@ MLJ.core.Scene = {};
             
             MLJ.core.Scene.render(); 
         }
+    };
+
+    this.addDecorator = function(name, decorator) {
+        console.log("FIXME stub");
+
+        _decorators.set(name, decorator)
+        _group.add(decorator);
+
+        //render the scene
+        _this.render();
+    };
+
+    this.removeDecorator = function(name) {
+        console.log("FIXME stub");
+
+        var decorator = _decorators.getByKey(name)
+        if (decorator !== undefined){
+            _decorators.remove(name);
+            _group.remove(decorator);
+            decorator.geometry.dispose();
+            decorator.material.dispose();  
+        }
+
+        //render the scene
+        _this.render();
     };
 
     /**
