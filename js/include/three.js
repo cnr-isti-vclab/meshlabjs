@@ -24091,9 +24091,15 @@ THREE.WebGLRenderTarget.prototype = {
 	constructor: THREE.WebGLRenderTarget,
 
 	setSize: function ( width, height ) {
+		
+		if ( this.width !== width || this.height !== height ) {
 
-		this.width = width;
-		this.height = height;
+			this.width = width;
+			this.height = height;
+
+			this.dispose();
+
+		}
 
 	},
 

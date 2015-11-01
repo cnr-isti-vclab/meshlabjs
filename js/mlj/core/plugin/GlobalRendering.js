@@ -8,6 +8,8 @@ MLJ.core.plugin.GlobalRendering = function (parameters, defaults) {
     this.shaders = null;
 
     var _this = this;
+    //MLJ.core.setDefaults(_this.getName(), defaults); reminder
+
 
     var pane = new MLJ.gui.component.Pane();
     var UID = MLJ.gui.generateUID();
@@ -55,7 +57,7 @@ MLJ.core.plugin.GlobalRendering = function (parameters, defaults) {
         });
     }
 
-    // TODO global rendering plugins are always 'toggable'
+    // are global rendering plugins always toggle buttons?
     if (parameters.toggle === true) {
         
         //Click on button
@@ -64,52 +66,12 @@ MLJ.core.plugin.GlobalRendering = function (parameters, defaults) {
                 _showOptionsPane();
             }
             _this._applyTo(on);
-
-//            
-//            if(on) {
-//                //show the options pane
-//                _showOptionsPane();                
-//            }
-//            
-//            //Apply rendering pass to all mesh
-//            if (event.ctrlKey === true) {                
-//                var passName = parameters.name;
-//                var ptr = MLJ.core.Scene.getLayers().iterator();                
-//                //get selected layer
-//                var selLayer = MLJ.core.Scene.getSelectedLayer();                
-//                //get this rendering pass paramters of selected layer
-//                var selParams = selLayer.overlaysParams.getByKey(passName);
-//                var layer;             
-//                //apply rendering pass with 'selParams' to all layers
-//                while (ptr.hasNext()) {
-//                    layer = ptr.next();    
-//                    if (layer.getThreeMesh().visible) {                        
-//                        layer.overlaysParams.set(passName,selParams);
-//                        layer.properties.set(passName, on);
-//                        _this._applyTo(layer, on);                        
-//                    }
-//                }
-//                
-//            } else { //Apply rendering pass to selected layer
-//                var selected = MLJ.core.Scene.getSelectedLayer();
-//                if (selected !== undefined) {
-//                    _this._applyTo(selected, on);
-//                    selected.properties.set(parameters.name, on);
-//                }
-//            }                        
+            MLJ.core.Scene.render();
         });
 
         //Clicked with mouse right button
         btn.onRightButtonClicked(function () {
-        //    btn.toggle("off", true);
-        //    var items = group.getItems();
-        //    var item;
-        //    for (var key in items) {
-        //        item = items[key];
-        //        if (item !== btn) {
-        //            item.toggle("on", true);
-        //        }
-        //    }
+
         });
 
         //Click on arrow same as Rendering.js
@@ -124,60 +86,22 @@ MLJ.core.plugin.GlobalRendering = function (parameters, defaults) {
                     if (btn.isOn()) {
                         _this._applyTo(false);
                         _this._applyTo(true);
+                        MLJ.core.Scene.render();
                     }
-        //            //Check if the rendering feature is enabled
-        //            if (!(meshFile.properties.getByKey(parameters.name) === false) && 
-        //                    (parameters.on || meshFile.properties.getByKey(parameters.name)) ) {
-        //                btn.toggle("on");
-        //                _this._applyTo(meshFile, btn.isOn());
-        //                meshFile.properties.set(parameters.name, btn.isOn());
-        //                update();
-        //            } else {
-        //                btn.toggle("off");
-        //                if (btn.isArrowSelected()) update();
-        //            }
-        //            //if the rendering pass need to be updated when a 
-        //            //new layer is added
-        //            if (parameters.updateOnLayerAdded) {
-        //                var ptr = MLJ.core.Scene.getLayers().iterator();
-        //                var layer, isOn;
-        //                while (ptr.hasNext()) {
-        //                    layer = ptr.next();
-        //                    isOn = layer.properties.getByKey(parameters.name);
-        //                    reapplay(isOn,layer);                            
-        //                }
-        //            }
                 });
 
         $(document).on("SceneLayerUpdated",
                 function (event, meshFile) {
-                //    reapplay(btn.isOn(),meshFile);                    
+
                 });                
         
-        if(parameters.applyOnEvent !== undefined) {
-        //    $(window).ready(function() {
-        //        $($('canvas')[0]).on(parameters.applyOnEvent,function() {
-        //            if(btn.isOn()) {
-        //                var selected = MLJ.core.Scene.getSelectedLayer();
-        //                if (selected !== undefined) {
-        //                    reapplay(true, selected);
-        //                }
-        //            }
-        //        });
-        //    });
+        if (parameters.applyOnEvent !== undefined) {
+
         }
     }
 
     $(document).on("SceneLayerSelected", function (event, meshFile) {
-    //    update();
-    //    if (parameters.toggle === true) {
-    //        var val = meshFile.properties.getByKey(parameters.name);
-    //        if (val === true) {
-    //            btn.toggle("on");
-    //        } else {
-    //            btn.toggle("off");
-    //        }
-    //    }
+
     });
 
     //Prevents context menu opening
@@ -190,64 +114,18 @@ MLJ.core.plugin.GlobalRendering = function (parameters, defaults) {
     });
 
     function update() {
-        //var selected = MLJ.core.Scene.getSelectedLayer();
-        //var params = selected.overlaysParams.getByKey(_this.getName());
-        //var param;
-        //for (var key in params) {
-        //    param = guiBuilder.params.getByKey(key);
-        //    if (param !== undefined) {
-        //        param._changeValue(params[key]);
-        //    }
-        //}
+
     }
 
-    function reapplay(applay, meshFile) {
-    //    if (applay) {
-    //        _this._applyTo(meshFile, false);
-    //        _this._applyTo(meshFile, true);
-    //    }
+    function reapply(applay, meshFile) {
+
     }
 
-    // TODO
-    guiBuilder.setOnParamChange(function (paramProp, value) {
-    //    var meshFile = MLJ.core.Scene.getSelectedLayer();
-    //    var params = meshFile.overlaysParams.getByKey(_this.getName());
-    //    params[paramProp] = value;
-    //          
-    //    if (parameters.global === true) {
-    //        var iter = meshFile.overlays.iterator();
-    //        var overlay;
-    //        //Update the global paramter for all overlay layers
-    //        while (iter.hasNext()) {
-    //            overlay = iter.next();
-    //            //check if overlay has this uniform defined
-    //            if (overlay.material.uniforms[paramProp] !== undefined) {
-    //                overlay.material.uniforms[paramProp].value = value;
-    //            } else if (jQuery.isFunction(paramProp)) {
-    //                paramProp(value, overlay, params);
-    //            }
-    //        }
-    //        MLJ.core.Scene.render();
-    //        return;
-    //    }
-    //    var overlay = meshFile.overlays.getByKey(_this.getName());
-    //    //if overlay undefined just return
-    //    if (overlay === undefined) {
-    //        return;
-    //    }
-    //    
-    //    //is 'bindTo' property a uniform?
-    //    if (overlay.material.uniforms !== undefined 
-    //            && overlay.material.uniforms[paramProp] !== undefined) {
-    //        overlay.material.uniforms[paramProp].value = value;
-    //        MLJ.core.Scene.render();
-    //        return;
-    //    }
-    //    
-    //    //is 'bindTo' property a function?
-    //    if(jQuery.isFunction(paramProp)) {
-    //        paramProp(value, overlay);
-    //    }
+    guiBuilder.setOnParamChange(function (callback, value) {
+        if (jQuery.isFunction(callback)) {
+            callback(value);
+            MLJ.core.Scene.render();
+        }
     });
 
     // same as Rendering.js

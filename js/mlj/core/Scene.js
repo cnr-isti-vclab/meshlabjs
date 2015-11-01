@@ -190,6 +190,10 @@ MLJ.core.Scene = {};
             _camera.updateProjectionMatrix();
             _renderer.setSize(size.width, size.height);
 
+
+            on_buffer.setSize(size.width, size.height);
+            off_buffer.setSize(size.width, size.height);
+
             _camera2D.left = size.width / size.height;
             _camera2D.updateProjectionMatrix;
 
@@ -233,12 +237,17 @@ MLJ.core.Scene = {};
      */
     function _computeGlobalBBbox()
     {
-        var BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
-        iter = _layers.iterator();
-        while (iter.hasNext()) {
-            threeMesh = iter.next().getThreeMesh();
-            var bbox = new THREE.Box3().setFromObject(threeMesh);
-            BBGlobal.union(bbox);
+        var BBGlobal;
+        if (_layers.size() === 0) // map to the canonical cube
+            BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
+        else {
+            BBGlobal = new THREE.Box3(); // map to the layers' boxes
+            iter = _layers.iterator();
+            while (iter.hasNext()) {
+                threeMesh = iter.next().getThreeMesh();
+                var bbox = new THREE.Box3().setFromObject(threeMesh);
+                BBGlobal.union(bbox);
+            }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
         var offset = BBGlobal.center().negate();;
@@ -582,13 +591,71 @@ MLJ.core.Scene = {};
     this.get3DSize = function() { return get3DSize(); };
     this.getRenderer = function() { return _renderer; };
 
+    this.getScene = function () {return _scene;};
+
+    this.setPostProcessPass = function (pass) { postprocess = pass; };
+
+    var on_buffer = new THREE.WebGLRenderTarget(0, 0, {
+        type: THREE.FloatType,
+        minFilter: THREE.NearestFilter
+    });
+    var off_buffer = new THREE.WebGLRenderTarget(0, 0, {
+        type: THREE.FloatType,
+        minFilter: THREE.NearestFilter
+    });
+
+    // postprocess callback
+    var postprocess = null;
+
+    var plane = new THREE.PlaneBufferGeometry(2, 2);
+    var quadMesh = new THREE.Mesh(
+        plane
+    );
+
+    var quadScene = new THREE.Scene();
+    quadScene.add(quadMesh);
+
+    quadMesh.material = new THREE.ShaderMaterial({
+        vertexShader:
+            "varying vec2 vUv; \
+             void main(void) \
+             { \
+                 vUv = uv; \
+                 gl_Position = vec4(position.xyz, 1.0); \
+             }",
+        fragmentShader: 
+            "uniform sampler2D offscreen; \
+             varying vec2 vUv; \
+             void main(void) { gl_FragColor = texture2D(offscreen, vUv.xy); }"
+    });
+    quadMesh.material.uniforms = {
+            offscreen: { type: "t", value: null }
+    };
+    
+
     /**
      * Renders the scene
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele     
      */
+
     this.render = function () {
-        _renderer.render(_scene, _camera);
+        if (jQuery.isFunction(postprocess)) {
+            _renderer.render(_scene, _camera, on_buffer, true);
+        
+            // TODO add support for multiple passes
+            postprocess(on_buffer, off_buffer);
+            var tmp = on_buffer;
+            on_buffer = off_buffer;
+            off_buffer = tmp;
+
+            // final pass, render on_buffer to the screen
+            quadMesh.material.uniforms.offscreen.value = on_buffer;
+            _renderer.render(quadScene, _camera2D);
+        } else {
+            _renderer.render(_scene, _camera);//, on_buffer, true);
+        }
+
         _renderer.autoClear = false;
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
