@@ -17,7 +17,8 @@
 
     var p1Uniforms =
     {
-       foreshortening: { type: "f", value: 0.4 }
+       foreshortening: { type: "f", value: 0.4 },
+       fnflag:         { type: "i", value: 0 }
     };
 
     var p2Uniforms =
@@ -33,7 +34,7 @@
     };
 
     var gammaControl, alphaControl, attenuationControl, foreshorteningControl,
-        curvatureFlag;
+        curvatureFlag, faceNormalsFlag;
     plug._init = function (guiBuilder) {
         gammaControl = guiBuilder.RangedFloat({
             label: "Gamma",
@@ -94,10 +95,22 @@
                       values, flat regions are white.",
             defval: false,
             bindTo: (function () {
-                var bindToFun = function () {
+                var bindToFun = function (value) {
                     p2Uniforms.cflag.value ^= 1;
                 };
                 bindToFun.toString = function () { return "MLJ_RS_CurvatureFlag"; };
+                return bindToFun;
+            })()
+        });
+        faceNormalsFlag = guiBuilder.Bool({
+            label: "Use per-face normals",
+            tooltip: ".",
+            defval: false,
+            bindTo: (function () {
+                var bindToFun = function (value) {
+                    p1Uniforms.fnflag.value ^= 1;
+                };
+                bindToFun.toString = function () { return "MLJ_RS_FaceNormalsFlag"; };
                 return bindToFun;
             })()
         });

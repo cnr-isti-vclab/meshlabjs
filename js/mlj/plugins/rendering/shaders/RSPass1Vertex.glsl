@@ -34,10 +34,15 @@ The following code is based on
 */
 
 varying vec3 viewNormal;
+varying vec3 vViewPosition;
 varying float depth;
 
 void main(void)
 {
+
+    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+    vViewPosition = -mvPosition.xyz;
+
     viewNormal = normalMatrix * normal; // normal direction wrt camera
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
     depth = gl_Position.z;

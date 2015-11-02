@@ -39,10 +39,25 @@ varying float depth;
 uniform sampler2D nmap;
 uniform float foreshortening;
 
+varying vec3 vViewPosition;
+uniform int fnflag;
+
+#extension GL_OES_standard_derivatives : enable
+
 void main(void) {
     const float eps = 0.001;
 
-    vec3 n = normalize(viewNormal);
+    vec3 n;
+    if (fnflag == 1) { // compute and use per-face normal
+        vec3 fdx = dFdx( vViewPosition );
+        vec3 fdy = dFdy( vViewPosition );
+        n = normalize( cross( fdx, fdy ) );
+    } else {
+        n = normalize(viewNormal);
+    }
+
+
+
     if (n == vec3(0.0, 0.0, 0.0)) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     } else {
