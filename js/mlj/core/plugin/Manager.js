@@ -59,8 +59,7 @@ MLJ.core.plugin.Manager = {
                     if(plugin.parameters.tooltip) {
                         search.addItem(plugin.parameters.tooltip);
                     }
-                } else if (plugin instanceof MLJ.core.plugin.Rendering || 
-                        plugin instanceof MLJ.core.plugin.GlobalRendering) {
+                } else if (plugin instanceof MLJ.core.plugin.AbstractRendering) {
                     _rendering.set(plugin.getName(), plugin);
                 }
             } else {

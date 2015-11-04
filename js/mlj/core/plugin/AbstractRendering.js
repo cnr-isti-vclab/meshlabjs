@@ -1,8 +1,35 @@
-// TODO comments
+/**
+ * @file Defines the abstract base class derived by rendering plugins
+ * @author Andrea Maggiordomo
+ */
+
+/**         
+ * @class Defines functinalities common to all rendering plugin classes like GUI
+ * components management, basic event handling, loading shader files.
+ *
+ * @param {Object} parameters - The parameters passed to the actual plugin constructor. Other than
+ * the rendering plugin specific options (listed below), this object should contain the options
+ * passed to this plugin's button constructor (see {@link MLJ.gui.component.Button}
+ * and {@link MLJ.gui.component.CustomToggleButton}).
+ *
+ * @param {string} parameters.name - The name of this plugin, passed to {@link MLJ.core.plugin.Plugin}.
+ *
+ * @param {boolean} [parameters.toggle] - If true the plugin is assigned a
+ * {@link MLJ.gui.component.CustomToggleButton} which allows the plugin to be turned
+ * on or off, otherwise a simple {@link MLJ.gui.component.Button} is used.
+ *
+ * @param {string} renderingGroup - A string used to distinguish the different classes of
+ * rendering plugins, used to group together their GUI elements when group-level actions
+ * are needed (for example toggling all the Layer level overlays at once). This parameter
+ * is handled by the framework and the plugin creation process is oblivious to it.
+ *
+ * @param {string[]} [parameters.loadShader] - If provided, this array should contain
+ * the names of the shader files that the plugin must load.
+ *
+ * @memberOf MLJ.core.plugin
+ */
 MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
-
-    this.shaders = null;
 
     var _this = this;
 
@@ -12,11 +39,11 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
     pane.$.hide();      
 
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
-    var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
+    var toggleButtonBuilder = new MLJ.core.plugin.RenderingBarBuilder(
             MLJ.widget.TabbedPane.getRendToolBar());
     var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
 
-    var _btn = tbBuilder.Button(parameters);
+    var _btn = toggleButtonBuilder.Button(parameters);
 
     var group = MLJ.gui.makeGroup(renderingGroup);
     if (_btn instanceof MLJ.gui.component.CustomToggleButton) {
@@ -26,9 +53,13 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
         });
     }
 
+    /** @type {MLJ.util.AssociativeArray} Shader files loaded by this plugin */
+    this.shaders = null;
+
+    /**
+     * Displays the options pane of the rendering plugin
+     */
     this._showOptionsPane = function () {
-        // seta arrow for all classes
-        
         if (parameters.toggle === true) {
             _btn.setArrowSelected(true);
         }
@@ -41,7 +72,6 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
                 }
             }
         }
-
         
         renderingPane.children().each(function (key, val) {
             if ($(val).attr("id") === UID) {
@@ -52,11 +82,16 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
         });
     }
 
-    /* returns the MLJ.gui.Param control bound by the guiBuilder to paramName
-       (that is, the parameter widget 'pw' of this rendering plugin such that
-        pw.bindTo === paramName) */
-    this.getParam = function (paramName) {
-        return guiBuilder.params.getByKey(paramName);
+    /**
+     * GUI parameter widget getter
+     * @param {Object} paramKey The object used to retrieve the parameter
+     * @returns {MLJ.gui.Param} The parameter widget bound by the
+     * MLJ.core.plugin.GUIBuilder of this plugin to <code>paramKey</code>
+     * (that is, the parameter widget <code>pw</code> of this rendering plugin
+     * such that <code>pw.bindTo === paramName</code>)
+     */
+    this.getParam = function (paramKey) {
+        return guiBuilder.params.getByKey(paramKey);
     }
 
     this._main = function () {
@@ -84,7 +119,13 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
         renderingPane.append(pane.$);
     };
 
-    this.getButton = function () { return _btn; };
+    /**
+     * @returns {MLJ.gui.component.Button | MLJ.gui.component.CustomToggleButton}
+     * The button component created for this rendering plugin
+     */
+    this.getButton = function () {
+        return _btn;
+    };
 
     this._setOnParamChange = guiBuilder.setOnParamChange;
 }

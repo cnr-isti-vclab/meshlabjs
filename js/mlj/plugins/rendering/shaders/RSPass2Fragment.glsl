@@ -70,7 +70,7 @@ vec3 depthFieldHessian()
 
 float sigma(in float k, in float d)
 {
-    float expgk = exp(gamma*k);
+    float expgk = exp(gamma*(-k));
     return (alpha * expgk + d * (1.0 - alpha * (1.0 + expgk))) / (alpha + d * (expgk - alpha * (1.0 + expgk)));
 }
 
@@ -84,12 +84,11 @@ void main(void)
 {
     vec3 normalData = texture2D(gmap, vUv).xyz;
 
-    // Compute curvature components (Ku, Kv) by derivating the gradient of the
+    // Compute curvature components (K_u, K_v) by derivating the gradient of the
     // depth field
     vec3 h = depthFieldHessian();
-    float ku = h.x;
-    float kv = h.y;
-    vec2 kComponents = vec2(ku, kv);
+    float ku = -h.x;
+    float kv = -h.y;
 
     vec4 color = texture2D(cmap, vUv);
 
@@ -98,16 +97,14 @@ void main(void)
     // requires a buffer with surface normals (that means another rendering pass)
     float delta = clamp(length(color.rgb), 0.0, 1.0);
 
-    // Compute curvature factor
+    // Compute curvature value
     float k = tanh(ku+kv);
-
-
 
     if (normalData.xyz == vec3(0.0, 0.0, 0.0)) {
         gl_FragColor = color;
     } else {
         if (cflag == 0) {
-            // Compute scaling factor
+            // Compute scaling value
             float s = sigma(k, delta);
             gl_FragColor = vec4(color.rgb*s, 1.0);
         } else {

@@ -31,10 +31,6 @@ The following code is based on
     * Vergne Romain, Dumas Olivier
       INRIA - Institut Nationnal de Recherche en Informatique et Automatique
 
-Notes
-  2015-10-31: This version implements the simple isotropic curvature mapping, 
-    disregarding the light vector direction
-
 */
 
 varying vec2 vUv;

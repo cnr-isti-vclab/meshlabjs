@@ -4,10 +4,10 @@
     var plug = new plugin.GlobalRendering({
         name: "RadianceScaling",
         tooltip: "Enable Radiance Scaling to enhance surface features. \
-                  Radiance Scaling is described in: \
-                  'Radiance Scaling for Versatile Surface Enhancement.' \
-                  Romain Vergne, Romain Pacanowski, Pascal Barla, Xavier Granier, Christophe Schlick. \
-                  I3D ’10: Proc. symposium on Interactive 3D graphics and games, Feb 2010, Boston, United States.ACM, 2010.",
+            Radiance Scaling is described in: \
+            'Radiance Scaling for Versatile Surface Enhancement.' \
+            Romain Vergne, Romain Pacanowski, Pascal Barla, Xavier Granier, Christophe Schlick. \
+            I3D ’10: Proc. symposium on Interactive 3D graphics and games, Feb 2010, Boston, United States.ACM, 2010.",
         toggle: true,
         on: false,
         loadShader: ["RSPass1Vertex.glsl", "RSPass1Fragment.glsl", "RSPass2Vertex.glsl", "RSPass2Fragment.glsl"]
@@ -37,7 +37,7 @@
         curvatureFlag, faceNormalsFlag;
     plug._init = function (guiBuilder) {
         gammaControl = guiBuilder.RangedFloat({
-            label: "Gamma",
+            label: "Enhancement",
             tooltip: "",
             min: 0, step: 0.1, max:5.0,
             defval: p2Uniforms.gamma.value,
@@ -50,8 +50,9 @@
             })()
         });
         alphaControl = guiBuilder.RangedFloat({
-            label: "Alpha",
-            tooltip: "",
+            label: "Scaling point",
+            tooltip: "Controls the scaling point of the enhancement function, which \
+                determines how convex/concave features are brightened and darkened.",
             min: 0, step: 0.02, max:0.98,
             defval: p2Uniforms.alpha.value,
             bindTo: (function () {
@@ -76,7 +77,7 @@
             })()
         });
         foreshorteningControl = guiBuilder.RangedFloat({
-            label: "Foreshortening exponent",
+            label: "Foreshortening",
             tooltip: "",
             min: 0, step: 0.05, max:1,
             defval: p1Uniforms.foreshortening.value,
@@ -91,8 +92,8 @@
         curvatureFlag = guiBuilder.Bool({
             label: "Show screen space curvature",
             tooltip: "If checked, screen space curvature is highlighted. \
-                      Red maps to positive values, blue maps to negative \
-                      values, flat regions are white.",
+                Red maps to positive values, blue maps to negative values, \
+                flat regions are white.",
             defval: false,
             bindTo: (function () {
                 var bindToFun = function (value) {
@@ -104,7 +105,7 @@
         });
         faceNormalsFlag = guiBuilder.Bool({
             label: "Use per-face normals",
-            tooltip: ".",
+            tooltip: "",
             defval: false,
             bindTo: (function () {
                 var bindToFun = function (value) {

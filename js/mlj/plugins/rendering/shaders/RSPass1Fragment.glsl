@@ -49,9 +49,9 @@ void main(void) {
 
     vec3 n;
     if (fnflag == 1) { // compute and use per-face normal
-        vec3 fdx = dFdx( vViewPosition );
-        vec3 fdy = dFdy( vViewPosition );
-        n = normalize( cross( fdx, fdy ) );
+        vec3 fdx = dFdx(vViewPosition);
+        vec3 fdy = dFdy(vViewPosition);
+        n = normalize(cross(fdx, fdy));
     } else {
         n = normalize(viewNormal);
     }

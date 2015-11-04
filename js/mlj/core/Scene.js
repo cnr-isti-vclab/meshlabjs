@@ -241,7 +241,7 @@ MLJ.core.Scene = {};
         if (_layers.size() === 0) // map to the canonical cube
             BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         else {
-            BBGlobal = new THREE.Box3(); // map to the layers' boxes
+            BBGlobal = new THREE.Box3(); // map to the layers' boxes union
             iter = _layers.iterator();
             while (iter.hasNext()) {
                 threeMesh = iter.next().getThreeMesh();
@@ -543,25 +543,42 @@ MLJ.core.Scene = {};
         }
     };
 
-    this.addDecorator = function(name, decorator) {
-        console.log("FIXME stub");
+    /**
+     * Adds a scene decorator. A scene decorator differs fron an overlay layer in
+     * that it's not tied to a particular layer, but to the scene as a whole (for
+     * example an axes descriptor that highlights the direction of the x, y, and z
+     * coordinates).
+     * @param {String} name - The name of the decorator
+     * @param {THREE.Object3D} decorator - The decorator object
+     * @memberOf MLJ.core.Scene
+     */
+    this.addSceneDecorator = function(name, decorator) {
+        if(!(decorator instanceof THREE.Object3D)) {
+            console.warn("MLJ.core.Scene.addSceneDecorator(): decorator parameter not an instance of THREE.Object3D");
+            return;
+        }
 
         _decorators.set(name, decorator)
         _group.add(decorator);
 
-        //render the scene
         _this.render();
     };
 
-    this.removeDecorator = function(name) {
-        console.log("FIXME stub");
-
+    /**
+     * Removes a decorator object from the scene.
+     * @param {String} name - The name of the decorator to remove
+     * @memberOf MLJ.core.Scene
+     */
+    this.removeSceneDecorator = function(name) {
         var decorator = _decorators.getByKey(name)
+
         if (decorator !== undefined){
             _decorators.remove(name);
             _group.remove(decorator);
             decorator.geometry.dispose();
             decorator.material.dispose();  
+        } else {
+            console.warn("Warning: " + name + " decorator not in the scene");
         }
 
         //render the scene
@@ -653,7 +670,7 @@ MLJ.core.Scene = {};
             quadMesh.material.uniforms.offscreen.value = on_buffer;
             _renderer.render(quadScene, _camera2D);
         } else {
-            _renderer.render(_scene, _camera);//, on_buffer, true);
+            _renderer.render(_scene, _camera);
         }
 
         _renderer.autoClear = false;

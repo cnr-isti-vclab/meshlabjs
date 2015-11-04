@@ -26,9 +26,9 @@
     plug._applyTo = function (on) {
         if (on) {
             var bbox = scene.getBBox();
-            scene.addDecorator(plug.name, new THREE.AxisHelper(bbox.min.distanceTo(bbox.max)/2));
+            scene.addSceneDecorator(plug.name, new THREE.AxisHelper(bbox.min.distanceTo(bbox.max)/2));
         } else {
-            scene.removeDecorator(plug.name);
+            scene.removeSceneDecorator(plug.name);
         }
     };
 

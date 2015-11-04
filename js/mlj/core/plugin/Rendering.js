@@ -27,8 +27,7 @@
  */
 
 MLJ.core.plugin.Rendering = function (parameters, defaults) {
-    var renderingGroup = "mlj_rendering_overlay";
-    MLJ.core.plugin.AbstractRendering.call(this, parameters, renderingGroup);
+    MLJ.core.plugin.AbstractRendering.call(this, parameters, MLJ.core.plugin.Rendering._guiGroup);
 
     var _this = this;
     
@@ -61,9 +60,10 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     layer = ptr.next();    
                     if (layer.getThreeMesh().visible) {
                         var lParams = layer.overlaysParams.getByKey(passName);
-                        for (var opName in selParams) {
+                        for (var opName in selParams) { // each layer gets it's own copy
                             lParams[opName] = selParams[opName];
                         }
+                        // Watch out for undefined 'properties' values (overlays that were never activated)
                         if (on !== (layer.properties.getByKey(passName)===true)) { // simply toggle the pass
                             _this._applyTo(layer, on);
                         } else { // if pass is active reapply with changed parameters, otherwise switch it off
@@ -87,7 +87,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             if (!btn.isOn()) {
                 btn.toggle("on", event);
             }
-            var items = MLJ.gui.group[renderingGroup].getItems();
+            var items = MLJ.gui.group[MLJ.core.plugin.Rendering._guiGroup].getItems();
             for (var i = 0; i < items.length; ++i) {
                 if (items[i].isOn() && items[i] !== btn) {
                     items[i].toggle("off", event);
@@ -251,6 +251,10 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         }
 
     });
+};
+
+MLJ.core.plugin.Rendering.prototype = {
+    _guiGroup: "mlj_rendering_overlay"
 };
 
 MLJ.extend(MLJ.core.plugin.AbstractRendering, MLJ.core.plugin.Rendering);
