@@ -36,6 +36,8 @@ Notes
     disregarding the light vector direction. Furthermore, it doesn't apply 
     anisotropic diffusion before derivating the gradient map.
 */
+precision highp float;
+precision highp sampler2D;
 
 uniform float gamma;
 uniform float alpha;

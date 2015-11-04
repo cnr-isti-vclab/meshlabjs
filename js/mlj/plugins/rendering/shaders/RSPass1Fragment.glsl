@@ -32,17 +32,16 @@ The following code is based on
       INRIA - Institut Nationnal de Recherche en Informatique et Automatique
 
 */
+#extension GL_OES_standard_derivatives : enable
 
-varying vec3 viewNormal;
+precision highp float;
+
+varying vec3 vNormal;
+varying vec3 vViewPosition;
 varying float depth;
 
-uniform sampler2D nmap;
 uniform float foreshortening;
-
-varying vec3 vViewPosition;
 uniform int fnflag;
-
-#extension GL_OES_standard_derivatives : enable
 
 void main(void) {
     const float eps = 0.001;
@@ -53,16 +52,14 @@ void main(void) {
         vec3 fdy = dFdy(vViewPosition);
         n = normalize(cross(fdx, fdy));
     } else {
-        n = normalize(viewNormal);
+        n = normalize(vNormal);
     }
-
-
 
     if (n == vec3(0.0, 0.0, 0.0)) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     } else {
         float gs = (n.z < eps) ? (1.0 / eps) : (1.0 / n.z);
-        gs = pow(gs, foreshortening);
+        gs = pow(abs(gs), foreshortening); // abs to suppress annoying warning
     
         float gx = -n.x*gs;
         float gy = -n.y*gs;

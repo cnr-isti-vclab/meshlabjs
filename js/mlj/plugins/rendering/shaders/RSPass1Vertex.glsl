@@ -32,18 +32,23 @@ The following code is based on
       INRIA - Institut Nationnal de Recherche en Informatique et Automatique
 
 */
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat3 normalMatrix;
 
-varying vec3 viewNormal;
+attribute vec3 position;
+attribute vec3 normal;
+
+varying vec3 vNormal;
 varying vec3 vViewPosition;
 varying float depth;
 
 void main(void)
 {
-
-    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     vViewPosition = -mvPosition.xyz;
 
-    viewNormal = normalMatrix * normal; // normal direction wrt camera
+    vNormal = normalMatrix * normal; // normal direction wrt camera
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
     depth = gl_Position.z;
 }

@@ -123,7 +123,7 @@
             minFilter: THREE.NearestFilter
         });
 
-        var normMaterial = new THREE.ShaderMaterial({
+        var normMaterial = new THREE.RawShaderMaterial({
             uniforms: p1Uniforms,
             vertexShader: plug.shaders.getByKey("RSPass1Vertex.glsl"),
             fragmentShader: plug.shaders.getByKey("RSPass1Fragment.glsl")
@@ -133,7 +133,7 @@
 
         var plane = new THREE.PlaneBufferGeometry(2,2);
         var quadMesh = new THREE.Mesh(plane,
-            new THREE.ShaderMaterial({
+            new THREE.RawShaderMaterial({
                 uniforms: p2Uniforms,
                 vertexShader: plug.shaders.getByKey("RSPass2Vertex.glsl"),
                 fragmentShader: plug.shaders.getByKey("RSPass2Fragment.glsl"),
