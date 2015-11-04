@@ -20,7 +20,7 @@
         tooltip: "Show Selected Face and vertices",
         icon: "img/icons/selected.png",
         toggle: true,
-        on: false,
+        on: true,
         loadShader: ["PointsFragment.glsl", "PointsVertex.glsl"]
     }, DEFAULTS);
 
@@ -121,11 +121,9 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
-            scene.removeOverlayLayer(meshFile, plug.getName());
-            // free memory used for this plugin.
-            // Note: when free is invoked with undefined,it does nothing
             Module._free(meshFile.facesCoordsPtr);
             Module._free(meshFile.pointsCoordsPtr);
+            scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
 
@@ -136,11 +134,26 @@
 
         // this mesh will contain the two meshes
         var selectionsMesh = new THREE.Mesh();
+        var addNewMesh = false;
 
-        selectionsMesh.add(createSelectedFacesMesh.call(this));
-        selectionsMesh.add(createSelectedPointsMesh.call(this));
+        var selectedFacesMesh = createSelectedFacesMesh.call(this);
 
-        scene.addOverlayLayer(meshFile, plug.getName(), selectionsMesh);
+        if (selectedFacesMesh) {
+            addNewMesh = true;
+            selectionsMesh.add(selectedFacesMesh);
+        }
+
+
+        var selectedPointsMesh = createSelectedPointsMesh.call(this);
+
+        if (selectedPointsMesh) {
+            addNewMesh = true;
+            selectionsMesh.add(selectedPointsMesh);
+        }
+
+        if (addNewMesh) {
+            scene.addOverlayLayer(meshFile, plug.getName(), selectionsMesh);
+        }
 
         function createSelectedFacesMesh() {
 
@@ -148,20 +161,18 @@
             const NUM_VERTICES_PER_FACE = 3;
             const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
 
-            // compute the length of the face coords buffer (+ 1 float for array size) in bytes
-            var numBytes = meshFile.FN * NUM_VERTICES_PER_FACE * NUM_BYTES_PER_VERTEX + SIZEOF_FLOAT;
-
-            // malloc enough space for the face coords buffer
-            var facesCoordsPtr = Module._malloc(numBytes);
-
-            // and store its reference in mesh object for deallocation when the user deactivate this plugin
-            meshFile.facesCoordsPtr = facesCoordsPtr;
-
             // call the c++ function which should fill the face coords array from mesh data
-            Module.buildSelectedFacesCoordsVec(meshFile.ptrMesh(), facesCoordsPtr);
+            var facesCoordsPtr = Module.buildSelectedFacesCoordsVec(meshFile.ptrMesh());
+
+            // store a reference in mesh object for deallocation when the user deactivate this plugin
+            meshFile.facesCoordsPtr = facesCoordsPtr;
 
             // read first float as the effective number of selected faces
             var numSelectedFaces = Module.getValue(facesCoordsPtr, 'float');
+
+            if (numSelectedFaces === 0) {
+                return null;
+            }
 
             // compute correct number of bytes of useful data
             var numBytesUsefulData = numSelectedFaces * NUM_VERTICES_PER_FACE * NUM_BYTES_PER_VERTEX;
@@ -207,20 +218,18 @@
             const SIZEOF_FLOAT = 4;
             const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
 
-            // compute the length of the points coords buffer (+ 1 float for array size) in bytes
-            var numBytes = meshFile.VN * NUM_BYTES_PER_VERTEX + SIZEOF_FLOAT;
-
-            // malloc enough space for the points coords buffer
-            var pointsCoordsPtr = Module._malloc(numBytes);
-
-            // and store its reference in mesh object for deallocation when the user deactivate this plugin
-            meshFile.pointsCoordsPtr = pointsCoordsPtr;
-
             // call the c++ function which should fill the points coords array from mesh data
-            Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh(), pointsCoordsPtr);
+            var pointsCoordsPtr = Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh());
+
+            // store a reference in mesh object for deallocation when the user deactivate this plugin
+            meshFile.pointsCoordsPtr = pointsCoordsPtr;
 
             // read first float as the effective number of selected points
             var numSelectedPoints = Module.getValue(pointsCoordsPtr, 'float');
+
+            if (numSelectedPoints === 0) {
+                return null;
+            }
 
             // compute correct number of bytes of useful data
             var numBytesUsefulData = numSelectedPoints * NUM_BYTES_PER_VERTEX;

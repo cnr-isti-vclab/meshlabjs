@@ -12,35 +12,60 @@ class CppMesh
 {
   public:
     MyMesh m;
-    Matrix44f tr;
-  int openMesh(string fileName) {
     int loadmask;
-    int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
-    if(ret!=0) {
-        if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
-        {
-            printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
-        }
-        else
-        {
-            printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
-            ret=0;
-        }
+    CppMesh()
+    {
+      loadmask =0;
+      m.tr.SetIdentity();
     }
-    // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
-    return ret;
+    void setMeshName(string meshName) {
+      m.meshName = meshName;
+    }
+    
+    std::string getMeshName() { 
+      return m.meshName;
+    }
+
+    bool hasPerVertexColor() const    { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
+    bool hasPerFaceColor() const      { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
+    bool hasPerVertexQuality() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTQUALITY; }
+    bool hasPerFaceQuality() const    { return loadmask & vcg::tri::io::Mask::IOM_FACEQUALITY; }
+
+    void addPerVertexColor()     { loadmask |= vcg::tri::io::Mask::IOM_VERTCOLOR; }
+    void addPerFaceColor()       { loadmask |= vcg::tri::io::Mask::IOM_FACECOLOR; }
+    void addPerVertexQuality()   { loadmask |= vcg::tri::io::Mask::IOM_VERTQUALITY; }
+    void addPerFaceQuality()     { loadmask |= vcg::tri::io::Mask::IOM_FACEQUALITY; }
+
+    
+    int openMesh(string fileName) {
+      m.meshName=fileName;
+      int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
+      if(ret!=0) {
+          if (tri::io::Importer<MyMesh>::ErrorCritical(ret))
+          {
+              printf("Error in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+          }
+          else
+          {
+              printf("Warning in opening file '%s': %s\n",fileName.c_str(),tri::io::Importer<MyMesh>::ErrorMsg(ret));
+              ret=0;
+          }
+      }
+      // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
+      return ret;
   }
 
-  int VN() { return m.VN();}
-  int FN() { return m.FN();}
-
+  int VN() { return m.VN(); }
+  int FN() { return m.FN(); }
+  
+  
   uintptr_t getMeshPtr(){
     return (uintptr_t)((void*)(&m)) ;
   }
 
   uintptr_t getMatrixPtr()
   {
-    return (uintptr_t)((void*)(&tr));
+    return (uintptr_t)((void*)(&m.tr));
   }
 
   inline uintptr_t getVertexVector() {
@@ -66,6 +91,27 @@ class CppMesh
     return (uintptr_t)f;
   }
 
+  inline uintptr_t getVertexColorVector() {
+    uint8_t *c = new uint8_t[m.VN()*4];
+    int k = 0;
+    for (int i = 0; i < m.VN(); ++i) {
+      for (int j = 0; j < 4; ++j) {
+        c[k++] = m.vert[i].cC()[j];
+      }
+    }
+    return (uintptr_t) c;
+  }
+
+  inline uintptr_t getFaceColorVector() {
+    uint8_t *c = new uint8_t[m.FN()*4];
+    int k = 0;
+    for (int i = 0; i < m.FN(); ++i) {
+      for (int j = 0; j < 4; ++j) {
+        c[k++] = m.face[i].cC()[j];
+      }
+    }
+    return (uintptr_t) c;
+  }
 
 };
 
@@ -73,11 +119,23 @@ class CppMesh
 EMSCRIPTEN_BINDINGS(CppMesh) {
   class_<CppMesh>("CppMesh")
     .constructor<>()
-    .function("openMesh",        &CppMesh::openMesh)
-    .function("getMeshPtr",      &CppMesh::getMeshPtr)
-    .function("getMatrixPtr",    &CppMesh::getMatrixPtr)
-    .function("getVertexVector", &CppMesh::getVertexVector)
-    .function("getFaceVector",   &CppMesh::getFaceVector)
+    .function("openMesh",             &CppMesh::openMesh)
+    .function("setMeshName",          &CppMesh::setMeshName)
+    .function("getMeshName",          &CppMesh::getMeshName)
+    .function("getMeshPtr",           &CppMesh::getMeshPtr)
+    .function("getMatrixPtr",         &CppMesh::getMatrixPtr)
+    .function("getVertexVector",      &CppMesh::getVertexVector)
+    .function("getVertexColorVector", &CppMesh::getVertexColorVector)
+    .function("getFaceVector",        &CppMesh::getFaceVector)
+    .function("getFaceColorVector",   &CppMesh::getFaceColorVector)
+    .function("hasPerVertexColor",    &CppMesh::hasPerVertexColor)
+    .function("hasPerVertexQuality",  &CppMesh::hasPerVertexColor)
+    .function("hasPerFaceColor",      &CppMesh::hasPerFaceColor)
+    .function("hasPerFaceQuality",    &CppMesh::hasPerFaceColor)
+    .function("addPerVertexColor",    &CppMesh::hasPerVertexColor)
+    .function("addPerVertexQuality",  &CppMesh::hasPerVertexColor)
+    .function("addPerFaceColor",      &CppMesh::hasPerFaceColor)
+    .function("addPerFaceQuality",    &CppMesh::hasPerFaceColor)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;

@@ -3,10 +3,12 @@
 
     var DEFAULTS = {
         specular: new THREE.Color('#505050'),
-        emissive: new THREE.Color('#404040'),
+        emissive: new THREE.Color('#000000'),
         shininess: 15.0,
         lights: true,
-        shading: THREE.FlatShading       
+        shading: THREE.FlatShading,
+        sides : THREE.DoubleSide,
+        meshColorMapping: ColorMapping.Uniform
     };
     
     var PHONG = {
@@ -19,7 +21,8 @@
                 "emissive": {type: "c", value: DEFAULTS.emissive},
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
-                "lights": {type: "i", value: DEFAULTS.lights}
+                "lights": {type: "i", value: DEFAULTS.lights},
+                "meshColorMapping": {type: "i", value: DEFAULTS.meshColorMapping}
             }
 
         ])        
@@ -53,7 +56,7 @@
             bindTo: "emissive"
         });
 
-        shininessWidget = guiBuilder.Integer({
+        shininessWidget = guiBuilder.RangedFloat({
             label: "Shininess",
             tooltip: "How shiny the specular highlight is. A higher value gives a sharper highlight",
             min: 0, max: 100, step: 1,
@@ -80,13 +83,29 @@
             ],
             bindTo: "lights"
         });
-                
+
+        guiBuilder.Choice({
+            label: "Back Face Culling",
+            tooltip: "Activate/Deactivate Back Face Culling",
+            options: [
+                {content: "Off", value: THREE.DoubleSide, selected: true},
+                {content: "On", value: THREE.FrontSide }
+            ],
+            bindTo: (function() {
+                var bindToFun = function (sideValue, overlay) {
+                    overlay.material.side = sideValue;
+                    scene.render();
+                };
+                bindToFun.toString = function () { return 'sides'; };
+                return bindToFun;
+            }())
+        });
     };
 
     plug._applyTo = function (meshFile, on) {
 
         if (on) {
-            var geom = meshFile.getThreeMesh().geometry.clone();
+            var geom = meshFile.getThreeMesh().geometry;
             geom.computeFaceNormals();
             geom.computeVertexNormals();
 
@@ -99,13 +118,15 @@
             uniforms.lights.value = params.lights;
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
+            uniforms.meshColorMapping.value = colorParams.meshColorMapping;
 
             var parameters = {
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
                 lights: true,
-                side: THREE.DoubleSide
+                side: params.sides,
+                vertexColors: colorParams.colorMode
             };
 
             var mat = new THREE.RawShaderMaterial(parameters);

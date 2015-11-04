@@ -1,11 +1,12 @@
 
 (function (plugin, core, scene) {
-
+    var fnb = null;
+            
     const BOTH_NORMALS = 0,
           FACE_NORMALS = 1,
           VERTEX_NORMALS = 2;
 
-    const NORMAL_SIZE_MIN = 0.01,
+    const NORMAL_SIZE_MIN = 0.0,
           NORMAL_SIZE_MAX = 5,
           NORMAL_SIZE_STEP = 0.1;
 
@@ -22,7 +23,8 @@
         tooltip: "Normals Tooltip",
         icon: "img/icons/normal.png",
         toggle: true,
-        on: false
+        on: false,
+        loadShader: ["NormalsFragment.glsl", "NormalsVertex.glsl"]
         // updateOnLayerAdded: true ?
     }, DEFAULTS);
 
@@ -69,7 +71,7 @@
             color: "#" + DEFAULTS.normalFaceColor.getHexString(),
             bindTo: (function() {
                         var bindToFun = function (color, overlay) {
-                            overlay.faceNormals.material.color = color;
+                            overlay.faceNormals.material.uniforms['color'].value = color;
                             scene.render();
                         };
                         bindToFun.toString = function () { return 'normalFaceColor'; };
@@ -84,8 +86,7 @@
             defval: DEFAULTS.normalFaceSize,
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
-                    overlay.faceNormals.size = size;
-                    overlay.faceNormals.update();
+                    overlay.faceNormals.material.uniforms['size'].value = size;
                     scene.render();
                 };
                 bindToFun.toString = function () { return 'normalFaceSize'; }
@@ -99,7 +100,7 @@
             color: "#" + DEFAULTS.normalVertexColor.getHexString(),
             bindTo: (function() {
                 var bindToFun = function (color, overlay) {
-                    overlay.vertexNormals.material.color = color;
+                    overlay.vertexNormals.material.uniforms['color'].value = color;
                     scene.render();
                 };
                 bindToFun.toString = function () { return 'normalVertexColor'; };
@@ -114,8 +115,7 @@
             defval: DEFAULTS.normalVertexSize,
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
-                    overlay.vertexNormals.size = size;
-                    overlay.vertexNormals.update();
+                    overlay.vertexNormals.material.uniforms['size'].value = size;
                     scene.render();
                 };
                 bindToFun.toString = function () { return 'normalVertexSize'; }
@@ -127,49 +127,125 @@
     plug._applyTo = function (meshFile, on) {
 
         if (on === false) {
+            Module._free(meshFile.faceNormalsPtr);
+            Module._free(meshFile.vertexNormalsPtr);
             scene.removeOverlayLayer(meshFile, plug.getName());
             return;
         }
         
         var params = meshFile.overlaysParams.getByKey(plug.getName());
-        var mesh = meshFile.getThreeMesh();
 
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals();
+        var normalsMesh = new THREE.Mesh();
 
-        var normals = new THREE.Mesh();
+        var faceNormals = buildFaceNormals.call(this);
+        var vertexNormals = buildVertexNormals.call(this);
 
-        var faceNormals = new THREE.FaceNormalsHelper(mesh,
-                                            params.normalFaceSize,
-                                            params.normalFaceColor,
-                                            1);
-
-
-        var vertexNormals = new THREE.VertexNormalsHelper(mesh,
-                                            params.normalVertexSize,
-                                            params.normalVertexColor,
-                                            1);
-
-        normals.add(faceNormals);
-        normals.add(vertexNormals);
-        normals.faceNormals = faceNormals;
-        normals.vertexNormals = vertexNormals;
+        normalsMesh.add(faceNormals);
+        normalsMesh.add(vertexNormals);
+        normalsMesh.faceNormals = faceNormals;
+        normalsMesh.vertexNormals = vertexNormals;
 
         switch (normalTypeWidget.getValue()) {
             case BOTH_NORMALS:
                 break;
 
             case FACE_NORMALS:
-                normals.vertexNormals.visible = false;
+                normalsMesh.vertexNormals.visible = false;
                 break;
 
             case VERTEX_NORMALS:
-                normals.faceNormals.visible = false;
+                normalsMesh.faceNormals.visible = false;
                 break;
         }
 
-        scene.addOverlayLayer(meshFile, plug.getName(), normals);
+        scene.addOverlayLayer(meshFile, plug.getName(), normalsMesh);
 
+        function buildFaceNormals() {
+            if(fnb != null) fnb.delete();
+            fnb = new Module.FaceNormalBuilder();
+            fnb.init(meshFile.ptrMesh());
+
+            var centroidArray = new Float32Array(Module.HEAPU8.buffer, fnb.getCentroidBuf(), meshFile.FN * 6);
+            var normalArray   = new Float32Array(Module.HEAPU8.buffer, fnb.getNormalBuf(),   meshFile.FN * 6);
+            var masksArray    = new Float32Array(Module.HEAPU8.buffer, fnb.getMaskBuf(),     meshFile.FN * 2);
+            
+            var faceNormalsGeometry = new THREE.BufferGeometry();
+
+            faceNormalsGeometry.addAttribute('position', new THREE.BufferAttribute( centroidArray, 3 ) );
+            faceNormalsGeometry.addAttribute('normal',   new THREE.BufferAttribute( normalArray,   3 ) );
+            faceNormalsGeometry.addAttribute('mask',     new THREE.BufferAttribute( masksArray,    1 ) );
+
+            var attributeFN = {
+                mask: {type: 'f', value: []}
+            };
+
+            var uniformFN = {
+                size: {type: "f", value: params.normalFaceSize},
+                color: {type: "c", value: params.normalFaceColor}
+            };
+
+            var parameters = {
+                vertexShader: this.shaders.getByKey("NormalsVertex.glsl"),
+                fragmentShader: this.shaders.getByKey("NormalsFragment.glsl"),
+                attributes: attributeFN,
+                uniforms: uniformFN,
+                wireframe : true,
+                transparent: true,
+                side: THREE.DoubleSide
+            };
+
+            var faceNormalsMat = new THREE.RawShaderMaterial(parameters);
+            var faceNormals    = new THREE.Mesh(faceNormalsGeometry, faceNormalsMat);
+
+            return faceNormals;
+        }
+
+        function buildVertexNormals() {
+
+            const SIZEOF_FLOAT = 4;
+            const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
+
+            var startBuffer = Module.buildVertexNormalsVec(meshFile.ptrMesh());
+            meshFile.vertexNormalsPtr = startBuffer;
+
+            var pointCoordsPtr = startBuffer;
+            var masksPtr = startBuffer + meshFile.VN * 2 * NUM_BYTES_PER_VERTEX;
+            var normalsCoordsPtr = startBuffer + (meshFile.VN * 2 * NUM_BYTES_PER_VERTEX + meshFile.VN * 2 * SIZEOF_FLOAT);
+
+            var points = new Float32Array(Module.HEAPU8.buffer, pointCoordsPtr, (meshFile.VN * 2 * NUM_BYTES_PER_VERTEX) / SIZEOF_FLOAT);
+            var masks = new Float32Array(Module.HEAPU8.buffer, masksPtr, meshFile.VN * 2);
+            var normals = new Float32Array(Module.HEAPU8.buffer, normalsCoordsPtr, (meshFile.VN * 2 * NUM_BYTES_PER_VERTEX) / SIZEOF_FLOAT);
+
+            var vertexNormalsGeometry = new THREE.BufferGeometry();
+
+            vertexNormalsGeometry.addAttribute('position', new THREE.BufferAttribute( points, 3 ) );
+            vertexNormalsGeometry.addAttribute('normal', new THREE.BufferAttribute( normals, 3 ) );
+            vertexNormalsGeometry.addAttribute('mask', new THREE.BufferAttribute( masks, 1 ) );
+
+            var attributes = {
+                mask: {type: 'f', value: []}
+            };
+
+            var uniforms = {
+                size: {type: "f", value: params.normalVertexSize},
+                color: {type: "c", value: params.normalVertexColor}
+            };
+
+            var parameters = {
+                vertexShader: this.shaders.getByKey("NormalsVertex.glsl"),
+                fragmentShader: this.shaders.getByKey("NormalsFragment.glsl"),
+                attributes: attributes,
+                uniforms: uniforms,
+                wireframe : true,
+                transparent: true,
+                side: THREE.DoubleSide
+            };
+
+            var vertexNormalsMat = new THREE.RawShaderMaterial(parameters);
+            var vertexNormals = new THREE.Mesh(vertexNormalsGeometry, vertexNormalsMat);
+
+            return vertexNormals;
+        }
     };
 
 

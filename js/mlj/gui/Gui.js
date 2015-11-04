@@ -87,7 +87,7 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
         component.disabled(true);
     });
 
-    $(document).on("SceneLayerAdded", function (ev, layer, layersNum) {
+    $(document).on("SceneLayerAdded SceneLayerRemoved", function (ev, layer, layersNum) {
         if (layersNum > 0) {
             component.disabled(false);
         } else {
@@ -96,9 +96,9 @@ MLJ.gui.disabledOnSceneEmpty = function (component) {
     });
 };
 
-MLJ.gui.disabledOnCppMesh = function(component) {
+MLJ.gui.disabledOnCreationFilterMesh = function(component) {
     $(document).on("SceneLayerSelected SceneLayerAdded", function (ev, layer) {
-        if(layer.cpp === true) {
+        if(layer.fileName === "") {
             component.disabled(true);
         } else {
             component.disabled(false);
@@ -136,12 +136,12 @@ MLJ.gui.disabledOnCppMesh = function(component) {
 
         if (MLJ.gui.group === undefined) {
             MLJ.gui.group = {};
-            MLJ.gui.group.name = new _group();
-        } else if (MLJ.gui.group.name === undefined) {
-            MLJ.gui.group.name = new _group();
+            MLJ.gui.group[name] = new _group();
+        } else if (MLJ.gui.group[name] === undefined) {
+            MLJ.gui.group[name] = new _group();
         }
 
-        return MLJ.gui.group.name;
+        return MLJ.gui.group[name];
     }   
     
 }).call(MLJ.gui);

@@ -61,7 +61,8 @@ MLJ.gui.Param.Number = function (flags) {
     };
 
     this._onChange = function (foo) {
-        this.spinner.onSpinStop(foo);
+        this.spinner.onChange(foo);
+        //this.spinner.onSpinStop(foo);
     };
 
     this.setValue = function (value) {
@@ -266,3 +267,39 @@ MLJ.gui.Param.RangedFloat = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.RangedFloat);
+
+/**         
+ * @class Layer selection widget, allows to pass an arbitrary layer as a filter paramter.
+ * @param {flags} flags
+ * @memberOf MLJ.gui.Param
+ */
+MLJ.gui.Param.LayerSelection = function (flags) {
+    this.selector = new MLJ.gui.component.LayerSelection(flags);
+    this.label = new MLJ.gui.component.Label(flags);
+
+    var _this = this;
+
+    this._make = function() {
+        return MLJ.gui.component.Grid(this.label, this.selector);
+    };
+
+    /**
+     * Returns a reference to the MLJ.core.Layer object of the layer currently selected from the widget.
+     * @returns {MLJ.core.Layer}    
+     */
+    this.getSelectedLayer = function() {
+        return MLJ.core.Scene.getLayerByName(this.selector.getSelectedEntry());
+    };
+
+    /**
+         * Returns a pointer to the cppMesh corresponding to the layer currently selected from the widget.
+         * Useful to pass this value in plugins when calling the module cpp functions.
+         * @returns {Module.CppMesh}    
+         */
+        this.getSelectedPtrMesh = function() {
+            return MLJ.core.Scene.getLayerByName(this.selector.getSelectedEntry()).ptrMesh();
+        };
+        MLJ.gui.Param.call(this);
+    };
+
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.LayerSelection);

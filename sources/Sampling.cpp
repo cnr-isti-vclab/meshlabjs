@@ -35,13 +35,14 @@ void PoissonDiskSamplingML(uintptr_t _baseM, uintptr_t _newM, float radius, int 
   tri::SurfaceSampling<MyMesh,BaseSampler>::PoissonDiskPruning(pdSampler, MontecarloMesh, radius,pp);
 }
 
-void MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum)
+void MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum, bool perFaceNormalFlag)
 {
   MyMesh &baseM = *((MyMesh*) _baseM);
   MyMesh &newM = *((MyMesh*) _newM);
 
   typedef tri::MeshSampler<MyMesh> BaseSampler;
   MeshSampler<MyMesh> mcSampler(newM);
+  mcSampler.perFaceNormal=perFaceNormalFlag;
   tri::SurfaceSampling<MyMesh,BaseSampler>::Montecarlo(baseM, mcSampler, sampleNum);
 }
 
@@ -54,7 +55,7 @@ void SamplingPluginTEST()
     Torus(m,10,5);
     int sampleNum = 1000+i*i*1000;
     int t0=clock();
-    MontecarloSamplingML(uintptr_t(&m),uintptr_t(&p),sampleNum);
+    MontecarloSamplingML(uintptr_t(&m),uintptr_t(&p),sampleNum,false);
     int t1=clock();
     printf("MontecarloSamplingML  a mesh of %i f with %i sample. Obtained %i samples in %6.3f sec\n",m.fn, sampleNum,p.vn,float(t1-t0)/CLOCKS_PER_SEC);
     PoissonDiskSamplingML(uintptr_t(&m),uintptr_t(&p),0,sampleNum,0);

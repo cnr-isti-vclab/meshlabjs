@@ -1,7 +1,8 @@
 CC=emcc
-CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -O3  --bind -s DEMANGLE_SUPPORT=1
 
-OBJ = Decorator.bc CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Random.bc ../../vcglib/wrap/ply/plylib.bc
+CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
+
+OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc Create.bc Refine.bc Smooth.bc Saver.bc Selection.bc ../../vcglib/wrap/ply/plylib.bc
 
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)

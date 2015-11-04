@@ -2,6 +2,9 @@
 precision highp float;
 precision highp int;
 
+#define COLOR_UNIFORM   0
+#define COLOR_ATTRIBUTE 1
+
 #define MAX_DIR_LIGHTS 1
 #define DOUBLE_SIDED
 #define SMOOTH 2
@@ -15,6 +18,8 @@ uniform vec3 specular;
 uniform float shininess;
 uniform float opacity;
 uniform int lights;
+uniform int meshColorMapping;
+
 #define PI 3.14159
 
 vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
@@ -33,9 +38,18 @@ varying vec3 vViewPosition;
 //if FLAT SHADED
 varying vec3 vNormal;
 
+varying vec3 vColor;
+
 void main() {
     vec3 outgoingLight = vec3( 0.0 );
-    vec4 diffuseColor = vec4( diffuse, opacity );
+    vec4 diffuseColor;
+    if (meshColorMapping == COLOR_UNIFORM) {
+        diffuseColor = vec4( diffuse, opacity );
+    } else if (meshColorMapping == COLOR_ATTRIBUTE) {
+        diffuseColor = vec4( vColor, opacity );
+    } else {
+        diffuseColor = vec4( 0.0, 0.0, 0.0, opacity );
+    }
     float specularStrength = 1.0;
     
     vec3 normal;

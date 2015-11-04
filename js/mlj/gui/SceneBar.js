@@ -78,8 +78,8 @@
                                                           
             MLJ.gui.disabledOnSceneEmpty(reload);
             //The reload button must be disalbed if the layer is created by a
-            //creation filter            
-            MLJ.gui.disabledOnCppMesh(reload);
+            //creation filter
+            MLJ.gui.disabledOnCreationFilterMesh(reload);
 
             var snapshot = new component.Button({
                 tooltip: "Take snapshot",
@@ -87,8 +87,15 @@
             });
             
             MLJ.gui.disabledOnSceneEmpty(snapshot);
+
+            var deleteLayer = new component.Button({
+                tooltip: "Delete current layer",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
+            });
             
-            _toolBar.add(open, save, reload, snapshot);
+            MLJ.gui.disabledOnSceneEmpty(deleteLayer);
+            
+            _toolBar.add(open, save, reload, snapshot, deleteLayer);
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
@@ -96,9 +103,9 @@
             });
 
             save.onClick(function () {
-                var meshFile = MLJ.core.Scene.getSelectedLayer();
+                var layer = MLJ.core.Scene.getSelectedLayer();
                 //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
-                var meshInfo = meshFile.name.split(".");                
+                var meshInfo = layer.name.split(".");                
                 _dialog.show();
                 $('#mlj-save-dialog > #filename').val(meshInfo[0]);
                 
@@ -108,20 +115,24 @@
                 $('#mlj-save-dialog-button').click(function() {                    
                     var name = $('#mlj-save-dialog > #filename').val();
                     var extension = $('#mlj-save-dialog > #extension').val();
-                    MLJ.core.File.saveMeshFile(meshFile, name+extension);
+                    MLJ.core.File.saveMeshFile(layer, name+extension);
                     _dialog.destroy();
                     $(this).off();
                 });
             });                        
 
             reload.onClick(function () {
-                var name = MLJ.gui.getWidget("LayersPane").getSelectedName();
-                MLJ.core.File.reloadMeshFileByName(name);
+                var mf = MLJ.core.Scene.getSelectedLayer();
+                MLJ.core.File.reloadMeshFile(mf);
             });
 
             snapshot.onClick(function () {                
                 MLJ.core.Scene.takeSnapshot();
             });
+
+            deleteLayer.onClick(function() {
+                MLJ.core.Scene.removeLayerByName(MLJ.core.Scene.getSelectedLayer().name)
+            })
                                              
         }
         

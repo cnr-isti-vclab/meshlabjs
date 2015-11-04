@@ -42,6 +42,10 @@ MLJ.core.plugin.Manager = {
      * Installs a new plugin in MeshLabJS
      * @memberOf MLJ.core.plugin
      * @author Stefano Gabriele
+     * It performs two tasks:
+     *  * add the filter/rendering plugin in the corresponding
+     *    list of plugins. 
+     *  * add the name and the tooltip string to the set of string to be searched
      */
     this.install = function () {
         var plugin;
@@ -73,7 +77,11 @@ MLJ.core.plugin.Manager = {
      * @author Stefano Gabriele
      */
     this.run = function () {
-        var ptr = _filters.iterator();
+        
+        //sort filters in alphabetical order
+        _filters.sortByKey();
+        
+        var ptr = _filters.iterator();        
         while (ptr.hasNext()) {
             ptr.next()._main();
         }

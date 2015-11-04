@@ -29,16 +29,30 @@
 
 /**         
  * @class Creates a new filter
+ * @description
+ * This class provides the basic method for adding new processing functionalities
+ * to meshlabjs. The main idea is that a filter is a kind of blackbox processing 
+ * function that take in input meshes (eventually none) parameters and give back 
+ * processed meshes. When you add a filter to meshlab it will end up in the filter 
+ * list tab.
+ * You have to redefine three functions:
+ *  * the constructor
+ *  * the {@link _init} where you define the parameters  
+ *  * the {@link _applyTo} where you define the behaviour of the function 
  * @param {Object} parameters The object contains the initialization parameters 
- * to create filter plugin<br>
- * <code> paramters = {<br>
- * &nbsp name: //the name of filter<br> 
- * &nbsp tooltip: //the filter description shown if mouse pointer is 
+ * to create filter plugin
+ * 
+ * <code> parameters = {<br>
+ * &nbsp; name: //the name of filter<br> 
+ * &nbsp; tooltip: //the filter description shown if mouse pointer is 
  * over its name<br>
- * &nbsp arity: //An integer:<br>
- * &nbsp&nbsp&nbsp&nbsp //0 for a creation filter<br>
- * &nbsp&nbsp&nbsp&nbsp //1 for a generic filter <br>
- * &nbsp&nbsp&nbsp&nbsp //>1 if the filter doesn't use the current mesh but 
+ * &nbsp; arity: //An integer:<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //0 for a creation filter<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //1 for a generic single mesh filter, e.g. a filter 
+ * &nbsp;&nbsp;&nbsp;&nbsp;     that takes a mesh, some parameters and modify just that single mesh. <br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //2 for a filter that take one or more mesh and/or create other layers.
+ * &nbsp;&nbsp;&nbsp;&nbsp; //3 for a filter that works on all visible layers. 
+ * 
  * defines its own meshes<br>
  * }
  * </code>
@@ -65,9 +79,8 @@
  *
  *      };
  *
- *      filter._applyTo = function (meshFile) {
- *          Module.RefineMesh(meshFile.ptrMesh,iterWdg.getValue());
- *          scene.updateLayer(meshFile);
+ *      filter._applyTo = function (layer) {
+ *          Module.RefineMesh(layer.ptrMesh,iterWdg.getValue());
  *      };
  *
  *      plugin.install(filter);
@@ -111,7 +124,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             entry.hide();
         }
 
-        MLJ.widget.TabbedPane.getFiltersAccord().refresh();
+        //MLJ.widget.TabbedPane.getFiltersAccord().refresh();
     });
 
     this._main = function () {
@@ -125,9 +138,17 @@ MLJ.core.plugin.Filter = function (parameters) {
         entry.addHeaderButton(apply);
 
         apply.onClick(function () {
-            var meshFile = MLJ.core.Scene.getSelectedLayer();
             var t0 = performance.now();
-            _this._applyTo(meshFile);
+            // Creation filters and filters that works on all layers ignore the current layer
+            // so we do not pass it
+            if( (_this.parameters.arity === 0) || (_this.parameters.arity===3) ) {
+                _this._applyTo();               
+            }
+            else {
+                var layer = MLJ.core.Scene.getSelectedLayer();
+                _this._applyTo(layer);
+                MLJ.core.Scene.updateLayer(layer);
+            }
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
@@ -153,10 +174,11 @@ MLJ.core.plugin.Filter = function (parameters) {
                     layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         _this._applyTo(layer);
+                        MLJ.core.Scene.updateLayer(layer);
                     }
                 }
                 var t1 = performance.now();
-                MLJ.widget.Log.append(name + " exectution time " + Math.round(t1 - t0) + " ms");
+                MLJ.widget.Log.append(name + " execution time " + Math.round(t1 - t0) + " ms");
             });
         }
 

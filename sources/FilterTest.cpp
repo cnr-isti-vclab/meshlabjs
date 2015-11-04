@@ -14,11 +14,15 @@ bool IsWaterTight(MyMesh &m)
   return true;
 }
 
-int main(int argc, char*argv[])
+int main(int /*argc*/, char*/*argv*/[])
 {
   CreatePluginTEST();
-  SamplingPluginTEST();
   MeshingPluginTEST();
+  MeasurePluginTEST();
+  RefinePluginTEST();
+  SamplingPluginTEST();
+  SelectionPluginTEST();
+  SmoothPluginTEST();
   printf("Done");
   return 0;
 }

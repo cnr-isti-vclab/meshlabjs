@@ -46,7 +46,6 @@ MLJ.core.File = {
 
 (function () {
     var _openedList = new MLJ.util.AssociativeArray();
-    var nameList = new MLJ.util.AssociativeArray();
 
     function isExtensionValid(extension) {
 
@@ -61,35 +60,10 @@ MLJ.core.File = {
         return false;
     }
 
-    function loadFile(file, onLoaded) {
-        console.time("Read mesh file");
-
-        if (!(file instanceof File)) {
-            console.error("MLJ.file.open(file): the parameter 'file' must be a File instace.");
-            onLoaded(false);
-        }
-
-        //Add file to opened list
-        _openedList.set(file.name, file);
-
-        //Extract file extension
-        var pointPos = file.name.lastIndexOf('.');
-        var extension = file.name.substr(pointPos);
-
-        //Validate file extension
-        if (!isExtensionValid(extension)) {
-            var err = new MLJ.Error(
-                    MLJ.core.File.ErrorCodes.EXTENSION,
-                    "MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again."
-                    );
-
-            MLJ.setError(err);
-
-            onLoaded(false);
-            return;
-        }
-
-        //Read file
+    /**
+     * Loads 'file' in the virtual file system as an Int8Array and reads it into the layer 'mf'
+     */
+    function loadMeshDataFromFile(file, mf, onLoaded) {
         var fileReader = new FileReader();
         fileReader.readAsArrayBuffer(file);
         fileReader.onloadend = function (fileLoadedEvent) {
@@ -100,107 +74,59 @@ MLJ.core.File = {
             FS.createDataFile("/", file.name, int8buf, true, true);
             
             console.time("Parsing Mesh Time");
-            var CppMesh = new Module.CppMesh();
-            var resOpen = CppMesh.openMesh(file.name);
+            var resOpen = mf.cppMesh.openMesh(file.name);
             if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
-
                 onLoaded(false);
             }
-
-            console.timeEnd("Parsing Mesh Time");
-
-            var mf = new MLJ.core.MeshFile(file.name, CppMesh);
-
-            onLoaded(true, mf);
-            
+            console.timeEnd("Parsing Mesh Time");        
             FS.unlink(file.name);
-
-        }; //end onloadend
+            onLoaded(true, mf);
+        };
     }
 
-    /**
-     * Reloads a mesh file by name
-     * @param {String} name The name of the mesh file needs to be reloaded
-     * @memberOf MLJ.core.File
-     * @fires MLJ.core.File#MeshFileReloaded
-     * @author Stefano Gabriele
-     */
-    this.reloadMeshFileByName = function (name) {
-        var file = _openedList.getByKey(name);
-
-        if (file === undefined) {
-            console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
-            return false;
-        }
-
-        loadFile(file, function (loaded, meshFile) {
-            if (loaded) {
-
-                /**
-                 *  Triggered when a mesh file is reloaded
-                 *  @event MLJ.core.File#MeshFileReloaded
-                 *  @type {Object}
-                 *  @property {MLJ.core.MeshFile} meshFile The reloaded mesh file
-                 *  @example
-                 *  <caption>Event Interception:</caption>
-                 *  $(document).on("MeshFileReloaded",
-                 *      function (event, meshFile) {
-                 *          //do something
-                 *      }
-                 *  );
-                 */
-                $(document).trigger("MeshFileReloaded", [meshFile]);
-            } else {
-                //else error in file reading
-                console.log(MLJ.getLastError().message);
-            }
-        });
-    };
-
-    /**
-     * Creates a new mesh file using the c++ functions bound to JavaScript
-     * @param {String} name The name of the new mesh file
-     * @memberOf MLJ.core.File
-     * @returns {MLJ.core.MeshFile} The new mesh file
-     * @author Stefano Gabriele
-     */
-    this.createCppMeshFile = function (name) {
-
-        var nameAmount = nameList.getByKey(name);
-        if (nameAmount === undefined) {
-            nameList.set(name, 0);
-        } else {
-            nameAmount++;
-            nameList.set(name, nameAmount);
-            name += " " + nameAmount;
-        }
-
-        var CppMesh = new Module.CppMesh();
-        var mf = new MLJ.core.MeshFile(name, CppMesh);
-
-        //Indicates that the mesh is created by c++
-        mf.cpp = true;
-        return mf;
-    };
+    
 
     /**
      * Opens a mesh file or a list of mesh files     
-     * @param {(File | FileList)} file A single mesh file or a list of mesh files
+     * @param {(File | FileList)} toOpen A single mesh file or a list of mesh files
      * @memberOf MLJ.core.File
      * @fires MLJ.core.File#MeshFileOpened
      * @author Stefano Gabriele
      */
-    this.openMeshFile = function (file) {
-        $(file).each(function (key, value) {
-            loadFile(value, function (loaded, meshFile) {
+    this.openMeshFile = function (toOpen) {
+        $(toOpen).each(function (key, file) {
+            console.time("Read mesh file");
+
+            if (!(file instanceof File)) {
+                console.error("MLJ.file.openMeshFile(file): the parameter 'file' must be a File instace.");
+                return;
+            }
+
+            //Add file to opened list
+            _openedList.set(file.name, file);
+
+            //Extract file extension
+            var pointPos = file.name.lastIndexOf('.');
+            var extension = file.name.substr(pointPos);
+
+            //Validate file extension
+            if (!isExtensionValid(extension)) {
+                console.error("MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again.");
+                return;
+            }
+
+            var mf = MLJ.core.Scene.createCppMeshFile(file.name);
+            mf.fileName = file.name; 
+
+            loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
                 if (loaded) {
                     /**
                      *  Triggered when a mash file is opened
                      *  @event MLJ.core.File#MeshFileOpened
                      *  @type {Object}
-                     *  @property {MLJ.core.MeshFile} meshFile The opened mesh file
+                     *  @property {MLJ.core.Layer} meshFile The opened mesh file
                      *  @example
                      *  <caption>Event Interception:</caption>
                      *  $(document).on("MeshFileOpened",
@@ -210,10 +136,43 @@ MLJ.core.File = {
                      *  );
                      */
                     $(document).trigger("MeshFileOpened", [meshFile]);
-                } else {//else error in file reading
-                    console.log(MLJ.getLastError().message);
                 }
             });
+        });
+    };
+
+    /**
+     * Reloads an existing layer, that is recovers the file linked to the layer
+     * and reinitializes the cppMesh of the layer with it
+     * @param {MLJ.core.Layer} mf the MeshFile to be reloaded
+     * @memberOf MLJ.core.File
+     * @fires MLJ.core.File#MeshFileReloaded
+     */
+    this.reloadMeshFile = function (mf) {
+        var file = _openedList.getByKey(mf.fileName);
+
+        if (file === undefined) {
+            console.warn("MLJ.file.reloadMeshFile(name): the scene not contains file '" + name + "'.");
+            return;
+        }
+
+        loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
+            if (loaded) {
+                /**
+                 *  Triggered when a mesh file is reloaded
+                 *  @event MLJ.core.File#MeshFileReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.Layer} meshFile The reloaded mesh file
+                 *  @example
+                 *  <caption>Event Interception:</caption>
+                 *  $(document).on("MeshFileReloaded",
+                 *      function (event, meshFile) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("MeshFileReloaded", [meshFile]);
+            }
         });
     };
 

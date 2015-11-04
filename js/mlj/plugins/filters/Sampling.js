@@ -5,10 +5,10 @@
         name: "Montecarlo Random Sampling",
         tooltip: "Create a new layer populated with a point sampling of the current mesh;" +
                 " samples are generated in a randomly uniform way, or with a distribution biased by the per-vertex quality values of the mesh.",
-        arity: 1
+        arity: 2
     });
 
-    var sampleNumMCWidget;
+    var sampleNumMCWidget,perFaceNormalWidget;
 
     MontecarloSamplingFilter._init = function (builder) {
 
@@ -17,11 +17,16 @@
             label: "Sample Num",
             tooltip: "Number of samples that are randomly chosen over the surface of the mesh."
         });
+           perFaceNormalWidget = builder.Bool({
+            defval: true,
+            label: "Per Face Normal",
+            tooltip: "if true the sample normal is the face normal, otherwise it is interpolated."
+        });
 
     };
 
     MontecarloSamplingFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.File.createCppMeshFile("Montecarlo Samples");
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Montecarlo Samples");
         Module.MontecarloSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(), sampleNumMCWidget.getValue());
         scene.addLayer(newmeshFile);
     };
@@ -35,7 +40,7 @@
                 "samples are generated according to a Poisson-disk distribution using the algorithm described in:<br>" +
                 "<b>'Efficient and Flexible Sampling with Blue Noise Properties of Triangular Meshes'</b><br>" +
                 " Massimiliano Corsini, Paolo Cignoni, Roberto Scopigno<br>IEEE TVCG 2012",
-        arity: 1
+        arity: 2
     });
 
     var sampleNumPDWidget, radiusWidget;
@@ -57,7 +62,7 @@
 
     PoissonDiskSamplingFilter._applyTo = function (basemeshFile) {
 
-        var newmeshFile = MLJ.core.File.createCppMeshFile("Poisson Disk Samples");
+        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Poisson Disk Samples");
         Module.PoissonDiskSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),
                                    radiusWidget.getValue(),sampleNumPDWidget.getValue(),  0);
         scene.addLayer(newmeshFile);

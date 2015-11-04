@@ -61,7 +61,7 @@
             $(document).on("SceneLayerAdded",
                     function (event, mesh) {
                         //Add item to layers pane widget
-                        MLJ.widget.LayersPane.addLayer(mesh.name);
+                        MLJ.widget.LayersPane.addLayerHandler(mesh.name);
                         MLJ.gui.getWidget("Info").updateInfo(mesh);
                     });
 
@@ -109,7 +109,7 @@
          * @param {String} name The name of the layer
          * @author Stefano Gabriele
          */
-        this.addLayer = function (name) {
+        this.addLayerHandler = function (name) {
            
             var $wrap = $('<div class="mlj-layers-entry" name="mlj-wrap-'+name+'"></div>')
                     .css({position: "relative", width: "100%"});

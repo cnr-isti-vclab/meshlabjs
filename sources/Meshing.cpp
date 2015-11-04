@@ -1,7 +1,8 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 #include <vcg/complex/algorithms/clustering.h>
-#include <vcg/complex/algorithms/create/platonic.h>
+#include <vcg/complex/algorithms/convex_hull.h>
+
 
 using namespace vcg;
 using namespace std;
@@ -75,11 +76,35 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   printf("Completed Simplification\n");
 }
 
+void RemoveUnreferencedVertices(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  int rvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
+  tri::Allocator<MyMesh>::CompactVertexVector(m);
+  printf("Removed %i unreferenced vertices\n",rvn);
+}
+
+void RemoveDuplicatedVertices(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  int cnt = tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
+  printf("Removed %i duplicated vertices\n",cnt);
+  tri::Allocator<MyMesh>::CompactEveryVector(m);
+}
+
+void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  MyMesh &ch = *((MyMesh*) _newM);
+  ch.Clear();
+  tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
+}
+
 void MeshingPluginTEST()
 {
   for(int i=1;i<5;++i)
   {
-    MyMesh mq,mc;
+    MyMesh mq,mc,ch;
     Torus(mq,10*i,5*i);
     Torus(mc,10*i,5*i);
     int t0=clock();
@@ -89,6 +114,9 @@ void MeshingPluginTEST()
     ClusteringSimplification(uintptr_t(&mc),0.01f);
     int t2=clock();
     printf("Clustering simplification in  %6.3f sec\n",float(t2-t1)/CLOCKS_PER_SEC);
+    ConvexHullFilter(uintptr_t(&mc),uintptr_t(&ch));
+    int t3=clock();
+    printf("Computed Convex Hull %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t3-t2)/CLOCKS_PER_SEC);
   }
 }
 
@@ -96,8 +124,11 @@ void MeshingPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
-    emscripten::function("QuadricSimplification", &QuadricSimplification);
-    emscripten::function("ClusteringSimplification", &ClusteringSimplification);
+    emscripten::function("ConvexHullFilter",           &ConvexHullFilter);
+    emscripten::function("QuadricSimplification",      &QuadricSimplification);
+    emscripten::function("ClusteringSimplification",   &ClusteringSimplification);
+    emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
+    emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
 }
 #endif
 

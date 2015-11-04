@@ -132,6 +132,29 @@ MLJ.gui.component.Grid = function () {
 
 };
 
+// Group _______________________________________________________________________
+
+/**         
+ * @static Group
+ * @memberOf MLJ.gui.component
+ * @author Stefano Gabriele 
+ */
+MLJ.gui.component.Group = function () {
+    var $div = $('<div></div>');
+    
+    for (var i = 0, m = arguments.length; i < m; i++) {
+        arg = arguments[i];
+        
+        if (arg instanceof MLJ.gui.component.Component) {
+            $div.append(arg.$);
+        } else {
+            $div.append(arg);
+        }        
+    }
+
+    return $div;
+};
+
 // Picture in Picture __________________________________________________________
 
 /**         
@@ -292,6 +315,9 @@ MLJ.gui.component.Button = function (flags) {
     };
 
     this._disabled = function (bool) {
+        // when disabling the component close the tooltip
+        // since if it's open it will remain on screen indefinitely
+        if (bool) this.$.tooltip("close");
         this.$.button({disabled: bool});
     };
 
@@ -323,6 +349,12 @@ MLJ.gui.component.FileButton = function (flags) {
     this.onChange = function (foo) {
         $(_$file.change(function () {
             foo(this);
+
+            // hack to clear the input form, otherwise the same file cannot
+            // be loaded a second time because the change event won't be triggered
+            _$file.wrap('<form>').closest('form').get(0).reset();
+            _$file.unwrap();
+            event.preventDefault();
         }));
     };
 };
@@ -336,25 +368,28 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.FileButton);
  * @author Stefano Gabriele 
  */
 MLJ.gui.component.ToggleButton = function (flags) {
+    if (flags.on !== true && flags.on !== false) {
+        console.log("Warning(MLJ.gui.Component.TogggleButton): forcing flags.on to false");
+        flags.on = false;
+    }
     MLJ.gui.component.Button.call(this, flags);
 
-    var _on = this.flag("on") !== undefined
-            ? this.flag("on") ^ 1
-            : 0;
-
     var _this = this;
+    var _on = this.flag("on");
+    var _toggleCallback = null;
 
-    this.toggle = function (param, click) {
-
+    /* NOTE: the callback specified with onToggle() is not called if the 'ev' 
+             parameter is omitted */
+    this.toggle = function (param, ev) {
         switch (param) {
             case "on":
-                _on = 1;
+                _on = true;
                 break;
             case "off":
-                _on = 0;
+                _on = false;
                 break;
-            default:
-                _on ^= 1;
+            default: // just toggle it
+                _on = !_on;
         }
 
         if (_on) {
@@ -363,27 +398,22 @@ MLJ.gui.component.ToggleButton = function (flags) {
             _this.$.removeClass("mlj-toggle-on");
         }
 
-        if (click === true) {
-            _this.$.click();
+        if (ev !== undefined && _toggleCallback) {
+            _toggleCallback(_on === true, ev);
         }
     };
 
     this.onToggle = function (foo) {
-        _this.$.click(function (event) {
-            foo(_on === 1, event);
-        });
+        _toggleCallback = foo;
     };
 
     this.isOn = function () {
-        return _on === 1;
+        return _on === true;
     };
 
-    this.$.click(function () {
-        _this.toggle();
+    this.$.click(function (event) {
+        _this.toggle(null, event);
     });
-
-    //init        
-    _this.toggle();
 };
 
 MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
@@ -397,29 +427,16 @@ MLJ.extend(MLJ.gui.component.Button, MLJ.gui.component.ToggleButton);
  * @author Stefano Gabriele 
  */
 MLJ.gui.component.CustomToggleButton = function (flags) {
-    var _html = $('<div/>').css({
-        display: "inline-block",
-        paddingBottom: "8px",
-        position: "relative"
-    });
+    var _html = $('<div/>').addClass("mlj-custom-toggle-button");
 
-    var _$arrow = $('<div/>').css({
-        width: "0px",
-        height: "0px",
-        borderLeft: "6px solid transparent",
-        borderRight: "6px solid transparent",
-        borderTop: "6px solid black",
-        position: "absolute",
-        bottom: "0px",
-        left: "5px"
-    });
+    var _$arrow = $('<div/>').addClass("mlj-custom-toggle-button-arrow");
 
     var _arrowHandler = null;
 
     var _toggle = new MLJ.gui.component.ToggleButton(flags);
 
-    this.toggle = function (param, click) {
-        _toggle.toggle(param, click);
+    this.toggle = function (param, event) {
+        _toggle.toggle(param, event);
     };
 
     this.isOn = function () {
@@ -435,7 +452,7 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
     this.onRightButtonClicked = function (foo) {
         _toggle.$.mouseup(function (event) {
             if (event.which === 3) {
-                foo();
+                foo(event);
             }
         });
     };
@@ -446,7 +463,19 @@ MLJ.gui.component.CustomToggleButton = function (flags) {
             foo();
         });
     };
+    
+    this.setArrowSelected = function(selected) {
+        if(selected === true) {
+            _$arrow.addClass("arrow-selected");
+        } else {
+            _$arrow.removeClass("arrow-selected");
+        }
+    };
 
+    this.isArrowSelected = function () {
+        return _$arrow.hasClass("arrow-selected");
+    };
+    
     this._make = function () {
         this.$.append(_toggle.$, _$arrow);
     };
@@ -868,8 +897,14 @@ MLJ.gui.component.Spinner = function (flags) {
     var _html = '<div></div>';
     var _$spinner = $('<input>').css({width: "100%"});
 
+    var _this = this;
+
     this.onChange = function (callback) {
         _$spinner.on("spinchange", function (event, ui) {
+            if (_this.getValue() == "" || isNaN(_this.getValue())) {
+                console.warn('Warning(Spinner): value is not a number, reset to default');
+                _this.setValue(_this.flag("defval"));
+            }
             callback(event, ui);
         });
     };
@@ -936,21 +971,24 @@ MLJ.gui.component.RangedFloat = function (flags) {
         var maxval = this.flag("max");
         var defval = this.flag("defval");
         var stepval = this.flag("step");
+        //check & assignment
         inputparams = {
             minvalue: (minval !== undefined ? minval : 0),
             maxvalue: (maxval !== undefined ? maxval : 100),
             defvalue: (defval !== undefined ? defval : 50),
             stepvalue: (stepval !== undefined ? stepval : 0.01)
         };
+        //insert the labels html code
         _pmin.html(inputparams.minvalue);
         _pmax.html(inputparams.maxvalue);
+        //append the labels
         this.$.append(_pmin);
         this.$.append(_pmax);
         //append the slider to the root
         this.$.append(_$slider);
         //append the edit text to the root
         this.$.append(_$editText);
-        //slider init
+        //slider initialization
         _$slider.slider({
             min: inputparams.minvalue,
             max: inputparams.maxvalue,
@@ -959,17 +997,28 @@ MLJ.gui.component.RangedFloat = function (flags) {
             //onCreate event callback
             create: function (event, ui) {
                 _$editText.val(inputparams.defvalue);
-            },
-            //onSlide event callback
-            slide: function (event, ui) {
-                _$slider.slider('value', ui.value);
-                _$editText.val(ui.value);
             }
         });
-        //set EditText's event callback when text changed
-        _$editText.change(function () {
-            //inserted value
-            var val = $(this).val();
+    };
+
+    this.getValue = function () {
+        return _$editText.val();
+    };
+
+    this.setValue = function (value) {
+        _$editText.val(value);
+        _$slider.slider('value', value);
+    };
+
+    this.onChange = function (foo) {
+        _$slider.on( "slide", function( event, ui ) {
+            //call rangedfloat's setValue method
+            _this.setValue(ui.value);
+            foo(event,ui);
+        });
+        _$editText.on("change", function( event ) {
+            //take inserted value
+            var val = _this.getValue();
             //validation pattern
             var pattern = /^([-+]?\d+(\.\d+)?)/;
             //trunk in groups the string
@@ -984,45 +1033,14 @@ MLJ.gui.component.RangedFloat = function (flags) {
             var min = _$slider.slider("option", "min");
             var max = _$slider.slider("option", "max");
             //validate the boundaries
-            if (val > max) {
-                _$editText.val(max);
-                _$slider.slider('value', max);
-            } else if (val < min) {
-                _$editText.val(min);
-                _$slider.slider('value', min);
-            } else {
-                _$editText.val(val);
-                _$slider.slider('value', val);
-            }
-        });
-    };
-
-    this.getValue = function () {
-        return _$editText.val();
-    };
-
-    this.setValue = function (value) {
-        _$editText.val(value);
-        _$slider.slider('value', value);
-    };
-
-    this.onChange = function (foo) {          
-        _$slider.on( "slide", function( event, ui ) {
-            foo(event,ui);
-        });
-        _$editText.on("change", function( event ) {
-            var val = _$editText.val();
-            var min = _$slider.slider("option", "min");
-            var max = _$slider.slider("option", "max");
-            var ui;
-            //validate the boundaries
             if (val > max)
                 val = max;
             else if (val < min)
                 val = min;
-            _$editText.val(val);
-            _$slider.slider('value', val);
-            ui = { value : val };
+            //call rangedfloat's setValue method
+            _this.setValue(val);
+            //var needed by foo
+            var ui = { value : val };
             foo(event,ui);
         });
     };
@@ -1070,3 +1088,44 @@ MLJ.gui.component.Dialog = function (flags) {
 };
 
 MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.Dialog);
+
+/**         
+ * @class Layer selection component, rendered as a ComboBox menu.
+ * @param {flags} flags
+ * @memberOf MLJ.gui.component
+ */
+MLJ.gui.component.LayerSelection = function(flags) {
+    var _html = "<select></select>";
+    var _this = this;
+
+    $(document).on("SceneLayerAdded", function(event, layer) {
+        if (_this.$.find("option").length === 0) {
+            _this.$.selectmenu("enable");
+        }
+        var $option = $("<option />").attr("value", layer.name).append(layer.name);
+        _this.$.append($option);
+        _this.$.selectmenu("refresh");
+    });
+
+    $(document).on("SceneLayerRemoved", function(event, layer) {
+        _this.$.find("option[value=\"" + layer.name + "\"]").remove();
+        if (_this.$.find("option").length === 0) {
+            _this.$.selectmenu("disable");
+        }        
+        _this.$.selectmenu("refresh");
+    });
+
+    this._make = function() {
+        _this.$.selectmenu({width: "100%", disabled: true})
+            .selectmenu("menuWidget")
+                .addClass("overflow");
+    };
+
+    this.getSelectedEntry = function() {
+        return _this.$.find(":selected").val();
+    };
+
+    MLJ.gui.component.Component.call(this, _html, flags);
+};
+
+MLJ.extend(MLJ.gui.component.Component, MLJ.gui.component.LayerSelection);
