@@ -3,6 +3,8 @@
 #include <vcg/math/perlin_noise.h>
 #include <vcg/complex/algorithms/create/marching_cubes.h>
 #include <vcg/complex/algorithms/create/mc_trivial_walker.h>
+#include <vcg/complex/algorithms/point_sampling.h>
+#include <vcg/math/gen_normal.h>
 
 using namespace vcg;
 using namespace std;
@@ -70,6 +72,56 @@ void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
 }
 
 
+
+void CreateSpherePointCloud(uintptr_t _m, int pointNum, int sphereGenTech)
+{
+  MyMesh &m = *((MyMesh*) _m);
+
+  math::MarsenneTwisterRNG rng;
+  m.Clear();
+  std::vector<Point3f> sampleVec;
+
+  switch(sphereGenTech)
+  {
+  case 0: // Montecarlo
+  {
+    for(int i=0;i<pointNum;++i)
+      sampleVec.push_back(math::GeneratePointOnUnitSphereUniform<MyMesh::ScalarType>(rng));
+  } break;
+  case 1: // Poisson Disk
+  {
+    int oversamplingFactor =100;
+    if(pointNum <= 100) oversamplingFactor = 1000;
+    if(pointNum >= 10000) oversamplingFactor = 50;
+    if(pointNum >= 100000) oversamplingFactor = 20;
+    MyMesh tt;
+    tri::Allocator<MyMesh>::AddVertices(tt,pointNum*oversamplingFactor);
+    for(MyMesh::VertexIterator vi=tt.vert.begin();vi!=tt.vert.end();++vi)
+      vi->P()=math::GeneratePointOnUnitSphereUniform<MyMesh::ScalarType>(rng);
+    tri::UpdateBounding<MyMesh>::Box(tt);
+
+    const float SphereArea = 4*M_PI;
+    float poissonRadius = 2.0*sqrt((SphereArea / float(pointNum*2))/M_PI);
+    tri::TrivialSampler<MyMesh> pdSampler(sampleVec);
+    tri::SurfaceSampling<MyMesh, tri::TrivialSampler<MyMesh> >::PoissonDiskParam pp;
+    tri::SurfaceSampling<MyMesh,tri::TrivialSampler<MyMesh> >::PoissonDiskPruning(pdSampler, tt, poissonRadius, pp);
+  } break;
+  case 2: // Disco Ball
+    GenNormal<MyMesh::ScalarType>::DiscoBall(pointNum,sampleVec);
+    break;
+  case 3: // Recursive Oct
+    GenNormal<MyMesh::ScalarType>::RecursiveOctahedron(pointNum,sampleVec);
+    break;
+  case 4: // Fibonacci
+    GenNormal<MyMesh::ScalarType>::Fibonacci(pointNum,sampleVec);
+    break;
+  }
+  for(size_t i=0;i<sampleVec.size();++i)
+    tri::Allocator<MyMesh>::AddVertex(m,sampleVec[i],sampleVec[i]);
+
+}
+
+
 void CreatePluginTEST()
 {
   for(int i=0;i<5;++i)
@@ -99,12 +151,15 @@ void CreatePluginTEST()
     }
 }
 
+
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreatePlatonic", &CreatePlatonic);
     emscripten::function("CreateTorus", &CreateTorus);
     emscripten::function("CreateSphere", &CreateSphere);
+    emscripten::function("CreateSpherePointCloud", &CreateSpherePointCloud);
     emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
     emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);

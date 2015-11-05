@@ -7,7 +7,7 @@
         arity: 2
     });
     
-     DeleteLayerFilter._init = function (builder) {
+    DeleteLayerFilter._init = function (builder) {
     };
     
     DeleteLayerFilter._applyTo = function (basemeshFile) {
@@ -79,6 +79,35 @@
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
+/******************************************************************************/     
+    var PlatonicFilter = new plugin.Filter({
+        name: "Create Platonic Solid",
+        tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
+        arity: 0
+    });
+
+    var choiceWidget;
+    PlatonicFilter._init = function (builder) {
+
+        choiceWidget = builder.Choice({
+            label: "Solid",
+            tooltip: "Choose one of the possible platonic solids",
+            options: [
+                {content: "Tetrahedron", value: "0"},
+                {content: "Octahedron", value: "1"},
+                {content: "Hexahedron", value: "2"},
+                {content: "Dodecahedron", value: "3", selected: true},
+                {content: "Icosahedron", value: "4"}
+            ]
+        });
+    };
+
+    PlatonicFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createCppMeshFile(choiceWidget.getContent());
+        Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
+        scene.addLayer(mf);
+    };
+
 /******************************************************************************/
     var SphereFilter = new plugin.Filter({
         name: "Create Sphere ",
@@ -98,6 +127,43 @@
     SphereFilter._applyTo = function () {
         var mf = MLJ.core.Scene.createCppMeshFile("Sphere");
         Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
+        scene.addLayer(mf);
+    };
+/******************************************************************************/
+    var SpherePointCloudFilter = new plugin.Filter({
+        name: "Create Points on a Sphere ",
+        tooltip: "Create a point cloud with a set of point distributed on the surface of a sphere with a number of different strategies: Montecarlo, Poisson Disk, Octahedron recursive subdivision, Disco Ball, Fibonacci Spherical Lattice",
+        arity: 0});
+
+    var sphPtNumWidget,sphPtAlgWidget;
+    SpherePointCloudFilter._init = function (builder) {
+
+        sphPtNumWidget = builder.Integer({
+            min: 1, step: 10, defval: 100,
+            label: "Point Num.",
+            tooltip: "Expected number of points; depending on the algorithm it could be not possible to match it exactly"
+        });
+        sphPtAlgWidget = builder.Choice({
+            label: "Generation Technique",
+            tooltip: "Generation Technique:<br>"
+                    +"<b>Montecarlo</b>: The points are randomly generated with an uniform distribution.<br>"
+                    +"<b>Poisson Disk</b>: The points are to follow a poisson disk distribution.<br>"
+                    +"<b>Disco Ball</b>: Dave Rusin's disco ball algorithm for the regular placement of points on a sphere is used. <br>"
+                    +"<b>Recursive Octahedron</b>: Points are genereate on the vertex of a recursively subdivided octahedron <br>"
+                    +"<b>Fibonacci Lattice</b>:  Points are generated according to the Fibonacci Lattice approach as explained in <br>\"Spherical Fibonacci Mapping\", Keinert et al.  ACM TOG, 2015",
+            options: [
+                {content: "Montecarlo", value: "0"},
+                {content: "Poisson Disk", value: "1"},
+                {content: "Disco Ball", value: "2"},
+                {content: "Recursive Octahedron", value: "3"},
+                {content: "Fibonacci Lattice ", value: "4", selected: true}
+            ]
+        });
+    };
+
+    SpherePointCloudFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createCppMeshFile("Sphere-"+sphPtAlgWidget.getContent());
+        Module.CreateSpherePointCloud(mf.ptrMesh(),sphPtNumWidget.getValue(), parseInt(sphPtAlgWidget.getValue()));
         scene.addLayer(mf);
     };
 /******************************************************************************/
@@ -155,6 +221,7 @@
     plugin.Manager.install(DuplicateLayerFilter);
     plugin.Manager.install(FlattenLayerFilter);
     plugin.Manager.install(SphereFilter);
+    plugin.Manager.install(SpherePointCloudFilter);
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
     plugin.Manager.install(NoisyIsoFilter);
