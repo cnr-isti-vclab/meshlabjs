@@ -18,7 +18,7 @@
  * {@link MLJ.gui.component.CustomToggleButton} which allows the plugin to be turned
  * on or off, otherwise a simple {@link MLJ.gui.component.Button} is used.
  *
- * @param {string} renderingGroup - A string used to distinguish the different classes of
+ * @param {string} renderingClass - A string used to distinguish the different classes of
  * rendering plugins, used to group together their GUI elements when group-level actions
  * are needed (for example toggling all the Layer level overlays at once). This parameter
  * is handled by the framework and the plugin creation process is oblivious to it.
@@ -28,7 +28,7 @@
  *
  * @memberOf MLJ.core.plugin
  */
-MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
+MLJ.core.plugin.AbstractRendering = function (parameters, renderingClass) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
 
     var _this = this;
@@ -45,7 +45,8 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingGroup) {
 
     var _btn = toggleButtonBuilder.Button(parameters);
 
-    var group = MLJ.gui.makeGroup(renderingGroup);
+    // Group ToggleButtons of the same rendering class
+    var group = MLJ.gui.makeGroup(renderingClass);
     if (_btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(_btn);
         _btn.onArrowClicked(function () {

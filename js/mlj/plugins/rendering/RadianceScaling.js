@@ -8,11 +8,10 @@
             'Radiance Scaling for Versatile Surface Enhancement.' \
             Romain Vergne, Romain Pacanowski, Pascal Barla, Xavier Granier, Christophe Schlick. \
             I3D ’10: Proc. symposium on Interactive 3D graphics and games, Feb 2010, Boston, United States.ACM, 2010.",
+        icon: "img/icons/radiancescaling.png",
         toggle: true,
         on: false,
         loadShader: ["RSPass1Vertex.glsl", "RSPass1Fragment.glsl", "RSPass2Vertex.glsl", "RSPass2Fragment.glsl"]
-    }, {
-
     });
 
     var p1Uniforms =
@@ -200,9 +199,9 @@
     plug._applyTo = function (on) {
         if (on) {
             context = new RSContext();
-            scene.setPostProcessPass(context.pass);
+            scene.addPostProcessPass(plug.getName(), context.pass);
         } else {
-            scene.setPostProcessPass(null);
+            scene.removePostProcessPass(plug.getName());
             context.dispose();
             context = null;
         }

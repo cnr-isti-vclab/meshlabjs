@@ -27,7 +27,8 @@
  */
 
 MLJ.core.plugin.Rendering = function (parameters, defaults) {
-    MLJ.core.plugin.AbstractRendering.call(this, parameters, MLJ.core.plugin.Rendering._guiGroup);
+    var renderingClass = "mlj_rendering_overlay";
+    MLJ.core.plugin.AbstractRendering.call(this, parameters, renderingClass);
 
     var _this = this;
     
@@ -87,7 +88,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             if (!btn.isOn()) {
                 btn.toggle("on", event);
             }
-            var items = MLJ.gui.group[MLJ.core.plugin.Rendering._guiGroup].getItems();
+            var items = MLJ.gui.group[renderingClass].getItems();
             for (var i = 0; i < items.length; ++i) {
                 if (items[i].isOn() && items[i] !== btn) {
                     items[i].toggle("off", event);
@@ -251,10 +252,6 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         }
 
     });
-};
-
-MLJ.core.plugin.Rendering.prototype = {
-    _guiGroup: "mlj_rendering_overlay"
 };
 
 MLJ.extend(MLJ.core.plugin.AbstractRendering, MLJ.core.plugin.Rendering);

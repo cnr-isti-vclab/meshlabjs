@@ -4,7 +4,7 @@
     var plug = new plugin.GlobalRendering({
         name: "Axes",
         tooltip: "Show world space axes",
-        //icon: "",
+        icon: "img/icons/axis.png",
         on: false,
         //loadShader: []
     });
@@ -26,9 +26,9 @@
     plug._applyTo = function (on) {
         if (on) {
             var bbox = scene.getBBox();
-            scene.addSceneDecorator(plug.name, new THREE.AxisHelper(bbox.min.distanceTo(bbox.max)/2));
+            scene.addSceneDecorator(plug.getName(), new THREE.AxisHelper(bbox.min.distanceTo(bbox.max)/2));
         } else {
-            scene.removeSceneDecorator(plug.name);
+            scene.removeSceneDecorator(plug.getName());
         }
     };
 

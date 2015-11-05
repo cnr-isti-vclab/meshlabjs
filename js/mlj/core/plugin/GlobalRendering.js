@@ -15,8 +15,9 @@
  * @memberOf MLJ.core.plugin
  */
 MLJ.core.plugin.GlobalRendering = function (parameters) {
+    var renderingClass = "mlj_rendering_scene";
     parameters.toggle = true;
-    MLJ.core.plugin.AbstractRendering.call(this, parameters, MLJ.core.plugin.GlobalRendering._guiGroup);
+    MLJ.core.plugin.AbstractRendering.call(this, parameters, renderingClass);
 
     var _this = this;
 
@@ -69,10 +70,6 @@ MLJ.core.plugin.GlobalRendering = function (parameters) {
             MLJ.core.Scene.render();
         }
     });
-};
-
-MLJ.core.plugin.GlobalRendering.prototype = {
-    guiGroup: "mlj_rendering_scene"
 };
 
 MLJ.extend(MLJ.core.plugin.AbstractRendering, MLJ.core.plugin.GlobalRendering);
