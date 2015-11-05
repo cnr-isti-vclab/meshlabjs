@@ -27,66 +27,24 @@
  */
 
 MLJ.core.plugin.Rendering = function (parameters, defaults) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
-
-    //if is defined parameters.loadShader, this.shaders is an associative array
-    //mapping the shader name with its code
-    this.shaders = null;
+    var renderingClass = "mlj_rendering_overlay";
+    MLJ.core.plugin.BaseRendering.call(this, parameters, renderingClass);
 
     var _this = this;
+    
     MLJ.core.setDefaults(_this.getName(), defaults);
 
-    var pane = new MLJ.gui.component.Pane();
-    var UID = MLJ.gui.generateUID();
-    pane.$.css("position", "absolute").attr("id", UID);
-    pane.$.hide();      
-
-    var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
-    var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
-            MLJ.widget.TabbedPane.getRendToolBar());
-    var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
-
-    var btn = tbBuilder.Button(parameters);
-
-    var group = MLJ.gui.makeGroup("rendButtons");
-    if (btn instanceof MLJ.gui.component.CustomToggleButton) {
-        group.addItem(btn);
-        MLJ.gui.disabledOnSceneEmpty(btn);
-    }
-    
-    //Shows the options pane of this rendering feature
-    function _showOptionsPane() {
-        
-        if (parameters.toggle === true) {
-            btn.setArrowSelected(true);
-        }
-            
-        var items = group.getItems();
-        var item;
-        for (var key in items) {
-            item = items[key];
-            if (item !== btn) {
-                item.setArrowSelected(false);
-            }
-        }
-        
-        renderingPane.children().each(function (key, val) {
-            if ($(val).attr("id") === UID) {
-                $(val).fadeIn();
-            } else {
-                $(val).fadeOut();                
-            }
-        });
-    }
+    var btn = this.getButton();
+    MLJ.gui.disabledOnSceneEmpty(btn);
 
     if (parameters.toggle === true) {
         
         //Click on button
         btn.onToggle(function (on, event) {
             
-            if(on) {
+            if (on) {
                 //show the options pane
-                _showOptionsPane();                
+                _this._showOptionsPane();                
             }
             
             //Apply rendering pass to all mesh
@@ -102,13 +60,17 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 while (ptr.hasNext()) {
                     layer = ptr.next();    
                     if (layer.getThreeMesh().visible) {
-                        layer.overlaysParams.set(passName,selParams);
-                        layer.properties.set(passName, on);
-                        if (on !== layer.properties.getByKey(passName)) { // simply toggle the pass
+                        var lParams = layer.overlaysParams.getByKey(passName);
+                        for (var opName in selParams) { // each layer gets it's own copy
+                            lParams[opName] = selParams[opName];
+                        }
+                        // Watch out for undefined 'properties' values (overlays that were never activated)
+                        if (on !== (layer.properties.getByKey(passName)===true)) { // simply toggle the pass
                             _this._applyTo(layer, on);
                         } else { // if pass is active reapply with changed parameters, otherwise switch it off
                             on ? reapply(on, layer) : _this._applyTo(layer, on);
                         }
+                        layer.properties.set(passName, on);
                     }
                 }
                 
@@ -126,16 +88,12 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             if (!btn.isOn()) {
                 btn.toggle("on", event);
             }
-            group.getItems().forEach(function (item) {
-                if (item.isOn() && item !== btn) {
-                    item.toggle("off", event);
+            var items = MLJ.gui.group[renderingClass].getItems();
+            for (var i = 0; i < items.length; ++i) {
+                if (items[i].isOn() && items[i] !== btn) {
+                    items[i].toggle("off", event);
                 }
-            });
-        });
-
-        //Click on arrow
-        btn.onArrowClicked(function () {
-            _showOptionsPane();            
+            }
         });
 
         $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
@@ -171,7 +129,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         var layer, isOn;
                         while (ptr.hasNext()) {
                             layer = ptr.next();
-                            isOn = layer.properties.getByKey(parameters.name);
+                            isOn = layer.properties.getByKey(parameters.name) === true;
                             reapply(isOn,layer);                            
                         }
                     }
@@ -199,7 +157,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         
     } else {
         btn.onClick(function () {
-            _showOptionsPane();
+            _this._showOptionsPane();
         });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
@@ -234,23 +192,23 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
         var params = selected.overlaysParams.getByKey(_this.getName());
-        var param;
-        for (var key in params) {
-            param = guiBuilder.params.getByKey(key);
-            if (param !== undefined) {
-                param._changeValue(params[key]);
+        var paramWidget;
+        for (var pname in params) {
+            paramWidget = _this.getParam(pname);
+            if (paramWidget !== undefined) {
+                paramWidget._changeValue(params[pname]);
             }
         }
     }
 
-    function reapply(applay, meshFile) {
-        if (applay) {
+    function reapply(apply, meshFile) {
+        if (apply) {
             _this._applyTo(meshFile, false);
             _this._applyTo(meshFile, true);
         }
     }
 
-    guiBuilder.setOnParamChange(function (paramProp, value) {
+    this._setOnParamChange(function (paramProp, value) {
         var meshFile = MLJ.core.Scene.getSelectedLayer();
         var params = meshFile.overlaysParams.getByKey(_this.getName());
         params[paramProp] = value;
@@ -294,32 +252,6 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         }
 
     });
-
-    this._main = function () {
-        //if loadShader property is setted, load shader files
-        if (parameters.loadShader !== undefined) {
-
-            //Prevent that the rendering pass will be applied if the shader
-            //files are not completely loaded
-            btn.$.hide();
-
-            var pathBase = "./js/mlj/plugins/rendering/shaders/";
-            //Set shader files path
-            for (var i = 0, m = parameters.loadShader.length; i < m; i++) {
-                parameters.loadShader[i] = pathBase + parameters.loadShader[i];
-            }
-
-            MLJ.util.loadFile(parameters.loadShader, function (results) {
-                //Shader loaded
-                _this.shaders = results;
-                //Show button
-                btn.$.show();
-            });
-        }
-        _this._init(guiBuilder);
-        renderingPane.append(pane.$);
-    };
-
 };
 
-MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
+MLJ.extend(MLJ.core.plugin.BaseRendering, MLJ.core.plugin.Rendering);

@@ -45,6 +45,9 @@ MLJ.core.plugin = {
  * @author Stefano Gabriele 
  */
 MLJ.core.plugin.Plugin = function (name, parameters) {
+    if (name === undefined) {
+        throw new Error("MLJ.core.plugin.Plugin: parameters.name undefined");
+    }
     this.name = name;
     this.parameters = parameters;
 };

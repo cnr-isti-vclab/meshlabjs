@@ -79,6 +79,10 @@
             _$input.focus();
         }
 
+        this.select = function() {
+            _$input.select();
+        }
+
         MLJ.gui.Widget.call(this);
     };
 
