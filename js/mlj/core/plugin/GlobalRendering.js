@@ -2,13 +2,12 @@
  * @file Defines the class to create "scene level" rendering plugins. These plugins
  * implement rendering passes that are not tied to a particular mesh layer, but
  * affect the whole scene. 
- * @author Andrea Maggiordomo
  */
 
 /**         
  * @class Base class to create rendering plugins that are not tied to a mesh layer.
  *
- * @param {Object} parameters - The plugin parameters (see {@link MLJ.core.plugin.AbstractRendering}
+ * @param {Object} parameters - The plugin parameters (see {@link MLJ.core.plugin.BaseRendering}
  * for details). Note that for this rendering class <code>parameters.toggle</code>
  * is forced to <true>
  *
@@ -17,7 +16,7 @@
 MLJ.core.plugin.GlobalRendering = function (parameters) {
     var renderingClass = "mlj_rendering_scene";
     parameters.toggle = true;
-    MLJ.core.plugin.AbstractRendering.call(this, parameters, renderingClass);
+    MLJ.core.plugin.BaseRendering.call(this, parameters, renderingClass);
 
     var _this = this;
 
@@ -72,4 +71,4 @@ MLJ.core.plugin.GlobalRendering = function (parameters) {
     });
 };
 
-MLJ.extend(MLJ.core.plugin.AbstractRendering, MLJ.core.plugin.GlobalRendering);
+MLJ.extend(MLJ.core.plugin.BaseRendering, MLJ.core.plugin.GlobalRendering);

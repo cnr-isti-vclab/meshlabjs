@@ -28,7 +28,7 @@
 
 MLJ.core.plugin.Rendering = function (parameters, defaults) {
     var renderingClass = "mlj_rendering_overlay";
-    MLJ.core.plugin.AbstractRendering.call(this, parameters, renderingClass);
+    MLJ.core.plugin.BaseRendering.call(this, parameters, renderingClass);
 
     var _this = this;
     
@@ -254,4 +254,4 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     });
 };
 
-MLJ.extend(MLJ.core.plugin.AbstractRendering, MLJ.core.plugin.Rendering);
+MLJ.extend(MLJ.core.plugin.BaseRendering, MLJ.core.plugin.Rendering);

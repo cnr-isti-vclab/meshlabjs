@@ -1,11 +1,10 @@
 /**
- * @file Defines the abstract base class derived by rendering plugins
- * @author Andrea Maggiordomo
+ * @file Defines the basic features common to all rendering plugins
  */
 
 /**         
  * @class Defines functinalities common to all rendering plugin classes like GUI
- * components management, basic event handling, loading shader files.
+ * components management, basic event handling and loading shader files.
  *
  * @param {Object} parameters - The parameters passed to the actual plugin constructor. Other than
  * the rendering plugin specific options (listed below), this object should contain the options
@@ -28,7 +27,7 @@
  *
  * @memberOf MLJ.core.plugin
  */
-MLJ.core.plugin.AbstractRendering = function (parameters, renderingClass) {
+MLJ.core.plugin.BaseRendering = function (parameters, renderingClass) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
 
     var _this = this;
@@ -131,4 +130,4 @@ MLJ.core.plugin.AbstractRendering = function (parameters, renderingClass) {
     this._setOnParamChange = guiBuilder.setOnParamChange;
 }
 
-MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.AbstractRendering);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.BaseRendering);
