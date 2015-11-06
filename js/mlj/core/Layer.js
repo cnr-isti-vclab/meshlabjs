@@ -48,14 +48,90 @@ MLJ.core.Layer = function (name, cppMesh) {
 
     
     var _this = this;   
-    
- 
-    this.initializeRenderingAttributes = function () {
-        console.time("Time to create mesh: ");
-        _this.threeMesh = new THREE.Mesh();
-        buildMeshGeometry();
-        console.timeEnd("Time to create mesh: ");
         
+    /**
+     * Returns this THREE.Mesh object
+     * @returns {THREE.Mesh} this THREE.Mesh object
+     * @author Stefano Gabriele     
+     */
+    this.getThreeMesh = function () {
+        return this.threeMesh;
+    };
+
+    /**
+     * updateThreeMesh (rebuild) this THREE.Mesh geometry
+     * @author Stefano Gabriele        
+     */
+    this.updateThreeMesh = function (colorMode) {
+        if (colorMode === undefined) colorMode = this.overlaysParams.getByKey("ColorWheel").colorMode;
+
+        _this.updateMeshGeometryData();
+        _this.updateMeshColorData(colorMode);
+    };
+
+
+    var _posBuffer = null, _normBuffer = null, _colorBuffer = null;
+
+    this.updateMeshGeometryData = function() {
+        _this.VN = cppMesh.VN();
+        _this.FN = cppMesh.FN();
+        var geometry = _this.threeMesh.geometry;
+
+        if (_posBuffer   !== null) { Module._free(_posBuffer);   _posBuffer   = null; }
+        if (_normBuffer  !== null) { Module._free(_normBuffer);  _normBuffer  = null; }
+
+        if (_this.FN === 0) {
+            _posBuffer = cppMesh.getVertexVector();
+            var particlesArray = new Float32Array(Module.HEAPU8.buffer, _posBuffer, _this.VN*3);
+            geometry.addAttribute('position', new THREE.BufferAttribute(particlesArray, 3));
+            geometry.computeVertexNormals();//compute fake normals
+        } else {
+            // load position, normal and color buffers
+            _posBuffer = cppMesh.getTriangleSoup();
+            var posArray = new Float32Array(Module.HEAPU8.buffer, _posBuffer, _this.FN*9);
+            if (geometry.getAttribute('position') !== undefined) {
+                delete geometry.attributes.position;
+            }
+            geometry.addAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            _normBuffer = cppMesh.getDuplicatedNormals();
+            var normalsArray = new Float32Array(Module.HEAPU8.buffer, _normBuffer, _this.FN*9);
+            if (geometry.getAttribute('normal') !== undefined) {
+                delete geometry.attributes.normal;
+            }
+            geometry.addAttribute('normal', new THREE.BufferAttribute(normalsArray, 3));
+            
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.normal.needsUpdate = true;
+        }
+
+        var _oldvn = geometry.computeVertexNormals;
+
+        geometry.computeVertexNormals = function () { console.warn("computeVertexNormals() suppressed"); };
+
+    }
+
+    this.updateMeshColorData = function (colorMode) {
+        var geometry = _this.threeMesh.geometry;
+
+        if (_colorBuffer !== null) { Module._free(_colorBuffer); _colorBuffer = null; }
+
+        if (colorMode === THREE.VertexColors) {
+            _colorBuffer = cppMesh.getDuplicatedVertexColors();
+        } else {
+            _colorBuffer = cppMesh.getDuplicatedFaceColors();
+        }
+        var colorArray = new Float32Array(Module.HEAPU8.buffer, _colorBuffer, _this.FN*9);
+        if (geometry.getAttribute('VCGColor') !== undefined) {
+            delete geometry.attributes.VCGColor4b;
+        }
+        geometry.addAttribute('VCGColor', new THREE.BufferAttribute(colorArray, 3));
+
+        geometry.attributes.VCGColor.needsUpdate = true;
+
+    }
+
+    this.initializeRenderingAttributes = function () {
         for(var name in MLJ.core.defaults) {
             _this.overlaysParams.set(name,
                 jQuery.extend(true, {}, MLJ.core.defaults[name]));                        
@@ -71,104 +147,17 @@ MLJ.core.Layer = function (name, cppMesh) {
             cw.colorMode = THREE.FaceColors;
         }
 
+        console.time("Time to create mesh: ");
+        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry());
+        _this.updateMeshGeometryData();
+        _this.updateMeshColorData(cw.colorMode);
+        console.timeEnd("Time to create mesh: ");
+
         // If the mesh is a point cloud, enable the "Points" rendering mode
         if (_this.VN > 0 && _this.FN === 0) {
             _this.properties.set("Filled", false);
             _this.properties.set("Points", true);
         }
-    };
-    
-    /* buildMeshGeometry
-     * 
-     * Build the threejs geometry corresponding to the current vcg::trimesh
-     * Called by init after the loading and by update after each filter run
-     * This function get vectors of coords from cpp and use them to build the 
-     * threejs 
-     */
-    
-    function buildMeshGeometry() {
-        _this.VN = cppMesh.VN();
-        var vertexCoord = cppMesh.getVertexVector();
-        _this.FN = cppMesh.FN();
-        var faceIndexVec = cppMesh.getFaceVector();
-
-        var vertexColors = cppMesh.getVertexColorVector();
-        var faceColors = cppMesh.getFaceColorVector();
-
-        _this.threeMesh.geometry = new THREE.Geometry();
-        var geometry = _this.threeMesh.geometry;
-        
-        for (var i = 0; i < _this.VN * 3; i++) {
-            var v1 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            i++;
-            var v2 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            i++;
-            var v3 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
-        }
-
-        // helper function to get the correct numerical value of unsigned chars
-        // that are read from the memory pool
-        var _as_uchar = function (v) { return v >= 0 ? v : (256+v); }
-
-        for (var i = 0, k = 0; i < _this.FN * 3; i++, k++) {
-            var a = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
-            i++;
-            var b = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
-            i++;
-            var c = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
-
-            var face = new THREE.Face3(a, b, c);
-
-            var rFace = _as_uchar(Module.getValue(faceColors + (k*4), 'i8') );
-            var gFace = _as_uchar(Module.getValue(faceColors + (k*4) + 1, 'i8') );
-            var bFace = _as_uchar(Module.getValue(faceColors + (k*4) + 2, 'i8') );
-
-            face.color = new THREE.Color(rFace/255.0, gFace/255.0, bFace/255.0);
-
-            var rVert1 = _as_uchar(Module.getValue(vertexColors + (a*4), 'i8') );
-            var gVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 1, 'i8') );
-            var bVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 2, 'i8') );
-
-            var rVert2 = _as_uchar(Module.getValue(vertexColors + (b*4), 'i8') );
-            var gVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 1, 'i8') );
-            var bVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 2, 'i8') );
-
-            var rVert3 = _as_uchar(Module.getValue(vertexColors + (c*4), 'i8') );
-            var gVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 1, 'i8') );
-            var bVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 2, 'i8') );
-
-            face.vertexColors[0] = new THREE.Color(rVert1/255.0, gVert1/255.0, bVert1/255.0);
-            face.vertexColors[1] = new THREE.Color(rVert2/255.0, gVert2/255.0, bVert2/255.0);
-            face.vertexColors[2] = new THREE.Color(rVert3/255.0, gVert3/255.0, bVert3/255.0);
-
-            geometry.faces.push(face);
-        }
-
-        Module._free(vertexColors);
-        Module._free(faceColors);
-        Module._free(vertexCoord);
-        Module._free(faceIndexVec);
-
-        geometry.dynamic = true;
-    }
-        
-    /**
-     * Returns this THREE.Mesh object
-     * @returns {THREE.Mesh} this THREE.Mesh object
-     * @author Stefano Gabriele     
-     */
-    this.getThreeMesh = function () {
-        return this.threeMesh;
-    };
-
-    /**
-     * updateThreeMesh (rebuild) this THREE.Mesh geometry
-     * @author Stefano Gabriele        
-     */
-    this.updateThreeMesh = function () {
-        _this.threeMesh.geometry.dispose();
-        buildMeshGeometry();
     };
     
     /**

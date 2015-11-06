@@ -106,8 +106,8 @@
 
         if (on) {
             var geom = meshFile.getThreeMesh().geometry;
-            geom.computeFaceNormals();
-            geom.computeVertexNormals();
+            //geom.computeFaceNormals();
+            //geom.computeVertexNormals();
 
             var uniforms = THREE.UniformsUtils.clone(PHONG.uniforms);
             var params = meshFile.overlaysParams.getByKey(plug.getName());
@@ -124,9 +124,9 @@
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
+                attributes: geom.attributes,
                 lights: true,
-                side: params.sides,
-                vertexColors: colorParams.colorMode
+                side: params.sides
             };
 
             var mat = new THREE.RawShaderMaterial(parameters);

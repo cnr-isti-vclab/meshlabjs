@@ -58,13 +58,13 @@ var ColorMapping = {
                 var bindToFun = function (colorMode, overlay, colorParams) {
                     if (overlay.material.uniforms !== undefined && overlay.material.uniforms.meshColorMapping !== undefined) {
                         overlay.material.uniforms.meshColorMapping.value = (colorMode === THREE.NoColors) ? ColorMapping.Uniform : ColorMapping.Attribute;
-                        overlay.material.vertexColors = colorMode;
-                        overlay.geometry.colorsNeedUpdate = true;
 
                         // update parameter variables to reflect the change,
-                        // client plugins should only worry about these vars
+                        // client plugins should only worry about this
                         colorParams.meshColorMapping = overlay.material.uniforms.meshColorMapping.value;
-                        //colorParams.colorMode = colorMode;
+
+                        var layer = scene.getSelectedLayer();
+                        layer.updateMeshColorData(colorMode);
                     }
                 };
                 bindToFun.toString = function () { return "colorMode"; };

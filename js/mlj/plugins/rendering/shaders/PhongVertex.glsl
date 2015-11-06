@@ -5,6 +5,7 @@
 
 attribute vec3 position;
 attribute vec3 normal;
+attribute vec3 VCGColor;
 
 varying vec3 vViewPosition;
 varying vec3 vNormal;
@@ -15,7 +16,6 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform int shading;
 
-attribute vec3 color;
 uniform vec3 diffuse;
 uniform int meshColorMapping;
 
@@ -35,5 +35,7 @@ void main() {
 
     gl_Position = projectionMatrix * mvPosition;
     vViewPosition = -mvPosition.xyz;
-    if (meshColorMapping == COLOR_ATTRIBUTE) vColor = color;
+    //if (meshColorMapping == COLOR_ATTRIBUTE) vColor = customColor;
+    //if (meshColorMapping == COLOR_ATTRIBUTE) vColor = VCGColor4b / 255.0;
+    vColor = VCGColor;
 }

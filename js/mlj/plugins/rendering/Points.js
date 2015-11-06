@@ -36,43 +36,43 @@
         });
     };
 
-    plug._applyTo = function (meshFile, on) {
-
+    plug._applyTo = function (layer, on) {
         if (on === false) {
-            scene.removeOverlayLayer(meshFile, plug.getName());
+            scene.removeOverlayLayer(layer, plug.getName());
+            if (layer.__mlj_points_buffer) {
+                Module._free(layer.__mlj_points_buffer);
+                delete layer.__mlj_points_buffer;
+            }
             return;
         }
 
-        var geom = meshFile.getThreeMesh().geometry.clone();
+        layer.__mlj_points_buffer = layer.cppMesh.getVertexVector();
 
-        var params = meshFile.overlaysParams.getByKey(plug.getName());
-        var attributes = {
-            minSize: {type: 'f', value: []}
-        };
+        var particlesBuffer = new Float32Array(Module.HEAPU8.buffer, layer.__mlj_points_buffer, layer.VN*3);
+        var geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(particlesBuffer, 3));
 
-        var uniforms = {
+
+        var params = layer.overlaysParams.getByKey(plug.getName());
+
+        var pointsUniforms = {
             color: {type: "c", value: params.color},
             size: {type: "f", value: params.size},
             texture: {type: "t", value: DEFAULTS.texture}
         };
 
         var shaderMaterial = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            attributes: attributes,
+            uniforms: pointsUniforms,
+            attributes: geometry.attributes,
             vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
             fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
             alphaTest: 0.9
         });
 
-        var points = new THREE.PointCloud(geom, shaderMaterial);
-        var values_minSize = attributes.minSize.value;
+        var points = new THREE.PointCloud(geometry, shaderMaterial);
 
-        for (var v = 0, vl = geom.vertices.length; v < vl; v++) {
-            values_minSize[ v ] = 10;
-        }
-
-        scene.addOverlayLayer(meshFile, plug.getName(), points);
-    };
+        scene.addOverlayLayer(layer, plug.getName(), points);
+    }
 
     plugin.Manager.install(plug);
 

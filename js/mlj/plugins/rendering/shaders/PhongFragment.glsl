@@ -118,5 +118,5 @@ void main() {
     if(lights == 0)
         gl_FragColor = diffuseColor;
     else
-	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+	   gl_FragColor = vec4( outgoingLight, diffuseColor.a );
 }

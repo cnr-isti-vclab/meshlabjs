@@ -113,6 +113,66 @@ class CppMesh
     return (uintptr_t) c;
   }
 
+    inline uintptr_t getTriangleSoup() {
+    float * v = new float[m.FN()*9];
+    int k = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+      if (!fi->IsD()) {
+        for (int i = 0; i < 3; ++i) {
+          v[k++] = fi->cV(i)->cP()[0];
+          v[k++] = fi->cV(i)->cP()[1];
+          v[k++] = fi->cV(i)->cP()[2];
+        }
+      }
+    }
+
+    return (uintptr_t) v;
+  }
+
+  inline uintptr_t getDuplicatedNormals() {
+    tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
+    tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(m);
+    float * n = new float[m.FN()*9];
+    int k = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) if (!fi->IsD()) {
+      for (int i = 0; i < 3; ++i) {
+        n[k++] = fi->cV(i)->cN()[0];
+        n[k++] = fi->cV(i)->cN()[1];
+        n[k++] = fi->cV(i)->cN()[2];
+      }
+    }
+    return (uintptr_t) n;
+  }
+
+  inline uintptr_t getDuplicatedVertexColors() {
+    float * c = new float[m.FN()*9];
+    int k = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+      if (!fi->IsD()) {
+        for (int i = 0; i < 3; ++i) {
+          c[k++] = fi->cV(i)->cC()[0] / 255.0;
+          c[k++] = fi->cV(i)->cC()[1] / 255.0;
+          c[k++] = fi->cV(i)->cC()[2] / 255.0;
+        }
+      }
+    }
+    return (uintptr_t) c;
+  }
+
+  inline uintptr_t getDuplicatedFaceColors() {
+    float * c = new float[m.FN()*9];
+    int k = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+      if (!fi->IsD()) {
+        for (int i = 0; i < 3; ++i) {
+          c[k++] = fi->cC()[0] / 255.0;
+          c[k++] = fi->cC()[1] / 255.0;
+          c[k++] = fi->cC()[2] / 255.0;
+        }
+      }
+    }
+    return (uintptr_t) c;
+  }
 };
 
 //Binding code
@@ -136,6 +196,10 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("addPerVertexQuality",  &CppMesh::hasPerVertexColor)
     .function("addPerFaceColor",      &CppMesh::hasPerFaceColor)
     .function("addPerFaceQuality",    &CppMesh::hasPerFaceColor)
+    .function("getTriangleSoup",    &CppMesh::getTriangleSoup)
+    .function("getDuplicatedNormals",    &CppMesh::getDuplicatedNormals)
+    .function("getDuplicatedVertexColors",    &CppMesh::getDuplicatedVertexColors)
+    .function("getDuplicatedFaceColors",    &CppMesh::getDuplicatedFaceColors)
     .function("VN",&CppMesh::VN)
     .function("FN",&CppMesh::FN)
     ;
