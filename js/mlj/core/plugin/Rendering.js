@@ -136,10 +136,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
                 });
 
-        $(document).on("SceneLayerUpdated",
-                function (event, meshFile) {
-                    reapply(btn.isOn(),meshFile);                    
-                });                
+        $(document).on("SceneLayerUpdated", function (event, layer) {
+            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
+        });                
         
         if (parameters.applyOnEvent !== undefined) {
             $(window).ready(function() {

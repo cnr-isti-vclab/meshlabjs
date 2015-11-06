@@ -27,7 +27,8 @@
 
     MontecarloSamplingFilter._applyTo = function (basemeshFile) {
         var newmeshFile = MLJ.core.Scene.createCppMeshFile("Montecarlo Samples");
-        Module.MontecarloSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(), sampleNumMCWidget.getValue());
+        Module.MontecarloSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(), sampleNumMCWidget.getValue(),
+                perFaceNormalWidget.getValue());
         scene.addLayer(newmeshFile);
     };
 
