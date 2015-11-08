@@ -51,8 +51,6 @@
                             overlay.selectedFaces.visible = true;
                             break;
                     }
-
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'selection'; };
                 return bindToFun;
@@ -66,7 +64,6 @@
             bindTo: (function() {
                 var bindToFun = function (color, overlay) {
                     overlay.selectedPoints.material.uniforms['color'].value = color;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'pointColor'; };
                 return bindToFun;
@@ -81,7 +78,6 @@
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
                     overlay.selectedPoints.material.uniforms['size'].value = size;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'pointSize'; };
                 return bindToFun;
@@ -95,7 +91,6 @@
             bindTo: (function() {
                 var bindToFun = function (color, overlay) {
                     overlay.selectedFaces.material.color = color;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'faceColor'; };
                 return bindToFun;
@@ -110,7 +105,6 @@
             bindTo: (function() {
                 var bindToFun = function (opacity, overlay) {
                     overlay.selectedFaces.material.opacity = opacity;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'opacity'; };
                 return bindToFun;

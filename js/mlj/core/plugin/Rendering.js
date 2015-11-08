@@ -136,10 +136,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
                 });
 
-        $(document).on("SceneLayerUpdated",
-                function (event, meshFile) {
-                    reapply(btn.isOn(),meshFile);                    
-                });                
+        $(document).on("SceneLayerUpdated", function (event, layer) {
+            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
+        });                
         
         if (parameters.applyOnEvent !== undefined) {
             $(window).ready(function() {
@@ -242,15 +241,11 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         if (overlay.material.uniforms !== undefined 
                 && overlay.material.uniforms[paramProp] !== undefined) {
             overlay.material.uniforms[paramProp].value = value;
-            MLJ.core.Scene.render();
-            return;
-        }
-        
-        //is 'bindTo' property a function?
-        if(jQuery.isFunction(paramProp)) {
+        } else if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value, overlay);
         }
 
+        MLJ.core.Scene.render();
     });
 };
 

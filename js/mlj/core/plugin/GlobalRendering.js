@@ -64,6 +64,8 @@ MLJ.core.plugin.GlobalRendering = function (parameters) {
     });
 
     _this._setOnParamChange(function (callback, value) {
+        // 'callback' is whatever was passed as bindTo, 'value' is the value of
+        // the parameter
         if (jQuery.isFunction(callback)) {
             callback(value);
             MLJ.core.Scene.render();
