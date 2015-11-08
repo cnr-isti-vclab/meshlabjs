@@ -38,7 +38,7 @@
         gammaControl = guiBuilder.RangedFloat({
             label: "Enhancement",
             tooltip: "",
-            min: 0, step: 0.1, max:5.0,
+            min: 0, step: 0.1, max:10.0,
             defval: p2Uniforms.gamma.value,
             bindTo: (function () {
                 var bindToFun = function (value) {
@@ -143,8 +143,6 @@
         var quadScene = new THREE.Scene();
         quadScene.add(quadMesh);
 
-        var threeScene = scene.getScene();
-
         this.dispose = function () {
             gradientMap.dispose();
             normMaterial.dispose();
@@ -155,8 +153,9 @@
             p2Uniforms.cmap.value = null;
         }
 
-        this.pass = function(b1, b2) {
+        this.pass = function(inputBuffer, outputBuffer) {
             var renderer = scene.getRenderer();
+            var threeScene = scene.getScene();
 
             threeScene.overrideMaterial = normMaterial;
 
@@ -172,7 +171,7 @@
                 }
             });
 
-            gradientMap.setSize(b1.width, b1.height);
+            gradientMap.setSize(inputBuffer.width, inputBuffer.height);
             renderer.render(threeScene, scene.getCamera(), gradientMap, true);
 
             threeScene.traverse(function (obj) {
@@ -184,12 +183,12 @@
 
             threeScene.overrideMaterial = null;
 
-            quadMesh.material.uniforms.cmap.value = b1;
+            quadMesh.material.uniforms.cmap.value = inputBuffer;
             quadMesh.material.uniforms.xstep.value = 1.0 / gradientMap.width;
             quadMesh.material.uniforms.ystep.value = 1.0 / gradientMap.height;
 
             renderer.autoClear = false;
-            renderer.render(quadScene, dummyCamera, b2, true);
+            renderer.render(quadScene, dummyCamera, outputBuffer, true);
             renderer.autoClear = true;
             quadMesh.material.uniforms.cmap.value = null;
         };

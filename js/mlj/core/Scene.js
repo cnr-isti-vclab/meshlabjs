@@ -93,7 +93,14 @@ MLJ.core.Scene = {};
     
     var _camera;
 
+    /**
+     * This scene contains 2D overlays that are drawn on top of everything else
+     * @memberOf MLJ.core.Scene     
+     */
     var _scene2D;
+    /**
+     * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
+     */
     var _camera2D;
     
     /// @type {Object}
@@ -199,8 +206,8 @@ MLJ.core.Scene = {};
             _renderer.setSize(size.width, size.height);
 
 
-            on_buffer.setSize(size.width, size.height);
-            off_buffer.setSize(size.width, size.height);
+            colorBuffer.setSize(size.width, size.height);
+            targetBuffer.setSize(size.width, size.height);
 
             _camera2D.left = size.width / size.height;
             _camera2D.updateProjectionMatrix;
@@ -381,44 +388,47 @@ MLJ.core.Scene = {};
         _this.render();
     };       
     
-    this.addOverlayLayer = function(layer, name, mesh, useOrthographicProjection) {
+    this.addOverlayLayer = function(layer, name, mesh, overlay2D) {
         if(!(mesh instanceof THREE.Object3D)) {
-            console.warn("mesh parameter must be an instance of THREE.Mesh");
+            console.warn("mesh parameter must be an instance of THREE.Object3D");
             return;
         }
         
         layer.overlays.set(name,mesh);
+
         mesh.visible = layer.getThreeMesh().visible;
-        if (useOrthographicProjection === true) {
+        if (overlay2D) {
             _scene2D.add(mesh);
         } else {
             _group.add(mesh);
         }
 
-        //render the scene
         _this.render();
     };
     
-    this.removeOverlayLayer = function(layer, name) {        
+    this.removeOverlayLayer = function(layer, name, overlay2D) {        
         var mesh = layer.overlays.getByKey(name);
-        
-        if(mesh !== undefined) {
-            mesh = layer.overlays.remove(name);            
-            
-            _group.remove(mesh);                        
-            _scene2D.remove(mesh);                        
+
+        if (mesh !== undefined) {
+            mesh = layer.overlays.remove(name);      
+
+            if (overlay2D) {
+                _scene2D.remove(mesh);                        
+            } else {
+                _group.remove(mesh);                        
+            }
+
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh.geometry = null;
             mesh.material = null;            
-
             if (mesh.texture) {
                 mesh.texture.dispose();            
                 mesh.texture = null;
             }
+
             _this.render();                              
         }
-        
     };  
 
     /**
@@ -658,11 +668,11 @@ MLJ.core.Scene = {};
         _this.render();
     }
 
-    var on_buffer = new THREE.WebGLRenderTarget(0, 0, {
+    var colorBuffer = new THREE.WebGLRenderTarget(0, 0, {
         type: THREE.FloatType,
         minFilter: THREE.NearestFilter
     });
-    var off_buffer = new THREE.WebGLRenderTarget(0, 0, {
+    var targetBuffer = new THREE.WebGLRenderTarget(0, 0, {
         type: THREE.FloatType,
         minFilter: THREE.NearestFilter
     });
@@ -704,26 +714,27 @@ MLJ.core.Scene = {};
      */
     this.render = function () {
         if (_postProcessPasses.size() > 0) {
-            _renderer.render(_scene, _camera, on_buffer, true);
+            _renderer.render(_scene, _camera, colorBuffer, true);
 
             var it = _postProcessPasses.iterator();
 
             while (it.hasNext()) {
                 var pass = it.next();
-                pass(on_buffer, off_buffer);
+                pass(colorBuffer, targetBuffer);
                 // Swap rendering targets for the next pass
-                var tmp = on_buffer;
-                on_buffer = off_buffer;
-                off_buffer = tmp;
+                var tmp = colorBuffer;
+                colorBuffer = targetBuffer;
+                targetBuffer = tmp;
             }
 
-            // final pass, render on_buffer to the screen
-            quadMesh.material.uniforms.offscreen.value = on_buffer;
+            // final pass, render colorBuffer to the screen
+            quadMesh.material.uniforms.offscreen.value = colorBuffer;
             _renderer.render(quadScene, _camera2D);
         } else {
             _renderer.render(_scene, _camera);
         }
 
+        // render the 2D overlays
         _renderer.autoClear = false;
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
