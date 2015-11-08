@@ -241,15 +241,11 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         if (overlay.material.uniforms !== undefined 
                 && overlay.material.uniforms[paramProp] !== undefined) {
             overlay.material.uniforms[paramProp].value = value;
-            MLJ.core.Scene.render();
-            return;
-        }
-        
-        //is 'bindTo' property a function?
-        if(jQuery.isFunction(paramProp)) {
+        } else if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value, overlay);
         }
 
+        MLJ.core.Scene.render();
     });
 };
 

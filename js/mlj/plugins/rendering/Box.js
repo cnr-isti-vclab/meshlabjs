@@ -25,7 +25,7 @@
         on: false,
         updateOnLayerAdded: true,
         loadShader: ["BoxFragment.glsl", "BoxVertex.glsl"],
-        applyOnEvent: "onControlsChange" // to update box quotes while camera is moving
+        applyOnEvent: "onControlsChange"
     },DEFAULTS);
 
     var boxEnablerQuotes, boxMinorFactorWidget, boxMajorFactorWidget, boxPntSizeWidget, boxPntColorWidgets, boxFontFaceChoiceWidget, boxFontSizeChoiceWidget, boxFontBorderThickChoiceWidget;

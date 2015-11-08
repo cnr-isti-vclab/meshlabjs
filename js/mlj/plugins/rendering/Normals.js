@@ -57,8 +57,6 @@
                                     overlay.vertexNormals.visible = true;
                                     break;
                             }
-
-                            scene.render();
                         };
                         bindToFun.toString = function () { return 'normalType'; };
                         return bindToFun;
@@ -72,7 +70,6 @@
             bindTo: (function() {
                         var bindToFun = function (color, overlay) {
                             overlay.faceNormals.material.uniforms['color'].value = color;
-                            scene.render();
                         };
                         bindToFun.toString = function () { return 'normalFaceColor'; };
                         return bindToFun;
@@ -87,7 +84,6 @@
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
                     overlay.faceNormals.material.uniforms['size'].value = size;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'normalFaceSize'; }
                 return bindToFun;
@@ -101,7 +97,6 @@
             bindTo: (function() {
                 var bindToFun = function (color, overlay) {
                     overlay.vertexNormals.material.uniforms['color'].value = color;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'normalVertexColor'; };
                 return bindToFun;
@@ -116,7 +111,6 @@
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
                     overlay.vertexNormals.material.uniforms['size'].value = size;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'normalVertexSize'; }
                 return bindToFun;

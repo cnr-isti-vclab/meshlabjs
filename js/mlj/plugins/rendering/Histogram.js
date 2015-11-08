@@ -20,7 +20,6 @@
         loadShader: ["HistogramVertex.glsl", "HistogramFragment.glsl"]
     }, DEFAULTS);
 
-    // TODO this is the same as 'reapply' defined in Rendering.js, maybe refactor it
     plug._onHistogramParamChange = function () { 
         var currentLayer = MLJ.core.Scene.getSelectedLayer();
         if (currentLayer.properties.getByKey("Histogram") === true) {
@@ -41,8 +40,8 @@
                 { content: "Face", value: "F" }
             ],
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramQualitySelection"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_QualitySelection"; };
                 return bindToFun;
             })()
         });
@@ -53,8 +52,8 @@
             defval: "256",
             min: 2,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramBins"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_Bins"; };
                 return bindToFun;
             })()
         });
@@ -66,8 +65,8 @@
                       sum of 1/3 of the surface area of each face incident to the vertex.",
             defval: false,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramAreaWeighted"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_AreaWeighted"; };
                 return bindToFun;
             })()
         });
@@ -78,8 +77,8 @@
                     using the element count of the largest bin.",
             defval: false,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramFixedWidth"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_FixedWidth"; };
                 return bindToFun;
             })()
         });
@@ -89,8 +88,8 @@
             tooltip: "",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramRangeMin"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_RangeMin"; };
                 return bindToFun;
             })()
         });
@@ -100,8 +99,8 @@
             tooltip: "",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramRangeMax"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_RangeMax"; };
                 return bindToFun;
             })()
         });
@@ -112,8 +111,8 @@
                       of the largest bin.",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramWidth"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_Width"; };
                 return bindToFun;
             })()
         });

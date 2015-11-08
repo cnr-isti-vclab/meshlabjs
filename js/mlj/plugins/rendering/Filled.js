@@ -94,7 +94,6 @@
             bindTo: (function() {
                 var bindToFun = function (sideValue, overlay) {
                     overlay.material.side = sideValue;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'sides'; };
                 return bindToFun;
