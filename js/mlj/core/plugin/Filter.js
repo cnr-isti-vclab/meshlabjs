@@ -48,6 +48,8 @@
  * over its name<br>
  * &nbsp; arity: //An integer:<br>
  * &nbsp;&nbsp;&nbsp;&nbsp; //0 for a creation filter<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; //-1 special value for the deletion filter, doesn't trigger 
+ * &nbsp;&nbsp;&nbsp;&nbsp;      a layer update event
  * &nbsp;&nbsp;&nbsp;&nbsp; //1 for a generic single mesh filter, e.g. a filter 
  * &nbsp;&nbsp;&nbsp;&nbsp;     that takes a mesh, some parameters and modify just that single mesh. <br>
  * &nbsp;&nbsp;&nbsp;&nbsp; //2 for a filter that take one or more mesh and/or create other layers.
@@ -147,13 +149,13 @@ MLJ.core.plugin.Filter = function (parameters) {
             else {
                 var layer = MLJ.core.Scene.getSelectedLayer();
                 _this._applyTo(layer);
-                MLJ.core.Scene.updateLayer(layer);
+                if (_this.parameters.arity !== -1) MLJ.core.Scene.updateLayer(layer);
             }
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 
-        if (parameters.arity > 0) {
+        if (parameters.arity !== 0) {
             MLJ.gui.disabledOnSceneEmpty(apply);
         }
 
