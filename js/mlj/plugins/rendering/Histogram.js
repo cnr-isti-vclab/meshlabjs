@@ -16,10 +16,10 @@
         tooltip: "Histogram Tooltip",
         icon: "img/icons/histogram.png",
         toggle: true,
-        on: false
+        on: false,
+        loadShader: ["HistogramVertex.glsl", "HistogramFragment.glsl"]
     }, DEFAULTS);
 
-    // TODO this is the same as 'reapply' defined in Rendering.js, maybe refactor it
     plug._onHistogramParamChange = function () { 
         var currentLayer = MLJ.core.Scene.getSelectedLayer();
         if (currentLayer.properties.getByKey("Histogram") === true) {
@@ -40,8 +40,8 @@
                 { content: "Face", value: "F" }
             ],
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramQualitySelection"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_QualitySelection"; };
                 return bindToFun;
             })()
         });
@@ -52,8 +52,8 @@
             defval: "256",
             min: 2,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramBins"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_Bins"; };
                 return bindToFun;
             })()
         });
@@ -65,8 +65,8 @@
                       sum of 1/3 of the surface area of each face incident to the vertex.",
             defval: false,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramAreaWeighted"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_AreaWeighted"; };
                 return bindToFun;
             })()
         });
@@ -77,8 +77,8 @@
                     using the element count of the largest bin.",
             defval: false,
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramFixedWidth"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_FixedWidth"; };
                 return bindToFun;
             })()
         });
@@ -88,8 +88,8 @@
             tooltip: "",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramRangeMin"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_RangeMin"; };
                 return bindToFun;
             })()
         });
@@ -99,8 +99,8 @@
             tooltip: "",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramRangeMax"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_RangeMax"; };
                 return bindToFun;
             })()
         });
@@ -111,8 +111,8 @@
                       of the largest bin.",
             step: 0.5, defval: "0.0",
             bindTo: (function () {
-                var bindToFun = function () { plug._onHistogramParamChange(); MLJ.core.Scene.render(); };
-                bindToFun.toString = function () { return "histogramWidth"; };
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return "MLJ_HIST_Width"; };
                 return bindToFun;
             })()
         });
@@ -122,12 +122,12 @@
         return name.replace(/(:|\.)/g, "\\$1");
     };
 
-    plug._applyTo = function(meshFile, on) {
+    plug._applyTo = function(layer, on) {
         if (on) {
             var sz = scene.get3DSize();
 
             var ch = Module.ComputeColorHistogram(
-                meshFile.ptrMesh(),
+                layer.ptrMesh(),
                 qualitySelection.getValue() == "V",
                 nBins.getValue(),
                 areaWeighted.getValue(),
@@ -147,6 +147,8 @@
             var histW = 0.18;
 
             var histGeometry = new THREE.Geometry();
+            var bars = [];
+            var colors = [];
 
             // histogram columns are drawn as horizontal rectangles using orthographic projection
             for (var i = 0; i < bn; ++i) {
@@ -160,65 +162,74 @@
                 var height = y2 - y1;
                 var color = ch.binColorAvg(value);
 
-                var rectShape = new THREE.Shape();
-                rectShape.moveTo(borderX, borderY + y1);
-                rectShape.lineTo(borderX, borderY + y2);
-                rectShape.lineTo(borderX + width, borderY + y2);
-                rectShape.lineTo(borderX + width, borderY + y1);
-                rectShape.lineTo(borderX, borderY + y1);
+                bars.push(
+                    borderX      , borderY+y1, 0,
+                    borderX+width, borderY+y1, 0,
+                    borderX+width, borderY+y2, 0,
+                    borderX      , borderY+y1, 0,
+                    borderX+width, borderY+y2, 0,
+                    borderX      , borderY+y2, 0
+                );
 
-                var histLine = new THREE.ShapeGeometry(rectShape);
-                histLine.faces.forEach(function (face) {
-                    face.color = new THREE.Color(color.r/255, color.g/255, color.b/255);
-                });
-
-                histGeometry.merge(histLine);
+                colors.push(
+                    color.r/255, color.g/255, color.b/255,
+                    color.r/255, color.g/255, color.b/255,
+                    color.r/255, color.g/255, color.b/255,
+                    color.r/255, color.g/255, color.b/255,
+                    color.r/255, color.g/255, color.b/255,
+                    color.r/255, color.g/255, color.b/255
+                );
             }
+            var histGeometry = new THREE.BufferGeometry();
+            histGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(bars), 3));
+            histGeometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
             var mesh = new THREE.Mesh(
                 histGeometry,
-                new THREE.MeshBasicMaterial({
-                    vertexColors: THREE.FaceColors,
+                new THREE.RawShaderMaterial({
+                    uniforms: {},
+                    attributes: histGeometry.attributes,
+                    vertexShader: plug.shaders.getByKey("HistogramVertex.glsl"),
+                    fragmentShader: plug.shaders.getByKey("HistogramFragment.glsl"),
                     depthTest: false
                 })
             );
 
-            mesh.material.uniforms = {};
-            scene.addOverlayLayer(meshFile, plug.getName(), mesh, true);
+            scene.addOverlayLayer(layer, plug.getName(), mesh, true);
 
             // labels are rendered as html divs on top of the 3D area
-            var idname = meshFile.name.replace(/ /g, "");
+            var idname = layer.name.replace(/ /g, "");
 
             // handle to html-related data
-            meshFile.histogram = {
+            layer.histogram = {
                 $tl: null,
                 $bl: null,
                 listener: null
             };
 
-            meshFile.histogram.$tl = $("<div id=\"" + idname + "-hist-label-top" + "\"></div>")
+            layer.histogram.$tl = $("<div id=\"" + idname + "-hist-label-top" + "\"></div>")
                 .css({ position: "absolute" })
                 .addClass("mlj-hist-label")
                 .append("<p>" + ch.maxV() + "</p>");
 
-            meshFile.histogram.$bl = $("<div id=\"" + idname + "-hist-label-bottom" + "\"></div>")
+            layer.histogram.$bl = $("<div id=\"" + idname + "-hist-label-bottom" + "\"></div>")
                 .css({ position: "absolute" })
                 .addClass("mlj-hist-label")
                 .append("<p>" + ch.minV() + "</p>");
 
-            $("#_3D").append(meshFile.histogram.$tl).append(meshFile.histogram.$bl);
+            $("#_3D").append(layer.histogram.$tl).append(layer.histogram.$bl);
 
             var onResize = function() {
                 var sz = scene.get3DSize();
                 var pad = 8; // top and bottom padding for mlj-hist-label class (see style.css)
                 var bump = 0.02;
-                meshFile.histogram.$tl.css({
-                    "margin-top": (-((meshFile.histogram.$tl.height()+pad)/2)) + "px",
+                layer.histogram.$tl.css({
+                    "margin-top": (-((layer.histogram.$tl.height()+pad)/2)) + "px",
                     "top": ((borderY-bump)*sz.height) + "px",
                     "left": (0.6*borderX*sz.width) + "px"
                 });
-                meshFile.histogram.$bl.css({
-                    "margin-top": (-((meshFile.histogram.$bl.height()+pad)/2)) + "px",
+                layer.histogram.$bl.css({
+                    "margin-top": (-((layer.histogram.$bl.height()+pad)/2)) + "px",
                     "top": ((1-borderY+bump)*sz.height) + "px",
                     "left": (0.6*borderX*sz.width) + "px"
                 });
@@ -226,22 +237,22 @@
 
             onResize();
             $(window).on("resize", onResize);
-            meshFile.histogram.listener = onResize;
+            layer.histogram.listener = onResize;
 
-            if (!meshFile.getThreeMesh().visible) {
-                meshFile.histogram.$tl.hide();
-                meshFile.histogram.$bl.hide();
+            if (!layer.getThreeMesh().visible) {
+                layer.histogram.$tl.hide();
+                layer.histogram.$bl.hide();
             }
 
             ch.delete();
         } else {
-            scene.removeOverlayLayer(meshFile, plug.getName());
-            if (meshFile.histogram !== undefined) {
-                $(window).off("resize", meshFile.histogram.listener);
-                meshFile.histogram.$tl.remove();
-                meshFile.histogram.$bl.remove();
+            scene.removeOverlayLayer(layer, plug.getName(), true);
+            if (layer.histogram !== undefined) {
+                $(window).off("resize", layer.histogram.listener);
+                layer.histogram.$tl.remove();
+                layer.histogram.$bl.remove();
             }
-            delete meshFile.histogram;
+            delete layer.histogram;
         }
     };
 

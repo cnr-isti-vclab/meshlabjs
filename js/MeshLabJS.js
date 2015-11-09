@@ -127,6 +127,7 @@
                 event.preventDefault();
                 MLJ.widget.TabbedPane.selectTab(0);
                 MLJ.widget.SearchTool.focus();
+                MLJ.widget.SearchTool.select();
             }
         });
     };

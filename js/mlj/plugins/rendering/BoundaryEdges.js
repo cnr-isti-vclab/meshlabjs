@@ -25,7 +25,6 @@
                 var bindToFun = function (color, overlay) {
                     overlay.edges.material.color = color;
                     overlay.faces.material.color = color;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'color'; };
                 return bindToFun;
@@ -40,7 +39,6 @@
             bindTo: (function() {
                 var bindToFun = function (width, overlay) {
                     overlay.edges.material.linewidth = width;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'width'; };
                 return bindToFun;
@@ -55,7 +53,6 @@
             bindTo: (function() {
                 var bindToFun = function (opacity, overlay) {
                     overlay.faces.material.opacity = opacity;
-                    scene.render();
                 };
                 bindToFun.toString = function () { return 'faceOpacity'; };
                 return bindToFun;
