@@ -210,6 +210,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     this._setOnParamChange(function (paramProp, value) {
         var meshFile = MLJ.core.Scene.getSelectedLayer();
         var params = meshFile.overlaysParams.getByKey(_this.getName());
+
+        // update parameter
         params[paramProp] = value;
               
         if (parameters.global === true) {

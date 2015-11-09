@@ -35,7 +35,5 @@ void main() {
 
     gl_Position = projectionMatrix * mvPosition;
     vViewPosition = -mvPosition.xyz;
-    //if (meshColorMapping == COLOR_ATTRIBUTE) vColor = customColor;
-    //if (meshColorMapping == COLOR_ATTRIBUTE) vColor = VCGColor4b / 255.0;
     vColor = VCGColor;
 }

@@ -71,8 +71,9 @@ class CppMesh
   inline uintptr_t getVertexVector() {
     float * v = new float[m.VN()*3];
     int k=0;
-    for (int i = 0; i < m.VN(); i++){
-      for (int j = 0; j < 3; j++){
+    tri::Allocator<MyMesh>::CompactVertexVector(m);
+    for (int i = 0; i < m.VN(); i++) {
+      for (int j = 0; j < 3; j++) {
         v[k] = m.vert[i].cP()[j];
         k++;
       }
@@ -81,23 +82,38 @@ class CppMesh
   }
 
   inline uintptr_t getFaceVector() {
-    int * f = new int[m.FN()*3];
+    uint32_t * f = new uint32_t[m.FN()*3];
     int k=0;
+    tri::Allocator<MyMesh>::CompactFaceVector(m);
     for (int i = 0; i < m.FN(); i++)
       for (int j = 0; j < 3; j++){
-        f[k] = (int)tri::Index(m,m.face[i].cV(j));
+        f[k] = tri::Index(m,m.face[i].cV(j));
         k++;
       }
     return (uintptr_t)f;
   }
 
+  inline uintptr_t getVertexNormalsVector() {
+    tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
+    tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(m);
+    float *n = new float[m.VN()*4];
+    int k = 0;
+    tri::Allocator<MyMesh>::CompactVertexVector(m);
+    for (int i = 0; i < m.VN(); ++i) {
+        n[k++] = m.vert[i].cN()[0];
+        n[k++] = m.vert[i].cN()[1];
+        n[k++] = m.vert[i].cN()[2];
+    }
+    return (uintptr_t) n;
+  }
+
   inline uintptr_t getVertexColorVector() {
-    uint8_t *c = new uint8_t[m.VN()*4];
+    float *c = new float[m.VN()*3];
     int k = 0;
     for (int i = 0; i < m.VN(); ++i) {
-      for (int j = 0; j < 4; ++j) {
-        c[k++] = m.vert[i].cC()[j];
-      }
+        c[k++] = m.vert[i].cC()[0] / 255.0;
+        c[k++] = m.vert[i].cC()[1] / 255.0;
+        c[k++] = m.vert[i].cC()[2] / 255.0;
     }
     return (uintptr_t) c;
   }
@@ -113,7 +129,7 @@ class CppMesh
     return (uintptr_t) c;
   }
 
-    inline uintptr_t getTriangleSoup() {
+  inline uintptr_t getTriangleSoup() {
     float * v = new float[m.FN()*9];
     int k = 0;
     for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
@@ -134,11 +150,13 @@ class CppMesh
     tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(m);
     float * n = new float[m.FN()*9];
     int k = 0;
-    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) if (!fi->IsD()) {
-      for (int i = 0; i < 3; ++i) {
-        n[k++] = fi->cV(i)->cN()[0];
-        n[k++] = fi->cV(i)->cN()[1];
-        n[k++] = fi->cV(i)->cN()[2];
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+      if (!fi->IsD()) {
+        for (int i = 0; i < 3; ++i) {
+          n[k++] = fi->cV(i)->cN()[0];
+          n[k++] = fi->cV(i)->cN()[1];
+          n[k++] = fi->cV(i)->cN()[2];
+        }
       }
     }
     return (uintptr_t) n;
@@ -185,6 +203,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getMeshPtr",           &CppMesh::getMeshPtr)
     .function("getMatrixPtr",         &CppMesh::getMatrixPtr)
     .function("getVertexVector",      &CppMesh::getVertexVector)
+    .function("getVertexNormalsVector",      &CppMesh::getVertexNormalsVector)
     .function("getVertexColorVector", &CppMesh::getVertexColorVector)
     .function("getFaceVector",        &CppMesh::getFaceVector)
     .function("getFaceColorVector",   &CppMesh::getFaceColorVector)
