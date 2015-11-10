@@ -208,23 +208,25 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     }
 
     this._setOnParamChange(function (paramProp, value) {
-        var meshFile = MLJ.core.Scene.getSelectedLayer();
-        var params = meshFile.overlaysParams.getByKey(_this.getName());
+        var layer = MLJ.core.Scene.getSelectedLayer();
+        var params = layer.overlaysParams.getByKey(_this.getName());
 
         // update parameter
         params[paramProp] = value;
               
         if (parameters.global === true) {
-            var iter = meshFile.overlays.iterator();
+            var iter = layer.overlays.iterator();
             var overlay;
-            //Update the global paramter for all overlay layers
+            //Update the global parameter for all overlay layers
             while (iter.hasNext()) {
                 overlay = iter.next();
-                //check if overlay has this uniform defined
+                // check if overlay has the property defined as a uniform
                 if (overlay.material.uniforms[paramProp] !== undefined) {
                     overlay.material.uniforms[paramProp].value = value;
-                } else if (jQuery.isFunction(paramProp)) {
-                    paramProp(value, overlay, params);
+                }
+                // also check if the property is a callable object
+                if (jQuery.isFunction(paramProp)) {
+                    paramProp(value, overlay, layer);
                 }
             }
 
@@ -232,7 +234,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             return;
         }
 
-        var overlay = meshFile.overlays.getByKey(_this.getName());
+        var overlay = layer.overlays.getByKey(_this.getName());
 
         //if overlay undefined just return
         if (overlay === undefined) {

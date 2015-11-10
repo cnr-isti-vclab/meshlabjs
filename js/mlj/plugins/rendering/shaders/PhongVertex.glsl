@@ -1,8 +1,5 @@
 #define SMOOTH 2
 
-#define COLOR_UNIFORM   0
-#define COLOR_ATTRIBUTE 1
-
 attribute vec3 position;
 attribute vec3 normal;
 attribute vec3 VCGColor;
@@ -17,7 +14,7 @@ uniform mat4 projectionMatrix;
 uniform int shading;
 
 uniform vec3 diffuse;
-uniform int meshColorMapping;
+uniform int mljColorMode;
 
 void main() {
     vec3 objectNormal = normal;

@@ -1,14 +1,14 @@
 /**
  * The supported color modes are:
  *
- *   Uniform - color is per mesh, stored in the 'diffuse' uniform of the material
+ *   Uniform - color is per mesh, stored in the 'diffuse' uniform of the
+ *       material
  *
- *   Attribute / per vertex - color is per vertex
+ *   Face - color is per face (achieved by replicating vertices for each face)
  *
- *   Attribute / per face - color is per face (achieved by replicating vertices
- *       for each face)
+ *   Vertex - color is per vertex, interpolated across each face
  *
- * Rendering plugins that wantto interact with color modes need to include the
+ * Rendering plugins that want to interact with color modes need to include the
  * following uniform/attributes (managed by the framework) in the material and
  * shader definitions:
  *
@@ -18,26 +18,26 @@
  *   'VCGColor' - attribute (vec3) - will hold the primitive color according to
  *       the appropriate mode (per vertex or per face)
  *
- *   'meshColorMapping' - uniform int - must be used as a switch to instruct
- *       the shader whether to use the 'diffuse' uniform (0) or the incoming
- *       varying attribute (1) as base color
+ *   'mljColorMode' - uniform int - must be used as a switch to instruct the
+ *       shader whether to use the 'diffuse' uniform (if == 0) or the incoming
+ *       varying attribute (if == 1 or == 2) as base color
  *
  * The uniform variables will be updated by the framework, while the VCGColor
  * attribute is stored in the THREE.BufferGeometry object of the layer. See 
  * Layer.js as a use case of this plugin.
  */
 
-var ColorMapping = {
-    Uniform: 0,
-    Attribute: 1
-};
+MLJ.ColorMode = {};
+
+MLJ.ColorMode.Uniform   = 0;
+MLJ.ColorMode.Face   = 1;
+MLJ.ColorMode.Vertex = 2;
 
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
         diffuse: new THREE.Color('#A0A0A0'),
-        meshColorMapping: ColorMapping.Uniform,
-        colorMode: THREE.NoColors
+        mljColorMode: MLJ.ColorMode.Mesh
     };
 
     var plug = new plugin.Rendering({
@@ -62,26 +62,16 @@ var ColorMapping = {
             label: "Mesh Color",
             tooltip: "Choose one of the possible ways of displaying the color of the mesh",
             options: [
-                {content: "Uniform", value: THREE.NoColors, selected: true},
-                {content: "Per Face", value: THREE.FaceColors},
-                {content: "Per Vertex", value: THREE.VertexColors}
+                {content: "Uniform", value: MLJ.ColorMode.Uniform, selected: true},
+                {content: "Per Face", value: MLJ.ColorMode.Face},
+                {content: "Per Vertex", value: MLJ.ColorMode.Vertex}
             ],
             bindTo: (function() {
-                // Ugly, needs to update two entangled variables...
-                var bindToFun = function (colorMode, overlay, colorParams) {
-                    if (overlay.material.uniforms !== undefined
-                            && overlay.material.uniforms.meshColorMapping !== undefined) {
-                        // TODO use only 1 var
-                        var colorMapping = (colorMode === THREE.NoColors) ? ColorMapping.Uniform : ColorMapping.Attribute;
-                        overlay.material.uniforms.meshColorMapping.value = colorMapping;
-                        colorParams.meshColorMapping = colorMapping;
-
-                        var layer = scene.getSelectedLayer();
-                        layer.updateMeshColorData(colorMode);
-                    }
+                var callback = function (colorMode, overlay, layer) {
+                    layer.updateMeshColorData(colorMode);
                 };
-                bindToFun.toString = function () { return "colorMode"; };
-                return bindToFun;
+                callback.toString = function () { return "mljColorMode"; };
+                return callback;
             }())
         });
         

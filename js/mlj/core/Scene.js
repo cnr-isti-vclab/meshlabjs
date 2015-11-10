@@ -98,6 +98,7 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene     
      */
     var _scene2D;
+    
     /**
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
@@ -156,7 +157,7 @@ MLJ.core.Scene = {};
             antialias: true, 
             alpha: true, 
             preserveDrawingBuffer:true});
-        _renderer.shadowMapEnabled = true;
+        //_renderer.shadowMapEnabled = true;
         
         _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);

@@ -8,7 +8,7 @@
         lights: true,
         shading: THREE.FlatShading,
         sides : THREE.DoubleSide,
-        meshColorMapping: ColorMapping.Uniform
+        mljColorMode: MLJ.ColorMode.Uniform
     };
     
     var PHONG = {
@@ -22,7 +22,7 @@
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
                 "lights": {type: "i", value: DEFAULTS.lights},
-                "meshColorMapping": {type: "i", value: DEFAULTS.meshColorMapping}
+                "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
             }
 
         ])        
@@ -117,7 +117,7 @@
             uniforms.lights.value = params.lights;
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
-            uniforms.meshColorMapping.value = colorParams.meshColorMapping;
+            uniforms.mljColorMode.value = colorParams.mljColorMode;
 
             var parameters = {
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),

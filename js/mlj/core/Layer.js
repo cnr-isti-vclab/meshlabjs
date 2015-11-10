@@ -56,11 +56,9 @@ MLJ.core.Layer = function (name, cppMesh) {
         var cw = _this.overlaysParams.getByKey("ColorWheel");
         var useIndex = true;
         if (cppMesh.hasPerVertexColor()) {
-            cw.meshColorMapping = ColorMapping.Attribute;
-            cw.colorMode = THREE.VertexColors;
+            cw.mljColorMode = MLJ.ColorMode.Vertex;
         } else if (cppMesh.hasPerFaceColor()) {
-            cw.meshColorMapping = ColorMapping.Attribute;
-            cw.colorMode = THREE.FaceColors;
+            cw.mljColorMode = MLJ.ColorMode.Face;
             useIndex = false;
         }
 
@@ -146,7 +144,7 @@ MLJ.core.Layer = function (name, cppMesh) {
         var geometry = _this.threeMesh.geometry;
         var colorptr, colorData;
 
-        if (colorMode === THREE.FaceColors) {
+        if (colorMode === MLJ.ColorMode.Face) {
             if (_this.usingIndexedGeometry()) { // rebuild geometry as disconnected triangles
                 _this.updateMeshGeometryData(false);
             }
@@ -173,7 +171,7 @@ MLJ.core.Layer = function (name, cppMesh) {
 
     this.updateThreeMesh = function () {
         var cm = _this.overlaysParams.getByKey("ColorWheel").colorMode;
-        var useIndex = (cm !== THREE.FaceColors);
+        var useIndex = (cm !== MLJ.ColorMode.Face);
         this.updateMeshGeometryData(useIndex);
         this.updateMeshColorData(cm);
     };
@@ -228,5 +226,4 @@ MLJ.core.Layer = function (name, cppMesh) {
         _this.threeMesh = _this.properties = _this.overlays = 
         _this.overlaysParams =  _this = null;       
     };
-    
 }
