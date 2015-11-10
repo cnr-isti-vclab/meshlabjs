@@ -46,7 +46,7 @@
             return;
         }
 
-        layer.__mlj_points_buffer = layer.cppMesh.getVertexVector();
+        layer.__mlj_points_buffer = layer.cppMesh.getVertexVector(true);
 
         var particlesBuffer = new Float32Array(Module.HEAPU8.buffer, layer.__mlj_points_buffer, layer.VN*3);
         var geometry = new THREE.BufferGeometry();

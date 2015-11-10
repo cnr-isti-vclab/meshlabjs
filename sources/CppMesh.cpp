@@ -67,7 +67,7 @@ class CppMesh
     return (uintptr_t)((void*)(&m.tr));
   }
 
-  inline uintptr_t getVertexVector(bool indexing=true)
+  inline uintptr_t getVertexVector(bool indexing)
   {
     float *v;
     int k = 0;
@@ -93,7 +93,7 @@ class CppMesh
     return (uintptr_t) v;
   }
 
-  inline uintptr_t getVertexNormalVector(bool indexing=true)
+  inline uintptr_t getVertexNormalVector(bool indexing)
   {
     float *n;
     int k = 0;
