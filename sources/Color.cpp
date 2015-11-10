@@ -36,12 +36,18 @@ void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float pe
 {
 	MyMesh &m = *((MyMesh*) meshptr);
 	
-	bool usePerc = perc > 0;	
+	bool usePerc = perc > 0;
 	Histogramf H;
 	tri::Stat<MyMesh>::ComputePerVertexQualityHistogram(m, H);
 	float percLo = H.Percentile(perc/100.0f);
 	float percHi = H.Percentile(1.0f - (perc/100.0f));
-		
+	
+	if (qMin == qMax) {
+		std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+		qMin = minmax.first;
+		qMax = minmax.second;
+	}
+
 	if (zerosym) {
 		qMin = std::min(qMin, -math::Abs(qMax));
 		qMax = std::max(math::Abs(qMin), qMax);
@@ -83,7 +89,6 @@ void ColorizeByBorderDistance(uintptr_t meshptr)
 	}
 }
 
-// todo permeshattributehandle
 ColorHistogramf ComputeColorHistogram(
 		uintptr_t meshptr, bool vertexQuality, int binNum, bool areaWeighted, bool customRange, float rangeMin, float rangeMax)
 {
