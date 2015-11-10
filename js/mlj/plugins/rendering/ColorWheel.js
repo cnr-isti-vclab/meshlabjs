@@ -29,9 +29,9 @@
 
 MLJ.ColorMode = {};
 
-MLJ.ColorMode.Uniform   = 0;
-MLJ.ColorMode.Face   = 1;
-MLJ.ColorMode.Vertex = 2;
+MLJ.ColorMode.Uniform = 0;
+MLJ.ColorMode.Face    = 1;
+MLJ.ColorMode.Vertex  = 2;
 
 (function (plugin, core, scene) {
 
