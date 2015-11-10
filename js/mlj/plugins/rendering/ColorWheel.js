@@ -37,7 +37,7 @@ MLJ.ColorMode.Vertex = 2;
 
     var DEFAULTS = {
         diffuse: new THREE.Color('#A0A0A0'),
-        mljColorMode: MLJ.ColorMode.Mesh
+        mljColorMode: MLJ.ColorMode.Uniform
     };
 
     var plug = new plugin.Rendering({
