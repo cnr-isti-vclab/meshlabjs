@@ -221,7 +221,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             while (iter.hasNext()) {
                 overlay = iter.next();
                 // check if overlay has the property defined as a uniform
-                if (overlay.material.uniforms[paramProp] !== undefined) {
+                if (overlay.material && overlay.material.uniforms[paramProp]) {
                     overlay.material.uniforms[paramProp].value = value;
                 }
                 // also check if the property is a callable object
@@ -242,8 +242,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         }
         
         //is 'bindTo' property a uniform?
-        if (overlay.material.uniforms !== undefined 
-                && overlay.material.uniforms[paramProp] !== undefined) {
+        if (overlay.material && overlay.material.uniforms && overlay.material.uniforms[paramProp]) {
             overlay.material.uniforms[paramProp].value = value;
         } else if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value, overlay);

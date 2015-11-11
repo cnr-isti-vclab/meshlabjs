@@ -2,13 +2,13 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        histogramQualitySelection: "V",
-        histogramBins: 256,
-        histogramAreaWeighted: false,
-        histogramFixedWidth: false,
-        histogramRangeMin: 0,
-        histogramRangeMax: 0,
-        histogramWidth: 0
+        MLJ_HIST_QualitySelection: "V",
+        MLJ_HIST_Bins: 256,
+        MLJ_HIST_AreaWeighted: false,
+        MLJ_HIST_FixedWidth: false,
+        MLJ_HIST_RangeMin: 0,
+        MLJ_HIST_RangeMax: 0,
+        MLJ_HIST_Width: 0
     };
     
     var plug = new plugin.Rendering({
@@ -154,14 +154,12 @@
         var dl = new THREE.PointCloud(geometry, new THREE.ShaderMaterial({
             uniforms: {},
             attributes: geometry.attributes,
-            vertexShader:
-            "attribute float pointSize; \
-            void main() { \
-                gl_PointSize = pointSize; \
-                gl_Position = vec4(2.0*position-vec3(1.0, 1.0, 0.0), 1.0); \
-            }",
-            fragmentShader:
-            "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0 ); }"
+            vertexShader: "attribute float pointSize; \
+                           void main() { \
+                               gl_PointSize = pointSize; \
+                               gl_Position = vec4(2.0*position-vec3(1.0, 1.0, 0.0), 1.0); \
+                           }",
+            fragmentShader: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0 ); }"
         }));
     
         return { line: dl, ref: labelref };
