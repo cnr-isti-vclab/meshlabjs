@@ -335,14 +335,9 @@ MLJ.core.Scene = {};
         }
 
         // if histogram overlay is defined show/hide labels
-        if (layer.histogram !== undefined) {
-            if (visible) {
-                layer.histogram.$tl.show();
-                layer.histogram.$bl.show();
-            } else {
-                layer.histogram.$tl.hide();
-                layer.histogram.$bl.hide();
-            }
+        if (layer.__mlj_histogram) {
+            if (visible) layer.__mlj_histogram.show();
+            else layer.__mlj_histogram.hide();
         }
         
         MLJ.core.Scene.render();
@@ -406,6 +401,12 @@ MLJ.core.Scene = {};
 
         _this.render();
     };
+
+    function disposeObject(obj) {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) obj.material.dispose();
+        if (obj.texture) obj.texture.dispose();
+    }
     
     this.removeOverlayLayer = function(layer, name, overlay2D) {        
         var mesh = layer.overlays.getByKey(name);
@@ -419,14 +420,8 @@ MLJ.core.Scene = {};
                 _group.remove(mesh);                        
             }
 
-            mesh.geometry.dispose();
-            mesh.material.dispose();
-            mesh.geometry = null;
-            mesh.material = null;            
-            if (mesh.texture) {
-                mesh.texture.dispose();            
-                mesh.texture = null;
-            }
+            mesh.traverse(disposeObject);
+            disposeObject(mesh);
 
             _this.render();                              
         }
