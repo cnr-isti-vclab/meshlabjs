@@ -34,7 +34,13 @@
  */
 MLJ.core.Layer = function (name, cppMesh) {
     this.name = name;
+
+    /**
+     * @type {String} - Set if a mesh is read from a file
+     * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string
+     */
     this.fileName = "";
+
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;
