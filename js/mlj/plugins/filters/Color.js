@@ -1,22 +1,5 @@
 (function(plugin, scene) {
 
-	/*** TEST generates per vertex and per face colors ***/
-
-	var ColorFilter = new plugin.Filter({
-		name: "ColorFilter",
-		tooltip: "TEST",
-		arity: 1
-	});
-
-	ColorFilter._init = function (builder) {};
-
-	ColorFilter._applyTo = function (meshFile) {
-		Module.ColorizeByVertexQualityTEST(meshFile.ptrMesh());
-	};
-
-	plugin.Manager.install(ColorFilter);
-
-
 	/*** Colorize by vertex quality ***/
 
 	var ColorFromVertexQualityFilter = new plugin.Filter({

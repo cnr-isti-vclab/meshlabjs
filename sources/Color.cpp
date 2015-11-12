@@ -8,30 +8,6 @@
 
 using namespace vcg;
 
-/*
- * FIXME remove this
- */
-void ColorizeByVertexQualityTEST(uintptr_t meshptr)
-{
-	MyMesh &m = *((MyMesh*) meshptr);
-	for(MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-		if (!vi->IsD()) {
-			vi->Q() = vi->cP()[0] + vi->cP()[1] + vi->cP()[2];
-		}
-	}
-	std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
-	std::printf("Vertex quality range: %f %f\n", minmax.first, minmax.second);
-	tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, minmax.first, minmax.second);
-
-	for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-		if (!fi->IsD()) {
-			fi->C()[0] = std::rand()%256;
-			fi->C()[1] = std::rand()%256;
-			fi->C()[2] = std::rand()%256;
-		}
-	}
-}
-
 void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float perc, bool zerosym)
 {
 	MyMesh &m = *((MyMesh*) meshptr);
@@ -146,7 +122,6 @@ ColorHistogramf ComputeColorHistogram(
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ColorizePlugin) {
-	emscripten::function("ColorizeByVertexQualityTEST", &ColorizeByVertexQualityTEST);
 	emscripten::function("ColorizeByVertexQuality", &ColorizeByVertexQuality);
 	emscripten::function("ColorizeByBorderDistance", &ColorizeByBorderDistance);
 	emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);
