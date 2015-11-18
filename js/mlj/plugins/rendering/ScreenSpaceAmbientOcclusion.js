@@ -13,7 +13,7 @@
 
     function generateSphereSamples() {
         var samples = [];
-        var k = 0; var ccc = 0;
+        var k = 0;
         for (var i = 0; i < 32; ++i) {
             do {
                 var pt = new THREE.Vector3(
@@ -23,17 +23,15 @@
                 );
             } while (pt.length() > 1);
 
-            //check this
+            // group samples closer to the origin
             //pt.normalize();
             //var x = i / 32;
             //pt.multiplyScalar(Math.max(0.1, x*x));
-
 
             samples[k++] = pt.x;
             samples[k++] = pt.y;
             samples[k++] = pt.z;
         }
-        console.log("--"+ccc);
         return samples;
     }
 
@@ -63,17 +61,18 @@
 
     var blurPassUniforms =
     {
-        cmap:       { type: "t",  value: null },
-        aomap:      { type: "t",  value: null },
-        screenStep: { type: "v2", value: new THREE.Vector2() },
-        blurFlag:   { type: "i",  value: 1 }
+        cmap:          { type: "t",  value: null },
+        aomap:         { type: "t",  value: null },
+        screenStep:    { type: "v2", value: new THREE.Vector2() },
+        blurFlag:      { type: "i",  value: 1 },
+        blurThreshold: { type: "f",  value: 0.2 },
     }
 
-    var radiusControl, powerControl, blurFlag;
+    var radiusControl, powerControl, blurFlag, blurThresholdControl;
     plug._init = function (guiBuilder) {
         radiusControl = guiBuilder.RangedFloat({
             label: "Radius",
-            tooltip: "Scales the sample hemisphere radius",
+            tooltip: "Scales the sample radius",
             min: 0.05, step: 0.05, max:5.0,
             defval: AOPassUniforms.sampleRadius.value,
             bindTo: (function () {
@@ -85,9 +84,9 @@
             })()
         });
 
-        radiusControl = guiBuilder.RangedFloat({
+        powerControl = guiBuilder.RangedFloat({
             label: "Ambient Occlusion Power",
-            tooltip: "The occlusion factor is raised to this power (occluded surfaces \
+            tooltip: "The occlusion factor is raised to this power (occluded areas \
                 get darker)",
             min: 1.0, step: 0.1, max:5.0,
             defval: AOPassUniforms.occlusionPower.value,
@@ -109,6 +108,21 @@
                     blurPassUniforms.blurFlag.value ^= 1;
                 };
                 bindToFun.toString = function () { return "MLJ_SSAO_BlurFlag"; };
+                return bindToFun;
+            })()
+        });
+
+        blurThresholdControl = guiBuilder.RangedFloat({
+            label: "Blur threshold",
+            tooltip: "This parameter is used in the blur pass to detect edges and \
+                avoid smoothing across them",
+            min: 0.01, step: 0.01, max:2.0,
+            defval: blurPassUniforms.blurThreshold.value,
+            bindTo: (function () {
+                var bindToFun = function (value) {
+                    blurPassUniforms.blurThreshold.value = value;
+                };
+                bindToFun.toString = function () { return "MLJ_SSAO_BlurThreshold"; };
                 return bindToFun;
             })()
         });
