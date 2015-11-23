@@ -6,7 +6,7 @@
         tooltip: "Enable Screen Space Ambient Occlusion",
         toggle: true,
         on: false,
-        //icon: "",
+         icon: "img/icons/ambientocclusion.png",
         loadShader: ["SSAODistanceMapVertex.glsl", "SSAODistanceMapFragment.glsl",
             "SSAOVertex.glsl", "SSAOFragment.glsl", "SSAOBlurFragment.glsl"]
     });
