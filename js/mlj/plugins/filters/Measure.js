@@ -27,6 +27,28 @@
         Module.ComputeGeometricMeasures(meshfile.ptrMesh());
     }
 /******************************************************************************/  
+    var CurvatureQualityFilter = new plugin.Filter({
+        name: "Compute Quality form Curvature",
+        tooltip: "Compute discrete curvature values and store it in the per vertex quality. <br> "
+                +"It can compute the Gaussian and Mean curvatures using the standard discrete approximations for triangle meshes. ",
+        arity: 1
+    });
+    var curvatureTypeWidget;
+    CurvatureQualityFilter._init = function(builder) { 
+            curvatureTypeWidget  = builder.Choice({
+            label: "Curvature Type",
+            tooltip: "Choose the possible curvature type",
+            options: [
+                {content: "Gaussian Curvature", value: "0", selected: true},
+                {content: "Mean Curvature", value: "1"},
+            ]
+        });
+    };
+
+    CurvatureQualityFilter._applyTo = function(meshfile) {
+        Module.ComputeQualityFromCurvature(meshfile.ptrMesh(),parseInt(curvatureTypeWidget.getValue()));
+    }
+/******************************************************************************/  
     var HausdorffFilter = new plugin.Filter({
         name: "Compute Hausdorff Distance ",
         tooltip: "Compute the Hausdorff distance between two meshes. <br>"
@@ -91,5 +113,6 @@
     plugin.Manager.install(MeasureTopoFilter);
     plugin.Manager.install(MeasureGeomFilter);
     plugin.Manager.install(HausdorffFilter);
-
+    plugin.Manager.install(CurvatureQualityFilter);
+    
 })(MLJ.core.plugin, MLJ.core.Scene);

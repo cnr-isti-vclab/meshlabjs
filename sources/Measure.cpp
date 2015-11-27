@@ -127,6 +127,22 @@ void ComputeHausdorffDistance(uintptr_t srcPtr, uintptr_t trgPtr, uintptr_t _sam
   }
 }
 
+void ComputeQualityFromCurvature(uintptr_t meshPtr, int curvatureMode)
+{
+    MyMesh &m = *((MyMesh*) meshPtr);    
+    tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
+    if(curvatureMode==0)
+    {
+      tri::UpdateQuality<MyMesh>::VertexFromGaussianCurvatureHG(m);
+      printf("Computed Gaussian Curvature\n");
+    }
+    else
+    {
+      tri::UpdateQuality<MyMesh>::VertexFromMeanCurvatureHG(m);
+      printf("Computed Mean Curvature\n");
+    }
+}
+
 void MeasurePluginTEST()
 {
   MyMesh m0,m1;
@@ -135,6 +151,9 @@ void MeasurePluginTEST()
 
   ComputeHausdorffDistance(uintptr_t(&m0),uintptr_t(&m1),0,10000,0.1);
   ComputeHausdorffDistance(uintptr_t(&m1),uintptr_t(&m0),0,10000,0.1);
+  ComputeQualityFromCurvature(uintptr_t(&m0),0);
+  ComputeQualityFromCurvature(uintptr_t(&m0),1);
+  
 }
 
 #ifdef __EMSCRIPTEN__
@@ -142,5 +161,6 @@ EMSCRIPTEN_BINDINGS(MLMeasurePlugin) {
     emscripten::function("ComputeGeometricMeasures",   &ComputeGeometricMeasures);
     emscripten::function("ComputeTopologicalMeasures", &ComputeTopologicalMeasures);
     emscripten::function("ComputeHausdorffDistance",   &ComputeHausdorffDistance);
+    emscripten::function("ComputeQualityFromCurvature",   &ComputeQualityFromCurvature);
 }
 #endif
