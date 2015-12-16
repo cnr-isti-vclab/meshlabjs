@@ -1,3 +1,5 @@
+#define ALPHATEST 0.9
+
 uniform vec3 color;
 uniform sampler2D texture;
 void main() {
