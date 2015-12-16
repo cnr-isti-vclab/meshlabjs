@@ -26,6 +26,7 @@ class CppMesh
       return m.meshName;
     }
 
+    bool hasPerVertexNormal() const { return  loadmask & vcg::tri::io::Mask::IOM_VERTNORMAL; }
     bool hasPerVertexColor() const    { return loadmask & vcg::tri::io::Mask::IOM_VERTCOLOR; }
     bool hasPerFaceColor() const      { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
     bool hasPerVertexQuality() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTQUALITY; }
@@ -97,6 +98,18 @@ class CppMesh
   {
     float *n;
     int k = 0;
+
+    if (hasPerVertexNormal()) {
+          tri::Allocator<MyMesh>::CompactVertexVector(m);
+          n = new float[m.VN()*3];
+          for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+            n[k++] = vi->cN()[0];
+            n[k++] = vi->cN()[1];
+            n[k++] = vi->cN()[2];
+          }
+          return (uintptr_t) n;
+    }
+
     tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
     tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(m);
     if (indexing) {
