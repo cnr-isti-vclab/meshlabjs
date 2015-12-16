@@ -1,9 +1,14 @@
 //attribute float minSize;
 attribute vec3 position;
 attribute vec3 normal;
+attribute vec3 col;
 
 varying vec3 vViewPosition;
 varying vec3 vNormal;
+varying vec3 vColor;
+
+uniform int hasPerVertexColor;
+uniform vec3 color;
 
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
@@ -27,6 +32,7 @@ void main() {
     vViewPosition = normalize(-mvPosition.xyz);
     vNormal = normalMatrix * normal;
     vLigthDirectionEye = transformDirection(directionalLightDirection[0],viewMatrix);
+    vColor = (hasPerVertexColor != 0) ? col : color;
 
     gl_PointSize = size;
     gl_Position = projectionMatrix * mvPosition;

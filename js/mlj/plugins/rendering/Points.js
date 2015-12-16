@@ -17,6 +17,7 @@
             THREE.UniformsLib[ "lights" ],
             {
                 "size": {type: "f", value: DEFAULTS.size},
+                "hasPerVertexColor": {type: "i", value: 0},
                 "color": {type: "c", value: DEFAULTS.color},
                 "isShaded" : { type: "i", value: DEFAULTS.isShaded},
                 "specular": {type: "c", value: DEFAULTS.specular},
@@ -59,7 +60,8 @@
             tooltip: "Activate/Deactivate Shading",
             options: [
                 {content: "On", value: 1, selected: true},
-                {content: "Off", value: 0 }
+                {content: "Off", value: 0 },
+                {content: "Fixed", value: 2 }
             ],
             bindTo: "isShaded"
         });
@@ -97,9 +99,19 @@
         geometry.addAttribute('position', new THREE.BufferAttribute(particlesBuffer, 3));
         geometry.addAttribute('normal', new THREE.BufferAttribute(normalsBuffer, 3));
 
+        var hasPerVertexColor = 0;
+
+        if (layer.cppMesh.hasPerVertexColor()) {
+            layer.color_buffer = layer.cppMesh.getVertexColors();
+            var colorsBuffer = new Float32Array(Module.HEAPU8.buffer, layer.color_buffer, layer.VN*3);
+            geometry.addAttribute('col', new THREE.BufferAttribute(colorsBuffer, 3));
+            hasPerVertexColor = 1;
+        }
+
         var params = layer.overlaysParams.getByKey(plug.getName());
 
         var pointsUniforms = THREE.UniformsUtils.clone(UNIFORMS.uniforms);
+        pointsUniforms.hasPerVertexColor.value = hasPerVertexColor;
         pointsUniforms.color.value = params.color;
         pointsUniforms.size.value = params.size;
         pointsUniforms.isShaded.value = params.isShaded;
