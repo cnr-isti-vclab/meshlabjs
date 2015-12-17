@@ -522,8 +522,7 @@ MLJ.core.Scene = {};
      */
     this.createCppMeshFile = function (name) {
         var layerName = disambiguateName(name);
-        var CppMesh = new Module.CppMesh();
-        var layer = new MLJ.core.Layer(layerName, CppMesh);
+        var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
         return layer;
     };
     
