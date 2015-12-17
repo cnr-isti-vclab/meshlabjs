@@ -25,10 +25,10 @@
 
     };
 
-    MontecarloSamplingFilter._applyTo = function (basemeshFile) {
+    MontecarloSamplingFilter._applyTo = function (baseLayer) {
         var newLayer = MLJ.core.Scene.createLayer("Montecarlo Samples");
         newLayer.cppMesh.addPerVertexNormal();
-        Module.MontecarloSampling(basemeshFile.ptrMesh(), newLayer.ptrMesh(), sampleNumMCWidget.getValue(),
+        Module.MontecarloSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(), sampleNumMCWidget.getValue(),
                 perFaceNormalWidget.getValue());
         scene.addLayer(newLayer);
     };
@@ -62,12 +62,13 @@
         });
     };
 
-    PoissonDiskSamplingFilter._applyTo = function (basemeshFile) {
+    PoissonDiskSamplingFilter._applyTo = function (baseLayer) {
 
-        var newmeshFile = MLJ.core.Scene.createLayer("Poisson Disk Samples");
-        Module.PoissonDiskSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),
+        var newLayer = MLJ.core.Scene.createLayer("Poisson Disk Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        Module.PoissonDiskSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(),
                                    radiusWidget.getValue(),sampleNumPDWidget.getValue(),  0);
-        scene.addLayer(newmeshFile);
+        scene.addLayer(newLayer);
     };
 
     plugin.Manager.install(PoissonDiskSamplingFilter);
