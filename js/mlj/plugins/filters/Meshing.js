@@ -10,17 +10,23 @@
         arity: 1
     });
 
-    var ratioW;
+    var ratioW, qualityQuadricW;
     QuadricSimpFilter._init = function (builder) {
         ratioW = builder.RangedFloat({
             max: 1, min: 0, step: 0.1, defval: 0.5,
             label: "Simplification Ratio",
             tooltip: "Amount of Simplification expressed as a percentage of the initial mesh complexity."
         });
+    qualityQuadricW = builder.Bool({
+            defval: true,
+            label: "Quality Quadric",
+            tooltip: "if true during the initialization it manages all the edges as border edges by adding a set of additional quadrics that are useful mostly for keeping face aspect ratio good."
+        });
+
     };
 
     QuadricSimpFilter._applyTo = function (meshFile) {
-        Module.QuadricSimplification(meshFile.ptrMesh(), ratioW.getValue(), 0, true);
+        Module.QuadricSimplification(meshFile.ptrMesh(), ratioW.getValue(), 0, qualityQuadricW.getValue());
     };
 /******************************************************************************/  
     var ClusteringFilter = new plugin.Filter({

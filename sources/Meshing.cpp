@@ -59,8 +59,10 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   QHelper::TDp()=&TD;
 
   tri::TriEdgeCollapseQuadricParameter pp;
+  pp.NormalCheck = true;
   if(pp.NormalCheck) pp.NormalThrRad = M_PI/4.0;
-
+  if(qualityQuadric) pp.QualityQuadric=true;
+  
   vcg::LocalOptimization<MyMesh> DeciSession(m,&pp);
   DeciSession.Init<MyTriEdgeCollapse >();
   int TargetFaceNum;
