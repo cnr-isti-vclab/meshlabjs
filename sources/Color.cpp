@@ -12,9 +12,9 @@ void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float pe
 {
 	MyMesh &m = *((MyMesh*) meshptr);
 	
-	bool usePerc = perc > 0;
-	Histogramf H;
-	tri::Stat<MyMesh>::ComputePerVertexQualityHistogram(m, H);
+	bool usePerc = (perc > 0);
+	Distribution<float> H;
+	tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
 	float percLo = H.Percentile(perc/100.0f);
 	float percHi = H.Percentile(1.0f - (perc/100.0f));
 	
@@ -26,17 +26,17 @@ void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float pe
 
 	if (zerosym) {
 		qMin = std::min(qMin, -math::Abs(qMax));
-		qMax = std::max(math::Abs(qMin), qMax);
+		qMax = -qMin;
 		percLo = std::min(percLo, -math::Abs(percHi));
-		percHi = std::max(math::Abs(percLo), percHi);
+		percHi = -percLo;
 	}
 
 	if (usePerc) {
 		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, percLo, percHi);
-		printf("Quality Range: %f %f; Used (%f %f) percentile (%f %f)\n", H.MinV(), H.MaxV(), percLo, percHi, perc, (100.0f-perc));
+		printf("Quality Range: %f %f; Used (%f %f) percentile (%f %f)\n", H.Min(), H.Max(), percLo, percHi, perc, (100.0f-perc));
 	} else {
 		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax);
-		printf("Quality Range: %f %f; Used (%f %f)\n", H.MinV(), H.MaxV(), qMin, qMax);
+		printf("Quality Range: %f %f; Used (%f %f)\n", H.Min(), H.Max(), qMin, qMax);
 	}
 }
 
