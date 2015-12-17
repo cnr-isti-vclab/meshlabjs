@@ -202,7 +202,7 @@
 
     } 
     SelectionMoveToNewLayer._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Selection of "+basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createLayer("Selection of "+basemeshFile.name);
         Module.SelectionMoveToNewLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),deleteOrigFaceWidget.getValue());
         scene.addLayer(newmeshFile);
     };

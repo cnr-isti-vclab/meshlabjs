@@ -61,7 +61,7 @@
     ConvexHullFilter._init = function (builder) {};
 
     ConvexHullFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile("ConvexHull of "+basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createLayer("ConvexHull of "+basemeshFile.name);
         Module.ConvexHullFilter(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };

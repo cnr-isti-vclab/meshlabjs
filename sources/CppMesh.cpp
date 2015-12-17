@@ -36,6 +36,7 @@ class CppMesh
     void addPerFaceColor()       { loadmask |= vcg::tri::io::Mask::IOM_FACECOLOR; }
     void addPerVertexQuality()   { loadmask |= vcg::tri::io::Mask::IOM_VERTQUALITY; }
     void addPerFaceQuality()     { loadmask |= vcg::tri::io::Mask::IOM_FACEQUALITY; }
+    void addPerVertexNormal()    { loadmask |= vcg::tri::io::Mask::IOM_VERTNORMAL; }
 
     
     int openMesh(string fileName) {
@@ -187,13 +188,15 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("VN",                    &CppMesh::VN)
     .function("FN",                    &CppMesh::FN)
     .function("hasPerVertexColor",     &CppMesh::hasPerVertexColor)
-    .function("hasPerVertexQuality",   &CppMesh::hasPerVertexColor)
+    .function("hasPerVertexQuality",   &CppMesh::hasPerVertexQuality)
+    .function("hasPerVertexNormal",    &CppMesh::hasPerVertexNormal)
     .function("hasPerFaceColor",       &CppMesh::hasPerFaceColor)
-    .function("hasPerFaceQuality",     &CppMesh::hasPerFaceColor)
+    .function("hasPerFaceQuality",     &CppMesh::hasPerFaceQuality)
     .function("addPerVertexColor",     &CppMesh::hasPerVertexColor)
-    .function("addPerVertexQuality",   &CppMesh::hasPerVertexColor)
+    .function("addPerVertexQuality",   &CppMesh::addPerVertexQuality)
+    .function("addPerVertexNormal",    &CppMesh::addPerVertexNormal)
     .function("addPerFaceColor",       &CppMesh::hasPerFaceColor)
-    .function("addPerFaceQuality",     &CppMesh::hasPerFaceColor)
+    .function("addPerFaceQuality",     &CppMesh::addPerFaceQuality)
     .function("getMeshPtr",            &CppMesh::getMeshPtr)
     .function("getMatrixPtr",          &CppMesh::getMatrixPtr)
     .function("getVertexVector",       &CppMesh::getVertexVector)

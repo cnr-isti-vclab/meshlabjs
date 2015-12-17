@@ -96,7 +96,7 @@
         var sampleLayer;
         if(createSampleWidget.getValue())
         {
-            sampleLayer = MLJ.core.Scene.createCppMeshFile("Hausdorff Samples");
+            sampleLayer = MLJ.core.Scene.createLayer("Hausdorff Samples");
             sampleMeshPtr = sampleLayer.ptrMesh();
             sampleLayer.cppMesh.addPerVertexQuality();
         }

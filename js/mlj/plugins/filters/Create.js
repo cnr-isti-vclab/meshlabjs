@@ -24,7 +24,7 @@
     };
     
     DuplicateLayerFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile(basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createLayer(basemeshFile.name);
         Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
@@ -38,7 +38,7 @@
     FlattenLayerFilter._init = function (builder) { };
     
     FlattenLayerFilter._applyTo = function () {
-        var mergedLayers = MLJ.core.Scene.createCppMeshFile("Merged Layers");
+        var mergedLayers = MLJ.core.Scene.createLayer("Merged Layers");
         
         var ptr = MLJ.core.Scene.getLayers().iterator();
                 var layerCur;
@@ -75,7 +75,7 @@
     };
 
     PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile(choiceWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer(choiceWidget.getContent());
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
@@ -103,7 +103,7 @@
     };
 
     PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile(choiceWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer(choiceWidget.getContent());
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
@@ -125,7 +125,7 @@
     };
 
     SphereFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Sphere");
+        var mf = MLJ.core.Scene.createLayer("Sphere");
         Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
@@ -162,7 +162,8 @@
     };
 
     SpherePointCloudFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Sphere-"+sphPtAlgWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer("Sphere-"+sphPtAlgWidget.getContent());
+        mf.cppMesh.addPerVertexNormal();
         Module.CreateSpherePointCloud(mf.ptrMesh(),sphPtNumWidget.getValue(), parseInt(sphPtAlgWidget.getValue()));
         scene.addLayer(mf);
     };
@@ -189,7 +190,7 @@
     };
 
     TorusFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Torus");
+        var mf = MLJ.core.Scene.createLayer("Torus");
         Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
@@ -209,7 +210,7 @@
     };
 
     NoisyIsoFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Noisy Isosurf");
+        var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
         Module.CreateNoisyIsosurface(mf.ptrMesh(), isoResWidget.getValue());
         scene.addLayer(mf);
     };

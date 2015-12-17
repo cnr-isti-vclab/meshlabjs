@@ -520,7 +520,7 @@ MLJ.core.Scene = {};
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
-    this.createCppMeshFile = function (name) {
+    this.createLayer = function (name) {
         var layerName = disambiguateName(name);
         var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
         return layer;
