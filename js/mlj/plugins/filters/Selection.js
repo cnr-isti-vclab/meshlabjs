@@ -140,7 +140,9 @@
 /******************************************************************************/        
     var SelectionByConnectedComponentSizeFilter = new plugin.Filter({
             name:"Selection by Connected Component Size",
-            tooltip: " ",
+            tooltip: "Select all the faces of the connected components composed by a "+
+                    "face number smaller than the given threshold. Useful for selecting "+
+                    "all the small pieces floating around noisy datasets.",
             arity:1
         });
 
@@ -149,7 +151,9 @@
         ccSizeRatioWidget = builder.RangedFloat({
             max: 1, min: 0, step: 0.1, defval: 0.2,
             label: "CC Size Ratio",
-            tooltip: "The ratio (expressed as 0..1) of the maximum connected component size that will be selected. E.g. with a ration of 0.2 all the connected components containing less than 0.2 of the size of the largest connected component, will be selected"
+            tooltip: "The ratio (expressed as 0..1) of the maximum connected component size that will be selected. "+
+                    "E.g. with a ratio of 0.2 the filter will select all the connected components containing less than 20% of the number of faces "+
+                    "of the largest connected component."
         });
         
     };
