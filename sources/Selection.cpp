@@ -131,7 +131,28 @@ void SelectionByQuality(uintptr_t _baseM, float threshold, bool vertFlag)
          minmax.first + threshold * (minmax.second-minmax.first),minmax.first,minmax.second);
 }
 
-
+void SelectionByConnectedComponentSize(uintptr_t _baseM, float sizeThreshold)
+{
+   MyMesh &m = *((MyMesh*) _baseM);
+   std::vector< std::pair<int, MyFace *> > CCV;
+   tri::UpdateTopology<MyMesh>::FaceFace(m);
+   tri::Clean<MyMesh>::ConnectedComponents(m, CCV);
+   int maxSize=0;
+   for(size_t i=0;i<CCV.size();++i)
+   {
+     maxSize=std::max(maxSize,CCV[i].first);
+     printf("CC %i %i\n",i,CCV[i].first);
+   }  
+   
+   tri::UpdateSelection<MyMesh>::Clear(m);
+   for(size_t i=0;i<CCV.size();++i)
+   {
+     if(CCV[i].first < maxSize  * sizeThreshold)
+       CCV[i].second->SetS();        
+   }   
+   int res =    tri::UpdateSelection<MyMesh>::FaceConnectedFF(m,true);
+   printf("Max Size = %i = %f * %i : Selected %i faces on %i\n",int(maxSize  * sizeThreshold),sizeThreshold,maxSize , res,m.fn);
+}
 
 void QualitybyPointOutlier(uintptr_t _baseM, int kNearestNum)
 {
@@ -165,6 +186,7 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("SelectionDeleteFace",   &SelectionDeleteFace);
     emscripten::function("SelectionMoveToNewLayer",   &SelectionMoveToNewLayer);
     emscripten::function("SelectionByQuality",   &SelectionByQuality);
-    emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);
+    emscripten::function("SelectionByConnectedComponentSize",   &SelectionByConnectedComponentSize);
+    emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);    
 }
 #endif

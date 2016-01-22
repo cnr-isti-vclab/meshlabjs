@@ -137,6 +137,26 @@
     RndSelectionFilter._applyTo = function (meshFile) {
         Module.SelectionRandom(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
     };
+/******************************************************************************/        
+    var SelectionByConnectedComponentSizeFilter = new plugin.Filter({
+            name:"Selection by Connected Component Size",
+            tooltip: " ",
+            arity:1
+        });
+
+    var ccSizeRatioWidget;
+    SelectionByConnectedComponentSizeFilter._init = function (builder) {
+        ccSizeRatioWidget = builder.RangedFloat({
+            max: 1, min: 0, step: 0.1, defval: 0.2,
+            label: "CC Size Ratio",
+            tooltip: "The ratio (expressed as 0..1) of the maximum connected component size that will be selected. E.g. with a ration of 0.2 all the connected components containing less than 0.2 of the size of the largest connected component, will be selected"
+        });
+        
+    };
+
+    SelectionByConnectedComponentSizeFilter._applyTo = function (meshFile) {
+        Module.SelectionByConnectedComponentSize(meshFile.ptrMesh(), ccSizeRatioWidget.getValue());
+    };
 /******************************************************************************/
      var SelectionByQualityFilter = new plugin.Filter({
         name: "Selection by Quality",
@@ -217,5 +237,6 @@
     plugin.Manager.install(SelectionDeleteFace);
     plugin.Manager.install(SelectionDeleteVertex);
     plugin.Manager.install(SelectionMoveToNewLayer);
+    plugin.Manager.install(SelectionByConnectedComponentSizeFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);
