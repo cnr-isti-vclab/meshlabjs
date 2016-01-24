@@ -4,7 +4,7 @@
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
         size: 5,
-        isShaded: 1,
+        shading: 1,
         specular: new THREE.Color('#505050'),
         shininess: 15.0,
         texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
@@ -19,11 +19,14 @@
                 "size": {type: "f", value: DEFAULTS.size},
                 "hasPerVertexColor": {type: "i", value: 0},
                 "color": {type: "c", value: DEFAULTS.color},
-                "isShaded" : { type: "i", value: DEFAULTS.isShaded},
+                "shading" : { type: "i", value: DEFAULTS.shading},
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
                 "texture": {type: "t", value: DEFAULTS.texture},
-                "backPointsCulling": { type: "i", value: DEFAULTS.backPointsCulling}
+                "backPointsCulling": { type: "i", value: DEFAULTS.backPointsCulling},
+                "screenWidth": {type: "f", value: 0},
+                "screenHeight": {type: "f", value: 0},
+                "fov": {type: "f", value: 0}
             }
         ])
     };
@@ -50,7 +53,7 @@
         pointSizeWidget = guiBuilder.RangedFloat({
             label: "Point Size",
             tooltip: "The size of the points in pixels",
-            min: 1, max: 20, step: 1,
+            min: 1, max: 50, step: 1,
             defval: DEFAULTS.size,
             bindTo: "size"
         });
@@ -63,7 +66,7 @@
                 {content: "Off", value: 0 },
                 {content: "Fixed", value: 2 }
             ],
-            bindTo: "isShaded"
+            bindTo: "shading"
         });
 
         guiBuilder.Choice({
@@ -114,9 +117,13 @@
         pointsUniforms.hasPerVertexColor.value = hasPerVertexColor;
         pointsUniforms.color.value = params.color;
         pointsUniforms.size.value = params.size;
-        pointsUniforms.isShaded.value = params.isShaded;
+        pointsUniforms.shading.value = params.shading;
         pointsUniforms.texture.value = DEFAULTS.texture;
         pointsUniforms.backPointsCulling.value = params.backPointsCulling;
+        pointsUniforms.screenWidth.value = scene.get3DSize().width;
+        pointsUniforms.screenHeight.value = scene.get3DSize().height;
+        pointsUniforms.fov.value = scene.getCamera().fov;
+
 
 /*
         var pointsUniforms = {

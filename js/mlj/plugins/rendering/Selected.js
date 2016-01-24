@@ -8,7 +8,7 @@
     var DEFAULTS = {
         selection : BOTH_SELECTED_FACES_AND_VERTICES,
         pointColor : new THREE.Color('#FF0000'),
-        pointSize : 1,
+        pointSize : 5,
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
         //PRELOADING NEEDED ...
@@ -73,7 +73,7 @@
         guiBuilder.RangedFloat({
             label: "Point Size",
             tooltip: "The size of selected points",
-            min: 0.5, max: 16, step: 0.5,
+            min: 1, max: 50, step: 1,
             defval: DEFAULTS.pointSize,
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
@@ -262,15 +262,22 @@
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
-                texture: {type: "t", value: DEFAULTS.texture}
+                texture: {type: "t", value: DEFAULTS.texture},
+                screenWidth: {type: "f", value: scene.get3DSize().width},
+                screenHeight: {type: "f", value: scene.get3DSize().height},
+                fov: {type: "f", value: scene.getCamera().fov}
             };
 
-            var shaderMaterial = new THREE.ShaderMaterial({
+            var shaderMaterial = new THREE.RawShaderMaterial({
                 uniforms: uniforms,
                 attributes: attributes,
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
-                alphaTest: 0.9
+                alphaTest: 0.9,
+                transparent: true
+                //polygonOffset: true,
+                //polygonOffsetFactor: 0.0,
+                //polygonOffsetUnits: -2.0
             });
 
             /*

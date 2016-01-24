@@ -158,6 +158,9 @@ MLJ.core.Scene = {};
             alpha: true, 
             preserveDrawingBuffer:true});
         //_renderer.shadowMapEnabled = true;
+        //_renderer.context.getSupportedExtensions();
+        _renderer.context.getExtension("EXT_frag_depth");
+
         
         _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);
