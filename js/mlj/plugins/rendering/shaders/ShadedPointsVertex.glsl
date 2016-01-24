@@ -29,8 +29,6 @@ vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
 uniform vec3 directionalLightDirection[1];
 
 uniform int backPointsCulling;
-varying float flag;
-
 
 void main() {
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
@@ -44,10 +42,8 @@ void main() {
 
     gl_PointSize = 5.0 + size;
     gl_Position = projectionMatrix * mvPosition;
-    //gl_Position.z -= size / 1000.0; //(size / 1000.0);
 
-    flag = 0.0;
-    if (backPointsCulling != 0 && vNormal.z < 0.0) flag=1.0;
+    if (backPointsCulling != 0 && vNormal.z < 0.0) gl_PointSize = 0.0;
 
     float projFactor = 1.0 / tan(fov / 2.0);
     projFactor /= viewPosition.z;
