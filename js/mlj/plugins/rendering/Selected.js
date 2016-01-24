@@ -12,7 +12,7 @@
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
         //PRELOADING NEEDED ...
-        texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
+        discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png")
     };
 
     var plug = new plugin.Rendering({
@@ -262,7 +262,7 @@
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
-                texture: {type: "t", value: DEFAULTS.texture},
+                discAlpha: {type: "t", value: DEFAULTS.discAlpha},
                 screenWidth: {type: "f", value: scene.get3DSize().width},
                 screenHeight: {type: "f", value: scene.get3DSize().height},
                 fov: {type: "f", value: scene.getCamera().fov}

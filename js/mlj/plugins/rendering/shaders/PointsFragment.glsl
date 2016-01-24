@@ -5,7 +5,7 @@ precision highp int;
 #define ALPHATEST 0.5
 
 uniform vec3 color;
-uniform sampler2D texture;
+uniform sampler2D discAlpha;
 
 uniform mat4 projectionMatrix;
 
@@ -13,9 +13,10 @@ varying vec3 vViewPosition;
 varying float vRadius;
 
 void main() {
-    vec4 texel = texture2D(texture, gl_PointCoord);
-    if (texel.a < ALPHATEST) discard;
-    gl_FragColor = vec4(color, 1.0 );
+
+    if (texture2D(discAlpha, gl_PointCoord).a < ALPHATEST) discard;
+
+    gl_FragColor = vec4(color, 1.0 ) * texture2D(discAlpha, gl_PointCoord);
 
     float u = 2.0*gl_PointCoord.x-1.0;
     float v = 2.0*gl_PointCoord.y-1.0;

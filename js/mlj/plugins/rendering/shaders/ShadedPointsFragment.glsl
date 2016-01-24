@@ -20,7 +20,9 @@ varying vec3 vColor;
 uniform int shading;
 uniform vec3 specular;
 uniform float shininess;
-uniform sampler2D texture;
+uniform sampler2D discAlpha;
+uniform sampler2D discBorder;
+uniform sampler2D discShaded;
 
 //uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
@@ -45,9 +47,8 @@ void main() {
 
     vec3 outputColor = vColor;
 
-    if (texture2D(texture, gl_PointCoord).a < ALPHATEST) discard;
+    if (texture2D(discAlpha, gl_PointCoord).a < ALPHATEST) discard;
 
-///*
     float u = 2.0*gl_PointCoord.x-1.0;
     float v = 2.0*gl_PointCoord.y-1.0;
     float w = u*u+v*v;
@@ -58,8 +59,7 @@ void main() {
     pos = projectionMatrix * pos;
     pos = pos / pos.w;
     float depth = (pos.z + 1.0) / 2.0;
-    gl_FragDepthEXT = depth - 0.0001; // - 10.0 / 1000.0;
-//*/
+    gl_FragDepthEXT = depth - 0.0001;
 
     if (shading != FIXED) {
 
@@ -97,25 +97,11 @@ void main() {
 
         }
 
-        gl_FragColor = vec4(outputColor, 1.0 );// * texture2D( texture, gl_PointCoord );
+        gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(discShaded, gl_PointCoord);
 
     } else {
-        //gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(texture, gl_PointCoord);// * texture2D( texture, gl_PointCoord );
-        //float u = 2.0*gl_PointCoord.x-1.0;
-        //float v = 2.0*gl_PointCoord.y-1.0;
-        //float w = u*u+v*v;
-        if (w > 0.4) outputColor = vec3(0.0,0.0,0.0);
-        gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(texture, gl_PointCoord);
-/*
-        float wi = 0.0 - w;
-        vec4 pos = vec4(-vViewPosition, 1.0);
-        pos.z += wi * vRadius;
-        pos = projectionMatrix * pos;
-        pos = pos / pos.w;
-        float depth = (pos.z + 1.0) / 2.0;
-        //gl_FragDepthEXT = gl_FragCoord.z / gl_FragCoord.w;
-        gl_FragDepthEXT = depth;
-        */
+
+        gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(discBorder, gl_PointCoord);
     }
 
 
