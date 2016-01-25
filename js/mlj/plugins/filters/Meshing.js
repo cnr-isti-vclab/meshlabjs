@@ -90,12 +90,25 @@
         Module.RemoveDuplicatedVertices(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var InvertFaceOrientation = new plugin.Filter({
+        name: "Invert Face Orientation",
+        tooltip: "Flip all the orientation of all the faces of a mesh by swapping the vertex order inside each triangle.",
+        arity: 1
+    });
+
+    InvertFaceOrientation._init = function (builder) {};
+
+    InvertFaceOrientation._applyTo = function (basemeshFile) {
+        Module.InvertFaceOrientation(basemeshFile.ptrMesh());
+    };
+/******************************************************************************/  
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
     plugin.Manager.install(ConvexHullFilter);
     plugin.Manager.install(RemoveUnrefVert);
     plugin.Manager.install(RemoveDupVert);
+    plugin.Manager.install(InvertFaceOrientation);
     
 
 })(MLJ.core.plugin, MLJ.core.Scene);

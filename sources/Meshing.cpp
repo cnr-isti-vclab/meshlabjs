@@ -86,6 +86,12 @@ void RemoveUnreferencedVertices(uintptr_t _baseM)
   printf("Removed %i unreferenced vertices\n",rvn);
 }
 
+void InvertFaceOrientation(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::Clean<MyMesh>::FlipMesh(m);
+}
+
 void RemoveDuplicatedVertices(uintptr_t _baseM)
 {
   MyMesh &m = *((MyMesh*) _baseM);
@@ -131,6 +137,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("ClusteringSimplification",   &ClusteringSimplification);
     emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
     emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
+    emscripten::function("InvertFaceOrientation",      &InvertFaceOrientation);
 }
 #endif
 
