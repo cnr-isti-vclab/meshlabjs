@@ -290,6 +290,8 @@
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
                 //alphaTest: 0.9,
                 transparent: true,
+                depthTest: true,
+                depthWrite: false
                 //polygonOffset: true,
                 //polygonOffsetFactor: 0.0,
                 //polygonOffsetUnits: -1.0
