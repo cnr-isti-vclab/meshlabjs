@@ -10,8 +10,8 @@
         showNonManifVert: 0,
         sizeNonManifVert: 1,
         colorNonManifEdge: new THREE.Color('#FF00FF'),
-        showNonManifEdge: 0,
-        texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
+        showNonManifEdge: 0
+        //texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
     };
 
     var plug = new plugin.Rendering({
@@ -146,7 +146,7 @@
         guiBuilder.RangedFloat({
             label: "Non manifold vertex size",
             tooltip: "The size of non manifold vertices in pixels",
-            min: 0.1, max: 15, step: 0.1,
+            min: 1, max: 50, step: 1,
             defval: DEFAULTS.sizeNonManifVert,
             bindTo : (function() {
                     var bindToFun = function (size, overlay) {
@@ -348,10 +348,11 @@
             var pointsUniforms ={
                 color: {type: "c", value: params.colorNonManifVert},
                 size: {type: "f", value: params.sizeNonManifVert},
-                texture: {type: "t", value: DEFAULTS.texture}
+                pointOpacity : { type: "f", value: 1.0 }
+                //texture: {type: "t", value: DEFAULTS.texture}
             };
 
-            var vertMaterial = new THREE.ShaderMaterial({
+            var vertMaterial = new THREE.RawShaderMaterial({
                 uniforms: pointsUniforms,
                 attributes: nonManifVerticesGeometry.attributes,
                 vertexShader: plug.shaders.getByKey("PointsVertex.glsl"),

@@ -3,11 +3,11 @@
 
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
-        size: 5,
+        size: 1,
         shading: 0,
         specular: new THREE.Color('#505050'),
         shininess: 15.0,
-        discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
+        //discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
         discBorder: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_border.png"),
         discShaded: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png"),
         backPointsCulling: 0,
@@ -25,7 +25,7 @@
                 "shading" : { type: "i", value: DEFAULTS.shading},
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
-                "discAlpha": {type: "t", value: DEFAULTS.discAlpha},
+                //"discAlpha": {type: "t", value: DEFAULTS.discAlpha},
                 "discBorder": {type: "t", value: DEFAULTS.discBorder},
                 "discShaded": {type: "t", value: DEFAULTS.discShaded},
                 "backPointsCulling": { type: "i", value: DEFAULTS.backPointsCulling},
@@ -144,7 +144,7 @@
         pointsUniforms.screenWidth.value = scene.get3DSize().width;
         pointsUniforms.screenHeight.value = scene.get3DSize().height;
         pointsUniforms.fov.value = scene.getCamera().fov;
-        pointsUniforms.discAlpha.value = DEFAULTS.discAlpha;
+        //pointsUniforms.discAlpha.value = DEFAULTS.discAlpha;
         pointsUniforms.discBorder.value = DEFAULTS.discBorder;
         pointsUniforms.discShaded.value = DEFAULTS.discShaded;
 

@@ -18,7 +18,7 @@ varying float vRadius;
 uniform int shading;
 uniform vec3 specular;
 uniform float shininess;
-uniform sampler2D discAlpha;
+//uniform sampler2D discAlpha;
 uniform sampler2D discBorder;
 uniform sampler2D discShaded;
 uniform mat4 projectionMatrix;
@@ -27,13 +27,14 @@ uniform int deepSplat;
 
 void main() {
 
-    if (texture2D(discAlpha, gl_PointCoord).a < ALPHATEST) discard;
+    //if (texture2D(discAlpha, gl_PointCoord).a < ALPHATEST) discard;
 
     vec3 outputColor = vColor;
 
     float u = 2.0*gl_PointCoord.x-1.0;
     float v = 2.0*gl_PointCoord.y-1.0;
     float w = u*u+v*v;
+    if (w > 1.0) discard;
     float wi = 0.0 - w;
     vec4 pos = vec4(-vViewPosition, 1.0);
     pos.z += wi * vRadius;
@@ -52,7 +53,7 @@ void main() {
     } 
 
     if (shading == SHADING_FLAT) {
-        gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(discAlpha, gl_PointCoord);
+        gl_FragColor = vec4(outputColor, 1.0 );
     } 
     
     if (shading == SHADING_FIX) {
@@ -60,6 +61,6 @@ void main() {
     } 
 
     if (shading == SHADING_ON) {
-       gl_FragColor = vec4(outputColor, 1.0 ) * texture2D(discAlpha, gl_PointCoord);
+       gl_FragColor = vec4(outputColor, 1.0 );
     } 
 }

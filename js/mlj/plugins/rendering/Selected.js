@@ -8,11 +8,12 @@
     var DEFAULTS = {
         selection : BOTH_SELECTED_FACES_AND_VERTICES,
         pointColor : new THREE.Color('#FF0000'),
-        pointSize : 5,
+        pointSize : 1,
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
+        pointOpacity : 0.5
         //PRELOADING NEEDED ...
-        discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
+        //discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
     };
 
     var plug = new plugin.Rendering({
@@ -84,6 +85,20 @@
             }())
         });
 
+        guiBuilder.RangedFloat({
+            label: "Point Opacity",
+            tooltip: "The opacity of selected points",
+            min: 0.0, max: 1, step: 0.01,
+            defval: DEFAULTS.pointOpacity,
+            bindTo: (function() {
+                var bindToFun = function (opacity, overlay) {
+                    overlay.selectedPoints.material.uniforms['pointOpacity'].value = opacity;
+                };
+                bindToFun.toString = function () { return 'pointOpacity'; };
+                return bindToFun;
+            }())
+        });
+
         guiBuilder.Color({
             label: "Face Color",
             tooltip: "The color of selected faces",
@@ -110,6 +125,8 @@
                 return bindToFun;
             }())
         });
+
+
     };
 
     plug._applyTo = function (meshFile, on) {
@@ -262,7 +279,8 @@
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
-                discAlpha: {type: "t", value: DEFAULTS.discAlpha}
+                pointOpacity : { type: "f", value: params.pointOpacity }
+                //discAlpha: {type: "t", value: DEFAULTS.discAlpha},
             };
 
             var shaderMaterial = new THREE.RawShaderMaterial({
@@ -270,7 +288,7 @@
                 attributes: attributes,
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
-                alphaTest: 0.9,
+                //alphaTest: 0.9,
                 transparent: true,
                 //polygonOffset: true,
                 //polygonOffsetFactor: 0.0,
