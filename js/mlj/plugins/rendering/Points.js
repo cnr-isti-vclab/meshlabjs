@@ -160,7 +160,7 @@
             attributes: geometry.attributes,
             vertexShader: this.shaders.getByKey("ShadedPointsVertex.glsl"),
             fragmentShader: this.shaders.getByKey("ShadedPointsFragment.glsl"),
-            transparent: true,
+            //transparent: true,
             lights: true
         });
 

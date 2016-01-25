@@ -289,6 +289,7 @@
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
                 //alphaTest: 0.9,
+                blending: THREE.NormalBlending,
                 transparent: true,
                 depthTest: true,
                 depthWrite: false
