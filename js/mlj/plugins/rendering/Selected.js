@@ -12,7 +12,7 @@
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
         //PRELOADING NEEDED ...
-        discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png")
+        discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
     };
 
     var plug = new plugin.Rendering({
@@ -262,10 +262,7 @@
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
-                discAlpha: {type: "t", value: DEFAULTS.discAlpha},
-                screenWidth: {type: "f", value: scene.get3DSize().width},
-                screenHeight: {type: "f", value: scene.get3DSize().height},
-                fov: {type: "f", value: scene.getCamera().fov}
+                discAlpha: {type: "t", value: DEFAULTS.discAlpha}
             };
 
             var shaderMaterial = new THREE.RawShaderMaterial({
@@ -274,10 +271,10 @@
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
                 alphaTest: 0.9,
-                transparent: true
+                transparent: true,
                 //polygonOffset: true,
                 //polygonOffsetFactor: 0.0,
-                //polygonOffsetUnits: -2.0
+                //polygonOffsetUnits: -1.0
             });
 
             /*
