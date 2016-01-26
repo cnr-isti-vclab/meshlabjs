@@ -82,7 +82,7 @@ void main() {
                                     transformDirection(directionalLightDirection[0],viewMatrix),
                                     normalize(tNormal));
 
-        gl_PointSize = 5.0 + size;
+        gl_PointSize = size;
         gl_Position = projectionMatrix * mvPosition;
 
         float projFactor = 1.0 / tan(fov / 2.0);

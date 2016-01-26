@@ -8,7 +8,7 @@
     var DEFAULTS = {
         selection : BOTH_SELECTED_FACES_AND_VERTICES,
         pointColor : new THREE.Color('#FF0000'),
-        pointSize : 1,
+        pointSize : 6,
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
         pointOpacity : 0.5

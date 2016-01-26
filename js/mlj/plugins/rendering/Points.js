@@ -3,7 +3,7 @@
 
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
-        size: 1,
+        size: 3,
         shading: 0,
         specular: new THREE.Color('#505050'),
         shininess: 15.0,
