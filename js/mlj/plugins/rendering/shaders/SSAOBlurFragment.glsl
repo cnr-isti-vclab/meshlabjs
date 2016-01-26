@@ -44,12 +44,7 @@ void main()
             if (abs(data.a - px.a) <= blurThreshold) {
                 sum += vec2(data.r, 1.0);
             }
-            if (j == 1.5) {
-                j = -1.5;
-                i += 1.5;
-            } else {
-                j += 1.5;
-            }
+            j == 1.5 ? (j = -1.5, i += 1.0) : j += 1.0;
         }
 
         float val = sum.x / sum.y;

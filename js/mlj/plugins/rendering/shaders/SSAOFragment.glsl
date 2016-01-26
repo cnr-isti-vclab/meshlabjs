@@ -28,7 +28,11 @@ void main()
     // build the sample's transform
 
     // orthonormal basis with the stored fragment normal as the z-axis
+    // (reference: Moller, Haines and Hoffman - "Real-Time Rendering", 3rd ed. pp. 70-71)
     vec3 n = textData.xyz;
+
+    if (dot(n, vViewDirection) > 0.0) n = -n;
+
     vec3 v1;
     vec3 a = abs(n);
     if (a.x <= a.y && a.x <= a.z) {

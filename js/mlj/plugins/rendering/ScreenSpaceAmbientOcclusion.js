@@ -141,6 +141,7 @@
 
         var distanceMapMaterial = new THREE.RawShaderMaterial({
             uniforms: {},
+            side: THREE.DoubleSide,
             vertexShader: plug.shaders.getByKey("SSAODistanceMapVertex.glsl"),
             fragmentShader: plug.shaders.getByKey("SSAODistanceMapFragment.glsl")
         });
