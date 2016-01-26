@@ -37,8 +37,8 @@ The following code is based on
 precision highp float;
 
 varying vec3 vNormal;
-varying vec3 vViewPosition;
-varying float depth;
+varying vec3 vModelViewPos;
+varying float vDepth;
 
 uniform float foreshortening;
 uniform int fnflag;
@@ -48,11 +48,12 @@ void main(void) {
 
     vec3 n;
     if (fnflag == 1) { // compute and use per-face normal
-        vec3 fdx = dFdx(vViewPosition);
-        vec3 fdy = dFdy(vViewPosition);
+        vec3 fdx = dFdx(vModelViewPos);
+        vec3 fdy = dFdy(vModelViewPos);
         n = normalize(cross(fdx, fdy));
     } else {
         n = normalize(vNormal);
+        if (dot(n, vModelViewPos) > 0.0) n = -n;
     }
 
     if (n == vec3(0.0, 0.0, 0.0)) {
@@ -64,6 +65,6 @@ void main(void) {
         float gx = -n.x*gs;
         float gy = -n.y*gs;
     
-        gl_FragColor = vec4(gx, gy, depth, gl_FragCoord.z);
+        gl_FragColor = vec4(gx, gy, vDepth, gl_FragCoord.z);
     }
 }

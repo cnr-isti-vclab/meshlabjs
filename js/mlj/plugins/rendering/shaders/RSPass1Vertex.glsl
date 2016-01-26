@@ -40,15 +40,16 @@ attribute vec3 position;
 attribute vec3 normal;
 
 varying vec3 vNormal;
-varying vec3 vViewPosition;
-varying float depth;
+varying vec3 vModelViewPos;
+varying float vDepth;
 
 void main(void)
 {
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewPosition = -mvPosition.xyz;
 
+    vModelViewPos = mvPosition.xyz;
     vNormal = normalMatrix * normal; // normal direction wrt camera
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
-    depth = gl_Position.z;
+    vDepth = gl_Position.z;
+    
+    gl_Position = projectionMatrix * mvPosition;
 }

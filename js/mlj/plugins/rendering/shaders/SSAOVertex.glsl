@@ -14,5 +14,6 @@ void main()
 {
     vUv = uv;
     vViewDirection = frustumCorner;
+    
     gl_Position = vec4(position, 1.0);
 }

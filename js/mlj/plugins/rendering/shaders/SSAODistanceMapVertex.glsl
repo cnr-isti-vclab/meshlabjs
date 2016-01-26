@@ -6,14 +6,16 @@ uniform mat3 normalMatrix;
 
 attribute vec3 position;
 
-varying vec3 vViewPos;
+varying vec3 vModelViewPos;
 varying float vDistance;
 
 
 void main()
 {
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewPos = -mvPosition.xyz;
+
+    vModelViewPos = mvPosition.xyz;
     vDistance = length(mvPosition.xyz);
+    
     gl_Position = projectionMatrix * mvPosition; 
 }

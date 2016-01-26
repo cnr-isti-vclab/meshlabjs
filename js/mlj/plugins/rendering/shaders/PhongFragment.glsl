@@ -60,8 +60,8 @@ void main() {
         #endif
     } else {    
         vec3 fdx = dFdx( vViewPosition );
-	vec3 fdy = dFdy( vViewPosition );
-	normal = normalize( cross( fdx, fdy ) );
+	    vec3 fdy = dFdy( vViewPosition );
+	    normal = normalize( cross( fdx, fdy ) );
     }    
 
     vec3 viewPosition = normalize( vViewPosition );  

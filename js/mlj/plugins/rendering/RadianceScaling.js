@@ -124,6 +124,7 @@
 
         var normMaterial = new THREE.RawShaderMaterial({
             uniforms: p1Uniforms,
+            side: THREE.DoubleSide,
             vertexShader: plug.shaders.getByKey("RSPass1Vertex.glsl"),
             fragmentShader: plug.shaders.getByKey("RSPass1Fragment.glsl")
         });
