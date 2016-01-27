@@ -110,7 +110,7 @@
 
 /******************************************************************************/
     var SphereFilter = new plugin.Filter({
-        name: "Create Sphere ",
+        name: "Create Sphere",
         tooltip: "Create a sphere with the desired level of subdivision",
         arity: 0});
 
@@ -131,7 +131,7 @@
     };
 /******************************************************************************/
     var SpherePointCloudFilter = new plugin.Filter({
-        name: "Create Points on a Sphere ",
+        name: "Create Points on a Sphere",
         tooltip: "Create a point cloud with a set of point distributed on the surface of a sphere with a number of different strategies: Montecarlo, Poisson Disk, Octahedron recursive subdivision, Disco Ball, Fibonacci Spherical Lattice",
         arity: 0});
 
@@ -156,7 +156,7 @@
                 {content: "Poisson Disk", value: "1"},
                 {content: "Disco Ball", value: "2"},
                 {content: "Recursive Octahedron", value: "3"},
-                {content: "Fibonacci Lattice ", value: "4", selected: true}
+                {content: "Fibonacci Lattice", value: "4", selected: true}
             ]
         });
     };
@@ -169,7 +169,7 @@
     };
 /******************************************************************************/
     var TorusFilter = new plugin.Filter({
-        name: "Create Torus ",
+        name: "Create Torus",
         tooltip: "Create a torus with the desired level of subdivisions and ratio between inner and outer radius",
         arity: 0});
 
@@ -196,7 +196,7 @@
     };
 /******************************************************************************/
     var NoisyIsoFilter = new plugin.Filter({
-        name: "Create Noisy Isosurface ",
+        name: "Create Noisy Isosurface",
         tooltip: "Create a isosurface from a cylindrical scalar field perturbed by perlin noise",
         arity: 0});
 
