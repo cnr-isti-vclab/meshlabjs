@@ -1,7 +1,5 @@
 (function(plugin, scene) {
 
-	/*** Colorize by vertex quality ***/
-
 	var ColorFromVertexQualityFilter = new plugin.Filter({
 		name: "Generate Color from Vertex Quality",
 		tooltip: "Generate a color for each vertex according to its Quality attribute value.",
@@ -35,6 +33,7 @@
 
 	ColorFromVertexQualityFilter._applyTo = function(meshFile) {
 		Module.ColorizeByVertexQuality(meshFile.ptrMesh(), qMin.getValue(), qMax.getValue(), percentile.getValue(), zeroSym.getValue());
+                meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
 	};
 
 	plugin.Manager.install(ColorFromVertexQualityFilter);
@@ -52,6 +51,7 @@
 
 	ColorFromBorderDistFilter._applyTo = function (meshFile) {
 		Module.ColorizeByBorderDistance(meshFile.ptrMesh());
+                meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
 	};
 
 	plugin.Manager.install(ColorFromBorderDistFilter)
