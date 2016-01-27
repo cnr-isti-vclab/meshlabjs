@@ -51,7 +51,8 @@
 
 	ColorFromBorderDistFilter._applyTo = function (meshFile) {
 		Module.ColorizeByBorderDistance(meshFile.ptrMesh());
-                meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+		meshFile.cppMesh.addPerVertexColor();
+        meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
 	};
 
 	plugin.Manager.install(ColorFromBorderDistFilter)
