@@ -100,5 +100,28 @@ MLJ.core.plugin.Manager = {
     this.getFilterPlugins = function () {
         return _filters;
     };
+    
+     /**
+     * Executes a given filter. 
+     * 
+     * It is used only at startup to start a filter and currently works and, 
+     * currently, it is meaningful only for creation filters. 
+     * To be extended in the future to a more reasonable 
+     * minimal script-like approach...
+     * @memberOf MLJ.core.plugin
+     */
+    this.executeFilter = function (filterName) {
+        filterHandle = _filters.getByKey(filterName);
+        if(filterHandle === undefined )
+        {
+            console.log("Filter is not defined: "+filterName+"\n");
+        }
+        else
+        {
+            console.log("Executing filter "+filterName+"\n");  
+            filterHandle._applyTo();
+        }
+    };
+    
 
 }).call(MLJ.core.plugin.Manager, MLJ.widget, MLJ.gui);//MLJ.widget contains GUI running widgets
