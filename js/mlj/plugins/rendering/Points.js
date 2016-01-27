@@ -1,8 +1,12 @@
 
 (function (plugin, core, scene) {
 
+    const COL_FIXED = 0,
+          COL_VERTEX = 1;
+
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
+        colorSource: COL_FIXED,
         size: 3,
         shading: 0,
         specular: new THREE.Color('#505050'),
@@ -20,7 +24,7 @@
             THREE.UniformsLib[ "lights" ],
             {
                 "size": {type: "f", value: DEFAULTS.size},
-                "hasPerVertexColor": {type: "i", value: 0},
+                "usePerVertexColor": {type: "i", value: 0},
                 "color": {type: "c", value: DEFAULTS.color},
                 "shading" : { type: "i", value: DEFAULTS.shading},
                 "specular": {type: "c", value: DEFAULTS.specular},
@@ -54,6 +58,26 @@
             tooltip: "The color of points",
             color: "#" + DEFAULTS.color.getHexString(),
             bindTo: "color"
+        });
+
+        guiBuilder.Choice({
+            label: "Color Source",
+            tooltip: "Choose the origin of the color for the points",
+            options: [
+                {content: "Fixed", value: 0, selected: true },
+                {content: "Per Vertex", value: 1}
+            ],
+            bindTo: (function() {
+                    var bindToFun = function (colorSource, overlay) {
+                        if (colorSource == COL_VERTEX && overlay.material.attributes['col']) {
+                            overlay.material.uniforms.usePerVertexColor.value = COL_VERTEX;
+                        } else {
+                            overlay.material.uniforms.usePerVertexColor.value = COL_FIXED;
+                        }
+                    };
+                    bindToFun.toString = function () { return 'colorSource'; }
+                    return bindToFun;
+                }())
         });
 
         pointSizeWidget = guiBuilder.RangedFloat({
@@ -109,6 +133,10 @@
                 Module._free(layer.__mlj_points_buffer);
                 delete layer.__mlj_points_buffer;
             }
+            if (layer.color_buffer) {
+                Module._free(layer.color_buffer);
+                delete layer.color_buffer;
+            }
             return;
         }
 
@@ -123,19 +151,18 @@
         geometry.addAttribute('position', new THREE.BufferAttribute(particlesBuffer, 3));
         geometry.addAttribute('normal', new THREE.BufferAttribute(normalsBuffer, 3));
 
-        var hasPerVertexColor = 0;
+        var params = layer.overlaysParams.getByKey(plug.getName());
 
         if (layer.cppMesh.hasPerVertexColor()) {
             layer.color_buffer = layer.cppMesh.getVertexColors();
             var colorsBuffer = new Float32Array(Module.HEAPU8.buffer, layer.color_buffer, layer.VN*3);
             geometry.addAttribute('col', new THREE.BufferAttribute(colorsBuffer, 3));
-            hasPerVertexColor = 1;
         }
 
-        var params = layer.overlaysParams.getByKey(plug.getName());
+        var usePerVertexColor = (params.colorSource == COL_VERTEX && geometry.attributes['col']) ? 1 : 0;
 
         var pointsUniforms = THREE.UniformsUtils.clone(UNIFORMS.uniforms);
-        pointsUniforms.hasPerVertexColor.value = hasPerVertexColor;
+        pointsUniforms.usePerVertexColor.value = usePerVertexColor;
         pointsUniforms.color.value = params.color;
         pointsUniforms.size.value = params.size;
         pointsUniforms.shading.value = params.shading;

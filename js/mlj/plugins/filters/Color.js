@@ -33,7 +33,8 @@
 
 	ColorFromVertexQualityFilter._applyTo = function(meshFile) {
 		Module.ColorizeByVertexQuality(meshFile.ptrMesh(), qMin.getValue(), qMax.getValue(), percentile.getValue(), zeroSym.getValue());
-                meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+		meshFile.cppMesh.addPerVertexColor();
+		meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
 	};
 
 	plugin.Manager.install(ColorFromVertexQualityFilter);

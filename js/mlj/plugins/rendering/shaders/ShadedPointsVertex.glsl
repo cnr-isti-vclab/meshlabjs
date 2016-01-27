@@ -4,7 +4,7 @@ attribute vec3 col;
 
 uniform int backPointsCulling;
 
-uniform int hasPerVertexColor;
+uniform int usePerVertexColor;
 uniform vec3 color;
 
 uniform mat4 projectionMatrix;
@@ -36,7 +36,7 @@ vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
 
 vec3 computeOutputColor(vec3 viewPositionNormalized, vec3 ligthDirectionEye, vec3 normal) {
 
-    vec3 outputColor = (hasPerVertexColor != 0) ? col : color;
+    vec3 outputColor = (usePerVertexColor != 0) ? col : color;
 
     if (shading == SHADING_ON) {
         vec3 diffuseColor = outputColor;
