@@ -36,6 +36,7 @@
                 var updateStats = function() {
                     if (show) {
                         stats.update();
+                        scene.render();
                         req = requestAnimationFrame(updateStats);
                     } else {
                         stats.domElement.style.visibility = 'hidden';
