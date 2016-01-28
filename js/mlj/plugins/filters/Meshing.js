@@ -51,6 +51,69 @@
         Module.ClusteringSimplification(meshFile.ptrMesh(), clusteringRatioWidget.getValue());
     };
 /******************************************************************************/  
+    var VoronoiRemeshingFilter = new plugin.Filter({
+        name: "Voronoi Remeshing",
+        tooltip: "Perform a remeshing using a point sampling plus relaxation and triangulation strategy. <br> "
+                +"Points are sampled on the surface using a Poisson Disk strategy and then their "
+                +"position is optimized  using a Centroidal Voronoi Lloyd Relaxation Strategy. "
+                +"This voronoi diagram is used to build a delaunay triangulation using the "
+                +"sample points. If this base triangolation is 2-manifold it can be automatically refined and relaxed to better adapt to the surface.",
+        arity: 2
+    });
+
+    var voronoiRatioWidget, relaxNumWidget, relaxTypeWidget, 
+        postRefineStepWidget, postRelaxStepWidget,colorizeMeshWidget;
+    VoronoiRemeshingFilter._init = function (builder) {
+        voronoiRatioWidget = builder.RangedFloat({
+            max: 0.3, min: 0, step: 0.01, defval: 0.02,
+            label: "Clustering ratio",
+            tooltip: "Expressed as a fraction of the total vertex number. "
+        });
+        relaxNumWidget = builder.Integer({
+            max: 20, min: 1, step: 1, defval: 5,
+            label: "Lloyd Relax Step",
+            tooltip: "How many refinement iterations are applied to the mesh."
+        });
+        relaxTypeWidget  = builder.Choice({
+            label: "Lloyd Relax Algorithmm",
+            tooltip: "Choose the possible strategy of choosing the new centroid. <br>",
+            options: [
+                {content: "Quadric", value: "0", selected: true},
+                {content: "Geodesic", value: "1"},
+            ]
+        });
+        postRefineStepWidget = builder.Integer({
+            max: 10, min: 0, step: 1, defval: "0",
+            label: "Refine Step",
+            tooltip: "How many refinement iterations are applied to the mesh."
+        });
+        postRelaxStepWidget = builder.Integer({
+            max: 20, min: 0, step: 1, defval: 3,
+            label: "Post Relax Step",
+            tooltip: "How many refinement iterations are applied to the mesh."
+        });
+        colorizeMeshWidget = builder.Bool({
+            defval: true,
+            label: "Voronoi Coloring",
+            tooltip: "if true the initial mesh is colored with distance from the seeds."
+        });
+
+
+    };
+
+    VoronoiRemeshingFilter._applyTo = function (meshFile) {
+        var newmeshFile = MLJ.core.Scene.createLayer("Voronoi Remeshing of "+meshFile.name);
+        Module.VoronoiClustering(meshFile.ptrMesh(), newmeshFile.ptrMesh(), 
+                    voronoiRatioWidget.getValue(),  relaxNumWidget.getValue(),       
+                    parseInt(relaxTypeWidget.getValue()),
+                    postRelaxStepWidget.getValue(), postRefineStepWidget.getValue(), 
+                    colorizeMeshWidget.getValue());
+        scene.addLayer(newmeshFile);
+        if(colorizeMeshWidget.getValue()) 
+            meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+    };
+
+/******************************************************************************/  
     var ConvexHullFilter = new plugin.Filter({
         name: "Convex Hull",
         tooltip: "Create a new layer with the convex hull of the vertexes of the current mesh. "+
@@ -105,6 +168,7 @@
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
+    plugin.Manager.install(VoronoiRemeshingFilter);
     plugin.Manager.install(ConvexHullFilter);
     plugin.Manager.install(RemoveUnrefVert);
     plugin.Manager.install(RemoveDupVert);

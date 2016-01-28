@@ -2,6 +2,8 @@
 #include <vcg/complex/algorithms/local_optimization/tri_edge_collapse_quadric.h>
 #include <vcg/complex/algorithms/clustering.h>
 #include <vcg/complex/algorithms/convex_hull.h>
+#include<vcg/complex/algorithms/point_sampling.h>
+#include<vcg/complex/algorithms/voronoi_processing.h>
 
 
 using namespace vcg;
@@ -106,13 +108,63 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
   MyMesh &ch = *((MyMesh*) _newM);
   ch.Clear();
   tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
+} 
+
+void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
+{
+  MyMesh &origMesh = *((MyMesh*) _baseM);
+  MyMesh &clusteredMesh = *((MyMesh*) _newM);
+  MyMesh baseMesh;
+  tri::Append<MyMesh,MyMesh>::MeshCopy(baseMesh,origMesh);
+  tri::Clean<MyMesh>::RemoveUnreferencedVertex(baseMesh);
+  tri::Allocator<MyMesh>::CompactEveryVector(baseMesh);
+  
+  // if you ask too many seeds wrt to mesh size we must refine the base mesh.
+  int seedNum=baseMesh.vn*clusteringRatio;
+  while(baseMesh.fn / 30 < seedNum )
+  {
+   tri::TrivialMidPointRefine(baseMesh);
+   printf("refined from %i to %i\n",origMesh.vn, baseMesh.vn);
+  }
+  
+  clusteredMesh.Clear();
+  printf("Starting Voronoi Clustering of a mesh of %i vert targeting %i seeds\n",baseMesh.vn,seedNum);
+  tri::UpdateTopology<MyMesh>::VertexFace(baseMesh);
+  tri::TrivialPointerSampler<MyMesh> cs;
+  tri::SurfaceSampling<MyMesh, tri::TrivialPointerSampler<MyMesh> >::VertexUniform(baseMesh,cs,seedNum);
+  tri::VoronoiProcessingParameter vpp;
+  
+  if(relaxType==0) vpp.geodesicRelaxFlag=false; // 0 -> Quadric
+  else vpp.geodesicRelaxFlag=true; //              1 -> Geodesic
+  
+  vpp.deleteUnreachedRegionFlag=true;
+  
+  tri::EuclideanDistance<MyMesh> df;
+  printf("Relaxing %i times\n",iterNum);
+  tri::VoronoiProcessing<MyMesh>::VoronoiRelaxing(baseMesh, cs.sampleVec, iterNum, df, vpp);
+  tri::VoronoiProcessing<MyMesh>::ConvertDelaunayTriangulationToMesh(baseMesh,clusteredMesh,cs.sampleVec,false);
+  printf("Completed. Created Mesh of %i v and %i f\n",clusteredMesh.vn,clusteredMesh.fn);
+  printf("Relaxing %i steps Refining %i steps\n",postRelaxStep,postRefineStep);
+  tri::VoronoiProcessing<MyMesh>::RelaxRefineTriangulationSpring(baseMesh,clusteredMesh,postRelaxStep,postRefineStep);
+  
+  if(colorizeMeshFlag)
+  {
+    std::vector<Point3f> seedPVec;
+    std::vector<MyVertex *>seedVVec;
+    for(size_t i=0;i<cs.sampleVec.size();++i) 
+      seedPVec.push_back(cs.sampleVec[i]->P());
+    tri::UpdateTopology<MyMesh>::VertexFace(origMesh);  
+    tri::VoronoiProcessing<MyMesh>::SeedToVertexConversion(origMesh,seedPVec,seedVVec);
+    tri::VoronoiProcessing<MyMesh>::ComputePerVertexSources(origMesh,seedVVec,df);
+    tri::VoronoiProcessing<MyMesh>::VoronoiColoring(origMesh,false); 
+  }
 }
 
 void MeshingPluginTEST()
 {
   for(int i=1;i<5;++i)
   {
-    MyMesh mq,mc,ch;
+    MyMesh mq,mc,mv,ch;
     Torus(mq,10*i,5*i);
     Torus(mc,10*i,5*i);
     int t0=clock();
@@ -125,9 +177,12 @@ void MeshingPluginTEST()
     ConvexHullFilter(uintptr_t(&mc),uintptr_t(&ch));
     int t3=clock();
     printf("Computed Convex Hull %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t3-t2)/CLOCKS_PER_SEC);
+    VoronoiClustering(uintptr_t(&mc),uintptr_t(&ch),0.01*i, i%2, 3,0,i,i);
+    int t4=clock();
+    printf("Voronoi Clustering %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t4-t3)/CLOCKS_PER_SEC);
   }
 }
-
+ 
 
 #ifdef __EMSCRIPTEN__
 //Binding code
@@ -138,6 +193,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
     emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
     emscripten::function("InvertFaceOrientation",      &InvertFaceOrientation);
+    emscripten::function("VoronoiClustering",          &VoronoiClustering);
 }
 #endif
 
