@@ -103,6 +103,8 @@ MLJ.core.Scene = {};
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
     var _camera2D;
+
+    var _stats;
     
     /// @type {Object}
     var _renderer;
@@ -138,6 +140,23 @@ MLJ.core.Scene = {};
         });
     }
 
+    function initStats() {
+
+        var stats = new Stats();
+
+        stats.setMode(0); // 0: fps, 1: ms
+
+        // Align top-right
+        stats.domElement.style.visibility = 'hidden';
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.right = '0px';
+        stats.domElement.style.top = '0px';
+
+        $("#_3D").append( stats.domElement );
+
+        return stats;
+    }
+
 //SCENE INITIALIZATION  ________________________________________________________
 
     function initScene() {
@@ -166,6 +185,13 @@ MLJ.core.Scene = {};
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
+
+        _stats = initStats();
+        /*
+        requestAnimationFrame(function updateStats() {
+                                _stats.update();
+                                requestAnimationFrame(updateStats); });
+        */
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -290,7 +316,11 @@ MLJ.core.Scene = {};
     this.getCamera = function() {
         return _camera;
     };
-    
+
+    this.getStats = function() {
+        return _stats;
+    }
+
     this.getThreeJsGroup = function() {
         return _group;
     }
@@ -737,7 +767,9 @@ MLJ.core.Scene = {};
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
     };
-    
+
+
+
     this.takeSnapshot = function() {
         var canvas = _renderer.context.canvas;        
         // draw to canvas...

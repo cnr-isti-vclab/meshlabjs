@@ -236,6 +236,10 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
         var overlay = layer.overlays.getByKey(_this.getName());
 
+        if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
+            paramProp(value, overlay);
+        }
+
         //if overlay undefined just return
         if (overlay === undefined) {
             return;
@@ -244,8 +248,6 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         //is 'bindTo' property a uniform?
         if (overlay.material && overlay.material.uniforms && overlay.material.uniforms[paramProp]) {
             overlay.material.uniforms[paramProp].value = value;
-        } else if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
-            paramProp(value, overlay);
         }
 
         MLJ.core.Scene.render();
