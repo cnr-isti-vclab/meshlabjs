@@ -145,12 +145,14 @@ MLJ.core.Scene = {};
         var stats = new Stats();
 
         stats.setMode(0); // 0: fps, 1: ms
+        stats.active = false;
 
         // Align top-right
         stats.domElement.style.visibility = 'hidden';
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.right = '0px';
         stats.domElement.style.top = '0px';
+        stats.domElement.style.zIndex = 100;
 
         $("#_3D").append( stats.domElement );
 
@@ -740,7 +742,12 @@ MLJ.core.Scene = {};
      * before displaying the result.
      * @memberOf MLJ.core.Scene  
      */
-    this.render = function () {
+    this.render = function (fromReqAnimFrame) {
+
+        if (_stats.active && !fromReqAnimFrame) {
+            return;
+        }
+
         if (_postProcessPasses.size() > 0) {
             _renderer.render(_scene, _camera, colorBuffer, true);
 

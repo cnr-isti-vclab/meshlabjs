@@ -35,10 +35,12 @@
 
                 var updateStats = function() {
                     if (show) {
-                        stats.update();
-                        scene.render();
+                        stats.begin();
+                        scene.render(true);
+                        stats.end();
                         req = requestAnimationFrame(updateStats);
                     } else {
+                        stats.active = false;
                         stats.domElement.style.visibility = 'hidden';
                         window.cancelAnimationFrame(req);
                     }
@@ -49,6 +51,7 @@
                         if (value) {
                             show = true;
                             stats = scene.getStats();
+                            stats.active = true;
                             stats.domElement.style.visibility = 'visible';
                             updateStats();
                         }
