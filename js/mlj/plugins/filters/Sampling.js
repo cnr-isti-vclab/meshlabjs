@@ -74,4 +74,38 @@
     plugin.Manager.install(PoissonDiskSamplingFilter);
 
 
+var VolumeMontecarloSamplingFilter = new plugin.Filter({
+        name: "Volume Montecarlo Sampling",
+        tooltip: "Compute a volumetric montecarlo sampling inside a watertight mesh.",
+        arity: 2
+    });
+
+    var sampleVolNumWidget;
+     
+    VolumeMontecarloSamplingFilter._init = function (builder) {
+
+        sampleVolNumWidget = builder.Integer({
+            min: 10, step: 1000, defval: 10000,
+            label: "Sample Num",
+            tooltip: "Number of volumetric samples scattered inside the mesh."
+        });
+    };
+
+    VolumeMontecarloSamplingFilter._applyTo = function (baseLayer) {
+
+        var newLayer = MLJ.core.Scene.createLayer("Volume Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        var ret = Module.VolumeMontecarloSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(),
+                                   sampleVolNumWidget.getValue());
+                                   
+        if(ret===true)
+        {            
+            newLayer.cppMesh.addPerVertexColor();
+            //newLayer.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+            scene.addLayer(newLayer);
+        }
+    };
+
+    plugin.Manager.install(VolumeMontecarloSamplingFilter);
+
 })(MLJ.core.plugin, MLJ.core.Scene);
