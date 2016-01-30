@@ -2,6 +2,7 @@
 #include <vcg/complex/algorithms/inertia.h>
 #include <vcg/complex/algorithms/stat.h>
 #include <vcg/complex/algorithms/point_sampling.h>
+#include<vcg/complex/algorithms/voronoi_volume_sampling.h>
 
 
 using namespace vcg;
@@ -143,6 +144,43 @@ void ComputeQualityFromCurvature(uintptr_t meshPtr, int curvatureMode)
     }
 }
 
+bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uintptr_t skelPtr,
+                      int montecarloSampleNum, float surfSamplingRadius, float distThr)
+{
+  MyMesh &baseM = *((MyMesh*) meshPtr);
+  MyMesh *surfSamp = ((MyMesh*) trgPtr);
+  MyMesh  *volSamp = ((MyMesh*) volPtr);
+  MyMesh   *skelM = ((MyMesh*) skelPtr);
+  if(!tri::Clean<MyMesh>::IsWaterTight(baseM))
+  {
+    printf("Volume Sampling Requires Watertight Mesh. Nothing Done.\n");
+    return false;
+  } 
+ 
+  MyMesh pVm; // unused...  
+  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM, pVm);
+  float poissonRadiusSurface = baseM.bbox.Diag()*surfSamplingRadius;
+  int t0=clock();
+  vvs.Init(poissonRadiusSurface);  
+  vvs.BuildMontecarloSampling(montecarloSampleNum);
+  int t1=clock();
+  vvs.ThicknessEvaluator(distThr,16,3,skelM);
+  int t2=clock();
+  printf("Sampling %4.2f Medial Axis Eval %5.2f\n",float(t1-t0)/CLOCKS_PER_SEC,float(t2-t1)/CLOCKS_PER_SEC);
+  tri::UpdateColor<MyMesh>::PerVertexQualityRamp(baseM);
+  if(surfSamp) 
+  {
+    tri::Append<MyMesh,MyMesh>::MeshCopy(*surfSamp, vvs.poissonSurfaceMesh);
+    tri::UpdateColor<MyMesh>::PerVertexQualityRamp(*surfSamp);
+  }
+  if(volSamp)
+  {
+    tri::Append<MyMesh,MyMesh>::MeshCopy(*volSamp, vvs.montecarloVolumeMesh);
+    tri::UpdateColor<MyMesh>::PerVertexQualityRamp(*volSamp);
+  }
+  return true;  
+}  
+
 void MeasurePluginTEST()
 {
   MyMesh m0,m1;
@@ -153,7 +191,8 @@ void MeasurePluginTEST()
   ComputeHausdorffDistance(uintptr_t(&m1),uintptr_t(&m0),0,10000,0.1);
   ComputeQualityFromCurvature(uintptr_t(&m0),0);
   ComputeQualityFromCurvature(uintptr_t(&m0),1);
-  
+  ComputeThickness(uintptr_t(&m0),0,0,0,10000,0.01,1.05);
+  ComputeThickness(uintptr_t(&m1),0,0,0,10000,0.01,1.05);
 }
 
 #ifdef __EMSCRIPTEN__
@@ -162,5 +201,6 @@ EMSCRIPTEN_BINDINGS(MLMeasurePlugin) {
     emscripten::function("ComputeTopologicalMeasures", &ComputeTopologicalMeasures);
     emscripten::function("ComputeHausdorffDistance",   &ComputeHausdorffDistance);
     emscripten::function("ComputeQualityFromCurvature",   &ComputeQualityFromCurvature);
+    emscripten::function("ComputeThickness",   &ComputeThickness);
 }
 #endif

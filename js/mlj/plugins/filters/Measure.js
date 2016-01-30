@@ -10,8 +10,8 @@
     });
     MeasureTopoFilter._init = function(builder) {   };
 
-    MeasureTopoFilter._applyTo = function(meshfile) {
-        Module.ComputeTopologicalMeasures(meshfile.ptrMesh());
+    MeasureTopoFilter._applyTo = function(meshLayer) {
+        Module.ComputeTopologicalMeasures(meshLayer.ptrMesh());
     }
 /******************************************************************************/  
     var MeasureGeomFilter = new plugin.Filter({
@@ -23,8 +23,8 @@
     });
     MeasureGeomFilter._init = function(builder) {   };
 
-    MeasureGeomFilter._applyTo = function(meshfile) {
-        Module.ComputeGeometricMeasures(meshfile.ptrMesh());
+    MeasureGeomFilter._applyTo = function(meshLayer) {
+        Module.ComputeGeometricMeasures(meshLayer.ptrMesh());
     }
 /******************************************************************************/  
     var CurvatureQualityFilter = new plugin.Filter({
@@ -45,8 +45,88 @@
         });
     };
 
-    CurvatureQualityFilter._applyTo = function(meshfile) {
-        Module.ComputeQualityFromCurvature(meshfile.ptrMesh(),parseInt(curvatureTypeWidget.getValue()));
+    CurvatureQualityFilter._applyTo = function(meshLayer) {
+        Module.ComputeQualityFromCurvature(meshLayer.ptrMesh(),parseInt(curvatureTypeWidget.getValue()));
+    }
+/******************************************************************************/  
+    var ThicknessEvaluatorFilter = new plugin.Filter({
+        name: "Thickness Evaluation",
+        tooltip: "Compute an approximated measure of the thickenss of a watertight mesh. <br> "
+                +"We evaluate thickness as distance from the medial axis (medial surface)."
+                +"We start from a montecarlo volume sampling and try to search for the "
+                +"samples that can be part of the medial axis."
+                +"It use a sampled representation of the surface. A volume sample is "
+                +"considered part of the medial axis if there are at least two samples "
+                +"that are (almost) the same minimal distance to that point.",
+        arity: 1
+    });
+    
+    var thickSampleNumWidget, saveSurfSampleWidget, distTrhWidget;     
+    var saveSurfSampleWidget, saveVolSampleWidget, saveSkelSampleWidget;     
+    ThicknessEvaluatorFilter._init = function (builder) {
+
+        thickSampleNumWidget = builder.Integer({
+            min: 10, step: 1000, defval: 10000,
+            label: "Sample Num",
+            tooltip: "Number of volumetric samples scattered inside the mesh."
+        });
+
+        surfSamplingRadiusWidget = builder.Float({
+            min: 0.0, step: 0.001, defval: "0.005",
+            label: "Surface Sampling Radius",
+            tooltip: "The thickness is evaluated over a surface sampling with the specified radius density. <br>"
+                    +"The radius is specified as a percentage of the bbox diagonal."            
+        });
+        distTrhWidget = builder.Float({
+            min: 0.9, step: 0.01, defval: "1.05",
+            label: "Distance Threshold",
+            tooltip: ""            
+        });
+        saveSurfSampleWidget = builder.Bool({
+            defval: true,
+            label: "Save Surface Sample",
+            tooltip: "If true, the surface sampling is saved as a new layer"
+        });
+        saveVolSampleWidget = builder.Bool({
+            defval: true,
+            label: "Save Volume Sample",
+            tooltip: "If true, the surface sampling is saved as a new layer"
+        });
+        saveSkelSampleWidget = builder.Bool({
+            defval: true,
+            label: "Save Skeleton Samples",
+            tooltip: "If true, the surface sampling is saved as a new layer"
+        });
+        
+    };
+
+    ThicknessEvaluatorFilter._applyTo = function(meshLayer) {
+        var surfMeshLayer,volumeLayer,skelLayer; 
+        var surfMeshPtr=0, volumePtr=0,skelPtr=0;
+        if(saveSurfSampleWidget.getValue()) {
+         surfMeshLayer = MLJ.core.Scene.createLayer("Surf Samples");
+         surfMeshLayer.cppMesh.addPerVertexColor();
+         surfMeshPtr = surfMeshLayer.ptrMesh();
+        }
+        if(saveVolSampleWidget.getValue()) {
+         volumeLayer = MLJ.core.Scene.createLayer("Volume Samples");
+         volumeLayer.cppMesh.addPerVertexColor();
+         volumePtr = volumeLayer.ptrMesh();
+        }
+        if(saveSkelSampleWidget.getValue()) {
+         skelLayer = MLJ.core.Scene.createLayer("Medial");
+         skelLayer.cppMesh.addPerVertexColor();
+         skelPtr = skelLayer.ptrMesh();
+        }
+        var ret = Module.ComputeThickness(meshLayer.ptrMesh(),surfMeshPtr,volumePtr,skelPtr,
+                         thickSampleNumWidget.getValue(),surfSamplingRadiusWidget.getValue(),distTrhWidget.getValue());
+        
+        meshLayer.cppMesh.addPerVertexColor();
+         
+        if(ret && saveSurfSampleWidget.getValue())  scene.addLayer(surfMeshLayer);
+        if(ret && saveVolSampleWidget.getValue())   scene.addLayer(volumeLayer);
+        if(ret && saveSkelSampleWidget.getValue())  scene.addLayer(skelLayer);
+        
     }
 /******************************************************************************/  
     var HausdorffFilter = new plugin.Filter({
@@ -114,5 +194,6 @@
     plugin.Manager.install(MeasureGeomFilter);
     plugin.Manager.install(HausdorffFilter);
     plugin.Manager.install(CurvatureQualityFilter);
+    plugin.Manager.install(ThicknessEvaluatorFilter);
     
 })(MLJ.core.plugin, MLJ.core.Scene);
