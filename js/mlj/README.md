@@ -122,3 +122,46 @@ After that, with the object *Module* (a global JavaScript object with attributes
 ```javascript
 Module.Function1Name(parameter_1, ...., parameter_n);
 ```
+
+
+## Scene Rendering in MeshLabJS
+
+A typical scene in MeshLabJS consists of some meshes loaded from files or generated through filter tools and rendered using modes such as filled, wireframe or point, eventually enhanced with the visualization of face/vertex normals,  selected vertices/faces, etc. and with some effects as radiance scaling and screen space ambient occlusion.
+
+Internally MeshLabJS represents mesh entities as layers objects, rendering modes/enhancements as overlying 3js mesh objects and special effects through objects that force the render system to use deferred rendering like techniques.
+
+######  Layers, overlays and rendering plugins
+
+A {@link MLJ.core.Layer} object represents a single loaded or computed mesh. It is based on a cppMesh object which stores the actual mesh representation and offers access to vcg library functions compiled in asm.js for querying information about the mesh: 
+vertices, indices to vertices, normals, colors are extracted to fill some [3js BufferAttribute](http://threejs.org/docs/#Reference/Core/BufferAttribute) objects and to build then a [3js BufferGeometry](http://threejs.org/docs/#Reference/Core/BufferGeometry) and from this a [3js Mesh](http://threejs.org/docs/#Reference/Objects/Mesh) object. Note that however this mesh is not used for rendering. The mesh of a layer can be visualized only through the activation of one or more rendering modes (filled, wired etc). Each rendering mode and other enhancements (show selected vertices/faces, normals etc) is handled by a separate rendering plugin which creates a new [3js Mesh](http://threejs.org/docs/#Reference/Objects/Mesh) every time it's activated. This mesh is associated to a [BufferGeometry](http://threejs.org/docs/#Reference/Core/BufferGeometry) which is either the original BufferGeometry of the layer or a newly created one (to represent for example a subset of the whole geometry or a new geometry as the lines that represent normals) and to a new [3js Material](http://threejs.org/docs/#Reference/Materials/Material) created using plugin-specific shaders and values for shader uniforms/parameters taken from the current settings displayed by the widgets on the left, in the rendering tab of the gui.
+Each layer maintains a collection of overlays,  the meshes created by the activation of the rendering plugins, and an map of values of overlays parameters corresponding to each option that can be changed from the gui widgets.
+Since those widgets can be used to visualize the settings for different layers in different times, in MeshLabJS there is a notion of current selected layer from which the current settings can be read and visualized.
+Another type of rendering plugin is the one used to activate effects which require post processings on the scene. At each activation, an object which encapsulates a post processing logic is created, saved and used in rendering.
+
+######  How to add a new rendering plugin
+
+Current rendering plugins all share a common structure. To extend MeshLabJS framework with new plugins we can proceed using that structure. 
+If we define a new plugin in newPlugin.js in js/mlj/plugins/rendering folder, we add this in head element in index.html:
+```
+<script src="js/mlj/plugins/rendering/newPlugin.js"></script>.
+```
+We proceed creating a JavaScript IIFE:
+
+```javascript
+(function (plugin, core, scene) {
+    // we put our new plugin definition here:
+        // plugin object creation
+        // data (for plugin logic, parameters, materials etc)
+        // definition of _init and _applyTo
+        // installation within the framework
+})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
+```
+To create a new plugin, we create a new object representing a plugin in the framework and then we define two functions, _init and _applyTo as its methods. The first, _init, executes at framework startup, and  usually instantiates widgets to permit the users to change plugin's associated parameters and defines callbacks to be invoked at each parameter change. The second, _applyTo, executes every time the user activates/deactivates the plugin for the current layer. In case of a new rendering mode for example, in _applyTo usually we define a new [3js Mesh](http://threejs.org/docs/#Reference/Objects/Mesh) from a [BufferGeometry](http://threejs.org/docs/#Reference/Core/BufferGeometry) and a [3js Material](http://threejs.org/docs/#Reference/Materials/Material). Then we add the new mesh as a new overlay of the current layer. In case of a new post process effect, we add a function which implements the effect as a new post processing pass. Finally we install the plugin inside the framework.
+
+######  Scene Graph
+
+The {@link MLJ.core.Scene} object which represent a MeshLabJS scene organizes its entites on several collections: a collection of layers, a collection of decorators which represent scene level "background" meshes, a collection of post processing passes which represent the effects that require a post processing pass and a collection of 2d scene overlays. But to effectively render an image from 3D data with 3js, a scene has to be created, so the Scene object also stores and initializes a [3js scene](http://threejs.org/docs/#Reference/Scenes/Scene) object, a [3js camera](http://threejs.org/docs/#Reference/Cameras/PerspectiveCamera) for perspective rendering, a [3js camera](http://threejs.org/docs/#Reference/Cameras/OrthographicCamera) for orthographic rendering for special effects, and a [directional light](http://threejs.org/docs/#Reference/Lights/DirectionalLight). A typical scene in 3js consists of several hierarchical 3D objects each with different transformations and properties, here instead a single [3js 3D object](http://threejs.org/docs/#Reference/Core/Object3D) is used as a group for all the meshes of the scene. It stores the global transformation that brings the global bbox of the scene in the camera reference system and all 3js meshes object of scene decorators and of current active layers overlays are added to it as its children. In this way scene MeshLabJS delegates to 3js the scene managament for rendering.
+
+######  Rendering
+When the stats option for fps/ms counting is disabled, a scene is rendered only when an event associated to the underlying canvas occurs (for example, mouse movement or drag) or when the scene changes. Otherwise, when stats counting is active, a traditional rendering loop with requestAnimationFrame is used. In either cases to render a scene, if there are no post process effects enabled, MeshLabJS uses  3js to do a classic forward rendering of its scene containing a single 3D group object with all the created  meshes from overlays and decorators. Note that MeshLabJS does not ensure any specific criterion for sorting meshes to render, so all depends on  3js which actually sorts and renders opaque meshes in front to back and then sorts and renders transparent meshes in back to front. MeshLabJS uses this fact to render as transparent not only those meshes that require transparency (for example the meshes for wireframe rendering, see the technique in corresponding fragment shader) but also those meshes that should be rendered after the opaque ones (such as the meshes containing the selected faces/vertices, which do only z reading and not z buffering). But obviously, among opaque or transparent meshes, MeshLabJS has no control on the rendering order, in particular 3js sorts opaque/transparent meshes with same depth in an arbitrary way. 
+Otherwise to render a scene when some post process effect is enabled, 3js is used first to render the scene to an off screen buffer on which post process passes are applied one after the other according to the user's activation order, finally the resulting buffer is rendered to the screen.

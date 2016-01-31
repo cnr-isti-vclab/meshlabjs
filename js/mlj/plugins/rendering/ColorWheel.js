@@ -1,30 +1,43 @@
 /**
- * To support different color modes (uniform, per vertex or per face),
- * client plugins should query the value of the colorMode and meshColorMapping
- * parameters of 'ColorWheel'.
+ * The supported color modes are:
  *
- * 'colorMode' defines the value that should be assigned to the 'vertexColor'
- * attribute of a ThreeJS material (cfr. ThreeJS MeshBasicMaterial
- * documentation).
- * 
- * 'meshColorMapping' is a uniform that should be included in the shaders
- * to compute a color, depending on its value:
- *   0  color is per mesh, stored in the 'diffuse' uniform
- *   1  color is per vertex/face, stored in the 'color' vertex attribute of a
- *      vertex shader as vec3
+ *   Uniform - color is per mesh, stored in the 'diffuse' uniform of the
+ *       material
+ *
+ *   Face - color is per face (achieved by replicating vertices for each face)
+ *
+ *   Vertex - color is per vertex, interpolated across each face
+ *
+ * Rendering plugins that want to interact with color modes need to include the
+ * following uniform/attributes (managed by the framework) in the material and
+ * shader definitions:
+ *
+ *   'diffuse' - uniform (vec3) - will encode the mesh color specified with the
+ *       relative ColorWheel control
+ *
+ *   'VCGColor' - attribute (vec3) - will hold the primitive color according to
+ *       the appropriate mode (per vertex or per face)
+ *
+ *   'mljColorMode' - uniform int - must be used as a switch to instruct the
+ *       shader whether to use the 'diffuse' uniform (if == 0) or the incoming
+ *       varying attribute (if == 1 or == 2) as base color
+ *
+ * The uniform variables will be updated by the framework, while the VCGColor
+ * attribute is stored in the THREE.BufferGeometry object of the layer. See 
+ * Layer.js as a use case of this plugin.
  */
 
-var ColorMapping = {
-    Uniform: 0,
-    Attribute: 1
-};
+MLJ.ColorMode = {};
+
+MLJ.ColorMode.Uniform = 0;
+MLJ.ColorMode.Face    = 1;
+MLJ.ColorMode.Vertex  = 2;
 
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
         diffuse: new THREE.Color('#A0A0A0'),
-        meshColorMapping: ColorMapping.Uniform,
-        colorMode: THREE.NoColors
+        mljColorMode: MLJ.ColorMode.Uniform
     };
 
     var plug = new plugin.Rendering({
@@ -49,26 +62,16 @@ var ColorMapping = {
             label: "Mesh Color",
             tooltip: "Choose one of the possible ways of displaying the color of the mesh",
             options: [
-                {content: "Uniform", value: THREE.NoColors, selected: true},
-                {content: "Per Face", value: THREE.FaceColors},
-                {content: "Per Vertex", value: THREE.VertexColors}
+                {content: "Uniform", value: MLJ.ColorMode.Uniform, selected: true},
+                {content: "Per Face", value: MLJ.ColorMode.Face},
+                {content: "Per Vertex", value: MLJ.ColorMode.Vertex}
             ],
-            //bindTo: "meshColorMapping"
             bindTo: (function() {
-                var bindToFun = function (colorMode, overlay, colorParams) {
-                    if (overlay.material.uniforms !== undefined && overlay.material.uniforms.meshColorMapping !== undefined) {
-                        overlay.material.uniforms.meshColorMapping.value = (colorMode === THREE.NoColors) ? ColorMapping.Uniform : ColorMapping.Attribute;
-                        overlay.material.vertexColors = colorMode;
-                        overlay.geometry.colorsNeedUpdate = true;
-
-                        // update parameter variables to reflect the change,
-                        // client plugins should only worry about these vars
-                        colorParams.meshColorMapping = overlay.material.uniforms.meshColorMapping.value;
-                        //colorParams.colorMode = colorMode;
-                    }
+                var callback = function (colorMode, overlay, layer) {
+                    layer.updateMeshColorData(colorMode);
                 };
-                bindToFun.toString = function () { return "colorMode"; };
-                return bindToFun;
+                callback.toString = function () { return "mljColorMode"; };
+                return callback;
             }())
         });
         

@@ -26,13 +26,51 @@
             options: [
                 {content: "on", value: true},
                 {content: "off", value: false, selected: true}
-            ]
+            ],
+            bindTo: (function() {
+
+                var stats;
+                var show = false;
+                var req;
+
+                var updateStats = function() {
+                    if (show) {
+                        stats.begin();
+                        scene.render(true);
+                        stats.end();
+                        req = requestAnimationFrame(updateStats);
+                    } else {
+                        stats.active = false;
+                        stats.domElement.style.visibility = 'hidden';
+                        window.cancelAnimationFrame(req);
+                    }
+                };
+
+                var callback = function (value) {
+                    if (!show) {
+                        if (value) {
+                            show = true;
+                            stats = scene.getStats();
+                            stats.active = true;
+                            stats.domElement.style.visibility = 'visible';
+                            updateStats();
+                        }
+                    } else show = value;
+                };
+
+                callback.toString = function () { return "showStats"; };
+                return callback;
+            }())
         });
 
     };
 
     plug.getBackfaceCullingValue = function (type) {
         return cullingWidget.getValue();
+    };
+
+    plug.getShowStatsValue = function (type) {
+        return statsWidget.getValue();
     };
     
     plugin.Manager.install(plug);

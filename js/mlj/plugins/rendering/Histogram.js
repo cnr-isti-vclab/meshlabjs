@@ -2,13 +2,13 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        histogramQualitySelection: "V",
-        histogramBins: 256,
-        histogramAreaWeighted: false,
-        histogramFixedWidth: false,
-        histogramRangeMin: 0,
-        histogramRangeMax: 0,
-        histogramWidth: 0
+        MLJ_HIST_QualitySelection: "V",
+        MLJ_HIST_Bins: 256,
+        MLJ_HIST_AreaWeighted: false,
+        MLJ_HIST_FixedWidth: false,
+        MLJ_HIST_RangeMin: 0,
+        MLJ_HIST_RangeMax: 0,
+        MLJ_HIST_Width: 0
     };
     
     var plug = new plugin.Rendering({
@@ -122,6 +122,89 @@
         return name.replace(/(:|\.)/g, "\\$1");
     };
 
+    function buildDottedLine(a, b, aVal, bVal, nticks) {
+        var v = new THREE.Vector3().subVectors(b, a).multiplyScalar(1/(nticks-1));
+
+        var points = [];
+        var sizes = [];
+        var labelref = [];
+
+        var i = 0;
+        var val = aVal;
+        var step = (bVal - aVal) / (nticks-1);
+
+        while (i < nticks) {
+            var tick = v.clone().multiplyScalar(i++).add(a);
+            points.push(tick.x, tick.y, tick.z);
+            sizes.push(2.0);
+            labelref.push({
+                x: tick.x,
+                y: tick.y,
+                value: val.toFixed(2),
+            });
+            val += step;
+        }
+        sizes[0] = sizes[nticks-1] = 4.0;
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(points), 3));
+        geometry.addAttribute('pointSize', new THREE.BufferAttribute(new Float32Array(sizes), 1));
+    
+    
+        var dl = new THREE.PointCloud(geometry, new THREE.ShaderMaterial({
+            uniforms: {},
+            attributes: geometry.attributes,
+            vertexShader: "attribute float pointSize; \
+                           void main() { \
+                               gl_PointSize = pointSize; \
+                               gl_Position = vec4(2.0*position-vec3(1.0, 1.0, 0.0), 1.0); \
+                           }",
+            fragmentShader: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0 ); }"
+        }));
+    
+        return { line: dl, ref: labelref };
+    }
+
+    function HistogramContext(idname, lref) {
+        var _this = this;
+
+        var _labels = [];
+        for (var i = 0; i < lref.length; ++i) {
+            var $l = $("<div id=\"" + idname + "-hist-label-" + i + "\"></div>")
+                .css({ position: "absolute" })
+                .addClass("mlj-hist-label")
+                .append("<p>" + lref[i].value + "</p>");
+            _labels.push({$label: $l, x: lref[i].x, y: lref[i].y});
+            $("#_3D").append($l);
+        }
+
+        var _onResize = function() {
+            var sz = MLJ.core.Scene.get3DSize();
+            _labels.forEach(function (element) {
+                element.$label.css({
+                    "bottom": ((element.y-0.005)*sz.height),
+                    "right": ((1.0-element.x+0.005)*sz.width)
+                });
+            });
+        };
+
+        _onResize();
+        $(window).on("resize", _onResize);
+
+        this.hide = function () {
+            _labels.forEach(function (element) { element.$label.hide(); });
+        }
+
+        this.show = function () {
+            _labels.forEach(function (element) { element.$label.show(); });
+        }
+
+        this.dispose = function () {
+            $(window).off("resize", _onResize);
+            _labels.forEach(function (element) { element.$label.remove(); });   
+        }
+    }
+
     plug._applyTo = function(layer, on) {
         if (on) {
             var sz = scene.get3DSize();
@@ -152,7 +235,7 @@
 
             // histogram columns are drawn as horizontal rectangles using orthographic projection
             for (var i = 0; i < bn; ++i) {
-                var value = ch.minV() + ((len/bn) * i)
+                var value = ch.minV() + ((len/bn) * i);
                 var width =  histW * (ch.binCount(value) / maxCount);
 
                 if (width === 0) continue;
@@ -195,65 +278,33 @@
                 })
             );
 
-            scene.addOverlayLayer(layer, plug.getName(), mesh, true);
+            var nticks = 15;
+
+            var lineData = buildDottedLine(new THREE.Vector3(0.035, borderY, 0), new THREE.Vector3(0.035, borderY+histH, 0),
+                ch.minV(), ch.maxV(), nticks);
+
+            var node = new THREE.Object3D();
+            node.add(mesh);
+            node.add(lineData.line);
+
+            scene.addOverlayLayer(layer, plug.getName(), node, true);
 
             // labels are rendered as html divs on top of the 3D area
             var idname = layer.name.replace(/ /g, "");
 
-            // handle to html-related data
-            layer.histogram = {
-                $tl: null,
-                $bl: null,
-                listener: null
-            };
+            layer.__mlj_histogram = new HistogramContext(idname, lineData.ref);
 
-            layer.histogram.$tl = $("<div id=\"" + idname + "-hist-label-top" + "\"></div>")
-                .css({ position: "absolute" })
-                .addClass("mlj-hist-label")
-                .append("<p>" + ch.maxV() + "</p>");
-
-            layer.histogram.$bl = $("<div id=\"" + idname + "-hist-label-bottom" + "\"></div>")
-                .css({ position: "absolute" })
-                .addClass("mlj-hist-label")
-                .append("<p>" + ch.minV() + "</p>");
-
-            $("#_3D").append(layer.histogram.$tl).append(layer.histogram.$bl);
-
-            var onResize = function() {
-                var sz = scene.get3DSize();
-                var pad = 8; // top and bottom padding for mlj-hist-label class (see style.css)
-                var bump = 0.02;
-                layer.histogram.$tl.css({
-                    "margin-top": (-((layer.histogram.$tl.height()+pad)/2)) + "px",
-                    "top": ((borderY-bump)*sz.height) + "px",
-                    "left": (0.6*borderX*sz.width) + "px"
-                });
-                layer.histogram.$bl.css({
-                    "margin-top": (-((layer.histogram.$bl.height()+pad)/2)) + "px",
-                    "top": ((1-borderY+bump)*sz.height) + "px",
-                    "left": (0.6*borderX*sz.width) + "px"
-                });
-            };
-
-            onResize();
-            $(window).on("resize", onResize);
-            layer.histogram.listener = onResize;
-
-            if (!layer.getThreeMesh().visible) {
-                layer.histogram.$tl.hide();
-                layer.histogram.$bl.hide();
-            }
+            if (!layer.getThreeMesh().visible) layer.__mlj_histogram.hide();
 
             ch.delete();
         } else {
             scene.removeOverlayLayer(layer, plug.getName(), true);
-            if (layer.histogram !== undefined) {
-                $(window).off("resize", layer.histogram.listener);
-                layer.histogram.$tl.remove();
-                layer.histogram.$bl.remove();
+            if (layer.__mlj_histogram) {
+                layer.__mlj_histogram.dispose();
+                delete layer.__mlj_histogram;
             }
-            delete layer.histogram;
         }
+
     };
 
     plugin.Manager.install(plug);

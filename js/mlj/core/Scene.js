@@ -98,10 +98,13 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene     
      */
     var _scene2D;
+    
     /**
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
     var _camera2D;
+
+    var _stats;
     
     /// @type {Object}
     var _renderer;
@@ -137,6 +140,25 @@ MLJ.core.Scene = {};
         });
     }
 
+    function initStats() {
+
+        var stats = new Stats();
+
+        stats.setMode(0); // 0: fps, 1: ms
+        stats.active = false;
+
+        // Align top-right
+        stats.domElement.style.visibility = 'hidden';
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.right = '0px';
+        stats.domElement.style.top = '0px';
+        stats.domElement.style.zIndex = 100;
+
+        $("#_3D").append( stats.domElement );
+
+        return stats;
+    }
+
 //SCENE INITIALIZATION  ________________________________________________________
 
     function initScene() {
@@ -156,12 +178,22 @@ MLJ.core.Scene = {};
             antialias: true, 
             alpha: true, 
             preserveDrawingBuffer:true});
-        _renderer.shadowMapEnabled = true;
+        //_renderer.shadowMapEnabled = true;
+        //_renderer.context.getSupportedExtensions();
+        _renderer.context.getExtension("EXT_frag_depth");
+
         
         _renderer.setPixelRatio( window.devicePixelRatio );
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
+
+        _stats = initStats();
+        /*
+        requestAnimationFrame(function updateStats() {
+                                _stats.update();
+                                requestAnimationFrame(updateStats); });
+        */
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -286,7 +318,11 @@ MLJ.core.Scene = {};
     this.getCamera = function() {
         return _camera;
     };
-    
+
+    this.getStats = function() {
+        return _stats;
+    }
+
     this.getThreeJsGroup = function() {
         return _group;
     }
@@ -334,14 +370,9 @@ MLJ.core.Scene = {};
         }
 
         // if histogram overlay is defined show/hide labels
-        if (layer.histogram !== undefined) {
-            if (visible) {
-                layer.histogram.$tl.show();
-                layer.histogram.$bl.show();
-            } else {
-                layer.histogram.$tl.hide();
-                layer.histogram.$bl.hide();
-            }
+        if (layer.__mlj_histogram) {
+            if (visible) layer.__mlj_histogram.show();
+            else layer.__mlj_histogram.hide();
         }
         
         MLJ.core.Scene.render();
@@ -405,6 +436,12 @@ MLJ.core.Scene = {};
 
         _this.render();
     };
+
+    function disposeObject(obj) {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) obj.material.dispose();
+        if (obj.texture) obj.texture.dispose();
+    }
     
     this.removeOverlayLayer = function(layer, name, overlay2D) {        
         var mesh = layer.overlays.getByKey(name);
@@ -418,14 +455,8 @@ MLJ.core.Scene = {};
                 _group.remove(mesh);                        
             }
 
-            mesh.geometry.dispose();
-            mesh.material.dispose();
-            mesh.geometry = null;
-            mesh.material = null;            
-            if (mesh.texture) {
-                mesh.texture.dispose();            
-                mesh.texture = null;
-            }
+            mesh.traverse(disposeObject);
+            disposeObject(mesh);
 
             _this.render();                              
         }
@@ -524,10 +555,9 @@ MLJ.core.Scene = {};
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
-    this.createCppMeshFile = function (name) {
+    this.createLayer = function (name) {
         var layerName = disambiguateName(name);
-        var CppMesh = new Module.CppMesh();
-        var layer = new MLJ.core.Layer(layerName, CppMesh);
+        var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
         return layer;
     };
     
@@ -712,7 +742,12 @@ MLJ.core.Scene = {};
      * before displaying the result.
      * @memberOf MLJ.core.Scene  
      */
-    this.render = function () {
+    this.render = function (fromReqAnimFrame) {
+
+        if (_stats.active && !fromReqAnimFrame) {
+            return;
+        }
+
         if (_postProcessPasses.size() > 0) {
             _renderer.render(_scene, _camera, colorBuffer, true);
 
@@ -739,7 +774,9 @@ MLJ.core.Scene = {};
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
     };
-    
+
+
+
     this.takeSnapshot = function() {
         var canvas = _renderer.context.canvas;        
         // draw to canvas...

@@ -1,4 +1,4 @@
-DEPENDPATH += . ../../..
+DEPENDPATH += . ../../vcglib
 INCLUDEPATH += . ../../vcglib
 CONFIG += console stl c++11
 TEMPLATE = app

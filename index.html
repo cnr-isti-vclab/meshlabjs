@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-        <meta name="description" content="MeshLabJS: the  javascript mesh processing tool. Built using vcg library, emscripten and webgl. Developed by the Visual Computing Lab of ISTI - CNR and by the students of the FGT course.">
-        <title>MeshLabJS</title>
+        <meta name="description" content="MeshLabJS: the javascript mesh processing tool. Built using vcg library, emscripten and webgl. Developed by the Visual Computing Lab of ISTI - CNR and by the students of the FGT course.">
+        <title>MeshLabJS 16.01</title>
         <link rel="icon" href="img/favicon.png" type="image/x-icon"/>             
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
@@ -21,7 +21,8 @@
         <script src="js/include/colpick/js/colpick.js"></script>
         <link rel="stylesheet" href="js/include/colpick/css/colpick.css">
 
-        <script src="js/include/three.js"></script>
+        <script src="js/include/three.min.js"></script>
+        <script src="js/include/stats.js"></script>
         <script src="js/include/TrackballControls.js"></script>
         
         <script src="js/include/FileSaver/FileSaver.min.js"></script>
@@ -76,7 +77,7 @@
         <script src="js/mlj/plugins/rendering/BoundaryEdges.js"></script>
         <script src="js/mlj/plugins/rendering/Histogram.js"></script>
         <script src="js/mlj/plugins/rendering/RadianceScaling.js"></script>
-        <script src="js/mlj/plugins/rendering/Green.js"></script>
+        <script src="js/mlj/plugins/rendering/ScreenSpaceAmbientOcclusion.js"></script>
 
         <script async src="js/generated/MeshLabCppCore.js"></script>
 
@@ -89,13 +90,19 @@
 
   ga('create', 'UA-8044669-4', 'auto');
   ga('send', 'pageview');
+  //ga('set', 'userId', '{{ USER_ID }}'); 
 </script>
         
     </head>
     <body>        
         <script>
             MLJ.core.plugin.Manager.run();
-            MLJ.gui.makeGUI("MeshLabJS");            
+            MLJ.gui.makeGUI("MeshLabJS");     
+            Module['onRuntimeInitialized'] = function() {
+                filterName = MLJ.util.getURLParam("filterName");
+                if(filterName)
+                    MLJ.core.plugin.Manager.executeFilter(filterName);
+            };
         </script>
     </body>
 </html>

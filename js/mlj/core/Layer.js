@@ -26,17 +26,21 @@
  * @author Stefano Gabriele
  */
 
-
 /**         
  * @class Creates a new Layer 
  * @param {String} name The name of the mesh file
  * @param {CppMesh} cppMesh the CppMesh object
  * @memberOf MLJ.core
- * @example
  */
 MLJ.core.Layer = function (name, cppMesh) {
     this.name = name;
+
+    /**
+     * @type {String} - Set if a mesh is read from a file
+     * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string
+     */
     this.fileName = "";
+
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;
@@ -46,30 +50,29 @@ MLJ.core.Layer = function (name, cppMesh) {
     //contains overlaying mesh parameters
     this.overlaysParams = new MLJ.util.AssociativeArray();
 
-    
-    var _this = this;   
-    
- 
+    var _this = this;
+
     this.initializeRenderingAttributes = function () {
-        console.time("Time to create mesh: ");
-        _this.threeMesh = new THREE.Mesh();
-        buildMeshGeometry();
-        console.timeEnd("Time to create mesh: ");
-        
-        for(var name in MLJ.core.defaults) {
-            _this.overlaysParams.set(name,
-                jQuery.extend(true, {}, MLJ.core.defaults[name]));                        
+        for(var pname in MLJ.core.defaults) {
+            _this.overlaysParams.set(pname,
+                jQuery.extend(true, {}, MLJ.core.defaults[pname]));                        
         }
 
         // Select the appropriate color mode
         var cw = _this.overlaysParams.getByKey("ColorWheel");
+        var useIndex = true;
         if (cppMesh.hasPerVertexColor()) {
-            cw.meshColorMapping = ColorMapping.Attribute;
-            cw.colorMode = THREE.VertexColors;
+            cw.mljColorMode = MLJ.ColorMode.Vertex;
         } else if (cppMesh.hasPerFaceColor()) {
-            cw.meshColorMapping = ColorMapping.Attribute;
-            cw.colorMode = THREE.FaceColors;
+            cw.mljColorMode = MLJ.ColorMode.Face;
+            useIndex = false;
         }
+
+        console.time("Time to create mesh: ");
+        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry());
+        _this.updateMeshGeometryData(useIndex);
+        _this.updateMeshColorData(cw.colorMode);
+        console.timeEnd("Time to create mesh: ");
 
         // If the mesh is a point cloud, enable the "Points" rendering mode
         if (_this.VN > 0 && _this.FN === 0) {
@@ -77,81 +80,107 @@ MLJ.core.Layer = function (name, cppMesh) {
             _this.properties.set("Points", true);
         }
     };
-    
-    /* buildMeshGeometry
-     * 
-     * Build the threejs geometry corresponding to the current vcg::trimesh
-     * Called by init after the loading and by update after each filter run
-     * This function get vectors of coords from cpp and use them to build the 
-     * threejs 
-     */
-    
-    function buildMeshGeometry() {
+
+    this.updateMeshGeometryData = function (indexed) {
+        if (indexed === undefined) {
+            throw new Error("MLJ.core.Layer.updateMeshGeometryData(): 'indexed' parameter required");
+        }
+
         _this.VN = cppMesh.VN();
-        var vertexCoord = cppMesh.getVertexVector();
         _this.FN = cppMesh.FN();
-        var faceIndexVec = cppMesh.getFaceVector();
 
-        var vertexColors = cppMesh.getVertexColorVector();
-        var faceColors = cppMesh.getFaceColorVector();
-
-        _this.threeMesh.geometry = new THREE.Geometry();
         var geometry = _this.threeMesh.geometry;
-        
-        for (var i = 0; i < _this.VN * 3; i++) {
-            var v1 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            i++;
-            var v2 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            i++;
-            var v3 = Module.getValue(vertexCoord + parseInt(i * 4), 'float');
-            geometry.vertices.push(new THREE.Vector3(v1, v2, v3));
+        var bufferptr, bufferData;
+
+        var positionAttrib = null, normalAttrib = null, indexAttrib = null;
+
+        if (indexed) {
+            bufferptr = cppMesh.getVertexVector(true);
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
+            positionAttrib = new THREE.BufferAttribute(bufferData, 3);
+            Module._free(bufferptr);
+
+            if (_this.FN > 0) { // if the mesh has faces, load per vertex normals and the index
+                bufferptr = cppMesh.getVertexNormalVector(true);
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
+                normalAttrib = new THREE.BufferAttribute(bufferData, 3);
+                Module._free(bufferptr);
+
+                bufferptr = cppMesh.getFaceIndex();
+                bufferData = new Uint32Array(new Uint32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*3));
+                indexAttrib = new THREE.BufferAttribute(bufferData, 3);
+                Module._free(bufferptr);
+            }
+        } else { // load disconnected triangles
+            if (_this.FN === 0) {
+                bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
+                positionAttrib = new THREE.BufferAttribute(bufferData, 3);
+                Module._free(bufferptr);
+            } else {
+                bufferptr = cppMesh.getVertexVector(false);
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
+                positionAttrib = new THREE.BufferAttribute(bufferData, 3);
+                Module._free(bufferptr);
+
+                bufferptr = cppMesh.getVertexNormalVector(false);
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
+                normalAttrib = new THREE.BufferAttribute(bufferData, 3)
+                Module._free(bufferptr);
+            }
         }
 
-        // helper function to get the correct numerical value of unsigned chars
-        // that are read from the memory pool
-        var _as_uchar = function (v) { return v >= 0 ? v : (256+v); }
+        if (geometry.getAttribute('position') !== undefined) {
+            delete geometry.attributes.position;
+        }
+        if (positionAttrib !== null) geometry.addAttribute('position', positionAttrib);
 
-        for (var i = 0, k = 0; i < _this.FN * 3; i++, k++) {
-            var a = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
-            i++;
-            var b = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
-            i++;
-            var c = Module.getValue(faceIndexVec + parseInt(i * 4), '*');
+        if (geometry.getAttribute('normal') !== undefined) {
+            delete geometry.attributes.normal;
+        }
+        if (normalAttrib !== null) geometry.addAttribute('normal', normalAttrib);
 
-            var face = new THREE.Face3(a, b, c);
+        if (geometry.getAttribute('index') !== undefined) {
+            delete geometry.attributes.index;
+        }
+        if (indexAttrib !== null) geometry.addAttribute('index', indexAttrib);
+    };
 
-            var rFace = _as_uchar(Module.getValue(faceColors + (k*4), 'i8') );
-            var gFace = _as_uchar(Module.getValue(faceColors + (k*4) + 1, 'i8') );
-            var bFace = _as_uchar(Module.getValue(faceColors + (k*4) + 2, 'i8') );
+    this.updateMeshColorData = function (colorMode) {
+        var geometry = _this.threeMesh.geometry;
+        var colorptr, colorData;
 
-            face.color = new THREE.Color(rFace/255.0, gFace/255.0, bFace/255.0);
-
-            var rVert1 = _as_uchar(Module.getValue(vertexColors + (a*4), 'i8') );
-            var gVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 1, 'i8') );
-            var bVert1 = _as_uchar(Module.getValue(vertexColors + (a*4) + 2, 'i8') );
-
-            var rVert2 = _as_uchar(Module.getValue(vertexColors + (b*4), 'i8') );
-            var gVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 1, 'i8') );
-            var bVert2 = _as_uchar(Module.getValue(vertexColors + (b*4) + 2, 'i8') );
-
-            var rVert3 = _as_uchar(Module.getValue(vertexColors + (c*4), 'i8') );
-            var gVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 1, 'i8') );
-            var bVert3 = _as_uchar(Module.getValue(vertexColors + (c*4) + 2, 'i8') );
-
-            face.vertexColors[0] = new THREE.Color(rVert1/255.0, gVert1/255.0, bVert1/255.0);
-            face.vertexColors[1] = new THREE.Color(rVert2/255.0, gVert2/255.0, bVert2/255.0);
-            face.vertexColors[2] = new THREE.Color(rVert3/255.0, gVert3/255.0, bVert3/255.0);
-
-            geometry.faces.push(face);
+        if (colorMode === MLJ.ColorMode.Face) {
+            if (_this.usingIndexedGeometry()) { // rebuild geometry as disconnected triangles
+                _this.updateMeshGeometryData(false);
+            }
+            colorptr = cppMesh.getFaceColors();
+            colorData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, colorptr, _this.FN*9));
+        } else {
+            if (!_this.usingIndexedGeometry()) { // rebuild geometry with index
+                _this.updateMeshGeometryData(true);
+            }
+            colorptr = cppMesh.getVertexColors();
+            colorData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, colorptr, _this.VN*3));
         }
 
-        Module._free(vertexColors);
-        Module._free(faceColors);
-        Module._free(vertexCoord);
-        Module._free(faceIndexVec);
+        if (geometry.getAttribute('VCGColor') !== undefined) {
+            delete geometry.attributes.VCGColor;
+        }
+        geometry.addAttribute('VCGColor', new THREE.BufferAttribute(colorData, 3));
+        Module._free(colorptr);
+    };
 
-        geometry.dynamic = true;
-    }
+    this.usingIndexedGeometry = function () {
+        return (_this.threeMesh.geometry.getAttribute('index') !== undefined);
+    };
+
+    this.updateThreeMesh = function () {
+        var cm = _this.overlaysParams.getByKey("ColorWheel").colorMode;
+        var useIndex = (cm !== MLJ.ColorMode.Face);
+        this.updateMeshGeometryData(useIndex);
+        this.updateMeshColorData(cm);
+    };
         
     /**
      * Returns this THREE.Mesh object
@@ -163,18 +192,8 @@ MLJ.core.Layer = function (name, cppMesh) {
     };
 
     /**
-     * updateThreeMesh (rebuild) this THREE.Mesh geometry
-     * @author Stefano Gabriele        
-     */
-    this.updateThreeMesh = function () {
-        _this.threeMesh.geometry.dispose();
-        buildMeshGeometry();
-    };
-    
-    /**
      * Returns the ptr to the cppMesh object
-     * @returns {THREE.Mesh} this THREE.Mesh object
-     *  
+     * @returns {Number} An emscripten pointer to the VCG mesh of this layer
      */
     this.ptrMesh = function () {
         return _this.cppMesh.getMeshPtr();
@@ -213,5 +232,4 @@ MLJ.core.Layer = function (name, cppMesh) {
         _this.threeMesh = _this.properties = _this.overlays = 
         _this.overlaysParams =  _this = null;       
     };
-    
 }

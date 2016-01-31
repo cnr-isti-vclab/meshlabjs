@@ -8,53 +8,35 @@
 
 using namespace vcg;
 
-/*
- * FIXME remove this
- */
-void ColorizeByVertexQualityTEST(uintptr_t meshptr)
-{
-	MyMesh &m = *((MyMesh*) meshptr);
-	for(MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-		if (!vi->IsD()) {
-			vi->Q() = vi->cP()[0] + vi->cP()[1] + vi->cP()[2];
-		}
-	}
-	std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
-	std::printf("Vertex quality range: %f %f\n", minmax.first, minmax.second);
-	tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, minmax.first, minmax.second);
-
-	for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-		if (!fi->IsD()) {
-			fi->C()[0] = std::rand()%256;
-			fi->C()[1] = std::rand()%256;
-			fi->C()[2] = std::rand()%256;
-		}
-	}
-}
-
 void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float perc, bool zerosym)
 {
 	MyMesh &m = *((MyMesh*) meshptr);
 	
-	bool usePerc = perc > 0;	
-	Histogramf H;
-	tri::Stat<MyMesh>::ComputePerVertexQualityHistogram(m, H);
+	bool usePerc = (perc > 0);
+	Distribution<float> H;
+	tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
 	float percLo = H.Percentile(perc/100.0f);
 	float percHi = H.Percentile(1.0f - (perc/100.0f));
-		
+	
+	if (qMin == qMax) {
+		std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+		qMin = minmax.first;
+		qMax = minmax.second;
+	}
+
 	if (zerosym) {
 		qMin = std::min(qMin, -math::Abs(qMax));
-		qMax = std::max(math::Abs(qMin), qMax);
+		qMax = -qMin;
 		percLo = std::min(percLo, -math::Abs(percHi));
-		percHi = std::max(math::Abs(percLo), percHi);
+		percHi = -percLo;
 	}
 
 	if (usePerc) {
 		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, percLo, percHi);
-		printf("Quality Range: %f %f; Used (%f %f) percentile (%f %f)\n", H.MinV(), H.MaxV(), percLo, percHi, perc, (100.0f-perc));
+		printf("Quality Range: %f %f; Used (%f %f) percentile (%f %f)\n", H.Min(), H.Max(), percLo, percHi, perc, (100.0f-perc));
 	} else {
 		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax);
-		printf("Quality Range: %f %f; Used (%f %f)\n", H.MinV(), H.MaxV(), qMin, qMax);
+		printf("Quality Range: %f %f; Used (%f %f)\n", H.Min(), H.Max(), qMin, qMax);
 	}
 }
 
@@ -83,7 +65,6 @@ void ColorizeByBorderDistance(uintptr_t meshptr)
 	}
 }
 
-// todo permeshattributehandle
 ColorHistogramf ComputeColorHistogram(
 		uintptr_t meshptr, bool vertexQuality, int binNum, bool areaWeighted, bool customRange, float rangeMin, float rangeMax)
 {
@@ -141,7 +122,6 @@ ColorHistogramf ComputeColorHistogram(
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ColorizePlugin) {
-	emscripten::function("ColorizeByVertexQualityTEST", &ColorizeByVertexQualityTEST);
 	emscripten::function("ColorizeByVertexQuality", &ColorizeByVertexQuality);
 	emscripten::function("ColorizeByBorderDistance", &ColorizeByBorderDistance);
 	emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);

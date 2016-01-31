@@ -137,6 +137,30 @@
     RndSelectionFilter._applyTo = function (meshFile) {
         Module.SelectionRandom(meshFile.ptrMesh(), vertRatioWidget.getValue(),faceRatioWidget.getValue());
     };
+/******************************************************************************/        
+    var SelectionByConnectedComponentSizeFilter = new plugin.Filter({
+            name:"Selection by Connected Component Size",
+            tooltip: "Select all the faces of the connected components composed by a "+
+                    "face number smaller than the given threshold. Useful for selecting "+
+                    "all the small pieces floating around noisy datasets.",
+            arity:1
+        });
+
+    var ccSizeRatioWidget;
+    SelectionByConnectedComponentSizeFilter._init = function (builder) {
+        ccSizeRatioWidget = builder.RangedFloat({
+            max: 1, min: 0, step: 0.1, defval: 0.2,
+            label: "CC Size Ratio",
+            tooltip: "The ratio (expressed as 0..1) of the maximum connected component size that will be selected. "+
+                    "E.g. with a ratio of 0.2 the filter will select all the connected components containing less than 20% of the number of faces "+
+                    "of the largest connected component."
+        });
+        
+    };
+
+    SelectionByConnectedComponentSizeFilter._applyTo = function (meshFile) {
+        Module.SelectionByConnectedComponentSize(meshFile.ptrMesh(), ccSizeRatioWidget.getValue());
+    };
 /******************************************************************************/
      var SelectionByQualityFilter = new plugin.Filter({
         name: "Selection by Quality",
@@ -202,7 +226,7 @@
 
     } 
     SelectionMoveToNewLayer._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Selection of "+basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createLayer("Selection of "+basemeshFile.name);
         Module.SelectionMoveToNewLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),deleteOrigFaceWidget.getValue());
         scene.addLayer(newmeshFile);
     };
@@ -217,5 +241,6 @@
     plugin.Manager.install(SelectionDeleteFace);
     plugin.Manager.install(SelectionDeleteVertex);
     plugin.Manager.install(SelectionMoveToNewLayer);
+    plugin.Manager.install(SelectionByConnectedComponentSizeFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

@@ -25,11 +25,12 @@
 
     };
 
-    MontecarloSamplingFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Montecarlo Samples");
-        Module.MontecarloSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(), sampleNumMCWidget.getValue(),
+    MontecarloSamplingFilter._applyTo = function (baseLayer) {
+        var newLayer = MLJ.core.Scene.createLayer("Montecarlo Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        Module.MontecarloSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(), sampleNumMCWidget.getValue(),
                 perFaceNormalWidget.getValue());
-        scene.addLayer(newmeshFile);
+        scene.addLayer(newLayer);
     };
 
     plugin.Manager.install(MontecarloSamplingFilter);
@@ -61,15 +62,50 @@
         });
     };
 
-    PoissonDiskSamplingFilter._applyTo = function (basemeshFile) {
+    PoissonDiskSamplingFilter._applyTo = function (baseLayer) {
 
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile("Poisson Disk Samples");
-        Module.PoissonDiskSampling(basemeshFile.ptrMesh(), newmeshFile.ptrMesh(),
+        var newLayer = MLJ.core.Scene.createLayer("Poisson Disk Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        Module.PoissonDiskSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(),
                                    radiusWidget.getValue(),sampleNumPDWidget.getValue(),  0);
-        scene.addLayer(newmeshFile);
+        scene.addLayer(newLayer);
     };
 
     plugin.Manager.install(PoissonDiskSamplingFilter);
 
+
+var VolumeMontecarloSamplingFilter = new plugin.Filter({
+        name: "Volume Montecarlo Sampling",
+        tooltip: "Compute a volumetric montecarlo sampling inside a watertight mesh.",
+        arity: 2
+    });
+
+    var sampleVolNumWidget;
+     
+    VolumeMontecarloSamplingFilter._init = function (builder) {
+
+        sampleVolNumWidget = builder.Integer({
+            min: 10, step: 1000, defval: 10000,
+            label: "Sample Num",
+            tooltip: "Number of volumetric samples scattered inside the mesh."
+        });
+    };
+
+    VolumeMontecarloSamplingFilter._applyTo = function (baseLayer) {
+
+        var newLayer = MLJ.core.Scene.createLayer("Volume Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        var ret = Module.VolumeMontecarloSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(),
+                                   sampleVolNumWidget.getValue());
+                                   
+        if(ret===true)
+        {            
+            newLayer.cppMesh.addPerVertexColor();
+            //newLayer.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+            scene.addLayer(newLayer);
+        }
+    };
+
+    plugin.Manager.install(VolumeMontecarloSamplingFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

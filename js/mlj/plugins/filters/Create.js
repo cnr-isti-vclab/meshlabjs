@@ -24,7 +24,7 @@
     };
     
     DuplicateLayerFilter._applyTo = function (basemeshFile) {
-        var newmeshFile = MLJ.core.Scene.createCppMeshFile(basemeshFile.name);
+        var newmeshFile = MLJ.core.Scene.createLayer("copy of "+basemeshFile.name);
         Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
@@ -38,7 +38,7 @@
     FlattenLayerFilter._init = function (builder) { };
     
     FlattenLayerFilter._applyTo = function () {
-        var mergedLayers = MLJ.core.Scene.createCppMeshFile("Merged Layers");
+        var mergedLayers = MLJ.core.Scene.createLayer("Merged Layers");
         
         var ptr = MLJ.core.Scene.getLayers().iterator();
                 var layerCur;
@@ -75,7 +75,7 @@
     };
 
     PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile(choiceWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer(choiceWidget.getContent());
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
@@ -103,14 +103,14 @@
     };
 
     PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile(choiceWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer(choiceWidget.getContent());
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
 
 /******************************************************************************/
     var SphereFilter = new plugin.Filter({
-        name: "Create Sphere ",
+        name: "Create Sphere",
         tooltip: "Create a sphere with the desired level of subdivision",
         arity: 0});
 
@@ -125,13 +125,13 @@
     };
 
     SphereFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Sphere");
+        var mf = MLJ.core.Scene.createLayer("Sphere");
         Module.CreateSphere(mf.ptrMesh(), sphereLevWidget.getValue());
         scene.addLayer(mf);
     };
 /******************************************************************************/
     var SpherePointCloudFilter = new plugin.Filter({
-        name: "Create Points on a Sphere ",
+        name: "Create Points on a Sphere",
         tooltip: "Create a point cloud with a set of point distributed on the surface of a sphere with a number of different strategies: Montecarlo, Poisson Disk, Octahedron recursive subdivision, Disco Ball, Fibonacci Spherical Lattice",
         arity: 0});
 
@@ -156,19 +156,20 @@
                 {content: "Poisson Disk", value: "1"},
                 {content: "Disco Ball", value: "2"},
                 {content: "Recursive Octahedron", value: "3"},
-                {content: "Fibonacci Lattice ", value: "4", selected: true}
+                {content: "Fibonacci Lattice", value: "4", selected: true}
             ]
         });
     };
 
     SpherePointCloudFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Sphere-"+sphPtAlgWidget.getContent());
+        var mf = MLJ.core.Scene.createLayer("Sphere-"+sphPtAlgWidget.getContent());
+        mf.cppMesh.addPerVertexNormal();
         Module.CreateSpherePointCloud(mf.ptrMesh(),sphPtNumWidget.getValue(), parseInt(sphPtAlgWidget.getValue()));
         scene.addLayer(mf);
     };
 /******************************************************************************/
     var TorusFilter = new plugin.Filter({
-        name: "Create Torus ",
+        name: "Create Torus",
         tooltip: "Create a torus with the desired level of subdivisions and ratio between inner and outer radius",
         arity: 0});
 
@@ -189,13 +190,13 @@
     };
 
     TorusFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Torus");
+        var mf = MLJ.core.Scene.createLayer("Torus");
         Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
 /******************************************************************************/
     var NoisyIsoFilter = new plugin.Filter({
-        name: "Create Noisy Isosurface ",
+        name: "Create Noisy Isosurface",
         tooltip: "Create a isosurface from a cylindrical scalar field perturbed by perlin noise",
         arity: 0});
 
@@ -209,7 +210,7 @@
     };
 
     NoisyIsoFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createCppMeshFile("Noisy Isosurf");
+        var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
         Module.CreateNoisyIsosurface(mf.ptrMesh(), isoResWidget.getValue());
         scene.addLayer(mf);
     };

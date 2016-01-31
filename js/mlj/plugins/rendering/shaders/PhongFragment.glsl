@@ -18,7 +18,7 @@ uniform vec3 specular;
 uniform float shininess;
 uniform float opacity;
 uniform int lights;
-uniform int meshColorMapping;
+uniform int mljColorMode;
 
 #define PI 3.14159
 
@@ -43,13 +43,12 @@ varying vec3 vColor;
 void main() {
     vec3 outgoingLight = vec3( 0.0 );
     vec4 diffuseColor;
-    if (meshColorMapping == COLOR_UNIFORM) {
+    if (mljColorMode == 0) {
         diffuseColor = vec4( diffuse, opacity );
-    } else if (meshColorMapping == COLOR_ATTRIBUTE) {
-        diffuseColor = vec4( vColor, opacity );
     } else {
-        diffuseColor = vec4( 0.0, 0.0, 0.0, opacity );
+        diffuseColor = vec4( vColor, opacity );
     }
+
     float specularStrength = 1.0;
     
     vec3 normal;
@@ -61,8 +60,8 @@ void main() {
         #endif
     } else {    
         vec3 fdx = dFdx( vViewPosition );
-	vec3 fdy = dFdy( vViewPosition );
-	normal = normalize( cross( fdx, fdy ) );
+	    vec3 fdy = dFdy( vViewPosition );
+	    normal = normalize( cross( fdx, fdy ) );
     }    
 
     vec3 viewPosition = normalize( vViewPosition );  
@@ -118,5 +117,5 @@ void main() {
     if(lights == 0)
         gl_FragColor = diffuseColor;
     else
-	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+	   gl_FragColor = vec4( outgoingLight, diffuseColor.a );
 }

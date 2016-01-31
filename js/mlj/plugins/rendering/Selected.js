@@ -8,11 +8,12 @@
     var DEFAULTS = {
         selection : BOTH_SELECTED_FACES_AND_VERTICES,
         pointColor : new THREE.Color('#FF0000'),
-        pointSize : 1,
+        pointSize : 6,
         faceColor : new THREE.Color('#FF0000'),
         faceOpacity : 0.5,
+        pointOpacity : 0.5
         //PRELOADING NEEDED ...
-        texture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
+        //discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png")
     };
 
     var plug = new plugin.Rendering({
@@ -73,13 +74,27 @@
         guiBuilder.RangedFloat({
             label: "Point Size",
             tooltip: "The size of selected points",
-            min: 0.5, max: 16, step: 0.5,
+            min: 1, max: 50, step: 1,
             defval: DEFAULTS.pointSize,
             bindTo: (function() {
                 var bindToFun = function (size, overlay) {
                     overlay.selectedPoints.material.uniforms['size'].value = size;
                 };
                 bindToFun.toString = function () { return 'pointSize'; };
+                return bindToFun;
+            }())
+        });
+
+        guiBuilder.RangedFloat({
+            label: "Point Opacity",
+            tooltip: "The opacity of selected points",
+            min: 0.0, max: 1, step: 0.01,
+            defval: DEFAULTS.pointOpacity,
+            bindTo: (function() {
+                var bindToFun = function (opacity, overlay) {
+                    overlay.selectedPoints.material.uniforms['pointOpacity'].value = opacity;
+                };
+                bindToFun.toString = function () { return 'pointOpacity'; };
                 return bindToFun;
             }())
         });
@@ -110,6 +125,8 @@
                 return bindToFun;
             }())
         });
+
+
     };
 
     plug._applyTo = function (meshFile, on) {
@@ -262,15 +279,23 @@
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
-                texture: {type: "t", value: DEFAULTS.texture}
+                pointOpacity : { type: "f", value: params.pointOpacity }
+                //discAlpha: {type: "t", value: DEFAULTS.discAlpha},
             };
 
-            var shaderMaterial = new THREE.ShaderMaterial({
+            var shaderMaterial = new THREE.RawShaderMaterial({
                 uniforms: uniforms,
                 attributes: attributes,
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
-                alphaTest: 0.9
+                //alphaTest: 0.9,
+                blending: THREE.NormalBlending,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false
+                //polygonOffset: true,
+                //polygonOffsetFactor: 0.0,
+                //polygonOffsetUnits: -1.0
             });
 
             /*

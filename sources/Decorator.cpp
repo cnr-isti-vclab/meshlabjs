@@ -1,5 +1,6 @@
 #include "mesh_def.h"
 #include <vector>
+#include <set>
 
 using namespace vcg;
 using namespace std;
@@ -90,6 +91,195 @@ uintptr_t buildSelectedPointsCoordsVec(uintptr_t _mIn) {
 	return (uintptr_t)((void *)pointsCoordsVec);
 }
 
+uintptr_t buildNonManifoldEdgeCoordsVec(uintptr_t _mIn) {
+
+    MyMesh &mIn = *((MyMesh*) _mIn);
+
+    tri::UpdateTopology<MyMesh>::FaceFace(mIn);
+
+    set<std::pair<MyVertex*,MyVertex*>> edgeSet;
+
+    size_t numNonManifEdges = 0;
+    size_t numAdjacentFaces = 0;
+
+    for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+      if(!(*fi).IsD()) {
+        for(int i=0;i<3;++i)
+        {
+           face::Pos<MyFace> pos(&*fi,i);
+           const int faceOnEdgeNum =  min(pos.NumberOfFacesOnEdge(),4);
+
+           if(faceOnEdgeNum == 2 || faceOnEdgeNum == 1) continue;
+
+           bool edgeNotPresent; // true if the edge was not present in the set
+           if ( (*fi).V0(i)<(*fi).V1(i)) edgeNotPresent = edgeSet.insert(make_pair((*fi).V0(i),(*fi).V1(i))).second;
+           else edgeNotPresent = edgeSet.insert(make_pair((*fi).V1(i),(*fi).V0(i))).second;
+
+           if(edgeNotPresent){
+              ++numNonManifEdges;
+           }
+
+           ++numAdjacentFaces;
+        }
+      }
+    }
+
+    edgeSet.clear();
+
+    size_t totalSizeInBytes = sizeof(float) * (2 +
+                              numNonManifEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX +
+                              numAdjacentFaces * NUM_VERTICES_PER_FACE * NUM_FLOATS_PER_VERTEX);
+
+    float *startBuffer = (float *)malloc(totalSizeInBytes);
+
+    *startBuffer = (float)(numNonManifEdges);// write number of non manifold edges
+    *(startBuffer + 1) = (float)(numAdjacentFaces);	// write number of adjacent faces
+
+    if (numNonManifEdges == 0) {
+        return (uintptr_t)((void *)startBuffer);
+    }
+
+    float *coordsEdgesVecPtr = startBuffer + 2;
+    float *coordsFacesVecPtr = coordsEdgesVecPtr + (numNonManifEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX);
+
+    for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+          if(!(*fi).IsD()) {
+            for(int i=0;i<3;++i)
+            {
+               face::Pos<MyFace> pos(&*fi,i);
+               const int faceOnEdgeNum =  min(pos.NumberOfFacesOnEdge(),4);
+
+               if(faceOnEdgeNum == 2 || faceOnEdgeNum == 1) continue;
+
+               bool edgeNotPresent; // true if the edge was not present in the set
+               if ( (*fi).V0(i)<(*fi).V1(i)) edgeNotPresent = edgeSet.insert(make_pair((*fi).V0(i),(*fi).V1(i))).second;
+               else edgeNotPresent = edgeSet.insert(make_pair((*fi).V1(i),(*fi).V0(i))).second;
+
+               Point3f p0, p1, p2;
+
+               p0 = fi->V0(i)->P();
+               p1= fi->V1(i)->P();
+               p2= fi->V2(i)->P();
+
+               if(edgeNotPresent){
+                    *coordsEdgesVecPtr++ = p0[0];
+                    *coordsEdgesVecPtr++ = p0[1];
+                    *coordsEdgesVecPtr++ = p0[2];
+
+                    *coordsEdgesVecPtr++ = p1[0];
+                    *coordsEdgesVecPtr++ = p1[1];
+                    *coordsEdgesVecPtr++ = p1[2];
+               }
+
+               *coordsFacesVecPtr++ = p0[0];
+               *coordsFacesVecPtr++ = p0[1];
+               *coordsFacesVecPtr++ = p0[2];
+
+               *coordsFacesVecPtr++ = p1[0];
+               *coordsFacesVecPtr++ = p1[1];
+               *coordsFacesVecPtr++ = p1[2];
+
+               *coordsFacesVecPtr++ = p2[0];
+               *coordsFacesVecPtr++ = p2[1];
+               *coordsFacesVecPtr++ = p2[2];
+
+            }
+          }
+    }
+
+    return (uintptr_t)((void *)startBuffer);
+}
+
+uintptr_t buildNonManifoldVertexCoordsVec(uintptr_t _mIn) {
+
+    MyMesh &mIn = *((MyMesh*) _mIn);
+
+    //mIn.face.EnableFFAdjacency();
+    tri::UpdateTopology<MyMesh>::FaceFace(mIn);
+    tri::SelectionStack<MyMesh> ss(mIn);
+    ss.push();
+
+    tri::UpdateSelection<MyMesh>::VertexClear(mIn);
+    tri::Clean<MyMesh>::CountNonManifoldVertexFF(mIn,true);
+    tri::UpdateFlags<MyMesh>::VertexClearV(mIn);
+
+    size_t numNonManifVerts = 0;
+    size_t numAdjacentFaces = 0;
+
+    for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+        if(!(*fi).IsD()) {
+            for(int i=0;i<3;++i)
+            {
+                if((*fi).V(i)->IsS())
+                {
+                    if(!(*fi).V0(i)->IsV())
+                    {
+                           ++numNonManifVerts;
+                           (*fi).V0(i)->SetV();
+                    }
+
+                    ++numAdjacentFaces;
+                }
+            }
+        }
+    }
+
+    tri::UpdateFlags<MyMesh>::VertexClearV(mIn);
+
+    size_t totalSizeInBytes = sizeof(float) * (2 +
+                                    numNonManifVerts * NUM_FLOATS_PER_VERTEX +
+                                    numAdjacentFaces * NUM_VERTICES_PER_FACE * NUM_FLOATS_PER_VERTEX);
+
+    float *startBuffer = (float *)malloc(totalSizeInBytes);
+
+    *startBuffer = (float)(numNonManifVerts);// write number of non manifold vertices
+    *(startBuffer + 1) = (float)(numAdjacentFaces);	// write number of adjacent faces
+
+    if (numNonManifVerts == 0) {
+        return (uintptr_t)((void *)startBuffer);
+    }
+
+    float *coordsVecPtr = startBuffer + 2;
+    float *coordsFacesVecPtr = coordsVecPtr + (numNonManifVerts * NUM_FLOATS_PER_VERTEX);
+
+    for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+        if(!(*fi).IsD()) {
+            for(int i=0;i<3;++i)
+            {
+                 if((*fi).V(i)->IsS())
+                 {
+                    if(!(*fi).V0(i)->IsV())
+                    {
+                        Point3f p = fi->V0(i)->P();
+                        *coordsVecPtr++ = p[0];
+                        *coordsVecPtr++ = p[1];
+                        *coordsVecPtr++ = p[2];
+                        (*fi).V0(i)->SetV();
+                    }
+
+                    Point3f p0 = fi->V0(i)->P();
+                    Point3f p1= fi->V1(i)->P(); //(fi->V0(i)->P() + fi->V1(i)->P())/2.0f;
+                    Point3f p2= fi->V2(i)->P(); //(fi->V0(i)->P() + fi->V2(i)->P())/2.0f;
+
+                    *coordsFacesVecPtr++ = p0[0];
+                    *coordsFacesVecPtr++ = p0[1];
+                    *coordsFacesVecPtr++ = p0[2];
+
+                    *coordsFacesVecPtr++ = p1[0];
+                    *coordsFacesVecPtr++ = p1[1];
+                    *coordsFacesVecPtr++ = p1[2];
+
+                    *coordsFacesVecPtr++ = p2[0];
+                    *coordsFacesVecPtr++ = p2[1];
+                    *coordsFacesVecPtr++ = p2[2];
+                 }
+            }
+        }
+    }
+
+    ss.pop();
+    return (uintptr_t)((void *)startBuffer);
+}
 
 uintptr_t buildBoundaryEdgesCoordsVec(uintptr_t _mIn) {
 
@@ -335,6 +525,8 @@ EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
     emscripten::function("buildSelectedFacesCoordsVec", &buildSelectedFacesCoordsVec);
     emscripten::function("buildSelectedPointsCoordsVec", &buildSelectedPointsCoordsVec);
     emscripten::function("buildBoundaryEdgesCoordsVec", &buildBoundaryEdgesCoordsVec);
+    emscripten::function("buildNonManifoldVertexCoordsVec", &buildNonManifoldVertexCoordsVec);
+    emscripten::function("buildNonManifoldEdgeCoordsVec", &buildNonManifoldEdgeCoordsVec);
     emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
     emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
 }

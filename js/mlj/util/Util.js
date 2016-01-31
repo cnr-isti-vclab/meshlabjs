@@ -82,6 +82,23 @@ MLJ.util.loadFile = function (path, callback) {
 };
 
 /**
+ * Returns an the value of a parameter specified in the URL 
+ * something like http://www.meshlabjs.net/?filterName=Create%20Sphere
+ * 
+ * @param {name} The name of the parameter to be retrieve
+ * @returns {Array} The string with the value of that parameter. 
+ * Strings are URI decoded, so you can put %20 inside to specify a 'space'
+ * Returns an empty string if param with that name is found. 
+ * It is used to specify name of a  filter at startup;
+ */
+MLJ.util.getURLParam = function(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+/**
  * Returns an array without duplicates
  * @param {type} array The array to be cleaned
  * @returns {Array} The array without duplicates
