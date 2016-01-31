@@ -156,17 +156,24 @@ bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uin
     printf("Volume Sampling Requires Watertight Mesh. Nothing Done.\n");
     return false;
   } 
- 
+  tri::UpdateBounding<MyMesh>::Box(baseM);
+  float meshVol = tri::Stat<MyMesh>::ComputeMeshVolume(baseM);
+  float boxVol = baseM.bbox.Volume();
+  printf("Volume ratio %f = %f/%f \n", meshVol/boxVol,meshVol,boxVol);
+  
   MyMesh pVm; // unused...  
   tri::VoronoiVolumeSampling<MyMesh> vvs(baseM, pVm);
   float poissonRadiusSurface = baseM.bbox.Diag()*surfSamplingRadius;
   int t0=clock();
   vvs.Init(poissonRadiusSurface);  
-  vvs.BuildMontecarloSampling(montecarloSampleNum);
   int t1=clock();
-  vvs.ThicknessEvaluator(distThr,16,3,skelM);
+  vvs.BuildMontecarloSampling(montecarloSampleNum);
   int t2=clock();
-  printf("Sampling %4.2f Medial Axis Eval %5.2f\n",float(t1-t0)/CLOCKS_PER_SEC,float(t2-t1)/CLOCKS_PER_SEC);
+  vvs.ThicknessEvaluator(distThr,16,3,skelM);
+  int t3=clock();
+  printf("Surface Sampling %5.2f sec\n",float(t1-t0)/CLOCKS_PER_SEC);
+  printf("Volume  Sampling %5.2f sec\n",float(t2-t1)/CLOCKS_PER_SEC);
+  printf("Medial Axis Eval %5.2f sec\n",float(t3-t2)/CLOCKS_PER_SEC);
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(baseM);
   if(surfSamp) 
   {
