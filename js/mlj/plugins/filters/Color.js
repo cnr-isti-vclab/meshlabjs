@@ -2,7 +2,8 @@
 
 	var ColorFromVertexQualityFilter = new plugin.Filter({
 		name: "Generate Color from Vertex Quality",
-		tooltip: "Generate a color for each vertex according to its Quality attribute value.",
+		tooltip: "Assign color to each vertex according to the scalar value stored in quality. <br>"
+                        +"A standard rainbow (red-green-blue) colormap is used.",
 		arity: 1
 	});
 
