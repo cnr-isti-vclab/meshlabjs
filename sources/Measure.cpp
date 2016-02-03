@@ -161,8 +161,7 @@ bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uin
   float boxVol = baseM.bbox.Volume();
   printf("Volume ratio %f = %f/%f \n", meshVol/boxVol,meshVol,boxVol);
   
-  MyMesh pVm; // unused...  
-  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM, pVm);
+  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
   float poissonRadiusSurface = baseM.bbox.Diag()*surfSamplingRadius;
   int t0=clock();
   vvs.Init(poissonRadiusSurface);  

@@ -107,5 +107,39 @@ var VolumeMontecarloSamplingFilter = new plugin.Filter({
     };
 
     plugin.Manager.install(VolumeMontecarloSamplingFilter);
+    
+    
+var VolumePoissonSamplingFilter = new plugin.Filter({
+        name: "Volume Poisson Sampling",
+        tooltip: "Compute a volumetric Poisson sampling inside a watertight mesh.",
+        arity: 2
+    });
 
+    var VPSradiusWidget;
+     
+    VolumePoissonSamplingFilter._init = function (builder) {
+
+        VPSradiusWidget = builder.Float({
+            min: 0.0, step: 0.01, defval: "0.05",
+            label: "Poisson Radius",
+            tooltip: "The poisson sphere radius. Expressed as a percentage of the bbox diagonal"
+        });
+    };
+
+    VolumePoissonSamplingFilter._applyTo = function (baseLayer) {
+
+        var newLayer = MLJ.core.Scene.createLayer("Volume Poisson Samples");
+        newLayer.cppMesh.addPerVertexNormal();
+        var ret = Module.VolumePoissonSampling(baseLayer.ptrMesh(), newLayer.ptrMesh(),
+                                   VPSradiusWidget.getValue());
+                                   
+        if(ret===true)
+        {            
+            newLayer.cppMesh.addPerVertexColor();
+            //newLayer.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+            scene.addLayer(newLayer);
+        }
+    };
+
+    plugin.Manager.install(VolumePoissonSamplingFilter);
 })(MLJ.core.plugin, MLJ.core.Scene);
