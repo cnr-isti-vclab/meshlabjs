@@ -13,7 +13,7 @@
     
     var plug = new plugin.Rendering({
         name: "Histogram",        
-        tooltip: "Show an histogram with the distribution of  per-vertex/per-face scalar values stored in the current layer.<br>"
+        tooltip: "Show an histogram with the distribution of  per-vertex/per-face scalar values stored in the current layer. <br>"
                 +"The histogram is colored with with the average color that corresponds to each value.",
         icon: "img/icons/histogram.png",
         toggle: true,
