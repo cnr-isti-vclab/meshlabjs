@@ -1,6 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/point_sampling.h>
-#include<vcg/complex/algorithms/voronoi_volume_sampling.h>
+#include <vcg/complex/algorithms/smooth.h>
+#include <vcg/complex/algorithms/voronoi_volume_sampling.h>
 
 using namespace vcg;
 using namespace std;
@@ -47,8 +48,27 @@ void MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum, bool
   tri::SurfaceSampling<MyMesh,BaseSampler>::Montecarlo(baseM, mcSampler, sampleNum);
 }
 
-void VolumePoissonSampling(uintptr_t _baseM, uintptr_t _newM, float sampleSurfRadiusPerc, int sampleVolNum)
+bool VolumePoissonSampling(uintptr_t _baseM, uintptr_t _newM, float poissonRadiusPerc)
 {
+  MyMesh &baseM = *((MyMesh*) _baseM);
+  MyMesh &pVm = *((MyMesh*) _newM);
+  
+  if(!tri::Clean<MyMesh>::IsWaterTight(baseM))
+  {
+    printf("\nVolume Sampling Require Watertight Mesh. Nothing Done\n\n");
+    return false;
+  }
+  float poissonRadius = baseM.bbox.Diag()*poissonRadiusPerc;
+  float poissonSphereVol = M_PI*(4.0/3.0)*pow(poissonRadius,3.0);
+  float meshVol = tri::Stat<MyMesh>::ComputeMeshVolume(baseM);
+  float expectedSampleNum = meshVol / poissonSphereVol;
+  printf("Expected sample num %5.2f\n ",expectedSampleNum);
+  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
+  vvs.Init();  
+  vvs.BuildVolumeSampling(expectedSampleNum*10,0,poissonRadius,0);
+  tri::Append<MyMesh,MyMesh>::MeshCopy(pVm,vvs.seedMesh);
+  tri::UpdateColor<MyMesh>::PerVertexQualityRamp(pVm);  
+  return true;
 }
 
 bool VolumeMontecarloSampling(uintptr_t _baseM, uintptr_t _newM, int montecarloSampleNum)
@@ -57,16 +77,51 @@ bool VolumeMontecarloSampling(uintptr_t _baseM, uintptr_t _newM, int montecarloS
   MyMesh &mcVm = *((MyMesh*) _newM);
   if(!tri::Clean<MyMesh>::IsWaterTight(baseM))
   {
-    printf("Volume Sampling Require Watertight Mesh. Nothing Done.\n");
+    printf("\nVolume Sampling Require Watertight Mesh. Nothing Done\n\n");
     return false;
   }
-
-  MyMesh pVm; // unused...
-  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM, pVm);
+ 
+  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
   vvs.Init();  
   vvs.BuildMontecarloSampling(montecarloSampleNum);
   tri::Append<MyMesh,MyMesh>::MeshCopy(mcVm,vvs.montecarloVolumeMesh);
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(mcVm);
+  return true;
+}
+
+bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM, 
+                              float poissonRadiusPerc, int relaxStep, 
+                              int scaffoldingType, float voxelPerc, float isoThrPerc, bool surfFlag,
+                              int randSeed)
+{
+  MyMesh &baseM = *((MyMesh*) _baseM);
+  MyMesh &vsM = *((MyMesh*) _newM);
+  tri::UpdateBounding<MyMesh>::Box(baseM);
+  
+  if(!tri::Clean<MyMesh>::IsWaterTight(baseM))
+  {
+    printf("\nVoronoi Scaffolding Requires Watertight Mesh. Nothing Done\n\n");
+    return false;
+  }
+  float poissonRadius = baseM.bbox.Diag()*poissonRadiusPerc;
+  float voxelSize = baseM.bbox.Diag()*voxelPerc;
+  float isoThr = baseM.bbox.Diag()*isoThrPerc;
+  float poissonSphereVol = M_PI*(4.0/3.0)*pow(poissonRadius/2.0,3.0);
+  float meshVol = tri::Stat<MyMesh>::ComputeMeshVolume(baseM);
+  float expectedSampleNum = meshVol / poissonSphereVol;
+  
+  printf("Expected volume sample num %5.2f\n ",expectedSampleNum);
+  tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
+  vvs.rng.initialize(randSeed);
+  float surfaceSamplingRadius = baseM.bbox.Diag()/100.0;
+  vvs.Init(surfaceSamplingRadius);  
+  vvs.BuildVolumeSampling(expectedSampleNum*30,0, poissonRadius,randSeed);  
+  printf("VS: Montecarlo %i Seeds %i\n",vvs.montecarloVolumeMesh.vn, vvs.seedMesh.vn);
+  vvs.BarycentricRelaxVoronoiSamples(relaxStep);
+
+  vvs.BuildScaffoldingMesh(vsM,voxelSize,isoThr,scaffoldingType,surfFlag);
+  tri::Smooth<MyMesh>::VertexCoordLaplacian(vsM, 1);
+
   return true;
 }
 
@@ -75,8 +130,9 @@ void SamplingPluginTEST()
 {
   for(int i=0;i<5;++i)
   {
-    MyMesh m,p;
+    MyMesh m,p,s;
     Torus(m,10,5);
+    tri::UpdateBounding<MyMesh>::Box(m);
     int sampleNum = 1000+i*i*1000;
     int t0=clock();
     MontecarloSamplingML(uintptr_t(&m),uintptr_t(&p),sampleNum,false);
@@ -85,10 +141,16 @@ void SamplingPluginTEST()
     PoissonDiskSamplingML(uintptr_t(&m),uintptr_t(&p),0,sampleNum,0);
     int t2=clock();
     printf("PoissonDiskSamplingML a mesh of %i f with %i sample. Obtained %i samples in %6.3f sec\n",m.fn, sampleNum,p.vn,float(t2-t1)/CLOCKS_PER_SEC);
-    fflush(stdout);
     VolumeMontecarloSampling(uintptr_t(&m),uintptr_t(&p),sampleNum);
     int t3=clock();
     printf("VolumeMontecarloSampling a mesh of %i f with %i sample. Obtained %i samples in %6.3f sec\n",m.fn, sampleNum,p.vn,float(t3-t2)/CLOCKS_PER_SEC);    
+    VolumePoissonSampling(uintptr_t(&m),uintptr_t(&p),0.1);
+    int t4=clock();
+    printf("VolumePoissonSampling a mesh of %i f with %f radius. Obtained %i samples in %6.3f sec\n",m.fn, m.bbox.Diag()*0.1,p.vn,float(t4-t3)/CLOCKS_PER_SEC);    
+    CreateVoronoiScaffolding(uintptr_t(&m),uintptr_t(&s), 0.1,1,1,0.01f,0.01f,true,0);
+    int t5=clock();
+    printf("CreateVoronoiScaffolding a mesh of %i f with %f radius. Obtained %i samples in %6.3f sec\n",m.fn, m.bbox.Diag()*0.1,s.vn,float(t5-t4)/CLOCKS_PER_SEC);    
+    fflush(stdout);
   }
 }
 
@@ -96,8 +158,10 @@ void SamplingPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLSamplingPlugin) {
-    emscripten::function("PoissonDiskSampling", &PoissonDiskSamplingML);
-    emscripten::function("MontecarloSampling", &MontecarloSamplingML);
+    emscripten::function("PoissonDiskSampling",      &PoissonDiskSamplingML);
+    emscripten::function("MontecarloSampling",       &MontecarloSamplingML);
     emscripten::function("VolumeMontecarloSampling", &VolumeMontecarloSampling);
+    emscripten::function("VolumePoissonSampling",    &VolumePoissonSampling);
+    emscripten::function("CreateVoronoiScaffolding", &CreateVoronoiScaffolding);
 }
 #endif

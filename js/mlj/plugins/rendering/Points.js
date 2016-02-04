@@ -43,7 +43,7 @@
 
     var plug = new plugin.Rendering({
         name: "Points",
-        tooltip: "Points Tooltip",
+        tooltip: "Enable the rendering of vertexes of the current mesh layer.",
         icon: "img/icons/points.png",
         toggle: true,
         on: false,

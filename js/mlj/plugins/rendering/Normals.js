@@ -20,7 +20,7 @@
 
     var plug = new plugin.Rendering({
         name: "Normals",
-        tooltip: "Normals Tooltip",
+        tooltip: "Enable the visualization of per-vertex/per-face normals",
         icon: "img/icons/normal.png",
         toggle: true,
         on: false,

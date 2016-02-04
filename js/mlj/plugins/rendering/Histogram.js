@@ -13,7 +13,8 @@
     
     var plug = new plugin.Rendering({
         name: "Histogram",        
-        tooltip: "Histogram Tooltip",
+        tooltip: "Show an histogram with the distribution of  per-vertex/per-face scalar values stored in the current layer. <br>"
+                +"The histogram is colored with with the average color that corresponds to each value.",
         icon: "img/icons/histogram.png",
         toggle: true,
         on: false,
@@ -28,7 +29,7 @@
         }
     };
 
-    var qualitySelection, nBins, areaWeighted, fixedWidth, histogramWidth, rangeMin, rangeMax;
+    var qualitySelection, nBins, areaWeighted, fixedWidth, histogramWidth, rangeMin, rangeMax, digitW;
 
     plug._init = function (guiBuilder) {
 
@@ -48,7 +49,7 @@
 
         nBins = guiBuilder.Integer({
             label: "Histogram Bins",
-            tooltip: "",
+            tooltip: "The number of bins on which the histogram is computed. ",
             defval: "256",
             min: 2,
             bindTo: (function () {
@@ -57,7 +58,18 @@
                 return bindToFun;
             })()
         });
-
+        
+        digitW = guiBuilder.Integer({
+            label: "Digits",
+            tooltip: "Number of decimal digits shown on the side of the histogram",
+            defval: "2",
+            min: 0,
+            bindTo: (function () {
+                var bindToFun = function () { plug._onHistogramParamChange(); };
+                bindToFun.toString = function () { return 2; };
+                return bindToFun;
+            })()
+        });
         areaWeighted = guiBuilder.Bool({
             label: "Area Weighted",
             tooltip: "If checked, the quality values are weighted according to the surface area of the involved component. \
@@ -122,7 +134,7 @@
         return name.replace(/(:|\.)/g, "\\$1");
     };
 
-    function buildDottedLine(a, b, aVal, bVal, nticks) {
+    function buildDottedLine(a, b, aVal, bVal, nticks, digitNum) {
         var v = new THREE.Vector3().subVectors(b, a).multiplyScalar(1/(nticks-1));
 
         var points = [];
@@ -140,7 +152,7 @@
             labelref.push({
                 x: tick.x,
                 y: tick.y,
-                value: val.toFixed(2),
+                value: val.toFixed(digitNum),
             });
             val += step;
         }
@@ -279,9 +291,10 @@
             );
 
             var nticks = 15;
+            var digitNum = digitW.getValue();
 
             var lineData = buildDottedLine(new THREE.Vector3(0.035, borderY, 0), new THREE.Vector3(0.035, borderY+histH, 0),
-                ch.minV(), ch.maxV(), nticks);
+                ch.minV(), ch.maxV(), nticks, digitNum);
 
             var node = new THREE.Object3D();
             node.add(mesh);

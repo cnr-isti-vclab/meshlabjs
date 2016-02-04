@@ -34,7 +34,7 @@
     // Ok, now first build the object that represents the plugin
     var plug = new plugin.Rendering({
         name: "Filled",
-        tooltip: "Tooltip",
+        tooltip: "Enable the rendering of the triangle mesh surface of the current layer.",
         icon: "img/icons/flat.png",
         toggle: true,
         on: true,
