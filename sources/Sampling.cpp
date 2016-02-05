@@ -121,6 +121,7 @@ bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM,
 
   vvs.BuildScaffoldingMesh(vsM,voxelSize,isoThr,scaffoldingType,surfFlag);
   tri::Smooth<MyMesh>::VertexCoordLaplacian(vsM, 1);
+  tri::UpdateNormal<MyMesh>::PerVertexNormalized(vsM);
 
   return true;
 }
