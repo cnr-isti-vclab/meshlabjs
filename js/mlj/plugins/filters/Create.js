@@ -194,6 +194,84 @@
         Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
+	/******************************************************************************/
+    var superToroidFilter = new plugin.Filter({
+        name: "Create SuperToroid",
+        tooltip: "Create a supertoroid with the desired level of subdivisions",
+        arity: 0});
+
+    var stepWidget1, stepWidget2, radiusRatioWidget1, radiusRatioWidget2;
+    superToroidFilter._init = function (builder) {
+
+        stepWidget = builder.Integer({
+            min: 6, step: 1, defval: 32,
+            label: "subdivision",
+            tooltip: "Number of recursive subdivision of the sphere"
+        });
+		stepWidget1 = builder.RangedFloat({
+            min: 0.25, step: 0.1, max:2.50, defval:1.0,
+            label: " vertical squareness",
+            tooltip: "This amount controls the squareness of the vertical sections"
+        });
+        stepWidget2 = builder.RangedFloat({
+            min: 0.25, step: 0.1, max:2.50, defval:1.0,
+            label: "horizontal squareness",
+            tooltip: "This amount controls the squareness of the horizontal sections"
+        });
+        radiusRatioWidget1 = builder.Integer({
+            min:1 , step: 1, defval: 1,
+            label: "majorRatioX",
+            tooltip: "Major ratio in the X direction"
+        }); 
+		radiusRatioWidget2 = builder.Integer({
+            min:1 , step: 1, defval: 1,
+            label: "majorRatioY",
+            tooltip: "Major ratio in the Y direction"
+        }); 
+    };
+
+    superToroidFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("SuperToroid");
+        Module.CreateSuperToroid(mf.ptrMesh(),radiusRatioWidget1.getValue(),radiusRatioWidget2.getValue(), stepWidget1.getValue(), stepWidget2.getValue(),stepWidget.getValue());
+        scene.addLayer(mf);
+    };
+	/******************************************************************************/
+    var superQuadraticFilter = new plugin.Filter({
+        name: "Create SuperQuadratic",
+        tooltip: "Create a superquadratic with the desired level of subdivisions and specific main features",
+        arity: 0});
+
+    var stepWidget, feature1, feature2, feature3;
+    superQuadraticFilter._init = function (builder) {
+
+        stepWidget = builder.Integer({
+            min: 6, step: 1, defval: 32,
+            label: "subdivision",
+            tooltip: "Number of recursive subdivision of the sphere"
+        });
+		feature1 = builder.Float({ 
+            min: 0.00001, step: 0.1, defval:2.0,
+            label: "First feature",
+            tooltip: "Main features of the superquadratic"
+        });
+		feature2= builder.Float({ 
+            min: 0.00001, step: 0.1, defval:2.0,
+            label: "Second feature",
+            tooltip: "Main features of the superquadratic"
+        });
+		feature3 = builder.Float({ 
+            min: 0.00001, step: 0.1, defval:2.0,
+            label: "Third feature",
+            tooltip: "Main features of the superquadratic"
+        });
+        
+    };
+
+    superQuadraticFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("SuperQuadratic");
+        Module.CreateSuperQuadratic(mf.ptrMesh(),feature1.getValue(), feature2.getValue(), feature3.getValue(),stepWidget.getValue());
+        scene.addLayer(mf);
+    };
 /******************************************************************************/
     var NoisyIsoFilter = new plugin.Filter({
         name: "Create Noisy Isosurface",
@@ -226,5 +304,7 @@
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
     plugin.Manager.install(NoisyIsoFilter);
+	plugin.Manager.install(superToroidFilter);
+	plugin.Manager.install(superQuadraticFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

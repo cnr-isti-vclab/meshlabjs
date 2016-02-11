@@ -50,6 +50,20 @@ void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
+void CreateSuperToroid(uintptr_t _m, float a, float b, float s, float t, int ref)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    printf("Creating a supertoroid of parameters %f %f %f %f %i\n",a,b,s,t,ref);
+    tri::SuperToroid(m,a,b,s,t,ref*2,ref);
+    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+}
+void CreateSuperQuadratic(uintptr_t _m, float r, float s, float t, int ref)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    printf("Creating a superquadratic of parameters %f %f %f %i\n",r,s,t,ref);
+    tri::SuperEllipsoid(m,r,s,t,ref*2,ref);
+    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+}
 void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
 {
   MyMesh &m = *((MyMesh*) _m);
@@ -149,6 +163,24 @@ void CreatePluginTEST()
       if(i!=4) assert(IsWaterTight(m));
       tri::RequireCompactness(m);
     }
+
+
+    for(int i=1;i<=8;++i)
+    {
+      MyMesh m;
+      CreateSuperToroid(uintptr_t(&m),2,2,1,1,8*i);
+      if(i!=4) assert(IsWaterTight(m));
+      tri::RequireCompactness(m);
+    }
+
+    for(int i=1;i<=8;++i)
+    {
+      MyMesh m;
+      CreateSuperQuadratic(uintptr_t(&m),2,2,2,8*i);
+      if(i!=4) assert(IsWaterTight(m));
+      tri::RequireCompactness(m);
+    }
+
 }
 
 
@@ -158,10 +190,12 @@ void CreatePluginTEST()
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreatePlatonic", &CreatePlatonic);
     emscripten::function("CreateTorus", &CreateTorus);
+    emscripten::function("CreateSuperToroid", &CreateSuperToroid);
     emscripten::function("CreateSphere", &CreateSphere);
     emscripten::function("CreateSpherePointCloud", &CreateSpherePointCloud);
     emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
     emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);
+    emscripten::function("CreateSuperQuadratic", &CreateSuperQuadratic);
 }
 #endif
