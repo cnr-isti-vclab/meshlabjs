@@ -1,6 +1,6 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/smooth.h>
-
+#include <vcg/complex/algorithms/update/position.h>
 using namespace vcg;
 using namespace std;
 
@@ -33,6 +33,11 @@ void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalD
     }
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
+void Scale(uintptr_t _m, int scaleFactor)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    tri::UpdatePosition<MyMesh>::Scale(m, scaleFactor);
+}
 
 void SmoothPluginTEST()
 {
@@ -44,5 +49,6 @@ EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("LaplacianSmooth", &LaplacianSmooth);
     emscripten::function("TaubinSmooth", &TaubinSmooth);
     emscripten::function("RandomDisplacement", &RandomDisplacement);
+    emscripten::function("Scale", &Scale);
 }
 #endif

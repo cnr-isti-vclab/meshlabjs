@@ -80,12 +80,33 @@
     RndDisplacementFilter._applyTo = function (meshFile) {
         Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
     };
+/******************************************************************************/
+    var Scale = new plugin.Filter({
+            name:"Scale Mesh",
+            tooltip:null,
+            arity:1
+        });
+
+    var scaleFactor;
+    Scale._init = function (builder) {
+
+        scaleFactor = builder.Integer({
+            step: 1, defval: 1,
+            label: "Factor",
+            tooltip: "Scaling factor"
+        });
+        
+    };
+
+    Scale._applyTo = function (meshFile) {
+        Module.Scale(meshFile.ptrMesh(),scaleFactor.getValue());
+    };
 
 /******************************************************************************/
 
     plugin.Manager.install(LaplacianSmoothFilter);
     plugin.Manager.install(TaubinSmoothFilter);
     plugin.Manager.install(RndDisplacementFilter);
-
+	plugin.Manager.install(Scale);
 
 })(MLJ.core.plugin, MLJ.core.Scene);
