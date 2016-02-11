@@ -156,7 +156,7 @@
     });
 
     var VSradiusWidget,VSincludeSurfaceFlag,VSscaffoldingTypeWidget,VSVoxelPercWdg,
-    VSthicknessWidget,VSRelaxStepWdg,VSRandomSeedWdg;
+    VSthicknessWidget,VSRelaxStepWdg,VSSmoothStep,VSRandomSeedWdg;
      
     VoronoiScaffoldingFilter._init = function (builder) {
 
@@ -179,6 +179,7 @@
             options: [
                 {content: "Seed", value: "0"},
                 {content: "Edge", value: "1", selected: true},
+                {content: "Internal Edge", value: "4"},
                 {content: "Face", value: "2"},
                 {content: "Corner", value: "3"}
             ]
@@ -201,10 +202,15 @@
         });
         
         VSRelaxStepWdg = builder.Integer({
-            max: 10, min: 1, step: 1, defval: 1,
-            label: "Step",
+            max: 10, min: 0, step: 1, defval: 2,
+            label: "Lloyd Relax Step",
             tooltip: "How many lloyd relaxation are performed to the seeds. <br>"
                     +"Higher values give more uniform seed distribution"
+        });
+        VSSmoothStepWdg = builder.Integer({
+            max: 10, min: 0, step: 1, defval: 1,
+            label: "Final Smooth",
+            tooltip: "How many smoothing step are applied to the generated surface. <br>"
         });
         
         VSRandomSeedWdg = builder.Integer({
@@ -225,7 +231,8 @@
                                    VSradiusWidget.getValue(),VSRelaxStepWdg.getValue(),
                                    parseInt(VSscaffoldingTypeWidget.getValue()),
                                    VSVoxelPercWdg.getValue(),VSthicknessWidget.getValue(),
-                                   VSincludeSurfaceFlag.getValue(),VSRandomSeedWdg.getValue());
+                                   VSincludeSurfaceFlag.getValue(),VSSmoothStepWdg.getValue(),
+                                   VSRandomSeedWdg.getValue());
                                    
         if(ret===true)
         {            
