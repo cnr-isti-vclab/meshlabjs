@@ -50,18 +50,18 @@ void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
-void CreateSuperToroid(uintptr_t _m, float a, float b, float s, float t, int ref)
+void CreateSuperToroid(uintptr_t _m, float xRadius, float yRadius, float vSquare, float hSquare, int refinement)
 {
     MyMesh &m = *((MyMesh*) _m);
-    printf("Creating a supertoroid of parameters %f %f %f %f %i\n",a,b,s,t,ref);
-    tri::SuperToroid(m,a,b,s,t,ref*2,ref);
+    printf("Creating a supertoroid with subdivision level %i and ratio %f\n",refinement, xRadius);
+    tri::SuperToroid(m,xRadius,yRadius,vSquare,hSquare,refinement*2,refinement);
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
-void CreateSuperQuadratic(uintptr_t _m, float r, float s, float t, int ref)
+void CreateSuperEllipsoid(uintptr_t _m, float rFeature, float sFeature, float tFeature, int refinement)
 {
     MyMesh &m = *((MyMesh*) _m);
-    printf("Creating a superquadratic of parameters %f %f %f %i\n",r,s,t,ref);
-    tri::SuperEllipsoid(m,r,s,t,ref*2,ref);
+    printf("Creating a superellipsoid with subdivision level %i\n",refinement);
+    tri::SuperEllipsoid(m,rFeature,sFeature,tFeature,refinement*2,refinement);
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
@@ -168,19 +168,19 @@ void CreatePluginTEST()
     for(int i=1;i<=8;++i)
     {
       MyMesh m;
-      CreateSuperToroid(uintptr_t(&m),2,2,1,1,8*i);
-      if(i!=4) assert(IsWaterTight(m));
+      CreateSuperToroid(uintptr_t(&m),1,1,0.25*i,0.25*i,32);
+      assert(IsWaterTight(m));
       tri::RequireCompactness(m);
     }
 
     for(int i=1;i<=8;++i)
     {
       MyMesh m;
-      CreateSuperQuadratic(uintptr_t(&m),2,2,2,8*i);
-      if(i!=4) assert(IsWaterTight(m));
+      CreateSuperEllipsoid(uintptr_t(&m),0.5*i,0.5*i,0.5*i,32);
+      assert(IsWaterTight(m));
       tri::RequireCompactness(m);
     }
-
+    printf("FINITO\n");
 }
 
 
@@ -196,6 +196,6 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
     emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);
-    emscripten::function("CreateSuperQuadratic", &CreateSuperQuadratic);
+    emscripten::function("CreateSuperEllipsoid", &CreateSuperEllipsoid);
 }
 #endif
