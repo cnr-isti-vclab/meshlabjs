@@ -34,26 +34,24 @@ void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalD
     }
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
-void UniformScale(uintptr_t _m, int x)
+
+void Scale(uintptr_t _m, float x,float y, float z,bool uniform, bool unitbox)
 {
     MyMesh &m = *((MyMesh*) _m);
-    tri::UpdatePosition<MyMesh>::Scale(m, x);
-}
-void Scale(uintptr_t _m, int x,int y, int z)
-{
-    MyMesh &m = *((MyMesh*) _m);
-    tri::UpdatePosition<MyMesh>::Scale(m, Point3< tri::UpdatePosition<MyMesh>::ScalarType>(x,y,z));
-}
-void ScaleToUnitBox(uintptr_t _m)
-{
-   MyMesh &m = *((MyMesh*) _m);
-   vcg::tri::UpdateBounding<MyMesh>::Box(m);
-   float maxdim=math::Max(m.bbox.DimX(),m.bbox.DimY(),m.bbox.DimZ());
-   if(1/maxdim > 1)
-   {
-       printf("\nMax dim %f\n", 1/maxdim);
-       UniformScale(_m,-1/maxdim);
-   }
+	if(uniform)
+		tri::UpdatePosition<MyMesh>::Scale(m, Point3< tri::UpdatePosition<MyMesh>::ScalarType>(x,x,x));
+	else if(unitbox)
+	{
+		float maxdim=math::Max(m.bbox.DimX(),m.bbox.DimY(),m.bbox.DimZ());
+		vcg::tri::UpdateBounding<MyMesh>::Box(m);
+		if(1/maxdim > 1)
+		{
+		   printf("\nMax dim %f\n", 1/maxdim);
+           tri::UpdatePosition<MyMesh>::Scale(m, Point3<tri::UpdatePosition<MyMesh>::ScalarType>(1/maxdim,1/maxdim,1/maxdim));
+		}
+	}
+	else 
+		tri::UpdatePosition<MyMesh>::Scale(m, Point3< tri::UpdatePosition<MyMesh>::ScalarType>(x,y,z));
 }
 
 void SmoothPluginTEST()
@@ -67,7 +65,5 @@ EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("TaubinSmooth", &TaubinSmooth);
     emscripten::function("RandomDisplacement", &RandomDisplacement);
     emscripten::function("Scale", &Scale);
-	emscripten::function("UniformScale", &UniformScale);
-    emscripten::function("ScaleToUnitBox", &ScaleToUnitBox);
 }
 #endif

@@ -113,19 +113,17 @@
 		toUnitBox= builder.Bool({
             defval: false,
             label: "To Unit Box",
-            tooltip: "If true, the scale factor will be setted to fit in a unit box"
+            tooltip: "If true, the scale factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
         });
     };
 
 		Scale._applyTo = function (meshFile) {
 			if(uniform.getValue())
-				Module.UniformScale(meshFile.ptrMesh(),x.getValue());
-			else 
-				Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue());
-			if(toUnitBox.getValue())
-			{
-				Module.ScaleToUnitBox(meshFile.ptrMesh());
-			}
+				Module.Scale(meshFile.ptrMesh(),x.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
+			else if(toUnitBox.getValue()) //if the scale to unit box is checked, none of the factors matters
+				Module.Scale(meshFile.ptrMesh(),0,0,0,false,true);
+			else Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),false,false); //scale normally else
+			
 		};
 
 /******************************************************************************/
