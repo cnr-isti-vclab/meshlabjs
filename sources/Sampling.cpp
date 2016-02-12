@@ -118,8 +118,12 @@ bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM,
   vvs.BuildVolumeSampling(expectedSampleNum*30,0, poissonRadius,randSeed);  
   printf("VS: Montecarlo %i Seeds %i\n",vvs.montecarloVolumeMesh.vn, vvs.seedMesh.vn);
   vvs.BarycentricRelaxVoronoiSamples(relaxStep);
-     
-  vvs.BuildScaffoldingMesh(vsM,voxelSize,isoThr,scaffoldingType,surfFlag);
+  tri::VoronoiVolumeSampling<MyMesh>::Param pp;
+  pp.isoThr=isoThr;
+  pp.surfFlag=surfFlag;
+  pp.elemType=scaffoldingType;
+  pp.voxelSide=voxelSize;
+  vvs.BuildScaffoldingMesh(vsM,pp);
   tri::Smooth<MyMesh>::VertexCoordLaplacian(vsM, smoothStep);
   tri::UpdateNormal<MyMesh>::PerVertexNormalized(vsM);
 
@@ -152,7 +156,7 @@ void SamplingPluginTEST()
     printf("CreateVoronoiScaffolding a mesh of %i f with %f radius. Obtained %i samples in %6.3f sec\n",m.fn, m.bbox.Diag()*0.1,s.vn,float(t5-t4)/CLOCKS_PER_SEC);    
     fflush(stdout);
   }
-}
+} 
 
 
 #ifdef __EMSCRIPTEN__
