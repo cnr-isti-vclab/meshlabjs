@@ -87,20 +87,44 @@
             arity:1
         });
 
-    var scaleFactor;
+    var x,y,z,uniform, toUnitBox;
     Scale._init = function (builder) {
 
-        scaleFactor = builder.Integer({
+        x = builder.Integer({
             step: 1, defval: 1,
-            label: "Factor",
-            tooltip: "Scaling factor"
+            label: "X",
+            tooltip: "Scaling factor X Coordinate"
         });
-        
+        y = builder.Integer({
+            step: 1, defval: 1,
+            label: "y",
+            tooltip: "Scaling factor Y Coordinate"
+        });
+		z = builder.Integer({
+            step: 1, defval: 1,
+            label: "z",
+            tooltip: "Scaling factor Z Coordinate"
+        });
+		uniform= builder.Bool({
+            defval: false,
+            label: "Uniform Scaling",
+            tooltip: "If true, the scale factor for X will be the only one considered"
+        });
+		toUnitBox= builder.Bool({
+            defval: false,
+            label: "To Unit Box",
+            tooltip: "If true, the scale factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
+        });
     };
 
-    Scale._applyTo = function (meshFile) {
-        Module.Scale(meshFile.ptrMesh(),scaleFactor.getValue());
-    };
+		Scale._applyTo = function (meshFile) {
+			if(uniform.getValue())
+				Module.Scale(meshFile.ptrMesh(),x.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
+			else if(toUnitBox.getValue()) //if the scale to unit box is checked, none of the factors matters
+				Module.Scale(meshFile.ptrMesh(),0,0,0,false,true);
+			else Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),false,false); //scale normally else
+			
+		};
 
 /******************************************************************************/
 
@@ -108,5 +132,6 @@
     plugin.Manager.install(TaubinSmoothFilter);
     plugin.Manager.install(RndDisplacementFilter);
 	plugin.Manager.install(Scale);
+
 
 })(MLJ.core.plugin, MLJ.core.Scene);

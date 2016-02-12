@@ -1,6 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/smooth.h>
 #include <vcg/complex/algorithms/update/position.h>
+#include <vcg/space/box3.h>
 using namespace vcg;
 using namespace std;
 
@@ -33,10 +34,24 @@ void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalD
     }
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
-void Scale(uintptr_t _m, int scaleFactor)
+
+void Scale(uintptr_t _m, float x,float y, float z,bool uniform, bool unitbox)
 {
     MyMesh &m = *((MyMesh*) _m);
-    tri::UpdatePosition<MyMesh>::Scale(m, scaleFactor);
+	if(uniform)
+		tri::UpdatePosition<MyMesh>::Scale(m, Point3< tri::UpdatePosition<MyMesh>::ScalarType>(x,x,x));
+	else if(unitbox)
+	{
+		float maxdim=math::Max(m.bbox.DimX(),m.bbox.DimY(),m.bbox.DimZ());
+		vcg::tri::UpdateBounding<MyMesh>::Box(m);
+		if(1/maxdim > 1)
+		{
+		   printf("\nMax dim %f\n", 1/maxdim);
+           tri::UpdatePosition<MyMesh>::Scale(m, Point3<tri::UpdatePosition<MyMesh>::ScalarType>(1/maxdim,1/maxdim,1/maxdim));
+		}
+	}
+	else 
+		tri::UpdatePosition<MyMesh>::Scale(m, Point3< tri::UpdatePosition<MyMesh>::ScalarType>(x,y,z));
 }
 
 void SmoothPluginTEST()
