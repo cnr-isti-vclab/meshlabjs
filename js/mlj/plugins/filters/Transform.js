@@ -83,7 +83,7 @@
 /******************************************************************************/
     var Scale = new plugin.Filter({
             name:"Scale Mesh",
-            tooltip:null,
+            tooltip:"Scale the mesh according to factors relative to the x,y,z coordinate.\n Uniform Scaling only uses the x factor. Scale to Unit box scales uniformly the mesh to fit in a unit box defined from -1 to 1",
             arity:1
         });
 
@@ -97,12 +97,12 @@
         });
         y = builder.Integer({
             step: 1, defval: 1,
-            label: "y",
+            label: "Y",
             tooltip: "Scaling factor Y Coordinate"
         });
 		z = builder.Integer({
             step: 1, defval: 1,
-            label: "z",
+            label: "Z",
             tooltip: "Scaling factor Z Coordinate"
         });
 		uniform= builder.Bool({
@@ -113,7 +113,7 @@
 		toUnitBox= builder.Bool({
             defval: false,
             label: "To Unit Box",
-            tooltip: "If true, the scale factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
+            tooltip: "If true, the Scale Factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
         });
     };
 
