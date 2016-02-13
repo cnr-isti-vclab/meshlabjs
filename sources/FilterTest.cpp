@@ -22,7 +22,7 @@ int main(int /*argc*/, char*/*argv*/[])
   RefinePluginTEST();
   SamplingPluginTEST();
   SelectionPluginTEST();
-  SmoothPluginTEST();
+  TransformPluginTEST();
   printf("Done");
   return 0;
 }

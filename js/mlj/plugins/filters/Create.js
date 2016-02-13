@@ -130,6 +130,34 @@
         scene.addLayer(mf);
     };
 /******************************************************************************/
+    var SphericalCapFilter = new plugin.Filter({
+        name: "Create Spherical Cap",
+        tooltip: "Creating a spherical cap of a given angle amplitude and with specified subdivision level. Cap are triangulated without extraordinary vertexes so the generated mesh is good for small angle caps and of bad quality on the extreme case of an half sphere. ",
+        arity: 0});
+
+    var sphericalCapLevWidget,sphericalCapAngleWdg;
+    
+    SphericalCapFilter._init = function (builder) {
+
+        sphericalCapLevWidget = builder.Integer({
+            min: 1, step: 1, defval: 3,
+            label: "subdivision",
+            tooltip: "Number of recursive subdivision of the sphere"
+        });
+                sphericalCapAngleWdg = builder.RangedFloat({
+            min: 0, step: 15, max:180, defval:60,
+            label: "Cap Angle",
+            tooltip: "Angle of the spherical cap in degree. 180 means half sphere."
+        });
+
+    };
+
+    SphericalCapFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Spherical Cap");
+        Module.CreateSphericalCap(mf.ptrMesh(), sphericalCapAngleWdg.getValue(), sphericalCapLevWidget.getValue());
+        scene.addLayer(mf);
+    };
+/******************************************************************************/
     var SpherePointCloudFilter = new plugin.Filter({
         name: "Create Points on a Sphere",
         tooltip: "Create a point cloud with a set of point distributed on the surface of a sphere with a number of different strategies: Montecarlo, Poisson Disk, Octahedron recursive subdivision, Disco Ball, Fibonacci Spherical Lattice",
@@ -195,81 +223,77 @@
         scene.addLayer(mf);
     };
 	/******************************************************************************/
-    var superToroidFilter = new plugin.Filter({
+    var SuperToroidFilter = new plugin.Filter({
         name: "Create SuperToroid",
-        tooltip: "Create a supertoroid with the desired level of subdivisions",
+        tooltip: "Create a supertoroid with the desired level of subdivisions and a specific ratio, the vertical and horizontal squareness are the main parameters to obtain a different supertoroids models.",
         arity: 0});
 
-    var stepWidget1, stepWidget2, radiusRatioWidget1, radiusRatioWidget2;
-    superToroidFilter._init = function (builder) {
+    var stepWidget, stepWidget1, stepWidget2, radiusRatio1;
+    SuperToroidFilter._init = function (builder) {
 
         stepWidget = builder.Integer({
             min: 6, step: 1, defval: 32,
             label: "subdivision",
-            tooltip: "Number of recursive subdivision of the sphere"
+            tooltip: "Number of recursive subdivision of the supertoroid"
         });
 		stepWidget1 = builder.RangedFloat({
-            min: 0.25, step: 0.1, max:2.50, defval:1.0,
-            label: " vertical squareness",
-            tooltip: "This amount controls the squareness of the vertical sections"
+            min: 0.25, step: 0.1, max:2.50, defval:2.50,
+            label: " Vertical Squareness",
+            tooltip: "This amount controls the squareness of the vertical sections. The input range is between 0.25 and 2.50"
         });
         stepWidget2 = builder.RangedFloat({
-            min: 0.25, step: 0.1, max:2.50, defval:1.0,
-            label: "horizontal squareness",
-            tooltip: "This amount controls the squareness of the horizontal sections"
+            min: 0.25, step: 0.1, max:2.50, defval:2.50,
+            label: "Horizontal Squareness",
+            tooltip: "This amount controls the squareness of the horizontal sections. The input range is between 0.25 and 2.50"
         });
-        radiusRatioWidget1 = builder.Integer({
-            min:1 , step: 1, defval: 1,
-            label: "majorRatioX",
-            tooltip: "Major ratio in the X direction"
+        radiusRatio1 = builder.Float({
+            min:1.0 , step: 1.0, defval: 2.0,
+            label: "Radius Ratio",
+            tooltip: "This parameter specify the major radii in the X and Y directions about the supertoroid implemented"
         }); 
-		radiusRatioWidget2 = builder.Integer({
-            min:1 , step: 1, defval: 1,
-            label: "majorRatioY",
-            tooltip: "Major ratio in the Y direction"
-        }); 
+		
     };
 
-    superToroidFilter._applyTo = function () {
+    SuperToroidFilter._applyTo = function () {
         var mf = MLJ.core.Scene.createLayer("SuperToroid");
-        Module.CreateSuperToroid(mf.ptrMesh(),radiusRatioWidget1.getValue(),radiusRatioWidget2.getValue(), stepWidget1.getValue(), stepWidget2.getValue(),stepWidget.getValue());
+        Module.CreateSuperToroid(mf.ptrMesh(),radiusRatio1.getValue(),radiusRatio1.getValue(), stepWidget1.getValue(), stepWidget2.getValue(),stepWidget.getValue());
         scene.addLayer(mf);
     };
 	/******************************************************************************/
-    var superQuadraticFilter = new plugin.Filter({
-        name: "Create SuperQuadratic",
-        tooltip: "Create a superquadratic with the desired level of subdivisions and specific main features",
+    var SuperEllipsoidFilter = new plugin.Filter({
+        name: "Create SuperEllipsoid",
+        tooltip: "Create a superellipsoid with the desired level of subdivisions and a set of features that allow to change the shape of the superellipsoid",
         arity: 0});
 
     var stepWidget, feature1, feature2, feature3;
-    superQuadraticFilter._init = function (builder) {
+    SuperEllipsoidFilter._init = function (builder) {
 
         stepWidget = builder.Integer({
             min: 6, step: 1, defval: 32,
             label: "subdivision",
-            tooltip: "Number of recursive subdivision of the sphere"
+            tooltip: "Number of recursive subdivision of the superellipsoid"
         });
 		feature1 = builder.Float({ 
-            min: 0.00001, step: 0.1, defval:2.0,
+            min: 0.1, step: 0.1, defval:0.70,
             label: "First feature",
-            tooltip: "Main features of the superquadratic"
+            tooltip: "First feature of the superellipsoid."
         });
 		feature2= builder.Float({ 
-            min: 0.00001, step: 0.1, defval:2.0,
+            min: 0.1, step: 0.1, defval:0.70,
             label: "Second feature",
-            tooltip: "Main features of the superquadratic"
+            tooltip: "Second feature of the superellipsoid"
         });
 		feature3 = builder.Float({ 
-            min: 0.00001, step: 0.1, defval:2.0,
+            min: 0.1, step: 0.1, defval:0.70,
             label: "Third feature",
-            tooltip: "Main features of the superquadratic"
+            tooltip: "Third features of the superellipsoid"
         });
         
     };
 
-    superQuadraticFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createLayer("SuperQuadratic");
-        Module.CreateSuperQuadratic(mf.ptrMesh(),feature1.getValue(), feature2.getValue(), feature3.getValue(),stepWidget.getValue());
+    SuperEllipsoidFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("SuperEllipsoid");
+        Module.CreateSuperEllipsoid(mf.ptrMesh(),feature1.getValue(), feature2.getValue(), feature3.getValue(),stepWidget.getValue());
         scene.addLayer(mf);
     };
 /******************************************************************************/
@@ -300,11 +324,12 @@
     plugin.Manager.install(DuplicateLayerFilter);
     plugin.Manager.install(FlattenLayerFilter);
     plugin.Manager.install(SphereFilter);
+    plugin.Manager.install(SphericalCapFilter);
     plugin.Manager.install(SpherePointCloudFilter);
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
     plugin.Manager.install(NoisyIsoFilter);
-	plugin.Manager.install(superToroidFilter);
-	plugin.Manager.install(superQuadraticFilter);
+	plugin.Manager.install(SuperToroidFilter);
+	plugin.Manager.install(SuperEllipsoidFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

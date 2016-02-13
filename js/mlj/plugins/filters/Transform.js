@@ -80,12 +80,58 @@
     RndDisplacementFilter._applyTo = function (meshFile) {
         Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
     };
+/******************************************************************************/
+    var Scale = new plugin.Filter({
+            name:"Scale Mesh",
+            tooltip:"Scale the mesh according to factors relative to the x,y,z coordinate.\n Uniform Scaling only uses the x factor. Scale to Unit box scales uniformly the mesh to fit in a unit box defined from -1 to 1",
+            arity:1
+        });
+
+    var x,y,z,uniform, toUnitBox;
+    Scale._init = function (builder) {
+
+        x = builder.Integer({
+            step: 1, defval: 1,
+            label: "X",
+            tooltip: "Scaling factor X Coordinate"
+        });
+        y = builder.Integer({
+            step: 1, defval: 1,
+            label: "Y",
+            tooltip: "Scaling factor Y Coordinate"
+        });
+		z = builder.Integer({
+            step: 1, defval: 1,
+            label: "Z",
+            tooltip: "Scaling factor Z Coordinate"
+        });
+		uniform= builder.Bool({
+            defval: false,
+            label: "Uniform Scaling",
+            tooltip: "If true, the scale factor for X will be the only one considered"
+        });
+		toUnitBox= builder.Bool({
+            defval: false,
+            label: "To Unit Box",
+            tooltip: "If true, the Scale Factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
+        });
+    };
+
+		Scale._applyTo = function (meshFile) {
+			if(uniform.getValue())
+				Module.Scale(meshFile.ptrMesh(),x.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
+			else if(toUnitBox.getValue()) //if the scale to unit box is checked, none of the factors matters
+				Module.Scale(meshFile.ptrMesh(),0,0,0,false,true);
+			else Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),false,false); //scale normally else
+			
+		};
 
 /******************************************************************************/
 
     plugin.Manager.install(LaplacianSmoothFilter);
     plugin.Manager.install(TaubinSmoothFilter);
     plugin.Manager.install(RndDisplacementFilter);
+	plugin.Manager.install(Scale);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);
