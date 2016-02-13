@@ -34,11 +34,20 @@ void CreatePlatonic(uintptr_t _m, int index)
     }
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
+
 void CreateSphere(uintptr_t _m, int refinement)
 {
   printf("Creating a sphere with subdivision level %i\n",refinement);
     MyMesh &m = *((MyMesh*) _m);
     tri::Sphere(m,refinement);
+    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+}
+
+void CreateSphericalCap(uintptr_t _m, float angleDeg, int refinement)
+{
+  printf("Creating a spherical cap of a given angle aplitude and with specified subdivision level %i\n",refinement);
+    MyMesh &m = *((MyMesh*) _m);
+    tri::SphericalCap(m,math::ToRad(angleDeg), refinement);
     tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
 }
 
@@ -145,10 +154,11 @@ void CreatePluginTEST()
     assert(IsWaterTight(m));
   }
 
-  for(int i=0;i<5;++i)
+  for(int i=0;i<4;++i)
   {
   MyMesh m;
   CreateSphere(uintptr_t(&m),i);
+  CreateSphericalCap(uintptr_t(&m),30+i*30,i);
   assert(IsWaterTight(m));
   }
 
@@ -192,6 +202,7 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreateTorus", &CreateTorus);
     emscripten::function("CreateSuperToroid", &CreateSuperToroid);
     emscripten::function("CreateSphere", &CreateSphere);
+    emscripten::function("CreateSphericalCap", &CreateSphericalCap);
     emscripten::function("CreateSpherePointCloud", &CreateSpherePointCloud);
     emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
