@@ -130,6 +130,34 @@
         scene.addLayer(mf);
     };
 /******************************************************************************/
+    var SphericalCapFilter = new plugin.Filter({
+        name: "Create Spherical Cap",
+        tooltip: "Creating a spherical cap of a given angle amplitude and with specified subdivision level. Cap are triangulated without extraordinary vertexes so the generated mesh is good for small angle caps and of bad quality on the extreme case of an half sphere. ",
+        arity: 0});
+
+    var sphericalCapLevWidget,sphericalCapAngleWdg;
+    
+    SphericalCapFilter._init = function (builder) {
+
+        sphericalCapLevWidget = builder.Integer({
+            min: 1, step: 1, defval: 3,
+            label: "subdivision",
+            tooltip: "Number of recursive subdivision of the sphere"
+        });
+                sphericalCapAngleWdg = builder.RangedFloat({
+            min: 0, step: 15, max:180, defval:60,
+            label: "Cap Angle",
+            tooltip: "Angle of the spherical cap in degree. 180 means half sphere."
+        });
+
+    };
+
+    SphericalCapFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Spherical Cap");
+        Module.CreateSphericalCap(mf.ptrMesh(), sphericalCapAngleWdg.getValue(), sphericalCapLevWidget.getValue());
+        scene.addLayer(mf);
+    };
+/******************************************************************************/
     var SpherePointCloudFilter = new plugin.Filter({
         name: "Create Points on a Sphere",
         tooltip: "Create a point cloud with a set of point distributed on the surface of a sphere with a number of different strategies: Montecarlo, Poisson Disk, Octahedron recursive subdivision, Disco Ball, Fibonacci Spherical Lattice",
@@ -296,6 +324,7 @@
     plugin.Manager.install(DuplicateLayerFilter);
     plugin.Manager.install(FlattenLayerFilter);
     plugin.Manager.install(SphereFilter);
+    plugin.Manager.install(SphericalCapFilter);
     plugin.Manager.install(SpherePointCloudFilter);
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
