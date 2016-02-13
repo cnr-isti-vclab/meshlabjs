@@ -127,11 +127,49 @@
 		};
 
 /******************************************************************************/
+    var Translate = new plugin.Filter({
+            name:"Translate Mesh",
+            tooltip:"Translate mesh along its axes",
+            arity:1
+        });
+
+    var x,y,z,centerToOrigin;
+    Translate._init = function (builder) {
+
+       x = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "X",
+            tooltip: "Translation on X axis"
+        });
+        y = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Y",
+            tooltip: "Translation on Y axis"
+        });
+		z = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Z",
+            tooltip: "Translation on Z axis"
+        });
+		centerToOrigin = builder.Bool({
+            defval: false,
+            label: "Center to origin",
+            tooltip: "If checked, the mesh will be translated so that its center coincides with the origin. Every translation factor will be ignored"
+        });
+    };
+
+	Translate._applyTo = function (meshFile) {
+	Module.Translate(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),centerToOrigin.getValue());
+		
+	};
+
+/******************************************************************************/
 
     plugin.Manager.install(LaplacianSmoothFilter);
     plugin.Manager.install(TaubinSmoothFilter);
     plugin.Manager.install(RndDisplacementFilter);
 	plugin.Manager.install(Scale);
+	plugin.Manager.install(Translate);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);

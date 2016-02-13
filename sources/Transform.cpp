@@ -49,7 +49,24 @@ void Scale(uintptr_t _m, float x,float y, float z,bool uniformFlag, bool unitbox
   }
   tri::UpdatePosition<MyMesh>::Scale(m, MyMesh::CoordType(x,y,z));
 }
-
+void Rotate(uintptr_t _m)
+{
+    MyMesh &m = *((MyMesh*) _m);
+}
+void Translate(uintptr_t _m,float x,float y, float z, bool centerToOriginFlag)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    if(centerToOriginFlag)
+    {
+        vcg::tri::UpdateBounding<MyMesh>::Box(m);
+        MyMesh::CoordType center=m.bbox.Center();
+        x=-center[0];
+        y=-center[1];
+        z=-center[2];
+        tri::UpdatePosition<MyMesh>::Translate(m,MyMesh::CoordType(0,0,0));
+    }
+    tri::UpdatePosition<MyMesh>::Translate(m,MyMesh::CoordType(x,y,z));
+}
 void TransformPluginTEST()
 {
     MyMesh m0,m1,m2,m3,m4,m5;
@@ -73,5 +90,6 @@ EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("TaubinSmooth", &TaubinSmooth);
     emscripten::function("RandomDisplacement", &RandomDisplacement);
     emscripten::function("Scale", &Scale);
+    emscripten::function("Translate", &Translate);
 }
 #endif
