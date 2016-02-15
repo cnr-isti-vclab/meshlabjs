@@ -19,7 +19,7 @@
 
     var plug = new plugin.Rendering({
         name: "Box",
-        tooltip: "Box Tooltip",
+        tooltip: "Enable the rendering of the bbox for the current layer",
         icon: "img/icons/box.png",
         toggle: true,
         on: false,

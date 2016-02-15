@@ -29,7 +29,7 @@
 
     var plug = new plugin.Rendering({
         name: "Wire",
-        tooltip: "Wire Tooltip",
+        tooltip: "Enable the visualization of the mesh edges for the current layer",
         icon: "img/icons/wire.png",
         toggle: true,
         on: false,

@@ -16,7 +16,7 @@
 
     var plug = new plugin.Rendering({
         name: "Boundary Edges",        
-        tooltip: "Show Boundary Edges",
+        tooltip: "Show for the current layer, boundary edges, non manifold vertexes and non manifold edges",
         icon: "img/icons/boundary.png",
         toggle:true,    
         on: false,

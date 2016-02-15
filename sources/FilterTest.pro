@@ -14,7 +14,7 @@ SOURCES += FilterTest.cpp \
   Refine.cpp \
   Sampling.cpp \
   Selection.cpp \
-  Smooth.cpp
+  Transform.cpp
 
 HEADERS += mesh_def.h \
     FilterTest.h

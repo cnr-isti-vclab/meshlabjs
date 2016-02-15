@@ -120,6 +120,11 @@ ColorHistogramf ComputeColorHistogram(
 	return ch;
 }
 
+void ColorPluginTEST()
+{
+
+}
+
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ColorizePlugin) {
 	emscripten::function("ColorizeByVertexQuality", &ColorizeByVertexQuality);

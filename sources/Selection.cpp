@@ -141,7 +141,7 @@ void SelectionByConnectedComponentSize(uintptr_t _baseM, float sizeThreshold)
    for(size_t i=0;i<CCV.size();++i)
    {
      maxSize=std::max(maxSize,CCV[i].first);
-     printf("CC %i %i\n",i,CCV[i].first);
+     printf("CC %i %i\n",int(i),CCV[i].first);
    }  
    
    tri::UpdateSelection<MyMesh>::Clear(m);
