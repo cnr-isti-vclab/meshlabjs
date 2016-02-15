@@ -94,12 +94,12 @@
             });
             var doc = new component.Button({
                 tooltip: "Go to the documentation page",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0266-question.png",
+                icon: "img/icons/question.png",
 				right:true
             });
 			var git = new component.Button({
                 tooltip: "Go to the Github page",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0437-github4.png",
+                icon: "img/icons/github.png",
 				right:true
             });
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
