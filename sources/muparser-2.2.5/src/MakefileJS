@@ -8,18 +8,19 @@ CC=emcc
 # -s DEMANGLE_SUPPORT=1 More consistent naming of the cpp functions is preserved 
 #           in asm.js. Useful for cpp stacktrace inside the browser. 
 
-CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
+CFLAGS=-I.  -I ../include/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
 //CFLAGS=-I.  -I ../../vcglib/  -s ALLOW_MEMORY_GROWTH=1 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
 
-OBJ = muParser.bc muParserBase.bc muParserByteCode.bc muParserCallback.bc \
+OBJ = muParser.bc muParserBase.bc muParserBytecode.bc muParserCallback.bc \
       muParserDLL.bc muParserError.bc \
-      muParserInt.bc muParserTokerReader.bc
+      muParserInt.bc muParserTokenReader.bc
 
 %.bc: %.cpp
-	$(CC) -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 muParserLib.bc: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+	cp muParserLib.bc ../../lib
 
 
 clean:
