@@ -47,8 +47,8 @@ void CreateSphericalCap(uintptr_t _m, float angleDeg, int refinement)
 {
   printf("Creating a spherical cap of a given angle aplitude and with specified subdivision level %i\n",refinement);
     MyMesh &m = *((MyMesh*) _m);
-    tri::SphericalCap(m,math::ToRad(angleDeg), refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+    tri::SphericalCap(m,math::ToRad(angleDeg), refinement);    
+    m.UpdateBoxAndNormals();
 }
 
 void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
@@ -56,7 +56,7 @@ void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
     MyMesh &m = *((MyMesh*) _m);
     printf("Creating a torus of %i %f\n",refinement, radiusRatio);
     tri::Torus(m,1.0,radiusRatio,refinement*2,refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+    m.UpdateBoxAndNormals();
 }
 
 void CreateSuperToroid(uintptr_t _m, float xRadius, float yRadius, float vSquare, float hSquare, int refinement)
@@ -64,14 +64,14 @@ void CreateSuperToroid(uintptr_t _m, float xRadius, float yRadius, float vSquare
     MyMesh &m = *((MyMesh*) _m);
     printf("Creating a supertoroid with subdivision level %i and ratio %f\n",refinement, xRadius);
     tri::SuperToroid(m,xRadius,yRadius,vSquare,hSquare,refinement*2,refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+    m.UpdateBoxAndNormals();
 }
 void CreateSuperEllipsoid(uintptr_t _m, float rFeature, float sFeature, float tFeature, int refinement)
 {
     MyMesh &m = *((MyMesh*) _m);
     printf("Creating a superellipsoid with subdivision level %i\n",refinement);
     tri::SuperEllipsoid(m,rFeature,sFeature,tFeature,refinement*2,refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+    m.UpdateBoxAndNormals();
 }
 void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
 {
@@ -92,6 +92,7 @@ void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
   printf("[MARCHING CUBES] Building mesh...\n");
   MyMarchingCubes mc(m, walker);
   walker.BuildMesh<MyMarchingCubes>(m, volume, mc, (gridSize*gridSize)/10);
+  m.UpdateBoxAndNormals();
 }
 
 
@@ -142,6 +143,7 @@ void CreateSpherePointCloud(uintptr_t _m, int pointNum, int sphereGenTech)
   for(size_t i=0;i<sampleVec.size();++i)
     tri::Allocator<MyMesh>::AddVertex(m,sampleVec[i],sampleVec[i]);
 
+  m.UpdateBoxAndNormals();
 }
 
 
