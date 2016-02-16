@@ -92,16 +92,33 @@
                 tooltip: "Delete current layer",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
-            
+            var doc = new component.Button({
+                tooltip: "Go to the documentation page",
+                icon: "img/icons/question.png",
+				right:true
+            });
+			var git = new component.Button({
+                tooltip: "Go to the Github page",
+                icon: "img/icons/github.png",
+				right:true
+            });
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
             
             _toolBar.add(open, save, reload, snapshot, deleteLayer);
+			_toolBar.add(doc,git);
 
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
                 MLJ.core.File.openMeshFile(input.files);
             });
-
+			doc.onClick(function () {
+				 var win = window.open("./doc/html/", '_blank');
+					win.focus();
+			});
+			git.onClick(function () {
+				 var win = window.open("https://github.com/cnr-isti-vclab/meshlabjs", '_blank');
+					win.focus();
+			});
             save.onClick(function () {
                 var layer = MLJ.core.Scene.getSelectedLayer();
                 //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
