@@ -87,20 +87,20 @@
             arity:1
         });
 
-    var x,y,z,uniform, toUnitBox;
+    var scalex,scaley,scalez,uniform, toUnitBox;
     Scale._init = function (builder) {
 
-        x = builder.Integer({
+        scalex = builder.Integer({
             step: 1, defval: 1,
             label: "X",
             tooltip: "Scaling factor X Coordinate"
         });
-        y = builder.Integer({
+        scaley = builder.Integer({
             step: 1, defval: 1,
             label: "Y",
             tooltip: "Scaling factor Y Coordinate"
         });
-		z = builder.Integer({
+		scalez = builder.Integer({
             step: 1, defval: 1,
             label: "Z",
             tooltip: "Scaling factor Z Coordinate"
@@ -119,11 +119,10 @@
 
 		Scale._applyTo = function (meshFile) {
 			if(uniform.getValue())
-				Module.Scale(meshFile.ptrMesh(),x.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
+				Module.Scale(meshFile.ptrMesh(),scalex.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
 			else if(toUnitBox.getValue()) //if the scale to unit box is checked, none of the factors matters
 				Module.Scale(meshFile.ptrMesh(),0,0,0,false,true);
-			else Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),false,false); //scale normally else
-			
+			else Module.Scale(meshFile.ptrMesh(),scalex.getValue(),scaley.getValue(),scalez.getValue(),false,false); //scale normally else
 		};
 
 /******************************************************************************/
@@ -133,20 +132,20 @@
             arity:1
         });
 
-    var x,y,z,centerToOrigin;
+    var translatex,translatey,translatez,centerToOrigin;
     Translate._init = function (builder) {
 
-       x = builder.Float({
+       translatex = builder.Float({
             step: 0.1, defval: "0.0",
             label: "X",
             tooltip: "Translation on X axis"
         });
-        y = builder.Float({
+        translatey = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Y",
             tooltip: "Translation on Y axis"
         });
-		z = builder.Float({
+		translatez = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Z",
             tooltip: "Translation on Z axis"
@@ -159,7 +158,7 @@
     };
 
 	Translate._applyTo = function (meshFile) {
-	Module.Translate(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),centerToOrigin.getValue());
+	Module.Translate(meshFile.ptrMesh(),translatex.getValue(),translatey.getValue(),translatez.getValue(),centerToOrigin.getValue());
 		
 	};
 

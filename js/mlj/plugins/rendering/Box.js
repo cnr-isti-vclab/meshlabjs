@@ -161,7 +161,7 @@
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
 
-        meshFile.getThreeMesh().geometry.computeBoundingBox ();
+        
         var bbox = new THREE.BoxHelper(meshFile.getThreeMesh());
         meshesGroup.add(bbox);
 

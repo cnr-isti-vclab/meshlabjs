@@ -38,12 +38,11 @@ void RandomDisplacement(uintptr_t _m, float max_displacement, const bool normalD
 void Scale(uintptr_t _m, float x,float y, float z,bool uniformFlag, bool unitboxFlag)
 {
   MyMesh &m = *((MyMesh*) _m);
-
   if(uniformFlag)
     z=y=x;
   else if(unitboxFlag)
   {
-       vcg::tri::UpdateBounding<MyMesh>::Box(m);
+    vcg::tri::UpdateBounding<MyMesh>::Box(m);
     float maxdim=math::Max(m.bbox.DimX(),m.bbox.DimY(),m.bbox.DimZ());
     printf("\nMax dim %f\n", 1.0f/maxdim);
     z=y=x=1.0f/maxdim;
@@ -59,7 +58,6 @@ void Rotate(uintptr_t _m)
 void Translate(uintptr_t _m,float x,float y, float z, bool centerToOriginFlag)
 {
     MyMesh &m = *((MyMesh*) _m);
-
     if(centerToOriginFlag)
     {
         vcg::tri::UpdateBounding<MyMesh>::Box(m);
@@ -71,7 +69,6 @@ void Translate(uintptr_t _m,float x,float y, float z, bool centerToOriginFlag)
     }
     tri::UpdatePosition<MyMesh>::Translate(m,MyMesh::CoordType(x,y,z));
     vcg::tri::UpdateBounding<MyMesh>::Box(m);
-    printf("nBbox: x=%f, y=%f, z=%f\n",m.bbox.P(0).X(),m.bbox.P(0).Y(),m.bbox.P(0).Z());
 }
 void TransformPluginTEST()
 {
@@ -87,7 +84,7 @@ void TransformPluginTEST()
     tri::Sphere(m4,3);
     Scale(uintptr_t(&m4),2,3,4,true,false); //uniform scaling
     tri::Sphere(m5,3);
-    Scale(uintptr_t(&m4),2,3,4,false,true); //scale to unit box
+    Scale(uintptr_t(&m5),2,3,4,false,true); //scale to unit box
 }
 
 #ifdef __EMSCRIPTEN__
