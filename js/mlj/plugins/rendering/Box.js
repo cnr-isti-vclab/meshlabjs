@@ -161,10 +161,8 @@
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
 
-        var bbHelper = new THREE.BoundingBoxHelper(meshFile.getThreeMesh(), 0xffffff);
-        bbHelper.update();
-        var bbox = new THREE.BoxHelper(bbHelper);
-        bbox.update(meshFile.getThreeMesh());
+        meshFile.getThreeMesh().geometry.computeBoundingBox ();
+        var bbox = new THREE.BoxHelper(meshFile.getThreeMesh());
         meshesGroup.add(bbox);
 
         /* Overlays related to quotes (a THREE.PointCloud overlay) and overlay labels (a groups of
