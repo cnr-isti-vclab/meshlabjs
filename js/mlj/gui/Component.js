@@ -560,6 +560,19 @@ MLJ.gui.component.TextField = function (txt) {
         _this.$.attr("disabled", "disabled");
     };
 
+    this.onChange = function (callback) {
+        _html.on("change", function( event ) {             
+            _html.attr("value",this["value"]);
+        });
+    };
+    
+    this.getValue = function () {
+        return  _html.attr("value");
+    };
+
+    this.setValue = function (value) {
+        _$editText.val(value);
+    };
     MLJ.gui.component.Component.call(this, _html);
 };
 

@@ -116,6 +116,38 @@ MLJ.gui.Param.Integer = function (flags) {
 
 MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Integer);
 
+MLJ.gui.Param.String = function (flags) {
+    this.textfield = new MLJ.gui.component.TextField(flags.defval);
+    this.label = new MLJ.gui.component.Label(flags);
+    var _this = this;
+    
+    this._make = function () {
+        return MLJ.gui.component.Grid(this.label, this.textfield);
+    };
+
+    this.getValue = function () {    
+        return this.textfield.getValue().toString();
+    };
+
+    this.setValue = function (value) {
+        this.textfield.value = value;
+    };
+    
+    this.onChange = function(foo) {
+      this.textfield.onChange(function() {
+          foo(_this.getValue());
+      });
+    };
+
+    this._changeValue = function (value) {
+        this.setValue(value);
+    };
+
+    MLJ.gui.Param.call(this);
+
+    }
+MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.String);
+
 MLJ.gui.Param.Bool = function (flags) {
     this.checkbox = new MLJ.gui.component.CheckBox(flags.defval);
     this.label = new MLJ.gui.component.Label(flags);
