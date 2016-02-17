@@ -339,6 +339,8 @@ html,body{
 
 .ui-accordion .ui-accordion-content {
     padding: 0;
+	font-size: 90%;
+    background: #D9DBDC;
 }
 
 .mlj-color-picker {    
