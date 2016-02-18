@@ -963,7 +963,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
     var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "87px"});
     //edit text node
     var _$editText = $('<input>')
-            .css({width: "30%", position: "relative", left: "110px", bottom: "8px"});        
+            .css({width: "30%", position: "relative", textAlign: "right", left: "110px", bottom: "8px"});        
     //init function
     this._make = function () {
         //extract parameters
