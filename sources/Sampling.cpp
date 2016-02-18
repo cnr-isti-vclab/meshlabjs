@@ -6,7 +6,7 @@
 using namespace vcg;
 using namespace std;
 
-void PoissonDiskSamplingML(uintptr_t _baseM, uintptr_t _newM, float radius, int sampleNum, int randSeed)
+bool PoissonDiskSamplingML(uintptr_t _baseM, uintptr_t _newM, float radius, int sampleNum, int randSeed)
 {
   MyMesh &baseM = *((MyMesh*) _baseM);
   MyMesh &newM = *((MyMesh*) _newM);
@@ -35,9 +35,13 @@ void PoissonDiskSamplingML(uintptr_t _baseM, uintptr_t _newM, float radius, int 
   printf("Using radius %f\n",radius);
 
   tri::SurfaceSampling<MyMesh,BaseSampler>::PoissonDiskPruning(pdSampler, MontecarloMesh, radius,pp);
+  tri::Allocator<MyMesh>::CompactEveryVector(newM);
+  tri::UpdateBounding<MyMesh>::Box(newM);  
+
+  return true;
 }
 
-void MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum, bool perFaceNormalFlag)
+bool MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum, bool perFaceNormalFlag)
 {
   MyMesh &baseM = *((MyMesh*) _baseM);
   MyMesh &newM = *((MyMesh*) _newM);
@@ -46,6 +50,9 @@ void MontecarloSamplingML(uintptr_t _baseM, uintptr_t _newM, int sampleNum, bool
   MeshSampler<MyMesh> mcSampler(newM);
   mcSampler.perFaceNormal=perFaceNormalFlag;
   tri::SurfaceSampling<MyMesh,BaseSampler>::Montecarlo(baseM, mcSampler, sampleNum);
+  tri::Allocator<MyMesh>::CompactEveryVector(newM);
+  tri::UpdateBounding<MyMesh>::Box(newM);    
+  return true;
 }
 
 bool VolumePoissonSampling(uintptr_t _baseM, uintptr_t _newM, float poissonRadiusPerc)
@@ -67,7 +74,10 @@ bool VolumePoissonSampling(uintptr_t _baseM, uintptr_t _newM, float poissonRadiu
   vvs.Init();  
   vvs.BuildVolumeSampling(expectedSampleNum*10,0,poissonRadius,0);
   tri::Append<MyMesh,MyMesh>::MeshCopy(pVm,vvs.seedMesh);
-  tri::UpdateColor<MyMesh>::PerVertexQualityRamp(pVm);  
+  tri::UpdateColor<MyMesh>::PerVertexQualityRamp(pVm); 
+  tri::Allocator<MyMesh>::CompactEveryVector(pVm);
+  tri::UpdateBounding<MyMesh>::Box(pVm);  
+ 
   return true;
 }
 
@@ -86,6 +96,7 @@ bool VolumeMontecarloSampling(uintptr_t _baseM, uintptr_t _newM, int montecarloS
   vvs.BuildMontecarloSampling(montecarloSampleNum);
   tri::Append<MyMesh,MyMesh>::MeshCopy(mcVm,vvs.montecarloVolumeMesh);
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(mcVm);
+  mcVm.UpdateBoxAndNormals();
   return true;
 }
 
@@ -125,8 +136,7 @@ bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM,
   pp.voxelSide=voxelSize;
   vvs.BuildScaffoldingMesh(vsM,pp);
   tri::Smooth<MyMesh>::VertexCoordLaplacian(vsM, smoothStep);
-  tri::UpdateNormal<MyMesh>::PerVertexNormalized(vsM);
-
+  vsM.UpdateBoxAndNormals();
   return true;
 }
 
