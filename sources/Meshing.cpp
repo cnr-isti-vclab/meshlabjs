@@ -51,7 +51,8 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
     printf("Completed Clustering Simplification\n");
 }
 
-void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool topologyFlag, bool qualityQuadric)
+void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, 
+                           bool topologyFlag, bool qualityQuadric)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
@@ -169,7 +170,7 @@ void MeshingPluginTEST()
     Torus(mq,10*i,5*i);
     Torus(mc,10*i,5*i);
     int t0=clock();
-    QuadricSimplification(uintptr_t(&mq),0.5f,0,false);
+    QuadricSimplification(uintptr_t(&mq),0.5f,0,true,false);
     int t1=clock();
     printf("Quadric    simplification in  %6.3f sec\n",float(t1-t0)/CLOCKS_PER_SEC);
     ClusteringSimplification(uintptr_t(&mc),0.01f);
