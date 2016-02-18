@@ -1,13 +1,17 @@
 
 (function (plugin, core, scene) {
-    
+    var DEFAULTS = {
+        DefaultUpColor: new THREE.Color('#00000f'),
+        DefaultDownColor: new THREE.Color('#8080ff'),
+    };
      var plug = new plugin.Rendering({
         name: "Global",        
         tooltip: "Global Tooltip",
         icon: "img/icons/global.png"        
-    });
+    }, DEFAULTS);
+	
     
-    var cullingWidget;
+    var cullingWidget, topColor, bottomColor;
     
     plug._init = function (guiBuilder) {
         
@@ -62,6 +66,30 @@
                 return callback;
             }())
         });
+		topColor = guiBuilder.Color({
+            label: "Background Top Color",
+            tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the top",
+            color: "#" + DEFAULTS.DefaultUpColor.getHexString(),
+            bindTo: (function() {
+                var bindToFun = function (color) {
+                    $('#_3D').css('background', 'linear-gradient('+topColor.getColor()+','+bottomColor.getColor()+')');
+                };
+                bindToFun.toString = function () { return 'DefaultUpColor'; }
+                return bindToFun;
+            }())
+        });
+		bottomColor = guiBuilder.Color({
+            label: "Background Bottom Color",
+            tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the bottom",
+            color:  "#" + DEFAULTS.DefaultDownColor.getHexString(),
+            bindTo: (function() {
+                var bindToFun = function (color) {
+                    $('#_3D').css('background', 'linear-gradient('+topColor.getColor()+','+bottomColor.getColor()+')');
+                };
+                bindToFun.toString = function () { return 'DefaultDownColor'; }
+                return bindToFun;
+            }())
+        });
 
     };
 
@@ -72,7 +100,6 @@
     plug.getShowStatsValue = function (type) {
         return statsWidget.getValue();
     };
-    
     plugin.Manager.install(plug);
 
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
