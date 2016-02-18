@@ -29,6 +29,16 @@ class MyMesh    : public vcg::tri::TriMesh< std::vector<MyVertex>, std::vector<M
 public:
   vcg::Matrix44f tr;
   std::string meshName;
+  
+  void UpdateBoxAndNormals()
+  {
+      vcg::tri::Allocator<MyMesh>::CompactEveryVector(*this);
+      vcg::tri::UpdateBounding<MyMesh>::Box(*this);
+      if(fn>0) {
+          vcg::tri::UpdateNormal<MyMesh>::PerFaceNormalized(*this);
+          vcg::tri::UpdateNormal<MyMesh>::PerVertexAngleWeighted(*this);
+      }
+  }
 };
 
 bool IsWaterTight(MyMesh &m);

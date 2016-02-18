@@ -144,6 +144,7 @@ MLJ.core.Layer = function (name, cppMesh) {
             delete geometry.attributes.index;
         }
         if (indexAttrib !== null) geometry.addAttribute('index', indexAttrib);
+		geometry.computeBoundingBox (); //update the boundingbox
     };
 
     this.updateMeshColorData = function (colorMode) {

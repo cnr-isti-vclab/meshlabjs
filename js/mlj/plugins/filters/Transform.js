@@ -81,57 +81,91 @@
         Module.RandomDisplacement(meshFile.ptrMesh(), displWidget.getValue(),normalDispWidget.getValue());
     };
 /******************************************************************************/
-    var Scale = new plugin.Filter({
+    var ScaleFilter = new plugin.Filter({
             name:"Scale Mesh",
-            tooltip:null,
+            tooltip:"Scale the mesh according to factors relative to the x,y,z coordinates.<br>"
+                    +"Uniform Scaling only uses the x factor. Scale to Unit box scales the mesh to fit in a unit box defined from -1 to 1",
             arity:1
         });
 
-    var x,y,z,uniform, toUnitBox;
-    Scale._init = function (builder) {
+    var xScaleWdg,yScaleWdg,zScaleWdg,uniformScaleWdg, unitScaleWdg;
+    ScaleFilter._init = function (builder) {
 
-        x = builder.Integer({
+        xScaleWdg = builder.Float({
             step: 1, defval: 1,
             label: "X",
             tooltip: "Scaling factor X Coordinate"
         });
-        y = builder.Integer({
+        yScaleWdg = builder.Float({
             step: 1, defval: 1,
-            label: "y",
+            label: "Y",
             tooltip: "Scaling factor Y Coordinate"
         });
-		z = builder.Integer({
+        zScaleWdg = builder.Float({
             step: 1, defval: 1,
-            label: "z",
+            label: "Z",
             tooltip: "Scaling factor Z Coordinate"
         });
-		uniform= builder.Bool({
+        uniformScaleWdg= builder.Bool({
             defval: false,
             label: "Uniform Scaling",
             tooltip: "If true, the scale factor for X will be the only one considered"
         });
-		toUnitBox= builder.Bool({
+        unitScaleWdg= builder.Bool({
             defval: false,
             label: "To Unit Box",
-            tooltip: "If true, the scale factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
+            tooltip: "If true, the Scale Factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
         });
     };
 
-		Scale._applyTo = function (meshFile) {
-			if(uniform.getValue())
-				Module.Scale(meshFile.ptrMesh(),x.getValue(),0,0,true,false); //if uniform is checked, the only factor that matters is the x
-			else if(toUnitBox.getValue()) //if the scale to unit box is checked, none of the factors matters
-				Module.Scale(meshFile.ptrMesh(),0,0,0,false,true);
-			else Module.Scale(meshFile.ptrMesh(),x.getValue(),y.getValue(),z.getValue(),false,false); //scale normally else
-			
-		};
+    ScaleFilter._applyTo = function (meshFile) {
+        Module.Scale(meshFile.ptrMesh(),xScaleWdg.getValue(),yScaleWdg.getValue(),zScaleWdg.getValue(),
+        uniformScaleWdg.getValue(),unitScaleWdg.getValue());
+    };
+
+/******************************************************************************/
+    var TranslateFilter = new plugin.Filter({
+            name:"Translate Mesh",
+            tooltip:"Translate mesh along its axes; optionally move the center of the bounding box of the mesh to the origin.",
+            arity:1
+        });
+
+    var xTrasWdg,yTrasWdg,zTrasWdg,toOriginTransFlag;
+    TranslateFilter._init = function (builder) {
+
+       xTrasWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "X",
+            tooltip: "Translation on X axis"
+        });
+        yTrasWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Y",
+            tooltip: "Translation on Y axis"
+        });
+	zTrasWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Z",
+            tooltip: "Translation on Z axis"
+        });
+	toOriginTransFlag = builder.Bool({
+            defval: false,
+            label: "Center to origin",
+            tooltip: "If checked, the mesh will be translated so that its center coincides with the origin. Every translation factor will be ignored"
+        });
+    };
+    TranslateFilter._applyTo = function (meshFile) {
+	Module.Translate(meshFile.ptrMesh(),xTrasWdg.getValue(),yTrasWdg.getValue(),zTrasWdg.getValue(),
+                         toOriginTransFlag.getValue());		
+    };
 
 /******************************************************************************/
 
     plugin.Manager.install(LaplacianSmoothFilter);
     plugin.Manager.install(TaubinSmoothFilter);
     plugin.Manager.install(RndDisplacementFilter);
-	plugin.Manager.install(Scale);
+    plugin.Manager.install(ScaleFilter);
+    plugin.Manager.install(TranslateFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);

@@ -51,7 +51,7 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
     printf("Completed Clustering Simplification\n");
 }
 
-void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool qualityQuadric)
+void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool topologyFlag, bool qualityQuadric)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
@@ -62,6 +62,7 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   tri::TriEdgeCollapseQuadricParameter pp;
   pp.NormalCheck = true;
+  pp.PreserveTopology = true;
   if(pp.NormalCheck) pp.NormalThrRad = M_PI/4.0;
   if(qualityQuadric) pp.QualityQuadric=true;
   
