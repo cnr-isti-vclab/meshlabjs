@@ -6248,8 +6248,6 @@ var accordion = $.widget( "ui.accordion", {
 			"aria-selected": "false",
 			"aria-expanded": "false"
 		});
-		$("#spaceIn").remove();
-		$("#spaceOut").remove();
 		toHide.prev().prev().remove("br");
 		// if we're switching panels, remove the old header from the tab order
 		// if we're opening from collapsed state, remove the previous header from the tab order
@@ -6273,9 +6271,7 @@ var accordion = $.widget( "ui.accordion", {
 					"aria-selected": "true",
 					"aria-expanded": "true",
 					tabIndex: 0
-				})
-				.before("<br id='spaceIn'>");
-		toShow.after("<br id='spaceOut'>");
+				});
 	},
 
 	_animate: function( toShow, toHide, data ) {
