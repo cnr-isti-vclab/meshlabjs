@@ -295,6 +295,12 @@ MLJ.gui.component.Button = function (flags) {
     };
 
     this._make = function () {
+		var right=this.flag("right");
+		//the flag right is used to distinguish the operation buttons and the info buttons
+		if (right !== undefined) { //if it's defined
+            this.$.addClass("ui-button-right-align"); //add a css class to align the button to the extreme right
+        }
+		
         var label = this.flag("label");
         if (label !== undefined) {
             this.$.append(label);
@@ -963,7 +969,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
     var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "87px"});
     //edit text node
     var _$editText = $('<input>')
-            .css({width: "30%", position: "relative", left: "110px", bottom: "8px"});        
+            .css({width: "30%", position: "relative", textAlign: "right", left: "110px", bottom: "8px"});        
     //init function
     this._make = function () {
         //extract parameters

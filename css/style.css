@@ -111,7 +111,9 @@ html,body{
     height: 18px;     
     vertical-align: middle;   
 }
-
+.ui-button-right-align {
+	float:right;
+}
 #mlj-scenebar-widget .ui-button img {
     width: 14px;
     height: 14px;

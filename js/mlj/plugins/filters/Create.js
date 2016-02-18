@@ -79,34 +79,6 @@
         Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
         scene.addLayer(mf);
     };
-/******************************************************************************/     
-    var PlatonicFilter = new plugin.Filter({
-        name: "Create Platonic Solid",
-        tooltip: "Create a platonic solid, one of a tetrahedron, octahedron, hexahedron or cube, dodecahedron, or icosahedron.",
-        arity: 0
-    });
-
-    var choiceWidget;
-    PlatonicFilter._init = function (builder) {
-
-        choiceWidget = builder.Choice({
-            label: "Solid",
-            tooltip: "Choose one of the possible platonic solids",
-            options: [
-                {content: "Tetrahedron", value: "0"},
-                {content: "Octahedron", value: "1"},
-                {content: "Hexahedron", value: "2"},
-                {content: "Dodecahedron", value: "3", selected: true},
-                {content: "Icosahedron", value: "4"}
-            ]
-        });
-    };
-
-    PlatonicFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createLayer(choiceWidget.getContent());
-        Module.CreatePlatonic(mf.ptrMesh(), parseInt(choiceWidget.getValue()));
-        scene.addLayer(mf);
-    };
 
 /******************************************************************************/
     var SphereFilter = new plugin.Filter({
@@ -201,12 +173,12 @@
         tooltip: "Create a torus with the desired level of subdivisions and ratio between inner and outer radius",
         arity: 0});
 
-    var stepWidget, radiusRatioWidget;
+    var stepTorusWidget, radiusRatioWidget;
     TorusFilter._init = function (builder) {
 
-        stepWidget = builder.Integer({
+        stepTorusWidget = builder.Integer({
             min: 6, step: 1, defval: 32,
-            label: "subdivision",
+            label: "Subdivision",
             tooltip: "Number of recursive subdivision of the sphere"
         });
         
@@ -219,44 +191,44 @@
 
     TorusFilter._applyTo = function () {
         var mf = MLJ.core.Scene.createLayer("Torus");
-        Module.CreateTorus(mf.ptrMesh(), stepWidget.getValue(), radiusRatioWidget.getValue());
+        Module.CreateTorus(mf.ptrMesh(), stepTorusWidget.getValue(), radiusRatioWidget.getValue());
         scene.addLayer(mf);
     };
 	/******************************************************************************/
     var SuperToroidFilter = new plugin.Filter({
         name: "Create SuperToroid",
-        tooltip: "Create a supertoroid with the desired level of subdivisions and a specific ratio, the vertical and horizontal squareness are the main parameters to obtain a different supertoroids models.",
+        tooltip: "Create a super toroid with the desired level of subdivisions and a specific ratio, the vertical and horizontal squareness are the main parameters to obtain a different supertoroids models.",
         arity: 0});
 
-    var stepWidget, stepWidget1, stepWidget2, radiusRatio1;
+    var stepToroidWidget, vertSqrWdg, horzSqrWdg, radiusRatioToroidWdg;
     SuperToroidFilter._init = function (builder) {
 
-        stepWidget = builder.Integer({
+        stepToroidWidget = builder.Integer({
             min: 6, step: 1, defval: 32,
-            label: "subdivision",
+            label: "Subdivision",
             tooltip: "Number of recursive subdivision of the supertoroid"
         });
-		stepWidget1 = builder.RangedFloat({
-            min: 0.25, step: 0.1, max:2.50, defval:2.50,
+	vertSqrWdg = builder.RangedFloat({
+            min: 0.0, step: 0.1, max:2.50, defval:0.50,
             label: " Vertical Squareness",
             tooltip: "This amount controls the squareness of the vertical sections. The input range is between 0.25 and 2.50"
         });
-        stepWidget2 = builder.RangedFloat({
-            min: 0.25, step: 0.1, max:2.50, defval:2.50,
+        horzSqrWdg = builder.RangedFloat({
+            min: 0.0, step: 0.1, max:2.50, defval:0.50,
             label: "Horizontal Squareness",
             tooltip: "This amount controls the squareness of the horizontal sections. The input range is between 0.25 and 2.50"
         });
-        radiusRatio1 = builder.Float({
-            min:1.0 , step: 1.0, defval: 2.0,
+        radiusRatioToroidWdg = builder.Float({
+            min:0.01 , step: 0.1, defval: 0.5,
             label: "Radius Ratio",
             tooltip: "This parameter specify the major radii in the X and Y directions about the supertoroid implemented"
-        }); 
-		
+        }); 		
     };
 
     SuperToroidFilter._applyTo = function () {
         var mf = MLJ.core.Scene.createLayer("SuperToroid");
-        Module.CreateSuperToroid(mf.ptrMesh(),radiusRatio1.getValue(),radiusRatio1.getValue(), stepWidget1.getValue(), stepWidget2.getValue(),stepWidget.getValue());
+        Module.CreateSuperToroid(mf.ptrMesh(),radiusRatioToroidWdg.getValue(),
+         vertSqrWdg.getValue(), horzSqrWdg.getValue(),stepToroidWidget.getValue());
         scene.addLayer(mf);
     };
 	/******************************************************************************/
