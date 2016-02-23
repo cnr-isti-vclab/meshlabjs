@@ -110,7 +110,7 @@
 
     };
     plug._applyTo = function (meshFile, on) {
-        alert(scene.getCamera());
+        //alert(scene.getCamera());
     }
     plug.getBackfaceCullingValue = function (type) {
         return cullingWidget.getValue();
