@@ -407,7 +407,7 @@
             var facesCoordsPtr = edgesCoordsPtr + numBoundaryEdges * NUM_BYTES_PER_EDGES;
 
             Module.print(numBoundaryEdges + ' boundary edges');
-            Module.print(numFaces + ' adjacent faces');
+            Module.print(numFaces + ' faces on boundary edges');
 
             if (numBoundaryEdges === 0) return null;
 

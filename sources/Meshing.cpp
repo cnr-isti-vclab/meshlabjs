@@ -40,15 +40,17 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
   tri::Clustering<MyMesh, vcg::tri::AverageColorCell<MyMesh> > ClusteringGrid;
   float cellSize = m.bbox.Diag() * threshold;
   printf("Clustering with a cell size of %6.2f = %4.2f * %6.2f\n",cellSize,threshold,m.bbox.Diag());
-
+  
   ClusteringGrid.Init(m.bbox,100000,cellSize);
   if(m.FN() ==0)
     ClusteringGrid.AddPointSet(m);
   else
     ClusteringGrid.AddMesh(m);
-
+  
   ClusteringGrid.ExtractMesh(m);
-    printf("Completed Clustering Simplification\n");
+  printf("Completed Clustering Simplification\n");
+  
+  m.UpdateBoxAndNormals();
 }
 
 void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, 
@@ -77,8 +79,7 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   while( DeciSession.DoOptimization() && m.fn>TargetFaceNum );
   DeciSession.Finalize<MyTriEdgeCollapse >();
-  tri::Allocator<MyMesh>::CompactEveryVector(m);
-
+  m.UpdateBoxAndNormals();
   printf("Completed Simplification\n");
 }
 
@@ -86,7 +87,7 @@ void RemoveUnreferencedVertices(uintptr_t _baseM)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   int rvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
-  tri::Allocator<MyMesh>::CompactVertexVector(m);
+  m.UpdateBoxAndNormals();
   printf("Removed %i unreferenced vertices\n",rvn);
 }
 
@@ -101,7 +102,7 @@ void RemoveDuplicatedVertices(uintptr_t _baseM)
   MyMesh &m = *((MyMesh*) _baseM);
   int cnt = tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
   printf("Removed %i duplicated vertices\n",cnt);
-  tri::Allocator<MyMesh>::CompactEveryVector(m);
+  m.UpdateBoxAndNormals();
 }
 
 void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
@@ -110,6 +111,7 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
   MyMesh &ch = *((MyMesh*) _newM);
   ch.Clear();
   tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
+  ch.UpdateBoxAndNormals();
 } 
 
 void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
@@ -160,6 +162,7 @@ void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio,
     tri::VoronoiProcessing<MyMesh>::ComputePerVertexSources(origMesh,seedVVec,df);
     tri::VoronoiProcessing<MyMesh>::VoronoiColoring(origMesh,false); 
   }
+  clusteredMesh.UpdateBoxAndNormals();
 }
 
 void MeshingPluginTEST()

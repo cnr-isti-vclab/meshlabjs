@@ -9,18 +9,14 @@
 using namespace vcg;
 using namespace std;
 
-void DuplicateLayer(uintptr_t _baseM, uintptr_t _newM)
-{
-    MyMesh &baseM = *((MyMesh*) _baseM);
-    MyMesh &newM = *((MyMesh*) _newM);
-    tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
-    newM.tr = baseM.tr;
-}
-
 void AddLayerToLayer(uintptr_t _baseM, uintptr_t _newM)
 {
-  DuplicateLayer(_baseM,_newM);
+  MyMesh &baseM = *((MyMesh*) _baseM);
+  MyMesh &newM = *((MyMesh*) _newM);
+  tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
+  newM.tr = baseM.tr;
 }
+
 void CreatePlatonic(uintptr_t _m, int index)
 {
   MyMesh &m = *((MyMesh*) _m);
@@ -206,7 +202,6 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreateSphere", &CreateSphere);
     emscripten::function("CreateSphericalCap", &CreateSphericalCap);
     emscripten::function("CreateSpherePointCloud", &CreateSpherePointCloud);
-    emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
     emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);
     emscripten::function("CreateSuperEllipsoid", &CreateSuperEllipsoid);
