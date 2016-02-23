@@ -164,18 +164,30 @@
 /******************************************************************************/
      var SelectionByQualityFilter = new plugin.Filter({
         name: "Selection by Quality",
-        tooltip: "Select in the current layer the vertex/face whose quality is below a given threshold.",
+        tooltip: "Select in the current layer the vertex/face whose quality is below a given threshold, expressed as an actual value or a percentage / percentile of the range of the quality.",
         arity: 1
     });
     
-    var thresholdWidget,vertexFaceWidget;
+    var thresholdWidget,selModeWdg, vertexFaceWidget;
     SelectionByQualityFilter._init = function (builder) {
-         thresholdWidget = builder.RangedFloat({
+        
+        thresholdWidget = builder.RangedFloat({
             max: 1.0, min: 0.0, step: 0.01, defval: 0.5,
             label: "Threshold %",
-            tooltip: "As a percentage of the range of the quality"
+            tooltip: "As a indicated in the below widget"
         });
-           vertexFaceWidget = builder.Bool({
+        
+        selModeWdg = builder.Choice({
+            label: "Threshold Mode",
+            tooltip: "Specify how the indicated threshold is used",
+            options: [
+                {content: "Percentage", value: 0 },
+                {content: "Percentile", value: 1, selected: true},
+                {content: "Actual Value", value: 2}
+            ]
+        });    
+        
+        vertexFaceWidget = builder.Bool({
             defval: true,
             label: "Per vertex",
             tooltip: "If true, vertex quality is used and vertexes are selected, otherwise the filter work by face."
@@ -183,7 +195,7 @@
     };
 
     SelectionByQualityFilter._applyTo = function (basemeshFile) {
-        Module.SelectionByQuality(basemeshFile.ptrMesh(),thresholdWidget.getValue(),vertexFaceWidget.getValue());
+        Module.SelectionByQuality(basemeshFile.ptrMesh(),thresholdWidget.getValue(), vertexFaceWidget.getValue(),selModeWdg.getValue());
     };
 /******************************************************************************/    
     var SelectionDeleteVertex = new plugin.Filter({

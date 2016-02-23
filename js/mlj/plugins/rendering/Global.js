@@ -3,6 +3,7 @@
     var DEFAULTS = {
         DefaultUpColor: new THREE.Color('#00000f'),
         DefaultDownColor: new THREE.Color('#8080ff'),
+        FieldOfView : 45
     };
      var plug = new plugin.Rendering({
         name: "Global",        
@@ -11,7 +12,7 @@
     }, DEFAULTS);
 	
     
-    var cullingWidget, topColor, bottomColor;
+    var cullingWidget, topColor, bottomColor, fovWidget;
     
     plug._init = function (guiBuilder) {
         
@@ -23,7 +24,23 @@
                 {content: "off", value: false, selected: true}
             ]
         });
-
+        
+        fovWidget = guiBuilder.RangedFloat({
+            label: "Field of View",
+            tooltip: "Change the field of view of the camera.",
+            min: 5, max: 90, step: 5,
+            defval: DEFAULTS.FieldOfView,
+            bindTo: (function() {
+                var bindToFun = function (size, overlay) {
+                   scene.getCamera().fov=fovWidget.getValue();
+                   scene.getCamera().updateProjectionMatrix();
+                   MLJ.core.Scene.render();
+                };
+                bindToFun.toString = function () { return 'FieldOfView'; }
+                return bindToFun;
+            }())
+        });
+        
         statsWidget = guiBuilder.Choice({
             label: "Show Stats",
             tooltip: "Enable/disable the display of rendering performance stats",
