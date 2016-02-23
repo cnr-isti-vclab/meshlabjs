@@ -65,7 +65,7 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   tri::TriEdgeCollapseQuadricParameter pp;
   pp.NormalCheck = true;
-  pp.PreserveTopology = true;
+  pp.PreserveTopology = topologyFlag;
   if(pp.NormalCheck) pp.NormalThrRad = M_PI/4.0;
   if(qualityQuadric) pp.QualityQuadric=true;
   
@@ -79,6 +79,12 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   while( DeciSession.DoOptimization() && m.fn>TargetFaceNum );
   DeciSession.Finalize<MyTriEdgeCollapse >();
+  
+  int dfn = tri::Clean<MyMesh>::RemoveDegenerateFace(m);
+  int uvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
+  if(dfn>0) printf("Removed %i degen faces\n",dfn);
+  if(uvn>0) printf("Removed %i unref verts\n",uvn);
+  
   m.UpdateBoxAndNormals();
   printf("Completed Simplification\n");
 }
