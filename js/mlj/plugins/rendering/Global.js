@@ -3,7 +3,7 @@
     var DEFAULTS = {
         DefaultUpColor: new THREE.Color('#00000f'),
         DefaultDownColor: new THREE.Color('#8080ff'),
-        FieldOfView : 45
+        FieldOfView : scene.getCamera()
     };
      var plug = new plugin.Rendering({
         name: "Global",        
@@ -83,7 +83,7 @@
                 return callback;
             }())
         });
-		topColor = guiBuilder.Color({
+        topColor = guiBuilder.Color({
             label: "Background Top Color",
             tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the top",
             color: "#" + DEFAULTS.DefaultUpColor.getHexString(),
@@ -95,7 +95,7 @@
                 return bindToFun;
             }())
         });
-		bottomColor = guiBuilder.Color({
+        bottomColor = guiBuilder.Color({
             label: "Background Bottom Color",
             tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the bottom",
             color:  "#" + DEFAULTS.DefaultDownColor.getHexString(),
@@ -109,7 +109,9 @@
         });
 
     };
-
+    plug._applyTo = function (meshFile, on) {
+        alert(scene.getCamera());
+    }
     plug.getBackfaceCullingValue = function (type) {
         return cullingWidget.getValue();
     };
