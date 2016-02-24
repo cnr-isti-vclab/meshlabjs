@@ -27,12 +27,13 @@ LIBS = lib/muparserLib.bc
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
-FuncParser.bc : FuncParser.cpp
-	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
-
 MeshLabCppCore.js: $(OBJ)
 	$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
 	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
+
+FuncParser.bc : FuncParser.cpp
+	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
+
 
 clean:
 	rm -f *.bc MeshlabGenJs.js

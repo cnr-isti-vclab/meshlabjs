@@ -17,7 +17,7 @@
     };
         
     QualityFuncFilter._applyTo = function (basemeshFile) {
-        Module.QualityFunction(basemeshFile.ptrMesh(),qualityFuncWidget.getValue());
+        Module.QualityFunction(basemeshFile.ptrMesh(),qualityFuncWidget.getValue(),true,true);
     };
 
 /******************************************************************************/
