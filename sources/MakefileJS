@@ -7,10 +7,14 @@ CC=emcc
 # --bind    needed for exporting the functions from cpp to js.
 # -s DEMANGLE_SUPPORT=1 More consistent naming of the cpp functions is preserved 
 #           in asm.js. Useful for cpp stacktrace inside the browser. 
-# remember the special macros $@ and $^, which are the left and right sides of the :
+# Reasonable memory options: 
+# 
+# -s ALLOW_MEMORY_GROWTH=1 
+# -s TOTAL_MEMORY=536870912
+# -s TOTAL_MEMORY=1073741824 
+ 
 
-CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
-//CFLAGS=-I.  -I ../../vcglib/  -s ALLOW_MEMORY_GROWTH=1 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
+CFLAGS=-I.  -I ../../vcglib/ -s TOTAL_MEMORY=1073741824  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Saver.bc Selection.bc \
@@ -23,12 +27,12 @@ LIBS = lib/muparserLib.bc
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
-MeshLabCppCore.js: $(OBJ)
-	$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
-
 FuncParser.bc : FuncParser.cpp
 	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
 
+MeshLabCppCore.js: $(OBJ)
+	$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
+	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
 
 clean:
 	rm -f *.bc MeshlabGenJs.js

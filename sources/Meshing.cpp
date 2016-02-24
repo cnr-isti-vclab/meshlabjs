@@ -40,18 +40,21 @@ void ClusteringSimplification(uintptr_t _baseM, float threshold)
   tri::Clustering<MyMesh, vcg::tri::AverageColorCell<MyMesh> > ClusteringGrid;
   float cellSize = m.bbox.Diag() * threshold;
   printf("Clustering with a cell size of %6.2f = %4.2f * %6.2f\n",cellSize,threshold,m.bbox.Diag());
-
+  
   ClusteringGrid.Init(m.bbox,100000,cellSize);
   if(m.FN() ==0)
     ClusteringGrid.AddPointSet(m);
   else
     ClusteringGrid.AddMesh(m);
-
+  
   ClusteringGrid.ExtractMesh(m);
-    printf("Completed Clustering Simplification\n");
+  printf("Completed Clustering Simplification\n");
+  
+  m.UpdateBoxAndNormals();
 }
 
-void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, bool qualityQuadric)
+void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFaceNum, 
+                           bool topologyFlag, bool qualityQuadric)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
@@ -62,6 +65,7 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   tri::TriEdgeCollapseQuadricParameter pp;
   pp.NormalCheck = true;
+  pp.PreserveTopology = topologyFlag;
   if(pp.NormalCheck) pp.NormalThrRad = M_PI/4.0;
   if(qualityQuadric) pp.QualityQuadric=true;
   
@@ -75,8 +79,13 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
 
   while( DeciSession.DoOptimization() && m.fn>TargetFaceNum );
   DeciSession.Finalize<MyTriEdgeCollapse >();
-  tri::Allocator<MyMesh>::CompactEveryVector(m);
-
+  
+  int dfn = tri::Clean<MyMesh>::RemoveDegenerateFace(m);
+  int uvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
+  if(dfn>0) printf("Removed %i degen faces\n",dfn);
+  if(uvn>0) printf("Removed %i unref verts\n",uvn);
+  
+  m.UpdateBoxAndNormals();
   printf("Completed Simplification\n");
 }
 
@@ -84,7 +93,7 @@ void RemoveUnreferencedVertices(uintptr_t _baseM)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   int rvn = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
-  tri::Allocator<MyMesh>::CompactVertexVector(m);
+  m.UpdateBoxAndNormals();
   printf("Removed %i unreferenced vertices\n",rvn);
 }
 
@@ -99,7 +108,7 @@ void RemoveDuplicatedVertices(uintptr_t _baseM)
   MyMesh &m = *((MyMesh*) _baseM);
   int cnt = tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
   printf("Removed %i duplicated vertices\n",cnt);
-  tri::Allocator<MyMesh>::CompactEveryVector(m);
+  m.UpdateBoxAndNormals();
 }
 
 void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
@@ -108,6 +117,7 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
   MyMesh &ch = *((MyMesh*) _newM);
   ch.Clear();
   tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
+  ch.UpdateBoxAndNormals();
 } 
 
 void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
@@ -158,6 +168,7 @@ void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio,
     tri::VoronoiProcessing<MyMesh>::ComputePerVertexSources(origMesh,seedVVec,df);
     tri::VoronoiProcessing<MyMesh>::VoronoiColoring(origMesh,false); 
   }
+  clusteredMesh.UpdateBoxAndNormals();
 }
 
 void MeshingPluginTEST()
@@ -168,7 +179,7 @@ void MeshingPluginTEST()
     Torus(mq,10*i,5*i);
     Torus(mc,10*i,5*i);
     int t0=clock();
-    QuadricSimplification(uintptr_t(&mq),0.5f,0,false);
+    QuadricSimplification(uintptr_t(&mq),0.5f,0,true,false);
     int t1=clock();
     printf("Quadric    simplification in  %6.3f sec\n",float(t1-t0)/CLOCKS_PER_SEC);
     ClusteringSimplification(uintptr_t(&mc),0.01f);

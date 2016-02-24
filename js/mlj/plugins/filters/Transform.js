@@ -119,7 +119,7 @@
     };
 
     ScaleFilter._applyTo = function (meshFile) {
-        Module.Scale(meshFile.ptrMesh(),xScaleWdg.getValue(),xScaleWdg.getValue(),xScaleWdg.getValue(),
+        Module.Scale(meshFile.ptrMesh(),xScaleWdg.getValue(),yScaleWdg.getValue(),zScaleWdg.getValue(),
         uniformScaleWdg.getValue(),unitScaleWdg.getValue());
     };
 

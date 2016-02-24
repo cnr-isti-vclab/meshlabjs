@@ -6243,10 +6243,12 @@ var accordion = $.widget( "ui.accordion", {
 		toHide.attr({
 			"aria-hidden": "true"
 		});
+		
 		toHide.prev().attr({
 			"aria-selected": "false",
 			"aria-expanded": "false"
 		});
+		toHide.prev().prev().remove("br");
 		// if we're switching panels, remove the old header from the tab order
 		// if we're opening from collapsed state, remove the previous header from the tab order
 		// if we're collapsing, then keep the collapsing header in the tab order
