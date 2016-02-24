@@ -1,4 +1,7 @@
 #include "mesh_def.h"
+#include <vcg/complex/algorithms/create/marching_cubes.h>
+#include <vcg/complex/algorithms/create/mc_trivial_walker.h>
+
 #include <muParser.h>
 
 using namespace vcg;
@@ -134,7 +137,7 @@ void setAttributes(MyMesh::VertexIterator &vi, MyMesh &m)
 
 } // end namespace muml
 
-bool QualityFunction(uintptr_t _baseM, std::string funcStr, bool normalizeFlag, bool colorMapFlag)
+bool QualityFunctionFilter(uintptr_t _baseM, std::string funcStr, bool normalizeFlag, bool colorMapFlag)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   printf("Applied Quality Function %s\n",funcStr.c_str());
@@ -168,6 +171,54 @@ bool QualityFunction(uintptr_t _baseM, std::string funcStr, bool normalizeFlag, 
 }
 
 
+bool IsosurfaceFilter(uintptr_t _baseM, std::string funcStr, 
+                     float minX, float minY, float minZ,
+                     float maxX, float maxY, float maxZ,
+                     float voxelSize) 
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  
+  SimpleVolume<SimpleVoxel <float > > 	volume;
+
+  typedef vcg::tri::TrivialWalker<MyMesh, SimpleVolume<SimpleVoxel<float> > >	MyWalker;
+  typedef vcg::tri::MarchingCubes<MyMesh, MyWalker>	MyMarchingCubes;
+  MyWalker walker;
+
+  Box3f RangeBBox;
+  RangeBBox.min = Point3f(minX,minY,minZ);
+  RangeBBox.max = Point3f(maxX,maxY,maxZ);
+  Point3i siz= Point3i::Construct((RangeBBox.max-RangeBBox.min)*(1.0/voxelSize));
+
+  mu::Parser p;
+  double x,y,z;
+  p.DefineVar("x", &x);
+  p.DefineVar("y", &y);
+  p.DefineVar("z", &z);
+  p.SetExpr(funcStr);
+  printf("Filling a Volume of %i %i %i",siz[0],siz[1],siz[2]);
+  volume.Init(siz,RangeBBox);
+  for(double i=0;i<siz[0];i++)
+    for(double j=0;j<siz[1];j++)
+      for(double k=0;k<siz[2];k++)
+      {
+        x = RangeBBox.min[0]+voxelSize*i;
+        y = RangeBBox.min[1]+voxelSize*j;
+        z = RangeBBox.min[2]+voxelSize*k;
+        try {
+          volume.Val(i,j,k)=p.Eval();
+        } catch(mu::Parser::exception_type &e) {
+          return false;
+        }
+      }
+
+  // MARCHING CUBES
+  printf("[MARCHING CUBES] Building mesh...");
+  MyMarchingCubes					mc(m, walker);
+  walker.BuildMesh<MyMarchingCubes>(m, volume, mc, 0);
+  m.UpdateBoxAndNormals();
+  return true;
+}
+
 void FuncParserPluginTEST()
 {
 
@@ -177,6 +228,8 @@ void FuncParserPluginTEST()
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLFuncParserPlugin) {
-    emscripten::function("QualityFunction", &QualityFunction);
+    emscripten::function("QualityFunctionFilter", &QualityFunctionFilter);
+    emscripten::function("IsosurfaceFilter", &IsosurfaceFilter);
+    
 }
 #endif

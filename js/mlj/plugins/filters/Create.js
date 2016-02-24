@@ -250,12 +250,12 @@
             label: "First feature",
             tooltip: "First feature of the superellipsoid."
         });
-		feature2= builder.Float({ 
+	feature2= builder.Float({ 
             min: 0.1, step: 0.1, defval:0.70,
             label: "Second feature",
             tooltip: "Second feature of the superellipsoid"
         });
-		feature3 = builder.Float({ 
+	feature3 = builder.Float({ 
             min: 0.1, step: 0.1, defval:0.70,
             label: "Third feature",
             tooltip: "Third features of the superellipsoid"
@@ -268,6 +268,45 @@
         Module.CreateSuperEllipsoid(mf.ptrMesh(),feature1.getValue(), feature2.getValue(), feature3.getValue(),stepWidget.getValue());
         scene.addLayer(mf);
     };
+
+/******************************************************************************/
+    var IsosurfaceFilter = new plugin.Filter({
+        name: "Create User Defined Isosurface",
+        tooltip: "Create a isosurface user defined scalar field",
+        arity: 0});
+
+    var isoFuncWidget,isoResWidget,minXWdg,minYWdg,minZWdg,maxXWdg,maxYWdg,maxZWdg;
+    IsosurfaceFilter._init = function (builder) {
+        
+            isoFuncWidget  = builder.String({
+            label: "Volume Field",
+            tooltip: "This expression is evaluated on all the voxel of the volume",
+//            defval: "cos(x)*sin(y)+cos(y)*sin(z)+cos(z)*sin(x)"
+            defval: "cos(x)*sin(y)+cos(y)*sin(z)+cos(z)*sin(x)"
+        });
+        isoResWidget = builder.Float({
+            min: 0, step: 0.01, defval: 0.1,
+            label: "Voxel Resolution",
+            tooltip: "Resolution of the grid where the isosurface is defined"
+        });        
+        
+        minXWdg = builder.Float({ step: 0.1, defval:-4.0, label: "X Min", tooltip: "Domain range minimum x value" });
+        minYWdg = builder.Float({ step: 0.1, defval:-4.0, label: "Y Min", tooltip: "Domain range minimum y value" });
+        minZWdg = builder.Float({ step: 0.1, defval:-4.0, label: "Z Min", tooltip: "Domain range minimum z value" });
+        maxXWdg = builder.Float({ step: 0.1, defval: 4.0, label: "X Max", tooltip: "Domain range maximum x value" });
+        maxYWdg = builder.Float({ step: 0.1, defval: 4.0, label: "Y Max", tooltip: "Domain range maximum y value" });
+        maxZWdg = builder.Float({ step: 0.1, defval: 4.0, label: "Z Max", tooltip: "Domain range maximum z value" });
+    };
+
+    IsosurfaceFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
+        Module.IsosurfaceFilter(mf.ptrMesh(), isoFuncWidget.getValue(), 
+                    minXWdg.getValue(),minYWdg.getValue(),minZWdg.getValue(),
+                    maxXWdg.getValue(),maxYWdg.getValue(),maxZWdg.getValue(),
+                    isoResWidget.getValue());
+                    scene.addLayer(mf);
+    };
+
 /******************************************************************************/
     var NoisyIsoFilter = new plugin.Filter({
         name: "Create Noisy Isosurface",
@@ -301,7 +340,8 @@
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
     plugin.Manager.install(NoisyIsoFilter);
-	plugin.Manager.install(SuperToroidFilter);
-	plugin.Manager.install(SuperEllipsoidFilter);
+    plugin.Manager.install(SuperToroidFilter);
+    plugin.Manager.install(SuperEllipsoidFilter);
+    plugin.Manager.install(IsosurfaceFilter);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

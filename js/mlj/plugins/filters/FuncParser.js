@@ -3,7 +3,7 @@
 /******************************************************************************/
     var QualityFuncFilter = new plugin.Filter({
         name: "Per Vertex Quality Function",
-        tooltip: ".",
+        tooltip: "",
         arity: -1
     });
     
@@ -11,13 +11,14 @@
     QualityFuncFilter._init = function (builder) {
             qualityFuncWidget  = builder.String({
             label: "Quality Func",
-            tooltip: "This function is applied to all the vertices to find the quality value",
+            tooltip: "This expression is evaluated on all the vertices to find the quality value",
             defval: "x*x"
         });
     };
         
     QualityFuncFilter._applyTo = function (basemeshFile) {
-        Module.QualityFunction(basemeshFile.ptrMesh(),qualityFuncWidget.getValue(),true,true);
+        basemeshFile.cppMesh.addPerVertexColor();
+        Module.QualityFunctionFilter(basemeshFile.ptrMesh(),qualityFuncWidget.getValue(),true,true);
     };
 
 /******************************************************************************/
