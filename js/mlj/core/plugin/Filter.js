@@ -89,7 +89,10 @@
  *
  * })(MLJ.core.plugin, MLJ.core.Scene);
  */
+
 MLJ.core.plugin.Filter = function (parameters) {
+    
+	
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
     var _this = this;
 
@@ -153,6 +156,8 @@ MLJ.core.plugin.Filter = function (parameters) {
             }
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
+            MLJ.core.Scene.history.closeSC();
+            MLJ.widget.Log.append(MLJ.core.Scene.history);
         });
 
         if (parameters.arity !== 0) {

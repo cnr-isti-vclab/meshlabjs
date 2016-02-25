@@ -27,6 +27,66 @@
  * @author Stefano Gabriele
  */
 
+MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of SceneChange
+    var listSceneChange=new Array();
+    var tmpSC; //temporary object to store the actual scene changes
+    
+    this.openSC=function () //creates a new SceneChange object to store LayerChanges
+    {
+            
+        tmpSC=new MLJ.core.SceneChange();
+    }
+    //"closes" the registration of LayerChanges and stores it in the array.
+    //This is called at every Filter applied, Layer selected or deleted
+    this.closeSC=function () 
+    {
+        MLJ.widget.Log.append(tmpSC);
+        listSceneChange.push(tmpSC);
+        tmpSC=undefined;
+    }
+    this.addLC=function(newLC) //adds a new LayerChange to the actual SceneChange
+    {
+        if(tmpSC==undefined) //if it's the first LayerChange, creates a new SceneChange
+            this.openSC();
+        tmpSC.add(newLC);
+    }
+    this.toString=function () //debug function to see the result
+    {
+        return "SceneChange: "+listSceneChange.map(function(e){return e.toString()}).toString();
+    }
+};
+MLJ.core.SceneChange = function () { //Scene Changes class, stores a list of LayerChanges
+    var listLayerChange=new Array();
+    this.add=function (newLC) //adds a new LayerChange to the array
+    {
+        if(newLC instanceof MLJ.core.LayerChange)
+            listLayerChange.push(newLC);
+    }
+    this.toString=function () //debug function to see the content
+    {
+        return listLayerChange.map(function (e) {return e.toString()}).toString();
+    }
+};
+MLJ.core.LayerChange=function (id,type) //LayerChange class, structured as 
+{
+    var LayerID; //id of the layer changed
+    var ChangeType; //type of the change applied to the layer - structure ahead
+    LayerID=id;
+    ChangeType=type;
+    this.toString=function()
+    {
+        return LayerID.name + " "+ ChangeType;
+    }
+};
+MLJ.core.ChangeType= //ChangeType is structured like an enumerator which map every type as an integer *provvisory*
+{
+    Creation:0,
+    Deletion:1, 
+    Modification:2,
+    Selection:3,
+    Unselection:4
+
+};
 /**
  * The MLJ.core.Scene namespace defines the functions to manage the scene, 
  * i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
@@ -39,10 +99,11 @@
  * @author Stefano Gabriele
  *
  */
+
 MLJ.core.Scene = {};
-
+MLJ.core.Scene.history=new MLJ.core.SceneHistory();
 (function () {
-
+    
     /**
      * Associative Array that contains all the meshes in the scene 
      * @type MLJ.util.AssociativeArray
@@ -348,7 +409,9 @@ MLJ.core.Scene = {};
          *      }
          *  );
          */
-        $(document).trigger("SceneLayerSelected", [_selectedLayer]);        
+        $(document).trigger("SceneLayerSelected", [_selectedLayer]); 
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer,MLJ.core.ChangeType.Selection));
+        MLJ.widget.Log.append(MLJ.core.Scene.history);
     };
 
     /**
@@ -374,7 +437,8 @@ MLJ.core.Scene = {};
             if (visible) layer.__mlj_histogram.show();
             else layer.__mlj_histogram.hide();
         }
-        
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Modification));
+        MLJ.core.Scene.history.closeSC();
         MLJ.core.Scene.render();
     };
 
@@ -476,18 +540,14 @@ MLJ.core.Scene = {};
      */
     this.updateLayer = function (layer) {
         if (layer instanceof MLJ.core.Layer) {
-
             if (_layers.getByKey(layer.name) === undefined) {
                 console.warn("Trying to update a layer not in the scene.");
                 return;
             }
-
             layer.updateThreeMesh();
             _computeGlobalBBbox();
-
             //render the scene
             this.render();
-
             /**
              *  Triggered when a layer is updated
              *  @event MLJ.core.Scene#SceneLayerUpdated
@@ -506,6 +566,9 @@ MLJ.core.Scene = {};
         } else {
             console.error("The parameter must be an instance of MLJ.core.Layer");
         }
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Modification));
+
+        
     };
 
     /**
@@ -558,6 +621,7 @@ MLJ.core.Scene = {};
     this.createLayer = function (name) {
         var layerName = disambiguateName(name);
         var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Creation));
         return layer;
     };
     
@@ -586,7 +650,7 @@ MLJ.core.Scene = {};
             
             _computeGlobalBBbox();
            
-            
+            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Deletion));
             MLJ.core.Scene.render(); 
         }
     };
@@ -640,6 +704,7 @@ MLJ.core.Scene = {};
      * @author Stefano Gabriele     
      */
     this.getSelectedLayer = function () {
+        
         return _selectedLayer;
     };
 

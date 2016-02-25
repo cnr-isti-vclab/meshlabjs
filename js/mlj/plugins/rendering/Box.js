@@ -39,7 +39,7 @@
                 {content: "disable", value: false, selected: true}
             ],
             bindTo: function(enabled){
-                boxEnablerQuotes._changeValue(enabled);
+                boxEnablerQuotes.setValue(enabled);
                 $(document).trigger("SceneLayerUpdated", [scene.getSelectedLayer()]);
             }
         });
