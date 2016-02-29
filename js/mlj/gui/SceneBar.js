@@ -148,7 +148,7 @@
             });
 
             deleteLayer.onClick(function() {
-                MLJ.core.Scene.removeLayerByName(MLJ.core.Scene.getSelectedLayer().name)
+                MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
             })
                                              
         }
