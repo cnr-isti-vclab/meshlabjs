@@ -154,6 +154,8 @@ MLJ.core.plugin.Filter = function (parameters) {
                 _this._applyTo(layer);
                 if (_this.parameters.arity !== -1) MLJ.core.Scene.updateLayer(layer);
             }
+            //aggiungere addLC rispetto alla arity
+            
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
             MLJ.core.Scene.history.closeSC();
@@ -163,31 +165,7 @@ MLJ.core.plugin.Filter = function (parameters) {
         if (parameters.arity !== 0) {
             MLJ.gui.disabledOnSceneEmpty(apply);
         }
-
-        if (parameters.arity === 1) {
-            var applyAll = new MLJ.gui.component.Button({
-                tooltip: "Apply to all visible layers",
-                icon: "img/icons/apply_all.png",
-            });
-            entry.addHeaderButton(applyAll);
-
-            MLJ.gui.disabledOnSceneEmpty(applyAll);
-
-            applyAll.onClick(function () {
-                var ptr = MLJ.core.Scene.getLayers().iterator();
-                var layer;
-                var t0 = performance.now();
-                while (ptr.hasNext()) {
-                    layer = ptr.next();
-                    if (layer.getThreeMesh().visible) {
-                        _this._applyTo(layer);
-                        MLJ.core.Scene.updateLayer(layer);
-                    }
-                }
-                var t1 = performance.now();
-                MLJ.widget.Log.append(name + " execution time " + Math.round(t1 - t0) + " ms");
-            });
-        }
+        
 
         _this._init(filterBuilder);
     };

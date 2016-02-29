@@ -31,7 +31,8 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
     var listSceneChange=new Array();
     var tmpSC; //temporary object to store the actual scene changes
     
-    this.openSC=function () //creates a new SceneChange object to store LayerChanges
+    this.openSC=function () //aggiungere mandante della applyto
+    //creates a new SceneChange object to store LayerChanges
     {
         tmpSC=new MLJ.core.SceneChange();
     }
@@ -434,11 +435,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             iter.next().visible = visible;
         }
 
-        // if histogram overlay is defined show/hide labels
-        if (layer.__mlj_histogram) {
-            if (visible) layer.__mlj_histogram.show();
-            else layer.__mlj_histogram.hide();
-        }
+       
         MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Modification));
         MLJ.core.Scene.history.closeSC();
         MLJ.core.Scene.render();
