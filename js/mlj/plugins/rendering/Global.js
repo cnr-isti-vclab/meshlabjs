@@ -3,6 +3,7 @@
     var DEFAULTS = {
         DefaultUpColor: new THREE.Color('#00000f'),
         DefaultDownColor: new THREE.Color('#8080ff'),
+        FieldOfView : scene.getCamera()
     };
      var plug = new plugin.Rendering({
         name: "Global",        
@@ -11,7 +12,7 @@
     }, DEFAULTS);
 	
     
-    var cullingWidget, topColor, bottomColor;
+    var cullingWidget, topColor, bottomColor, fovWidget;
     
     plug._init = function (guiBuilder) {
         
@@ -23,7 +24,23 @@
                 {content: "off", value: false, selected: true}
             ]
         });
-
+        
+        fovWidget = guiBuilder.RangedFloat({
+            label: "Field of View",
+            tooltip: "Change the field of view of the camera.",
+            min: 5, max: 90, step: 5,
+            defval: DEFAULTS.FieldOfView,
+            bindTo: (function() {
+                var bindToFun = function (size, overlay) {
+                   scene.getCamera().fov=fovWidget.getValue();
+                   scene.getCamera().updateProjectionMatrix();
+                   MLJ.core.Scene.render();
+                };
+                bindToFun.toString = function () { return 'FieldOfView'; }
+                return bindToFun;
+            }())
+        });
+        
         statsWidget = guiBuilder.Choice({
             label: "Show Stats",
             tooltip: "Enable/disable the display of rendering performance stats",
@@ -66,7 +83,7 @@
                 return callback;
             }())
         });
-		topColor = guiBuilder.Color({
+        topColor = guiBuilder.Color({
             label: "Background Top Color",
             tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the top",
             color: "#" + DEFAULTS.DefaultUpColor.getHexString(),
@@ -78,7 +95,7 @@
                 return bindToFun;
             }())
         });
-		bottomColor = guiBuilder.Color({
+        bottomColor = guiBuilder.Color({
             label: "Background Bottom Color",
             tooltip: "Change the default background color of render panel, obtained mixing two different colors by linear-gradient function, at the bottom",
             color:  "#" + DEFAULTS.DefaultDownColor.getHexString(),
@@ -92,7 +109,9 @@
         });
 
     };
-
+    plug._applyTo = function (meshFile, on) {
+        //alert(scene.getCamera());
+    }
     plug.getBackfaceCullingValue = function (type) {
         return cullingWidget.getValue();
     };

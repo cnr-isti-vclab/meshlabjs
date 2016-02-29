@@ -7,8 +7,14 @@ CC=emcc
 # --bind    needed for exporting the functions from cpp to js.
 # -s DEMANGLE_SUPPORT=1 More consistent naming of the cpp functions is preserved 
 #           in asm.js. Useful for cpp stacktrace inside the browser. 
+# Reasonable memory options: 
+# 
+# -s ALLOW_MEMORY_GROWTH=1 
+# -s TOTAL_MEMORY=536870912
+# -s TOTAL_MEMORY=1073741824 
+ 
 
-CFLAGS=-I.  -I ../../vcglib/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
+CFLAGS=-I.  -I ../../vcglib/ -s TOTAL_MEMORY=1073741824  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Saver.bc Selection.bc \
@@ -19,6 +25,7 @@ OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
 
 MeshLabCppCore.js: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
 
 
 clean:
