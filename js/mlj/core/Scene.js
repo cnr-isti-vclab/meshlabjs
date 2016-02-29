@@ -33,14 +33,12 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
     
     this.openSC=function () //creates a new SceneChange object to store LayerChanges
     {
-            
         tmpSC=new MLJ.core.SceneChange();
     }
     //"closes" the registration of LayerChanges and stores it in the array.
     //This is called at every Filter applied, Layer selected or deleted
     this.closeSC=function () 
     {
-        MLJ.widget.Log.append(tmpSC);
         listSceneChange.push(tmpSC);
         tmpSC=undefined;
     }
@@ -60,7 +58,10 @@ MLJ.core.SceneChange = function () { //Scene Changes class, stores a list of Lay
     this.add=function (newLC) //adds a new LayerChange to the array
     {
         if(newLC instanceof MLJ.core.LayerChange)
+        {
             listLayerChange.push(newLC);
+            MLJ.widget.Log.append(newLC.toString());
+        }
     }
     this.toString=function () //debug function to see the content
     {
@@ -73,18 +74,20 @@ MLJ.core.LayerChange=function (id,type) //LayerChange class, structured as
     var ChangeType; //type of the change applied to the layer - structure ahead
     LayerID=id;
     ChangeType=type;
+    
     this.toString=function()
     {
-        return LayerID.name + " "+ ChangeType;
+        return "LayerID: "+LayerID+ " "+ ChangeType;
     }
+    
 };
 MLJ.core.ChangeType= //ChangeType is structured like an enumerator which map every type as an integer *provvisory*
 {
-    Creation:0,
-    Deletion:1, 
-    Modification:2,
-    Selection:3,
-    Unselection:4
+    Creation:"Create",
+    Deletion:"Delete", 
+    Modification:"Modify",
+    Selection:"Select",
+    Unselection:"UnSelect"
 
 };
 /**
@@ -410,8 +413,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
          *  );
          */
         $(document).trigger("SceneLayerSelected", [_selectedLayer]); 
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer,MLJ.core.ChangeType.Selection));
-        MLJ.widget.Log.append(MLJ.core.Scene.history);
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer.id,MLJ.core.ChangeType.Selection));
     };
 
     /**
@@ -437,7 +439,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             if (visible) layer.__mlj_histogram.show();
             else layer.__mlj_histogram.hide();
         }
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Modification));
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Modification));
         MLJ.core.Scene.history.closeSC();
         MLJ.core.Scene.render();
     };
@@ -566,7 +568,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         } else {
             console.error("The parameter must be an instance of MLJ.core.Layer");
         }
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Modification));
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Modification));
 
         
     };
@@ -618,10 +620,11 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
+    var lastID=0;
     this.createLayer = function (name) {
         var layerName = disambiguateName(name);
-        var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Creation));
+        var layer = new MLJ.core.Layer(lastID++,layerName, new Module.CppMesh());
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Creation));
         return layer;
     };
     
@@ -631,6 +634,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele     
      */
+    
     this.removeLayerByName = function (name) {
         var layer = this.getLayerByName(name);
         
@@ -650,7 +654,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             
             _computeGlobalBBbox();
            
-            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer,MLJ.core.ChangeType.Deletion));
+            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Deletion));
             MLJ.core.Scene.render(); 
         }
     };

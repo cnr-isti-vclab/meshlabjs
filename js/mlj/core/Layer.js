@@ -32,9 +32,9 @@
  * @param {CppMesh} cppMesh the CppMesh object
  * @memberOf MLJ.core
  */
-MLJ.core.Layer = function (name, cppMesh) {
+MLJ.core.Layer = function (id,name, cppMesh) {
     this.name = name;
-
+    this.id=id;
     /**
      * @type {String} - Set if a mesh is read from a file
      * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string
