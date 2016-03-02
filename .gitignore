@@ -1,6 +1,7 @@
 
 *.o
 *.bc
+*.db
 
 sources/FilterTest.pro.user
 sources/.qmake.stash

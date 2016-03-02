@@ -92,6 +92,11 @@
                 tooltip: "Delete current layer",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
+            var resetTrackball = new component.Button({
+                tooltip: "Reset trackball",
+                icon: "img/icons/home.png"
+            });
+            
             var doc = new component.Button({
                 tooltip: "Go to the documentation page",
                 icon: "img/icons/question.png",
@@ -103,8 +108,9 @@
 				right:true
             });
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
+            MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             
-            _toolBar.add(open, save, reload, snapshot, deleteLayer);
+            _toolBar.add(open, save, reload, resetTrackball, snapshot, deleteLayer);
 			_toolBar.add(doc,git);
 
             // SCENE BAR EVENT HANDLERS
@@ -149,6 +155,10 @@
 
             deleteLayer.onClick(function() {
                 MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
+            })
+            
+            resetTrackball.onClick(function() {
+                MLJ.core.Scene.resetTrackball();
             })
                                              
         }
