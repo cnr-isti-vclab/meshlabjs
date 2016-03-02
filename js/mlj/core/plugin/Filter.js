@@ -141,7 +141,6 @@ MLJ.core.plugin.Filter = function (parameters) {
         });
 
         entry.addHeaderButton(apply);
-
         apply.onClick(function () {
             var t0 = performance.now();
             // Creation filters and filters that works on all layers ignore the current layer
@@ -151,13 +150,26 @@ MLJ.core.plugin.Filter = function (parameters) {
             }
             else {
                 var layer = MLJ.core.Scene.getSelectedLayer();
-                _this._applyTo(layer);
+                if(!layer.deleted)
+                    _this._applyTo(layer);
+                else alert("Layer Deleted");
                 if (_this.parameters.arity !== -1) MLJ.core.Scene.updateLayer(layer);
             }
             //aggiungere addLC rispetto alla arity
-            
+
             var t1 = performance.now();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
+            switch(_this.parameters.arity)
+            {
+                case 0:
+                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Creation));
+                    break;
+                case -1:
+                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Deletion));
+                    break;
+                default:
+                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Modification));  
+            }
             MLJ.core.Scene.history.closeSC();
             MLJ.widget.Log.append(MLJ.core.Scene.history);
         });
@@ -168,6 +180,7 @@ MLJ.core.plugin.Filter = function (parameters) {
         
 
         _this._init(filterBuilder);
+        
     };
 };
 
