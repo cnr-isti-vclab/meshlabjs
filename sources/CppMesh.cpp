@@ -56,6 +56,13 @@ class CppMesh
       // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
       return ret;
   }
+    
+    
+    int openMeshZip(string fileName){
+        
+        return 0;
+    }
+    
 
   int VN() { return m.VN(); }
   int FN() { return m.FN(); }
