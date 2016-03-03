@@ -566,7 +566,6 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         } else {
             console.error("The parameter must be an instance of MLJ.core.Layer");
         }
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Modification));
 
         
     };
@@ -638,20 +637,14 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         
         if (layer !== undefined) {
             //remove layer from list
-            _layers.remove(name);
-                                                
-            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
-            
-            layer.dispose();
-                      
+            layer.deleted=true;
+            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);     
             if(_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
             } else {
                 _this._selectedLayer = undefined;
             }
-            
             _computeGlobalBBbox();
-           
             MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Deletion));
             MLJ.core.Scene.render(); 
         }

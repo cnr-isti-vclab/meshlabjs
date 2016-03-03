@@ -145,31 +145,28 @@ MLJ.core.plugin.Filter = function (parameters) {
             var t0 = performance.now();
             // Creation filters and filters that works on all layers ignore the current layer
             // so we do not pass it
-            if( (_this.parameters.arity === 0) || (_this.parameters.arity===3) ) {
-                _this._applyTo();               
-            }
-            else {
-                var layer = MLJ.core.Scene.getSelectedLayer();
-                if(!layer.deleted)
-                    _this._applyTo(layer);
-                else alert("Layer Deleted");
-                if (_this.parameters.arity !== -1) MLJ.core.Scene.updateLayer(layer);
-            }
-            //aggiungere addLC rispetto alla arity
-
-            var t1 = performance.now();
-            MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
             switch(_this.parameters.arity)
             {
                 case 0:
+                case 3:
+                    _this._applyTo();
                     MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Creation));
                     break;
                 case -1:
+                    var layer = MLJ.core.Scene.getSelectedLayer();
+                    _this._applyTo(layer);
+                     MLJ.core.Scene.updateLayer(layer);
                     MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Deletion));
                     break;
-                default:
+                case 1:
+                    var layer = MLJ.core.Scene.getSelectedLayer();
+                    _this._applyTo(layer);
                     MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Modification));  
+                default:
+                    alert("Error filter");
             }
+            var t1 = performance.now();
+            MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
             MLJ.core.Scene.history.closeSC();
             MLJ.widget.Log.append(MLJ.core.Scene.history);
         });
