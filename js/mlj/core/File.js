@@ -54,6 +54,7 @@ MLJ.core.File = {
             case ".obj":
             case ".ply":
             case ".stl":
+            case ".zip":
                 return true;
         }
 
@@ -73,8 +74,14 @@ MLJ.core.File = {
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
             
-            console.time("Parsing Mesh Time");
-            var resOpen = mf.cppMesh.openMesh(file.name);
+            console.time("Parsing Mesh Time");  
+//            console.log("File extension: " +file.name.split('.').pop());
+            var resOpen = -1;
+            if(file.name.split('.').pop() === "zip")
+                resOpen = mf.cppMesh.openMeshZip(file.name);
+            else
+                resOpen = mf.cppMesh.openMesh(file.name);
+        
             if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);

@@ -3,6 +3,7 @@
 #include <emscripten/bind.h>
 #include "mesh_def.h"
 #include <wrap/io_trimesh/import.h>
+#include "miniz/miniz.c"
 
 using namespace vcg;
 using namespace std;
@@ -53,13 +54,39 @@ class CppMesh
               ret=0;
           }
       }
-      // printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
+//       printf("Read mesh with %i faces and %i vertices.\n",m.FN(),m.VN());
       return ret;
   }
     
     
     int openMeshZip(string fileName){
+        printf("\nOpening zip file");
+        mz_zip_archive zip_archive; 
+        memset(&zip_archive, 0, sizeof(zip_archive)); //Saving memory for the zip archive
+        mz_zip_reader_init_file(&zip_archive, fileName.c_str(), 0); //Initializing the zip file reader
         
+        //Iterate through each file inside the zip file
+        for (int i = 0; i < (int)mz_zip_reader_get_num_files(&zip_archive); i++){
+            mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
+            mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
+            std::string meshFileName = file_stat.m_filename; //Get the file extension
+            std::string fileExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);
+            
+            if(fileExt == "off" || fileExt == "obj" || fileExt == "ply" || fileExt == "stl"){
+                //extract and open the mehs file
+                mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
+                printf("\nExtracting %s",  meshFileName.c_str());
+                openMesh(meshFileName);
+
+                //remove the mesh file from the emscripten file system
+                if(std::remove(meshFileName.c_str()) != 0 )
+                    printf("\nError deleting %s", meshFileName.c_str());
+                else
+                    printf("\n%s successfully deleted", meshFileName.c_str());
+            }                
+        }
+        
+        mz_zip_reader_end(&zip_archive);    //Close the zip file
         return 0;
     }
     
@@ -192,6 +219,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("setMeshName",           &CppMesh::setMeshName)
     .function("getMeshName",           &CppMesh::getMeshName)
     .function("openMesh",              &CppMesh::openMesh)
+    .function("openMeshZip",           &CppMesh::openMeshZip)
     .function("VN",                    &CppMesh::VN)
     .function("FN",                    &CppMesh::FN)
     .function("hasPerVertexColor",     &CppMesh::hasPerVertexColor)
