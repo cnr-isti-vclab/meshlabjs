@@ -21,6 +21,9 @@
         var _$rendPane = $('<div/>').css({
             position: "relative"            
         });
+		var _$toolPane = $('<div/>').css({
+            position: "relative"            
+        });
 
         //Accordion for filters pane
         var _filtersAccord = new component.Accordion({
@@ -32,7 +35,7 @@
 
         //Tool bar for rendering pane
         var _renderingTb = new component.ToolBar();
-
+        var _toolTb = new component.ToolBar();
         function Tab(name) {
             this.name = name;
             var _$content = $('<div id="tab-' + name + '"></div>');
@@ -65,6 +68,12 @@
 
             _$rendPane.outerHeight($("#tab-Rendering").height()
                     - _renderingTb.$.outerHeight());
+			
+			$("#tab-Tools").outerHeight(
+                    _$tabbedPane.height() - _$tabsBar.outerHeight());
+
+            _$toolPane.outerHeight($("#tab-Tools").height()
+                    - _toolTb.$.outerHeight());
         }
 
         function init() {
@@ -81,8 +90,15 @@
                     .appendContent(_renderingTb.$)
                     .appendContent(_$rendPane);
 
-            _tabs.push(filterTab, renderingTab);
 
+
+			var toolTab = new Tab("Tools");
+            toolTab
+                    .appendContent(_toolTb.$)
+                    .appendContent(_$toolPane);
+
+            _tabs.push(filterTab, renderingTab, toolTab);
+			
             _$tabbedPane.on('tabsactivate', function (event, ui) {
                 resize();
             });
@@ -123,6 +139,14 @@
 
         this.getRendToolBar = function () {
             return _renderingTb;
+        };
+		
+		this.getToolPane = function () {
+            return _$toolPane;
+        };
+
+        this.getToolsToolBar = function () {
+            return _toolTb;
         };
         
         this.selectTab = function(index) {

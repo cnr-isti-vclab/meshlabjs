@@ -37,7 +37,7 @@ MLJ.core.plugin.Manager = {
 
     var _filters = new MLJ.util.AssociativeArray();
     var _rendering = new MLJ.util.AssociativeArray();
-
+    var _tool = new MLJ.util.AssociativeArray();
     /**
      * Installs a new plugin in MeshLabJS
      * @memberOf MLJ.core.plugin
@@ -60,6 +60,9 @@ MLJ.core.plugin.Manager = {
                         search.addItem(plugin.parameters.tooltip);
                     }
                 } else if (plugin instanceof MLJ.core.plugin.BaseRendering) {
+                    _rendering.set(plugin.getName(), plugin);
+                }
+                else if (plugin instanceof MLJ.core.plugin.Tool) {
                     _rendering.set(plugin.getName(), plugin);
                 }
             } else {

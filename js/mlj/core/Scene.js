@@ -103,7 +103,7 @@ MLJ.core.Scene = {};
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
     var _camera2D;
-
+    var controls;
     var _stats;
     
     /// @type {Object}
@@ -197,7 +197,7 @@ MLJ.core.Scene = {};
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
-        var controls = new THREE.TrackballControls(_camera, container);
+        controls = new THREE.TrackballControls(_camera, container);
         controls.rotateSpeed = 4.0;
         controls.zoomSpeed = 1.2;
         controls.panSpeed = 2.0;
@@ -318,7 +318,9 @@ MLJ.core.Scene = {};
     this.getCamera = function() {
         return _camera;
     };
-
+    this.getControls = function (){
+        return controls;
+    }
     this.getStats = function() {
         return _stats;
     }

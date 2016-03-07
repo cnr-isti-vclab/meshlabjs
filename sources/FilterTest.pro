@@ -14,7 +14,11 @@ SOURCES += FilterTest.cpp \
   Refine.cpp \
   Sampling.cpp \
   Selection.cpp \
-  Transform.cpp
+  Transform.cpp \
+  ShotSelection.cpp \
+    SimpleCamera.cpp
 
 HEADERS += mesh_def.h \
     FilterTest.h
+
+DISTFILES +=
