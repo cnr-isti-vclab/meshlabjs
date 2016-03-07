@@ -105,15 +105,12 @@ MLJ.core.plugin.Manager = {
     };
     
      /**
-     * Executes a given filter. 
+     * Executes a Creation Filter. 
      * 
-     * It is used only at startup to start a filter and currently works and, 
-     * currently, it is meaningful only for creation filters. 
-     * To be extended in the future to a more reasonable 
-     * minimal script-like approach...
+     * It is used only at startup to start a creation filter. 
      * @memberOf MLJ.core.plugin
      */
-    this.executeFilter = function (filterName) {
+    this.executeCreateFilter = function (filterName) {
         filterHandle = _filters.getByKey(filterName);
         if(filterHandle === undefined )
         {
@@ -125,6 +122,28 @@ MLJ.core.plugin.Manager = {
             filterHandle._applyTo();
         }
     };
-    
+
+     /**
+     * Executes a Layer Filter. 
+     * 
+     * It is used only at startup to start a filter and currently works and, 
+     * currently, it is meaningful only for creation filters. 
+     * To be extended in the future to a more reasonable 
+     * minimal script-like approach...
+     * @memberOf MLJ.core.plugin
+     */
+    this.executeLayerFilter = function (filterName, currentLayer) {
+        filterHandle = _filters.getByKey(filterName);
+        if(filterHandle === undefined )
+        {
+            console.log("Filter is not defined: "+filterName+"\n");
+        }
+        else
+        {
+            console.log("Executing filter "+filterName+" on layer " + currentLayer.name + "\n");  
+            filterHandle._applyTo(currentLayer);
+        }
+    };
+
 
 }).call(MLJ.core.plugin.Manager, MLJ.widget, MLJ.gui);//MLJ.widget contains GUI running widgets

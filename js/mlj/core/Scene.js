@@ -105,6 +105,7 @@ MLJ.core.Scene = {};
     var _camera2D;
     var controls;
     var _stats;
+    var _controls;
     
     /// @type {Object}
     var _renderer;
@@ -197,20 +198,20 @@ MLJ.core.Scene = {};
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
-        controls = new THREE.TrackballControls(_camera, container);
-        controls.rotateSpeed = 4.0;
-        controls.zoomSpeed = 1.2;
-        controls.panSpeed = 2.0;
-        controls.noZoom = false;
-        controls.noPan = false;
-        controls.staticMoving = true;
-        controls.dynamicDampingFactor = 0.3;
-        controls.keys = [65, 83, 68];
+        _controls = new THREE.TrackballControls(_camera, container);
+        _controls.rotateSpeed = 4.0;
+        _controls.zoomSpeed = 1.2;
+        _controls.panSpeed = 2.0;
+        _controls.noZoom = false;
+        _controls.noPan = false;
+        _controls.staticMoving = true;
+        _controls.dynamicDampingFactor = 0.3;
+        _controls.keys = [65, 83, 68];
         
         $(document).keydown(function(event) {           
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
-                controls.reset();
+                _controls.reset();
             }
         });
         
@@ -220,12 +221,12 @@ MLJ.core.Scene = {};
 
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
-        $canvas.addEventListener('touchmove', controls.update.bind(controls), false);
-        $canvas.addEventListener('mousemove', controls.update.bind(controls), false);        
-        $canvas.addEventListener('mousewheel', controls.update.bind(controls), false);        
-        $canvas.addEventListener('DOMMouseScroll', controls.update.bind(controls), false ); // firefox
+        $canvas.addEventListener('touchmove', _controls.update.bind(_controls), false);
+        $canvas.addEventListener('mousemove', _controls.update.bind(_controls), false);        
+        $canvas.addEventListener('mousewheel', _controls.update.bind(_controls), false);        
+        $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false ); // firefox
         
-        controls.addEventListener('change', function () {            
+        _controls.addEventListener('change', function () {            
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -319,7 +320,7 @@ MLJ.core.Scene = {};
         return _camera;
     };
     this.getControls = function (){
-        return controls;
+        return _controls;
     }
     this.getStats = function() {
         return _stats;
@@ -786,6 +787,11 @@ MLJ.core.Scene = {};
             saveAs(blob, "snapshot.png");
         });
     };
+    
+    this.resetTrackball = function() {
+        _controls.reset();
+    };
+    
     
     //INIT
     $(window).ready(function () {
