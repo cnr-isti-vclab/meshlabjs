@@ -15,8 +15,8 @@ SOURCES += FilterTest.cpp \
   Sampling.cpp \
   Selection.cpp \
   Transform.cpp \
-  ShotSelection.cpp \
-    SimpleCamera.cpp
+    SimpleCamera.cpp \
+    SelectionTool.cpp
 
 HEADERS += mesh_def.h \
     FilterTest.h

@@ -103,7 +103,7 @@ MLJ.core.Scene = {};
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
     var _camera2D;
-    var controls;
+
     var _stats;
     var _controls;
     

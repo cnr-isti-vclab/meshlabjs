@@ -130,7 +130,7 @@ html,body{
     background: radial-gradient(ellipse at center,  rgba(169,219,128,1) 0%,rgba(119,173,98,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a9db80', endColorstr='#77ad62',GradientType=1 );    
 }
-.selectiondiv{
+.tooldiv{
     border:2px solid white;
     background:#1B94A0;
     opacity:0.4;

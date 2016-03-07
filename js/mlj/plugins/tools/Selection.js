@@ -51,7 +51,7 @@
             if(active){
                 scene.getControls().enabled=false;
                 $('#_3D').css('cursor','crosshair');
-                $('#_3D').append('<div id="selection" class="selectiondiv"></div>');
+                $('#_3D').append('<div id="selection" class="tooldiv"></div>');
                 $('#_3D').attr('onmousedown','return false');
                 $('#_3D').bind('mouseup.selection',canMouseUp);
                 $('#_3D').bind('mouseenter.selection',canMouseEnter);
