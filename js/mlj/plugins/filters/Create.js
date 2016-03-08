@@ -246,19 +246,19 @@
             tooltip: "Number of recursive subdivision of the superellipsoid"
         });
 		feature1 = builder.Float({ 
-            min: 0.1, step: 0.1, defval:0.70,
-            label: "First feature",
-            tooltip: "First feature of the superellipsoid."
+            min: 0.1, step: 0.1, defval:0.80,
+            label: "YZ Squaredness",
+            tooltip: "How sharp/smooth is along the X axis."
         });
-	feature2= builder.Float({ 
-            min: 0.1, step: 0.1, defval:0.70,
-            label: "Second feature",
-            tooltip: "Second feature of the superellipsoid"
+		feature2= builder.Float({ 
+            min: 0.1, step: 0.1, defval:0.80,
+            label: "XZ Squaredness",
+            tooltip: "How sharp/smooth is along the Y axis."
         });
-	feature3 = builder.Float({ 
-            min: 0.1, step: 0.1, defval:0.70,
-            label: "Third feature",
-            tooltip: "Third features of the superellipsoid"
+		feature3 = builder.Float({ 
+            min: 0.1, step: 0.1, defval:0.80,
+            label: "XY Squaredness",
+            tooltip: "How sharp/smooth is along the Z axis"
         });
         
     };

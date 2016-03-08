@@ -8,9 +8,7 @@ sources/.qmake.stash
 sources/FilterTest
 sources/Makefile
 
-/nbproject/private/
-/nbproject/project.properties
-/nbproject/project.xml
+nbproject/
 
 doc/html/
 
