@@ -240,9 +240,9 @@
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
                         _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
                         _html += "<br><br>  Password (Pro only, must be private): <input name='password' type='password'>";
-                        _html += "<input name='Submit' type='submit' value='Upload'> <br><br>";
+                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'> <br><br>";
                         _html += "<p id='status'> Status:</p>";
-                        _html += "</form> <button id='sketchExit' type='button'> Exit </button></div>";
+                        _html += "</form> <button id='exitButton' type='button'> Exit </button></div>";
                         sketchFabDialog.appendContent(_html);
                         sketchFabDialog.show();
                         

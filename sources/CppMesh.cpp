@@ -72,7 +72,7 @@ class CppMesh
         
          const char *pTestComment = "test comment";
         //MZ_BEST_COMPRESSION = 9
-        if(!mz_zip_writer_add_file(&zip_archive, fileName.c_str(), fileName.c_str(), pTestComment, strlen(pTestComment), MZ_BEST_COMPRESSION)){
+        if(!mz_zip_writer_add_file(&zip_archive, fileName.c_str(), fileName.c_str(), pTestComment, strlen(pTestComment), MZ_UBER_COMPRESSION )){
             printf("failed adding %s to %s", fileName.c_str(), archiveName.c_str());
             mz_zip_writer_end(&zip_archive);
             return 0;

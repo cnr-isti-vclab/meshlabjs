@@ -259,20 +259,25 @@ MLJ.core.File = {
 
         function uploadModel( data ) {
 //          console.log( 'Begin upload of ' + String( data.modelFile.value ) );  
-          var formData = new FormData( data );
+          var formData = new FormData();
 
-          formData.append("modelFile", blob, fileName);  
+          formData.append("modelFile", blob, fileName);
+          formData.append("token", data[0].value);   
+          formData.append("name", data[1].value);    
+          formData.append("description", data[2].value);  
+          formData.append("tags", data[3].value + " meshlab meshlabjs");   
+          formData.append("private", data[4].value);  
+          formData.append("password", data[5].value);
           
-          var entries = formData.entries();
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-          console.log(entries.next().value);
-
+//          var entries = formData.entries();
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
 
           $.ajax( {
             url: sketchfabApiUrl,
@@ -285,12 +290,15 @@ MLJ.core.File = {
               var uid = response.uid;
               console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
               $( '#status' ).html( 'Upload successful. Begin polling...' );
+              $('#uploadButton').button().button('disable')
+              $('#exitButton').button().button('disable')
               pollProcessingStatus( uid );
             },
             error: function( response ) {
               console.log( 'Upload Error!' );
               console.log( JSON.stringify( response ) );
               $( '#status' ).html( 'Upload error!' );
+              $('#exitButton').text('Exit');
             }
           } );
         }
@@ -334,7 +342,10 @@ MLJ.core.File = {
                     console.log( 'It worked!' );
                     console.log( sketchfabModelUrl + urlid );
                     complete = true;
-                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );
+                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );                    
+                    $('#uploadButton').button().button('enable');
+                    $('#exitButton').button().text('Ok');
+                    $('#exitButton').button().button('enable');
                     break;
                   default:
                     console.log( 'This message should never appear...something changed in the processing response. See: ' + url );
