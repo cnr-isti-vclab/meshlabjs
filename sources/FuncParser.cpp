@@ -171,6 +171,33 @@ bool QualityFunctionFilter(uintptr_t _baseM, std::string funcStr, bool normalize
 }
 
 
+bool ParametricSurfaceFilter(uintptr_t _baseM, std::string funcStrX, std::string funcStrY,  std::string funcStrZ, 
+                             float minU, float maxU, int countU,
+                             float minV, float maxV, int countV)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  
+  float stepU = (maxU-minU)/float(countU);
+  float stepV = (maxV-minV)/float(countV);
+  double u,v;
+  mu::Parser pX; pX.DefineVar("u", &u); pX.DefineVar("v", &v); pX.SetExpr(funcStrX);
+  mu::Parser pY; pY.DefineVar("u", &u); pY.DefineVar("v", &v); pY.SetExpr(funcStrY);
+  mu::Parser pZ; pZ.DefineVar("u", &u); pZ.DefineVar("v", &v); pZ.SetExpr(funcStrZ);
+  
+  for(int j=0; j<=countV; ++j)
+    for(int i=0; i<=countU; ++i)
+    {
+      u = minU+i*stepU;
+      v = minV+j*stepV;
+      tri::Allocator<MyMesh>::AddVertex(m, Point3f(pX.Eval(),pY.Eval(),pZ.Eval()) );
+    }
+  
+  tri::FaceGrid(m,countU+1,countV+1);
+  m.UpdateBoxAndNormals();
+  return true;
+}
+
+
 bool IsosurfaceFilter(uintptr_t _baseM, std::string funcStr, 
                      float minX, float minY, float minZ,
                      float maxX, float maxY, float maxZ,
@@ -229,6 +256,7 @@ void FuncParserPluginTEST()
 //Binding code
 EMSCRIPTEN_BINDINGS(MLFuncParserPlugin) {
     emscripten::function("QualityFunctionFilter", &QualityFunctionFilter);
+    emscripten::function("ParametricSurfaceFilter", &ParametricSurfaceFilter);
     emscripten::function("IsosurfaceFilter", &IsosurfaceFilter);
     
 }

@@ -328,8 +328,60 @@
         scene.addLayer(mf);
     };
 
+/******************************************************************************/
+    var ParametricSurfaceFilter = new plugin.Filter({
+        name: "Create Parametric Surface",
+        tooltip: "Create a parametric surface defined by (x,y,z) = F(u,v)",
+        arity: 0});
+
+    var funcStrXWdg,funcStrYWdg,funcStrZWdg,
+        countUWdg,countVWdg, minUWdg,minVWdg,maxUWdg,maxVWdg;
+    ParametricSurfaceFilter._init = function (builder) {
+        
+        funcStrXWdg  = builder.String({
+            label: "X func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "u-sin(u)*cosh(v)"
+        });
+        funcStrYWdg  = builder.String({
+            label: "Y func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "1-cos(u)*cosh(v)"
+        });
+        funcStrZWdg  = builder.String({
+            label: "Z func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "4*sin(1/2*u)*sinh(v/2)"
+        });
+        countUWdg = builder.Integer({
+            min: 1, step: 5, defval: 200,
+            label: "U steps",
+            tooltip: "Resolution of the grid along the 'u' dimension"
+        });         
+        countVWdg = builder.Integer({
+            min: 1, step: 5, defval: 50,
+            label: "V steps",
+            tooltip: "Resolution of the grid along the 'u' dimension"
+        });         
+        
+        minUWdg = builder.Float({ step: 0.1, defval:-10.0, label: "U Min", tooltip: "Domain range minimum U value" });
+        minVWdg = builder.Float({ step: 0.1, defval:-2.0, label: "V Min", tooltip: "Domain range minimum V value" });
+        maxUWdg = builder.Float({ step: 0.1, defval: 10.0, label: "U Max", tooltip: "Domain range maximum U value" });
+        maxVWdg = builder.Float({ step: 0.1, defval: 2.0, label: "V Max", tooltip: "Domain range maximum V value" });
+        
+    };
+
+    ParametricSurfaceFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Param Surf");
+        Module.ParametricSurfaceFilter(mf.ptrMesh(), 
+                    funcStrXWdg.getValue(), funcStrYWdg.getValue(), funcStrZWdg.getValue(), 
+                    minUWdg.getValue(), maxUWdg.getValue(), countUWdg.getValue(),
+                    minVWdg.getValue(), maxVWdg.getValue(), countVWdg.getValue()  );
+                    scene.addLayer(mf);
+    };
 
 /******************************************************************************/
+
 
     plugin.Manager.install(DeleteLayerFilter);
     plugin.Manager.install(DuplicateLayerFilter);
@@ -343,5 +395,5 @@
     plugin.Manager.install(SuperToroidFilter);
     plugin.Manager.install(SuperEllipsoidFilter);
     plugin.Manager.install(IsosurfaceFilter);
-
+    plugin.Manager.install(ParametricSurfaceFilter);   
 })(MLJ.core.plugin, MLJ.core.Scene);
