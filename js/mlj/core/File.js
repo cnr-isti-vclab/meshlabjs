@@ -278,6 +278,8 @@ MLJ.core.File = {
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
+            $('#uploadButton').button().button('disable')
+            $('#exitButton').button().button('disable')
 
           $.ajax( {
             url: sketchfabApiUrl,
@@ -290,15 +292,15 @@ MLJ.core.File = {
               var uid = response.uid;
               console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
               $( '#status' ).html( 'Upload successful. Begin polling...' );
-              $('#uploadButton').button().button('disable')
-              $('#exitButton').button().button('disable')
               pollProcessingStatus( uid );
             },
             error: function( response ) {
               console.log( 'Upload Error!' );
               console.log( JSON.stringify( response ) );
               $( '#status' ).html( 'Upload error!' );
-              $('#exitButton').text('Exit');
+            $('#uploadButton').button().button('enable')
+            $('#exitButton').button().button('enable')
+            $('#exitButton').text('Exit');
             }
           } );
         }
@@ -326,25 +328,28 @@ MLJ.core.File = {
                 switch( status ) {
                   case 'PENDING':
                     console.log( 'Model is in the processing queue. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
-                    $( '#status' ).html( 'Model in queue...' );
+                    $( '#status' ).html( 'Model in queue...' );    
                     break;
                   case 'PROCESSING':
                     console.log( 'Model is being processed. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
-                    $( '#status' ).html( 'Model processing...' );
+                    $( '#status' ).html( 'Model processing...' ); 
                     break;
                   case 'FAILED':
                     console.log( 'Model processing failed:' );
                     console.log( response.error );
-                    $( '#status' ).html( 'Model processing failed!' );
+                    $( '#status' ).html( 'Model processing failed!' );       
+                    $('#uploadButton').button().button('enable');
+                    $('#exitButton').button().button('enable');
+                    $('#exitButton').text('Exit');
                     complete = true;
                     break;
                   case 'SUCCEEDED':
                     console.log( 'It worked!' );
                     console.log( sketchfabModelUrl + urlid );
                     complete = true;
-                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );                    
+                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );   
+                    $('#exitButton').button().text('Ok');                 
                     $('#uploadButton').button().button('enable');
-                    $('#exitButton').button().text('Ok');
                     $('#exitButton').button().button('enable');
                     break;
                   default:
