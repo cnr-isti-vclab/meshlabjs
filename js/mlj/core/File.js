@@ -278,8 +278,7 @@ MLJ.core.File = {
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
-            $('#uploadButton').button().button('disable')
-            $('#exitButton').button().button('disable')
+            $('#exitUpdateButton').button().button('disable')
 
           $.ajax( {
             url: sketchfabApiUrl,
@@ -298,9 +297,8 @@ MLJ.core.File = {
               console.log( 'Upload Error!' );
               console.log( JSON.stringify( response ) );
               $( '#status' ).html( 'Upload error!' );
-            $('#uploadButton').button().button('enable')
-            $('#exitButton').button().button('enable')
-            $('#exitButton').text('Exit');
+            $('#exitUpdateButton').button().button('enable')
+            $('#exitUpdateButton').text('Exit');
             }
           } );
         }
@@ -337,20 +335,18 @@ MLJ.core.File = {
                   case 'FAILED':
                     console.log( 'Model processing failed:' );
                     console.log( response.error );
-                    $( '#status' ).html( 'Model processing failed!' );       
-                    $('#uploadButton').button().button('enable');
-                    $('#exitButton').button().button('enable');
-                    $('#exitButton').text('Exit');
+                    $( '#status' ).html( 'Model processing failed!' );  
+                    $('#exitUpdateButton').button().button('enable');
+                    $('#exitUpdateButton').text('Exit');
                     complete = true;
                     break;
                   case 'SUCCEEDED':
                     console.log( 'It worked!' );
                     console.log( sketchfabModelUrl + urlid );
                     complete = true;
-                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );   
-                    $('#exitButton').button().text('Ok');                 
-                    $('#uploadButton').button().button('enable');
-                    $('#exitButton').button().button('enable');
+                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );  
+                    $('#exitUpdateButton').button().text('Ok');       
+                    $('#exitUpdateButton').button().button('enable');
                     break;
                   default:
                     console.log( 'This message should never appear...something changed in the processing response. See: ' + url );
