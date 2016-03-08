@@ -105,7 +105,7 @@
             Module['onRuntimeInitialized'] = function() {
                 filterName = MLJ.util.getURLParam("filterName");
                 if(filterName)
-                    MLJ.core.plugin.Manager.executeFilter(filterName);
+                    MLJ.core.plugin.Manager.executeCreateFilter(filterName);
             };
         </script>
     </body>
