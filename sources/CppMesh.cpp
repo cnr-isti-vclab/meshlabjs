@@ -3,6 +3,7 @@
 #include <emscripten/bind.h>
 #include "mesh_def.h"
 #include <wrap/io_trimesh/import.h>
+#include <wrap/io_trimesh/export.h>
 #include "miniz/miniz.c"
 
 using namespace vcg;
@@ -58,7 +59,29 @@ class CppMesh
       return ret;
   }
     
+
+    int saveMeshZip(string fileName, string archiveName) {
+        printf("Trying to add %s to %s", fileName.c_str(), archiveName.c_str());
+        mz_zip_archive zip_archive;
+        memset(&zip_archive, 0, sizeof(zip_archive)); //Saving memory for the zip archive
+        if(!mz_zip_writer_init_file(&zip_archive, archiveName.c_str(), 65537)){
+            printf("Failed creating zip archive");
+            mz_zip_writer_end(&zip_archive);
+            return 0;
+        }
+        
+         const char *pTestComment = "test comment";
+        //MZ_BEST_COMPRESSION = 9
+        if(!mz_zip_writer_add_file(&zip_archive, fileName.c_str(), fileName.c_str(), pTestComment, strlen(pTestComment), MZ_BEST_COMPRESSION)){
+            printf("failed adding %s to %s", fileName.c_str(), archiveName.c_str());
+            mz_zip_writer_end(&zip_archive);
+            return 0;
+        }
+        mz_zip_writer_finalize_archive(&zip_archive);
+        return 1;
+      }
     
+   
     int openMeshZip(string fileName){
         printf("\nOpening zip file");
         mz_zip_archive zip_archive; 
@@ -220,6 +243,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getMeshName",           &CppMesh::getMeshName)
     .function("openMesh",              &CppMesh::openMesh)
     .function("openMeshZip",           &CppMesh::openMeshZip)
+    .function("saveMeshZip",           &CppMesh::saveMeshZip)
     .function("VN",                    &CppMesh::VN)
     .function("FN",                    &CppMesh::FN)
     .function("hasPerVertexColor",     &CppMesh::hasPerVertexColor)

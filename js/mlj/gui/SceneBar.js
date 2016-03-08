@@ -38,7 +38,7 @@
         var _toolBar = new component.ToolBar();
         var _dialog = new component.Dialog({
             title:"Save mesh", modal:true, draggable: false, resizable:false
-        });
+        });        
         
         var _html =  "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
             _html += "<input id='filename' type='text'/>";
@@ -52,8 +52,29 @@
         }       
          
         _html += "</select>";
+        _html += "Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
         _html += "<div id='button-wrapper'><button id='mlj-save-dialog-button'>Save</button></div></div>";
         _dialog.appendContent(_html);
+        
+        
+        var _dialogUpload = new component.Dialog({
+            title:"Upload mesh", modal:true, draggable: false, resizable:false
+        });
+        
+         var _html = "<div id='mlj-upload-dialog'>";
+            _html += "<br/><label for='website'>Website:</label> ";
+            _html += "<select id='website'>";
+        
+        var ext;
+        for(var key in MLJ.core.File.SupportedWebsites) {
+            ext = MLJ.core.File.SupportedWebsites[key];
+            _html +="<option name='"+ext+"'>"+ext+"</option>";
+        }       
+         
+        _html += "</select>";
+        _html += "<div id='button-wrapper'><button id='mlj-upload-dialog-button'>Upload</button></div></div>";
+        _dialogUpload.appendContent(_html);        
+        
 
         function init() {
 
@@ -92,9 +113,15 @@
                 tooltip: "Delete current layer",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
+            
             var resetTrackball = new component.Button({
                 tooltip: "Reset trackball",
                 icon: "img/icons/home.png"
+            });
+            
+            var uploadToWebsite = new component.Button({
+                tooltip: "Upload to website",
+                icon: "img/icons/upload-arrow.png"
             });
             
             var doc = new component.Button({
@@ -102,15 +129,18 @@
                 icon: "img/icons/question.png",
 				right:true
             });
-			var git = new component.Button({
+            
+            var git = new component.Button({
                 tooltip: "Go to the Github page",
                 icon: "img/icons/github.png",
 				right:true
             });
+            
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
+            MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
             
-            _toolBar.add(open, save, reload, resetTrackball, snapshot, deleteLayer);
+            _toolBar.add(open, save, uploadToWebsite, reload, resetTrackball, snapshot, deleteLayer);
 			_toolBar.add(doc,git);
 
             // SCENE BAR EVENT HANDLERS
@@ -138,7 +168,14 @@
                 $('#mlj-save-dialog-button').click(function() {                    
                     var name = $('#mlj-save-dialog > #filename').val();
                     var extension = $('#mlj-save-dialog > #extension').val();
-                    MLJ.core.File.saveMeshFile(layer, name+extension);
+                    if($('#mlj-save-dialog > #zipCheck').is(':checked')){
+//                        console.log("COMPRESS");
+                        MLJ.core.File.saveMeshFileZip(layer, name+extension, name+".zip");
+                    }
+                    else{ 
+//                        console.log("DO NOT COMPRESS");
+                        MLJ.core.File.saveMeshFile(layer, name+extension);
+                    }
                     _dialog.destroy();
                     $(this).off();
                 });
@@ -160,7 +197,70 @@
             resetTrackball.onClick(function() {
                 MLJ.core.Scene.resetTrackball();
             })
-                                             
+            
+            uploadToWebsite.onClick(function() {
+                //TODO
+                var layer = MLJ.core.Scene.getSelectedLayer();
+                //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
+                var meshInfo = layer.name.split(".");                
+                _dialogUpload.show();
+                $('#mlj-upload-dialog > #website option[name=".'+meshInfo[meshInfo.length-1]+'"]')
+                        .attr('selected','selected');
+               
+                $('#mlj-upload-dialog-button').click(function() {        
+                    var website = $('#mlj-upload-dialog > #website').val();
+                    
+                    if(website === MLJ.core.File.SupportedWebsites["SKF"]){
+                        
+                        var sketchFabDialog = new component.Dialog({
+                         title:"Upload to Sketchfab", modal:true, draggable: false, resizable:false
+                        });        
+
+//                        sketchFabDialog.appendContent("<div id=prova> YOLO </div>");
+                        var _html = "<div id='sketchfabUpload'>";
+                        _html += "Extension: <select id='extension'>";
+        
+                        var ext;
+                        for(var key in MLJ.core.File.SupportedSketchfabExtensions) {
+                            ext = MLJ.core.File.SupportedSketchfabExtensions[key];
+                            _html +="<option name='"+ext+"'>"+ext+"</option>";
+                        }       
+
+                        _html += "</select>";                        
+                        
+                        var meshInfo = layer.name.split(".");                
+                        $('#sketchfabUpload > #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]').attr('selected','selected');
+                
+                        _html += " Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
+                        _html += "<form id='the-form' action='https://api.sketchfab.com/v2/models' enctype='multipart/form-data'>";
+//                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
+                        _html += "API Token: <input name='token' type='text'>";
+                        _html += "<br><br> Model name: <input name='name' type='text'>";
+                        _html += "<br><br> Model description: <input name='description' type='text'>";
+                        _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
+                        _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
+                        _html += "<br><br>  Password (Pro only, must be private): <input name='password' type='password'>";
+                        _html += "<input name='Submit' type='submit' value='Upload'> <br><br>";
+                        _html += "<p id='status'> Status:</p>";
+                        _html += "</form> <button id='sketchExit' type='button'> Exit </button></div>";
+                        sketchFabDialog.appendContent(_html);
+                        sketchFabDialog.show();
+                        
+                        $('#the-form').submit(function(event) {
+                            event.preventDefault();
+                            var extension = $('#sketchfabUpload > #extension').val();
+                            var zipBool = $('#sketchfabUpload > #zipCheck').is(':checked');
+                            MLJ.core.File.uploadToSketchfab(layer, extension, zipBool);
+                        });
+                        
+                        $('#sketchExit').click(function(){
+                            sketchFabDialog.destroy();
+                        });
+                    }
+                    _dialogUpload.destroy();
+                    $(this).off();
+                });
+            })                                             
         }
         
         /**

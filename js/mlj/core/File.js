@@ -40,7 +40,15 @@ MLJ.core.File = {
         OFF: ".off",
         OBJ: ".obj",
         PLY: ".ply",
+        STL: ".stl"
+    }, 
+    SupportedSketchfabExtensions: {
+        OBJ: ".obj",
+        PLY: ".ply",
         STL: ".stl"        
+    },
+    SupportedWebsites: {
+        SKF: "Sketchfab"   
     }
 };
 
@@ -183,7 +191,7 @@ MLJ.core.File = {
         });
     };
 
-    this.saveMeshFile = function (meshFile, fileName) {
+    this.saveMeshFile = function (meshFile, fileName, zipBool) {
         
         //Create data file in FS
         var int8buf = new Int8Array(meshFile.ptrMesh());
@@ -204,6 +212,159 @@ MLJ.core.File = {
         saveAs(blob, fileName);
         
         FS.unlink(fileName);
-    };        
+    };
+    
+    
+    this.saveMeshFileZip = function (meshFile, fileName, archiveName) {
+        var Save = new Module.SaveMesh(meshFile.ptrMesh());
+        var resSave = Save.saveMesh(fileName);
+             
+        var cppMesh = new Module.CppMesh();
+        cppMesh.saveMeshZip(fileName, archiveName);
+        
+        var int8buf = new Int8Array(meshFile.ptrMesh());
+        var file = FS.readFile(archiveName);
+        var blob = new Blob([file], {type: "application/octet-stream"});
+        saveAs(blob, archiveName);
+        
+        FS.unlink(archiveName);
+        FS.unlink(fileName);
+    };  
+    
+    
+    this.uploadToSketchfab = function (meshFile, meshExt, zipBool) {
+        var meshFileName = meshFile.name+meshExt;
+        var fileName = meshFileName;
+         
+        var Save = new Module.SaveMesh(meshFile.ptrMesh());
+        var resSave = Save.saveMesh(meshFileName);        
+        
+        if(zipBool){
+            fileName = meshFile.name +".zip";      
+            var cppMesh = new Module.CppMesh();
+            cppMesh.saveMeshZip(meshFileName, fileName);
+        }
+        
+        console.log("Uploading " +meshFileName +" compressed: " +zipBool +" filename: " +fileName); 
+        var file = FS.readFile(fileName);        
+        var blob = new Blob([file], {type: "application/octet-stream"});
+        
+        var sketchfabApiUrl = 'https://api.sketchfab.com/v2/models';
+        var sketchfabModelUrl = 'https://sketchfab.com/models/';
+        // var data = document.getElementById( 'the-form' );
+        var data = $( '#the-form' )[0];
+        uploadModel(data);
+        
+        FS.unlink(fileName);
+
+        function uploadModel( data ) {
+//          console.log( 'Begin upload of ' + String( data.modelFile.value ) );  
+          var formData = new FormData( data );
+
+          formData.append("modelFile", blob, fileName);  
+          
+          var entries = formData.entries();
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+          console.log(entries.next().value);
+
+
+          $.ajax( {
+            url: sketchfabApiUrl,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST',
+            success: function( response ) {
+              var uid = response.uid;
+              console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
+              $( '#status' ).html( 'Upload successful. Begin polling...' );
+              pollProcessingStatus( uid );
+            },
+            error: function( response ) {
+              console.log( 'Upload Error!' );
+              console.log( JSON.stringify( response ) );
+              $( '#status' ).html( 'Upload error!' );
+            }
+          } );
+        }
+        
+        function pollProcessingStatus( urlid ) {
+          var url = sketchfabApiUrl + '/' + urlid + '/status?token=' + data.token.value;
+
+          var errors = 0;
+          var maxErrors = 10;
+          var retry = 0;
+          var maxRetries = 50;
+          var retryTimeout = 5000;  // milliseconds
+          var retryTimeoutSec = retryTimeout / 1000; // seconds
+          var complete = false;
+          function getStatus() {
+            $.ajax( {
+              url: url,
+              type: 'GET',
+              dataType: 'json',
+              success: function( response ) {
+                retry++;
+                console.log( 'Got status...' )
+                var status = response.processing;
+
+                switch( status ) {
+                  case 'PENDING':
+                    console.log( 'Model is in the processing queue. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
+                    $( '#status' ).html( 'Model in queue...' );
+                    break;
+                  case 'PROCESSING':
+                    console.log( 'Model is being processed. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
+                    $( '#status' ).html( 'Model processing...' );
+                    break;
+                  case 'FAILED':
+                    console.log( 'Model processing failed:' );
+                    console.log( response.error );
+                    $( '#status' ).html( 'Model processing failed!' );
+                    complete = true;
+                    break;
+                  case 'SUCCEEDED':
+                    console.log( 'It worked!' );
+                    console.log( sketchfabModelUrl + urlid );
+                    complete = true;
+                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );
+                    break;
+                  default:
+                    console.log( 'This message should never appear...something changed in the processing response. See: ' + url );
+                }
+
+                if ( retry < maxRetries && !complete ) {
+                  setTimeout( getStatus, retryTimeout );
+                } else if ( complete ) {
+                  return;
+                } else if ( retry >= maxRetries ) {
+                  console.log( 'Polled ' + maxRetries + ' times and it\'s still not finished...quitting' );
+                } else {
+                  console.log( 'Something weird happened...quitting' );
+                }
+              },
+              error: function( response ) {
+                errors++;
+                retry++;
+                if ( errors < maxErrors && retry < maxRetries && !complete ) {
+                  console.log( 'Error: ' + JSON.stringify( response ) );
+                  console.log( 'Error getting status ( ' + errors + ' ). Trying again...' );
+                  setTimeout( getStatus, retryTimeout );
+                } else {
+                  console.log( 'Too many errors...quitting' );
+                }
+              }
+            } );
+          }
+          getStatus();
+        }         
+    };    
 
 }).call(MLJ.core.File);
