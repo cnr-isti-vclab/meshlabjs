@@ -233,33 +233,26 @@
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
                         _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
                         _html += "<br><br>  Password (Pro only, must be private): <input name='password' type='password'>";
-                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'> <br><br>";                        
-                        _html += "</form> <button id='exitButton' type='button'> Exit </button></div>";
+                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'> <br><br>"; 
                         sketchFabDialog.appendContent(_html);
                         sketchFabDialog.show();
                           
-                        console.log(meshInfo[0]);
                         $('#sketchfabUpload #name').val(meshInfo[0]);
                         $('#sketchfabUpload #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]').attr('selected','selected');
+                            
                         
                         $('#the-form').submit(function(event) {
                             event.preventDefault();
                             var extension = $('#sketchfabUpload > #extension').val();
                             var zipBool = $('#sketchfabUpload > #zipCheck').is(':checked');
-                            MLJ.core.File.uploadToSketchfab(layer, extension, zipBool);
                             var statusUpdateDialog = new component.Dialog({  title:"Upload to Sketchfab", modal:true, draggable: false, resizable:false });  
-                            _html = "<p id='status'> Status:</p>";
-                            _html += "<button id='exitUpdateButton' type='button'> Exit </button>";
+                            _html = "<p style='display:inline'> Status:</p> <p id='status' style='display:inline'> </p>";
+                            _html += "<div id='sketchfabProgressBar'> <div id='progressBar'> <div id='pBarLabel'>0%</div> </div> </div>"
+                            _html += "<button id='exitUpdateButton' type='button'> Cancel </button>";
                             statusUpdateDialog.appendContent(_html);
-                            sketchFabDialog.destroy();
                             statusUpdateDialog.show();
                             
-                            $('#exitUpdateButton').click(function(){
-                                statusUpdateDialog.destroy();                                
-                            });
-                        });
-                        
-                        $('#exitButton').click(function(){
+                            MLJ.core.File.uploadToSketchfab(layer, extension, zipBool, statusUpdateDialog);
                             sketchFabDialog.destroy();
                         });
                     }

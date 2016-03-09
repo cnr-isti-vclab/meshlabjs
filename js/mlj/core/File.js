@@ -232,15 +232,16 @@ MLJ.core.File = {
     };  
     
     
-    this.uploadToSketchfab = function (meshFile, meshExt, zipBool) {
-        var meshFileName = meshFile.name+meshExt;
+    this.uploadToSketchfab = function (meshFile, meshExt, zipBool, dialog) {
+        var meshInfo = meshFile.name.split(".");
+        var meshFileName = meshInfo[0]+meshExt;
         var fileName = meshFileName;
          
         var Save = new Module.SaveMesh(meshFile.ptrMesh());
         var resSave = Save.saveMesh(meshFileName);        
         
         if(zipBool){
-            fileName = meshFile.name +".zip";      
+            fileName = meshInfo[0] +".zip";      
             var cppMesh = new Module.CppMesh();
             cppMesh.saveMeshZip(meshFileName, fileName);
         }
@@ -254,6 +255,7 @@ MLJ.core.File = {
         // var data = document.getElementById( 'the-form' );
         var data = $( '#the-form' )[0];
         uploadModel(data);
+        $( '#status' ).html( 'Uploading File...' );
         
         FS.unlink(fileName);
 
@@ -278,9 +280,14 @@ MLJ.core.File = {
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
 //          console.log(entries.next().value);
-            $('#exitUpdateButton').button().button('disable')
-
-          $.ajax( {
+          var abort = false;
+          var upError = false;
+          var upSuccess = false;
+          
+          var progressBar = $('#progressBar');
+          var pBarLabel = $('#pBarLabel');
+          
+          var xhr = $.ajax({
             url: sketchfabApiUrl,
             data: formData,
             cache: false,
@@ -288,24 +295,50 @@ MLJ.core.File = {
             processData: false,
             type: 'POST',
             success: function( response ) {
+              upSuccess = true;
               var uid = response.uid;
               console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
-              $( '#status' ).html( 'Upload successful. Begin polling...' );
+              $( '#status' ).html( 'Upload successful, polling...' );
+              $('#exitUpdateButton').prop('disabled',true);
+              progressBar.width("25%");
+              pBarLabel.html("25%");
               pollProcessingStatus( uid );
+              $('#exitUpdateButton').prop('disabled',false);
             },
             error: function( response ) {
-              console.log( 'Upload Error!' );
-              console.log( JSON.stringify( response ) );
-              $( '#status' ).html( 'Upload error!' );
-            $('#exitUpdateButton').button().button('enable')
-            $('#exitUpdateButton').text('Exit');
+                if(!abort){
+                    upError = true;
+                    console.log( 'Upload Error!' );
+                    console.log( JSON.stringify( response ) );
+                    $( '#status' ).html( 'Upload error!' );
+                }
+                else{
+                     console.log("Upload Aborted");
+                    $( '#status' ).html( 'Upload Aborted!' );
+                }
+                $('#exitUpdateButton').prop('disabled',false);
+                $('#exitUpdateButton').text('Exit');
             }
           } );
+          
+          $('#exitUpdateButton').click(function(){
+                if(!abort && !upError && !upSuccess){
+                      abort = true;                   
+                      xhr.abort();
+                } 
+                else if(upError || upSuccess){
+                      dialog.destroy();
+                }
+                else {
+                      dialog.destroy();
+                }
+            });          
         }
         
         function pollProcessingStatus( urlid ) {
           var url = sketchfabApiUrl + '/' + urlid + '/status?token=' + data.token.value;
-
+          var progressBar = $('#progressBar');
+          var pBarLabel = $('#pBarLabel');
           var errors = 0;
           var maxErrors = 10;
           var retry = 0;
@@ -314,7 +347,7 @@ MLJ.core.File = {
           var retryTimeoutSec = retryTimeout / 1000; // seconds
           var complete = false;
           function getStatus() {
-            $.ajax( {
+            var xhr = $.ajax( {
               url: url,
               type: 'GET',
               dataType: 'json',
@@ -326,17 +359,21 @@ MLJ.core.File = {
                 switch( status ) {
                   case 'PENDING':
                     console.log( 'Model is in the processing queue. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
-                    $( '#status' ).html( 'Model in queue...' );    
+                    $( '#status' ).html( 'Model in queue...' );
+                    progressBar.width('50%'); 
+                    pBarLabel.html("50%");    
                     break;
                   case 'PROCESSING':
                     console.log( 'Model is being processed. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
-                    $( '#status' ).html( 'Model processing...' ); 
+                    $( '#status' ).html( 'Model processing...' );
+                    progressBar.width('75%'); 
+                    pBarLabel.html("75%");
                     break;
                   case 'FAILED':
                     console.log( 'Model processing failed:' );
                     console.log( response.error );
                     $( '#status' ).html( 'Model processing failed!' );  
-                    $('#exitUpdateButton').button().button('enable');
+                    $('#exitUpdateButton').prop('disabled',false);
                     $('#exitUpdateButton').text('Exit');
                     complete = true;
                     break;
@@ -346,7 +383,9 @@ MLJ.core.File = {
                     complete = true;
                     $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );  
                     $('#exitUpdateButton').button().text('Ok');       
-                    $('#exitUpdateButton').button().button('enable');
+                    $('#exitUpdateButton').prop('disabled',false);
+                    progressBar.width('100%');
+                    pBarLabel.html("100%");
                     break;
                   default:
                     console.log( 'This message should never appear...something changed in the processing response. See: ' + url );
