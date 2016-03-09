@@ -272,6 +272,12 @@ html,body{
 
 
 /* Save dialog style ________________________________________________________ */
+
+#mlj-save-dialog input[type='checkbox']{
+    width: 20%;
+    text-align: center;
+}
+
 #mlj-save-dialog input,
 #mlj-save-dialog select {
     margin: 6px 0;
@@ -395,7 +401,7 @@ html,body{
 
 #progressBar {
     position: absolute;
-    width: 1%;
+    width: 0%;
     height: 100%;
     background-color: #4863A0;
 }
@@ -408,6 +414,7 @@ html,body{
 
 #exitUpdateButton,#mlj-upload-dialog-button,#uploadButton{
     width: 50%;
+    height: 30px;
     text-align: center;
     position: relative;
     left: 25%;
@@ -415,7 +422,11 @@ html,body{
 }
 
 #the-form input[type='text'],#the-form input[type='password'],#the-form textarea{
-    width: 90%;
+    width: 98%;
+}
+
+#the-form{
+    line-height: 19px;
 }
 
 #passwordCounter,#descriptionCounter,#nameCounter {
@@ -424,6 +435,10 @@ html,body{
     font-size: 90%;
 }
 
-#passwordCounter.overflow,#descriptionCounter.overflow,#nameCounter.overflow{
+#passwordCounter.overflow,#descriptionCounter.overflow,#nameCounter.overflow,#status.error{
     color: red;
+}
+
+#sketchfabUpload{
+    margin-top: 8px;
 }

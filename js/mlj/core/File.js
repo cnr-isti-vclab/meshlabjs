@@ -257,6 +257,7 @@ MLJ.core.File = {
         var modelName = data[1].value;   
         uploadModel(data);
         $( '#status' ).html( 'Uploading File...' );
+        $('#status').removeClass('error');
         
         FS.unlink(fileName);
 
@@ -267,7 +268,7 @@ MLJ.core.File = {
           formData.append("modelFile", blob, fileName);
           formData.append("token", data[0].value);   
           formData.append("name", data[1].value);    
-          formData.append("description", data[2].value + " \- Made with **Meshlabjs**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)    ![Meshlabjs](http://127.0.0.1/img/favicon.png \"meshlabjs\")");  
+          formData.append("description", data[2].value + " \- Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)    ![MeshLabJS](http://127.0.0.1/img/favicon.png \"MeshLabJS\")");  
           formData.append("tags", data[3].value + " meshlab meshlabjs");   
           formData.append("private", data[4].value);  
           formData.append("password", data[5].value);
@@ -296,7 +297,8 @@ MLJ.core.File = {
                 if (evt.lengthComputable) {  
                   var percentComplete = Math.round((evt.loaded / evt.total) * 100);
                   var percentProgressBar = Math.round((evt.loaded / evt.total) * 50);
-                  $( '#status' ).html('Uploading File ' +percentComplete +'%');
+                  $('#status').html('Uploading File ' +percentComplete +'%');
+                  $('#status').removeClass('error');
                   progressBar.width(percentProgressBar+'%');
                   pBarLabel.html(percentProgressBar+'%');
                 }
@@ -314,6 +316,7 @@ MLJ.core.File = {
               upSuccess = true;
               var uid = response.uid;
               console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
+              $('#status').removeClass('error');
               $( '#status' ).html( 'Upload successful, polling...' );
               $('#exitUpdateButton').prop('disabled',true);
               progressBar.width("50%");
@@ -326,10 +329,12 @@ MLJ.core.File = {
                     console.log( 'Upload Error!' );
                     console.log( JSON.stringify( response ) );
                     $( '#status' ).html( 'Upload error!' );
+                    $('#status').addClass('error');
                 }
                 else{
                      console.log("Upload Aborted");
                     $( '#status' ).html( 'Upload Aborted!' );
+                    $('#status').addClass('error');
                 }
                 
                 $('#exitUpdateButton').prop('disabled',false);
@@ -377,19 +382,22 @@ MLJ.core.File = {
                   case 'PENDING':
                     console.log( 'Model is in the processing queue. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
                     $( '#status' ).html( 'Model in queue...' );
+                    $('#status').removeClass('error');
                     progressBar.width('60%'); 
                     pBarLabel.html("60%");    
                     break;
                   case 'PROCESSING':
                     console.log( 'Model is being processed. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
                     $( '#status' ).html( 'Model processing...' );
+                    $('#status').removeClass('error');
                     progressBar.width('75%'); 
                     pBarLabel.html("75%");
                     break;
                   case 'FAILED':
                     console.log( 'Model processing failed:' );
                     console.log( response.error );
-                    $( '#status' ).html( 'Model processing failed!' );  
+                    $( '#status' ).html( 'Model processing failed!' ); 
+                    $('#status').addClass('error');
                     $('#exitUpdateButton').prop('disabled',false);
                     $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
                     $('#exitUpdateButton').text('Exit');
@@ -399,6 +407,7 @@ MLJ.core.File = {
                     console.log( 'It worked!' );
                     console.log( sketchfabModelUrl + urlid );
                     complete = true;
+                    $('#status').removeClass('error');
                     $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '"> Sketchfab: ' +modelName +'</a>' );  
                     $('#exitUpdateButton').button().text('Ok');       
                     $('#exitUpdateButton').prop('disabled',false);

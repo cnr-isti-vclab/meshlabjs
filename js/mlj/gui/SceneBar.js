@@ -231,8 +231,8 @@
                         _html += "<br><br> Model name: <p id='nameCounter'> 48 </p> <input name='name' id='name' type='text' maxlength='48'>";
                         _html += "<br><br> Model description: <p id='descriptionCounter'> 825 </p> <textarea name='description' id='description' rows='3' maxlength='825'></textarea>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
-                        _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
-                        _html += "<br><br> Password (Pro only, must be private): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
+                        _html += "<br><br> Private? (Pro only) <input name='private' id='private' type='checkbox' value='1'>";
+                        _html += "<br><br> Password (Pro only): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
                         _html += "<br><br> <p> Max file size: Free 50 MB; Pro 200 MB; Business 500 MB</p>";
                         _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'></form>"; 
                         sketchFabDialog.appendContent(_html);
@@ -240,6 +240,16 @@
                           
                         $('#sketchfabUpload #name').val(meshInfo[0]);
                         $('#sketchfabUpload #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]').attr('selected','selected');
+                        $("#private").prop('checked', false);
+                        $("#password").prop('disabled', false);
+                        $("#private").change(function() {
+                            if(this.checked) {
+                                $("#password").prop('disabled', false);
+                            }
+                            else {
+                                $("#password").prop('disabled', true);
+                            }
+                        });
                         
                         var characterCounter = function() {
                                 var text_remaining = $(this).attr('maxLength') - $(this).val().length;
