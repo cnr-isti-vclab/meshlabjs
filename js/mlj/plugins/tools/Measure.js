@@ -133,8 +133,8 @@
 
                         };
                         var camera= scene.getCamera();
-                        /*var bbox=MLJ.core.Scene.getBBox();
-                        var scaling=(15.0*bbox.min.distanceTo(bbox.max));
+                        var bbox=MLJ.core.Scene.getBBox();
+                        var scaling=(15.0/bbox.min.distanceTo(bbox.max));/*
                         var offset = bbox.center().negate();
                         //console.log("scaling "+scaling);
                         camera.scale.set(scaling,scaling,scaling);
@@ -149,19 +149,32 @@
                         mouse2D.y = -(mouse2D.y / _canvas.height()) * 2 + 1;
                         console.log(mouse2D);
                         var mouseD = new THREE.Vector2( mouse2D.x, mouse2D.y );
-
+                        
                         console.log(raycaster.setFromCamera( mouseD, camera ));
                         
                         //raycaster.set( camera.position, mouse3D.sub( camera.position ).normalize() );
 
-                        var intersects = raycaster.intersectObject( MLJ.core.Scene.getScene().children[0],true)
+                        //var intersects = raycaster.intersectObject( MLJ.core.Scene.getScene().children[0],true)
                         // Change color if hit block
                         //console.log(intersects);
                         
+                        var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
+                        var intersects = raycaster.intersectObject( sceneGroup, true);
+                        var pickedInfo;
                         if ( intersects.length > 0 ) {
-                            var point=intersects[ 0 ];
+                            pickedInfo=intersects[ 0 ];
                         }
-                        point=point.point;
+                        var groupTransf = new THREE.Matrix4();
+                        groupTransf.getInverse(sceneGroup.matrixWorld);
+                        var worldPos = new THREE.Vector3();
+                        worldPos.copy(pickedInfo.point);
+                        worldPos.applyMatrix4(groupTransf);
+                        
+                        
+                        //if ( intersects.length > 0 ) {
+                          //  var point=intersects[ 0 ];
+                        //}
+                        var point=worldPos;
                         //var scaling=(15.0/MLJ.core.Scene.getBBox().min.distanceTo(MLJ.core.Scene.getBBox().max));
                         point.x=Math.round(point.x*1000)/1000;
                         point.y=Math.round(point.y*1000)/1000;
@@ -197,26 +210,31 @@
                                 secondSphere.position.x=point2.x;
                                 secondSphere.position.y=point2.y;
                                 secondSphere.position.z=point2.z;
+                                distance= Math.round((point2.distanceTo(point1))*1000)/1000;
                                 scene.getScene().add( secondSphere );
-                                var materialLine = new THREE.LineDashedMaterial({
+                                var materialLineDown = new THREE.LineDashedMaterial({
                                         color: 0xffff00,
-                                        dashSize: 3,
-                                        gapSize: 0.5,
+                                        dashSize: distance/500,
+                                        gapSize: distance*5/500,
                                         depthWrite: false,
                                         depthTest: false,
                                 });
-                                
+                                var materialLineUp = new THREE.LineBasicMaterial({
+                                        color: 0xffff00,
+                                });
                                 var geometryLine = new THREE.Geometry();
                                 geometryLine.vertices.push(
                                         new THREE.Vector3( point1.x, point1.y, point1.z ),
                                         new THREE.Vector3( point2.x, point2.y, point2.z )
                                 );
                                 geometryLine.computeLineDistances();
-                                line = new THREE.Line( geometryLine, materialLine );
-                                line.name="Line";
-                                scene.getScene().add( line );
+                                var linedown = new THREE.Line( geometryLine, materialLineDown );
+                                linedown.name="Linedown";
+                                scene.getScene().add( linedown );
+                                var lineup=new THREE.Line( geometryLine, materialLineUp );
+                                lineup.name="Lineup";
+                                scene.getScene().add( lineup );
                                 
-                                distance= Math.round((point2.distanceTo(point1))*1000)/1000;
                                 
                                 var sprite = makeTextSprite(
                                                             distance,
@@ -234,7 +252,8 @@
                             else {
                                 scene.getScene().remove(scene.getScene().getObjectByName("s1"));
                                 scene.getScene().remove(scene.getScene().getObjectByName("s2"));
-                                scene.getScene().remove(scene.getScene().getObjectByName("Line"));
+                                scene.getScene().remove(scene.getScene().getObjectByName("Linedown"));
+                                scene.getScene().remove(scene.getScene().getObjectByName("Lineup"));
                                 scene.getScene().remove(scene.getScene().getObjectByName("label"));
                                 scene.render();
                                 point1=undefined;
