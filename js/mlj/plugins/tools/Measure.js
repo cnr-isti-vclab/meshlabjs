@@ -216,7 +216,7 @@
                                 line.name="line";
                                 scene.getScene().add( line );
                                 
-                                distance= point2.distanceTo(point1);
+                                distance= Math.round((point2.distanceTo(point1))*1000)/1000;
                                 
                                 var sprite = makeTextSprite(
                                                             distance,
