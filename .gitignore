@@ -16,3 +16,9 @@ js/generated/MeshlabJs.js.mem
 js/generated/MeshlabJs.js
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
+*.xml
+sources/Makefile.Debug
+*.exe
+sources/Makefile.Release
+*.Debug
+sources/object_script.FilterTest.Release
