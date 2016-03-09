@@ -414,6 +414,16 @@ html,body{
     margin-top: 10px;
 }
 
-#the-form input[type='text'],#the-form input[type='password']{
+#the-form input[type='text'],#the-form input[type='password'],#the-form textarea{
     width: 90%;
+}
+
+#passwordCounter,#descriptionCounter,#nameCounter {
+    display:inline;
+    color: grey;   
+    font-size: 90%;
+}
+
+#passwordCounter.overflow,#descriptionCounter.overflow,#nameCounter.overflow{
+    color: red;
 }

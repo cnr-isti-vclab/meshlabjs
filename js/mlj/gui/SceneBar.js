@@ -228,18 +228,37 @@
                         _html += "<form id='the-form' action='https://api.sketchfab.com/v2/models' enctype='multipart/form-data'>";
 //                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
                         _html += "<br> API Token: <input name='token' type='text'>";
-                        _html += "<br><br> Model name: <input name='name' id='name' type='text'>";
-                        _html += "<br><br> Model description: <input name='description' type='text'>";
+                        _html += "<br><br> Model name: <p id='nameCounter'> 48 </p> <input name='name' id='name' type='text' maxlength='48'>";
+                        _html += "<br><br> Model description: <p id='descriptionCounter'> 825 </p> <textarea name='description' id='description' rows='3' maxlength='825'></textarea>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
                         _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
-                        _html += "<br><br> Password (Pro only, must be private): <input name='password' type='password'>";
-                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'> <br><br>"; 
+                        _html += "<br><br> Password (Pro only, must be private): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
+                        _html += "<br><br> <p> Max file size: Free 50 MB; Pro 200 MB; Business 500 MB</p>";
+                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'></form>"; 
                         sketchFabDialog.appendContent(_html);
                         sketchFabDialog.show();
                           
                         $('#sketchfabUpload #name').val(meshInfo[0]);
                         $('#sketchfabUpload #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]').attr('selected','selected');
+                        
+                        var characterCounter = function() {
+                                var text_remaining = $(this).attr('maxLength') - $(this).val().length;
+                                var counterId = $(this).attr('id') +"Counter";
+                                console.log(counterId);
+                                if(text_remaining <= 10){
+                                    $('#'+counterId).addClass("overflow");
+                                    $('#'+counterId).text(text_remaining);
+                                }
+                                else{
+                                    $('#'+counterId).text(text_remaining);
+                                    $('#'+counterId).removeClass("overflow");
+                                }
+                            };
                             
+                            $('#name').keyup(characterCounter);
+                            $('#nameCounter').text($('#name').attr('maxLength') - $('#name').val().length);
+                            $('#description').keyup(characterCounter);
+                            $('#password').keyup(characterCounter);
                         
                         $('#the-form').submit(function(event) {
                             event.preventDefault();

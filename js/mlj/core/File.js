@@ -267,7 +267,7 @@ MLJ.core.File = {
           formData.append("modelFile", blob, fileName);
           formData.append("token", data[0].value);   
           formData.append("name", data[1].value);    
-          formData.append("description", data[2].value);  
+          formData.append("description", data[2].value + " \- Made with **Meshlabjs**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)    ![Meshlabjs](http://127.0.0.1/img/favicon.png \"meshlabjs\")");  
           formData.append("tags", data[3].value + " meshlab meshlabjs");   
           formData.append("private", data[4].value);  
           formData.append("password", data[5].value);
@@ -306,6 +306,7 @@ MLJ.core.File = {
             url: sketchfabApiUrl,
             data: formData,
             cache: false,
+            source: 'meshlabjs',
             contentType: false,
             processData: false,
             type: 'POST',
@@ -363,7 +364,7 @@ MLJ.core.File = {
           var retryTimeoutSec = retryTimeout / 1000; // seconds
           var complete = false;
           function getStatus() {
-            var xhr = $.ajax( {
+            $.ajax( {
               url: url,
               type: 'GET',
               dataType: 'json',
