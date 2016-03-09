@@ -63,7 +63,7 @@
         
          var _html = "<div id='mlj-upload-dialog'>";
             _html += "<br/><label for='website'>Website:</label> ";
-            _html += "<select id='website'>";
+            _html += "<select id='website' style='width: 150px; margin-left: 10px;'>";
         
         var ext;
         for(var key in MLJ.core.File.SupportedWebsites) {
@@ -227,12 +227,12 @@
                         _html += " Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
                         _html += "<form id='the-form' action='https://api.sketchfab.com/v2/models' enctype='multipart/form-data'>";
 //                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
-                        _html += "API Token: <input name='token' type='text'>";
+                        _html += "<br> API Token: <input name='token' type='text'>";
                         _html += "<br><br> Model name: <input name='name' id='name' type='text'>";
                         _html += "<br><br> Model description: <input name='description' type='text'>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
                         _html += "<br><br> Private? (Pro only) <input name='private' type='checkbox' value='1'>";
-                        _html += "<br><br>  Password (Pro only, must be private): <input name='password' type='password'>";
+                        _html += "<br><br> Password (Pro only, must be private): <input name='password' type='password'>";
                         _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'> <br><br>"; 
                         sketchFabDialog.appendContent(_html);
                         sketchFabDialog.show();
@@ -246,7 +246,7 @@
                             var extension = $('#sketchfabUpload > #extension').val();
                             var zipBool = $('#sketchfabUpload > #zipCheck').is(':checked');
                             var statusUpdateDialog = new component.Dialog({  title:"Upload to Sketchfab", modal:true, draggable: false, resizable:false });  
-                            _html = "<p style='display:inline'> Status:</p> <p id='status' style='display:inline'> </p>";
+                            _html = "<p style='display:inline'>Status:</p> <p id='status' style='display:inline'> </p>";
                             _html += "<div id='sketchfabProgressBar'> <div id='progressBar'> <div id='pBarLabel'>0%</div> </div> </div>"
                             _html += "<button id='exitUpdateButton' type='button'> Cancel </button>";
                             statusUpdateDialog.appendContent(_html);

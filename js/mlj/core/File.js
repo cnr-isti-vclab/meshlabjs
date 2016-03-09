@@ -254,6 +254,7 @@ MLJ.core.File = {
         var sketchfabModelUrl = 'https://sketchfab.com/models/';
         // var data = document.getElementById( 'the-form' );
         var data = $( '#the-form' )[0];
+        var modelName = data[1].value;   
         uploadModel(data);
         $( '#status' ).html( 'Uploading File...' );
         
@@ -288,6 +289,20 @@ MLJ.core.File = {
           var pBarLabel = $('#pBarLabel');
           
           var xhr = $.ajax({
+            xhr: function()
+            {
+              var xhrProgr = new window.XMLHttpRequest();
+              xhrProgr.upload.addEventListener("progress", function(evt){
+                if (evt.lengthComputable) {  
+                  var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                  var percentProgressBar = Math.round((evt.loaded / evt.total) * 50);
+                  $( '#status' ).html('Uploading File ' +percentComplete +'%');
+                  progressBar.width(percentProgressBar+'%');
+                  pBarLabel.html(percentProgressBar+'%');
+                }
+              }, false); 
+              return xhrProgr;
+            },
             url: sketchfabApiUrl,
             data: formData,
             cache: false,
@@ -300,8 +315,8 @@ MLJ.core.File = {
               console.log( 'Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid );
               $( '#status' ).html( 'Upload successful, polling...' );
               $('#exitUpdateButton').prop('disabled',true);
-              progressBar.width("25%");
-              pBarLabel.html("25%");
+              progressBar.width("50%");
+              pBarLabel.html("50%");
               pollProcessingStatus( uid );
             },
             error: function( response ) {
@@ -315,6 +330,7 @@ MLJ.core.File = {
                      console.log("Upload Aborted");
                     $( '#status' ).html( 'Upload Aborted!' );
                 }
+                
                 $('#exitUpdateButton').prop('disabled',false);
                 $('#exitUpdateButton').prop('disabled',false);
                 $('#exitUpdateButton').text('Exit');
@@ -360,8 +376,8 @@ MLJ.core.File = {
                   case 'PENDING':
                     console.log( 'Model is in the processing queue. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
                     $( '#status' ).html( 'Model in queue...' );
-                    progressBar.width('50%'); 
-                    pBarLabel.html("50%");    
+                    progressBar.width('60%'); 
+                    pBarLabel.html("60%");    
                     break;
                   case 'PROCESSING':
                     console.log( 'Model is being processed. Waiting ' + ( retryTimeoutSec ) + ' seconds to try again...' );
@@ -382,7 +398,7 @@ MLJ.core.File = {
                     console.log( 'It worked!' );
                     console.log( sketchfabModelUrl + urlid );
                     complete = true;
-                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );  
+                    $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '"> Sketchfab: ' +modelName +'</a>' );  
                     $('#exitUpdateButton').button().text('Ok');       
                     $('#exitUpdateButton').prop('disabled',false);
                     $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
