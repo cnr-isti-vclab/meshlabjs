@@ -303,7 +303,6 @@ MLJ.core.File = {
               progressBar.width("25%");
               pBarLabel.html("25%");
               pollProcessingStatus( uid );
-              $('#exitUpdateButton').prop('disabled',false);
             },
             error: function( response ) {
                 if(!abort){
@@ -316,6 +315,7 @@ MLJ.core.File = {
                      console.log("Upload Aborted");
                     $( '#status' ).html( 'Upload Aborted!' );
                 }
+                $('#exitUpdateButton').prop('disabled',false);
                 $('#exitUpdateButton').prop('disabled',false);
                 $('#exitUpdateButton').text('Exit');
             }
@@ -374,6 +374,7 @@ MLJ.core.File = {
                     console.log( response.error );
                     $( '#status' ).html( 'Model processing failed!' );  
                     $('#exitUpdateButton').prop('disabled',false);
+                    $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
                     $('#exitUpdateButton').text('Exit');
                     complete = true;
                     break;
@@ -384,6 +385,7 @@ MLJ.core.File = {
                     $( '#status' ).html( 'It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '">' + sketchfabModelUrl + urlid + '</a>' );  
                     $('#exitUpdateButton').button().text('Ok');       
                     $('#exitUpdateButton').prop('disabled',false);
+                    $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
                     progressBar.width('100%');
                     pBarLabel.html("100%");
                     break;
@@ -412,7 +414,7 @@ MLJ.core.File = {
                   console.log( 'Too many errors...quitting' );
                 }
               }
-            } );
+            } );            
           }
           getStatus();
         }         
