@@ -163,9 +163,9 @@
                         }
                         point=point.point;
                         //var scaling=(15.0/MLJ.core.Scene.getBBox().min.distanceTo(MLJ.core.Scene.getBBox().max));
-                        point.x=Math.round(point.x*100)/100;
-                        point.y=Math.round(point.y*100)/100;
-                        point.z=Math.round(point.z*100)/100;
+                        point.x=Math.round(point.x*1000)/1000;
+                        point.y=Math.round(point.y*1000)/1000;
+                        point.z=Math.round(point.z*1000)/1000;
                         console.log(point);
                         if(point !== undefined){
                             if(point1 === undefined){ //only one point is selected we just have to highlight it
@@ -213,7 +213,7 @@
                                 );
                                 geometryLine.computeLineDistances();
                                 line = new THREE.Line( geometryLine, materialLine );
-                                line.name="line";
+                                line.name="Line";
                                 scene.getScene().add( line );
                                 
                                 distance= Math.round((point2.distanceTo(point1))*1000)/1000;
@@ -223,6 +223,7 @@
                                                             { x: point1.x, y: point1.y, z: point1.z},
                                                             lblParameters
                                                            );
+                                sprite.name="label";
                                 scene.getScene().add( sprite );
                                 
                                 console.log("distance is "+ distance);
@@ -233,7 +234,8 @@
                             else {
                                 scene.getScene().remove(scene.getScene().getObjectByName("s1"));
                                 scene.getScene().remove(scene.getScene().getObjectByName("s2"));
-                                scene.getScene().remove(scene.getScene().getObjectByName("line"));
+                                scene.getScene().remove(scene.getScene().getObjectByName("Line"));
+                                scene.getScene().remove(scene.getScene().getObjectByName("label"));
                                 scene.render();
                                 point1=undefined;
                                 point2=undefined;
