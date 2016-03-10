@@ -227,7 +227,7 @@
                         _html += " Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
                         _html += "<form id='the-form' action='https://api.sketchfab.com/v2/models' enctype='multipart/form-data'>";
 //                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
-                        _html += "<br> API Token: <input name='token' type='text'>";
+                        _html += "<br> API Token: <input name='token' id='token' type='text'>";
                         _html += "<br><br> Model name: <p id='nameCounter'> 48 </p> <input name='name' id='name' type='text' maxlength='48'>";
                         _html += "<br><br> Model description: <p id='descriptionCounter'> 825 </p> <textarea name='description' id='description' rows='3' maxlength='825'></textarea>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
@@ -269,6 +269,16 @@
                             $('#nameCounter').text($('#name').attr('maxLength') - $('#name').val().length);
                             $('#description').keyup(characterCounter);
                             $('#password').keyup(characterCounter);
+                            
+                            $('#uploadButton').prop('disabled', true);
+                            $('#token').keyup(function() {
+                                if($(this).val().length <= 0){
+                                    $('#uploadButton').prop('disabled', true);
+                                }
+                                else{
+                                    $('#uploadButton').prop('disabled', false);                                    
+                                }
+                            });
                         
                         $('#the-form').submit(function(event) {
                             event.preventDefault();
