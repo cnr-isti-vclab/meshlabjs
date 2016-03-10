@@ -230,7 +230,7 @@
 //                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
                         _html += "<br> API Token: <input name='token' id='token' type='text'>";
                         _html += "<br><br> Model name: <p id='nameCounter'> 48 </p> <input name='name' id='name' type='text' maxlength='48'>";
-                        _html += "<br><br> Model description: <p id='descriptionCounter'> 825 </p> <textarea name='description' id='description' rows='3' maxlength='825'></textarea>";
+                        _html += "<br><br> Model description: <p id='descriptionCounter'> 820 </p> <textarea name='description' id='description' rows='3' maxlength='820'></textarea>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
                         _html += "<br><br> Private? (Pro only) <input name='private' id='private' type='checkbox' value='1'>";
                         _html += "<br><br> Password (Pro only): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
@@ -255,7 +255,6 @@
                         var characterCounter = function() {
                                 var text_remaining = $(this).attr('maxLength') - $(this).val().length;
                                 var counterId = $(this).attr('id') +"Counter";
-                                console.log(counterId);
                                 if(text_remaining <= 10){
                                     $('#'+counterId).addClass("overflow");
                                     $('#'+counterId).text(text_remaining);

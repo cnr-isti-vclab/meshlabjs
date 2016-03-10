@@ -59,6 +59,16 @@ class CppMesh
       return ret;
   }
     
+      int saveMesh(string fileName) {
+        int ret=vcg::tri::io::Exporter<MyMesh>::Save(m,fileName.c_str(), loadmask);      
+        if(ret!=0) {
+          printf("Error in saving file\n");
+
+        }
+        return ret;
+      }
+
+    
 
     int saveMeshZip(string fileName, string archiveName) {
         printf("Trying to add %s to %s", fileName.c_str(), archiveName.c_str());
@@ -242,6 +252,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("setMeshName",           &CppMesh::setMeshName)
     .function("getMeshName",           &CppMesh::getMeshName)
     .function("openMesh",              &CppMesh::openMesh)
+    .function("saveMesh",              &CppMesh::saveMesh)
     .function("openMeshZip",           &CppMesh::openMeshZip)
     .function("saveMeshZip",           &CppMesh::saveMeshZip)
     .function("VN",                    &CppMesh::VN)

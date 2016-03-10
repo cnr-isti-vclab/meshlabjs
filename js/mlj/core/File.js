@@ -191,16 +191,13 @@ MLJ.core.File = {
         });
     };
 
-    this.saveMeshFile = function (meshFile, fileName, zipBool) {
-        
+    this.saveMeshFile = function (mesh, fileName) {        
         //Create data file in FS
-        var int8buf = new Int8Array(meshFile.ptrMesh());
+        var int8buf = new Int8Array(mesh.ptrMesh());
         FS.createDataFile("/", fileName, int8buf, true, true);
         
-        //call a SaveMesh contructon from c++ Saver.cpp class
-        var Save = new Module.SaveMesh(meshFile.ptrMesh());
         //call a saveMesh method from above class
-        var resSave = Save.saveMesh(fileName);
+        var resSave = mesh.cppMesh.saveMesh(fileName);
         
         //handle errors ...        
         
@@ -215,14 +212,10 @@ MLJ.core.File = {
     };
     
     
-    this.saveMeshFileZip = function (meshFile, fileName, archiveName) {
-        var Save = new Module.SaveMesh(meshFile.ptrMesh());
-        var resSave = Save.saveMesh(fileName);
-             
-        var cppMesh = new Module.CppMesh();
-        cppMesh.saveMeshZip(fileName, archiveName);
+    this.saveMeshFileZip = function (mesh, fileName, archiveName) {
+        mesh.cppMesh.saveMesh(fileName);             
+        mesh.cppMesh.saveMeshZip(fileName, archiveName);
         
-        var int8buf = new Int8Array(meshFile.ptrMesh());
         var file = FS.readFile(archiveName);
         var blob = new Blob([file], {type: "application/octet-stream"});
         saveAs(blob, archiveName);
@@ -237,13 +230,11 @@ MLJ.core.File = {
         var meshFileName = meshInfo[0]+meshExt;
         var fileName = meshFileName;
          
-        var Save = new Module.SaveMesh(meshFile.ptrMesh());
-        var resSave = Save.saveMesh(meshFileName);        
+        var resSave = meshFile.cppMesh.saveMesh(meshFileName);        
         
         if(zipBool){
-            fileName = meshInfo[0] +".zip";      
-            var cppMesh = new Module.CppMesh();
-            cppMesh.saveMeshZip(meshFileName, fileName);
+            fileName = meshInfo[0] +".zip";   
+            meshFile.cppMesh.saveMeshZip(meshFileName, fileName);
         }
         
         console.log("Uploading " +meshFileName +" compressed: " +zipBool +" filename: " +fileName); 
@@ -268,9 +259,7 @@ MLJ.core.File = {
           formData.append("modelFile", blob, fileName);
           formData.append("token", data[0].value);   
           formData.append("name", data[1].value);    
-          formData.append("description", data[2].value + "   \n\
-                    Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)  \n\
-                    ![MeshLabJS](http://127.0.0.1/img/favicon.png \"MeshLabJS\")");  
+          formData.append("description", data[2].value + "    \n\Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)   \n\![MeshLabJS](http://127.0.0.1/img/favicon.png \"MeshLabJS\")");  
           formData.append("tags", data[3].value + " meshlab meshlabjs");   
           formData.append("private", data[4].value);  
           formData.append("password", data[5].value);
