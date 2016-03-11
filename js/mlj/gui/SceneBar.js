@@ -121,7 +121,7 @@
             
             var uploadToWebsite = new component.Button({
                 tooltip: "Upload to website",
-                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0387-share2.png"
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0199-upload2.png"
 //                icon: "img/icons/upload-arrow.png"
             });
             
