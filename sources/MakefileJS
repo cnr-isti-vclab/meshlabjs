@@ -17,7 +17,7 @@ CC=emcc
 CFLAGS=-I.  -I ../../vcglib/ -s TOTAL_MEMORY=1073741824  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
-      Create.bc Refine.bc Transform.bc Saver.bc Selection.bc \
+      Create.bc Refine.bc Transform.bc Selection.bc \
       ../../vcglib/wrap/ply/plylib.bc
 
 %.bc: %.cpp
