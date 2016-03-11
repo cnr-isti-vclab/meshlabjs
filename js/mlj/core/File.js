@@ -259,7 +259,7 @@ MLJ.core.File = {
           formData.append("modelFile", blob, fileName);
           formData.append("token", data[0].value);   
           formData.append("name", data[1].value);    
-          formData.append("description", data[2].value + "    \n\Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)   \n\![MeshLabJS](http://127.0.0.1/img/favicon.png \"MeshLabJS\")");  
+          formData.append("description", data[2].value + "    \n\Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)   \n\![MeshLabJS](http://www.meshlabjs.net/img/favicon48.png \"MeshLabJS\")");  
           formData.append("tags", data[3].value + " meshlab meshlabjs");   
           formData.append("private", data[4].value);  
           formData.append("password", data[5].value);
