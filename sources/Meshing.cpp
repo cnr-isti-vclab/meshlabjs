@@ -68,6 +68,7 @@ void QuadricSimplification(uintptr_t _baseM, float TargetFaceRatio, int exactFac
   pp.PreserveTopology = topologyFlag;
   if(pp.NormalCheck) pp.NormalThrRad = M_PI/4.0;
   if(qualityQuadric) pp.QualityQuadric=true;
+  pp.QualityThr=0.3;
   
   vcg::LocalOptimization<MyMesh> DeciSession(m,&pp);
   DeciSession.Init<MyTriEdgeCollapse >();
