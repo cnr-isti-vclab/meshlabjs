@@ -70,7 +70,8 @@
                 "Davide Busato<br>"+
                 "Andrea Maggiordomo<br>" +
                 "Antonio Nicoletti<br>" +
-                "Marco Loddo<br><br>" +
+                "Marco Loddo<br>" +
+                "Gabriele Marini<br><br>" +
                 "Current version contains " + MLJ.core.plugin.Manager.getFilterPlugins().size() + " filters."
                 );
 
