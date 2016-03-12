@@ -235,11 +235,18 @@
     }
     
     plug._applyTo = function (meshFile, on) {
-        if(on){
+        
+        if(on&&meshFile.getThreeMesh().visible===true){
             enableSelection(true, meshFile);
         }
         else{
-            enableSelection(false,meshFile);    
+            enableSelection(false,meshFile);  
+            if(meshFile.getThreeMesh().visible===false){
+                var tool=MLJ.core.plugin.Manager.getToolPlugins().getByKey("Selection Tool");
+                var btn=tool.getButton();
+                btn.toggle("off");
+            }
+            
         }
     };
 

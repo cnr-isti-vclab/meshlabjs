@@ -63,7 +63,7 @@ MLJ.core.plugin.Manager = {
                     _rendering.set(plugin.getName(), plugin);
                 }
                 else if (plugin instanceof MLJ.core.plugin.Tool) {
-                    _rendering.set(plugin.getName(), plugin);
+                    _tool.set(plugin.getName(), plugin);
                 }
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
@@ -93,6 +93,11 @@ MLJ.core.plugin.Manager = {
         while (ptr.hasNext()) {
             ptr.next()._main();
         }
+        
+        ptr = _tool.iterator();
+        while (ptr.hasNext()) {
+            ptr.next()._main();
+        }
 
     };
 
@@ -102,6 +107,10 @@ MLJ.core.plugin.Manager = {
 
     this.getFilterPlugins = function () {
         return _filters;
+    };
+    
+    this.getToolPlugins = function () {
+        return _tool;
     };
     
      /**

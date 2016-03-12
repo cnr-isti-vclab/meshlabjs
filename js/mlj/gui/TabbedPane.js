@@ -92,7 +92,7 @@
 
 
 
-			var toolTab = new Tab("Tools");
+            var toolTab = new Tab("Tools");
             toolTab
                     .appendContent(_toolTb.$)
                     .appendContent(_$toolPane);

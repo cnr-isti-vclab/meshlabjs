@@ -109,7 +109,7 @@ MLJ.core.plugin.ToolRendering = function (parameters, renderingClass) {
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.ToolRendering);
 
 MLJ.core.plugin.Tool = function (parameters, defaults) {
-    var renderingClass = "mlj_rendering_overlay";
+    var renderingClass = "mlj_tool_overlay";
     MLJ.core.plugin.ToolRendering.call(this, parameters, renderingClass);
 
     var _this = this;
@@ -126,8 +126,15 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             
             if (on) {//the tooltip is active
                 //show the options pane
-                _this._showOptionsPane();   
-                
+                _this._showOptionsPane();
+                //when active a tool panel disable others ----
+                var items = MLJ.gui.group[renderingClass].getItems();
+                for (var i = 0; i < items.length; ++i) {
+                    if (items[i].isOn() && items[i] !== btn) {
+                        items[i].toggle("off", event);
+                    }
+                }
+                //------
             }
             
             
@@ -223,6 +230,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 });
 
         $(document).on("SceneLayerUpdated", function (event, layer) {
+            
             reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
         });
         
@@ -269,7 +277,22 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             }
         }
     });
-
+    $(document).on("SceneLayerVisibility", function (event,layerName, visible) {
+        if(visible===false){ 
+            var layerInvisible=MLJ.core.Scene.getLayerByName(layerName);
+            var selected=MLJ.core.Scene.getSelectedLayer();
+            if(selected ===layerInvisible)
+            {
+                _this._applyTo(layer,false);
+                btn.toggle("off",event);
+            }
+        }
+        
+       //console.log("visibility changed"+visible);
+    });
+    $(document).on("unToogle", function (event,mesh) {
+        btn.toggle("off",event);
+    });
     //Prevents context menu opening
     $(document).ready(function () {
         $(this).on("contextmenu", function (e) {
@@ -309,11 +332,12 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
         while (ptr.hasNext()) {
             layer = ptr.next();
             //console.log(layer);
-            if(layer !== selected){
-                console.log("pippo");
+            //if(layer !== selected){
+                //console.log("disableSelection");
                 _this._applyTo(layer,false);
                 btn.toggle("off",event);
-            }
+                MLJ.core.Scene.updateLayer(layer);
+            //}
         }
     }
     this._setOnParamChange(function (paramProp, value) {

@@ -178,7 +178,7 @@ MLJ.core.Scene = {};
         _renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
             alpha: true, 
-            preserveDrawingBuffer:true});
+            preserveDrawingBuffer:true });
         //_renderer.shadowMapEnabled = true;
         //_renderer.context.getSupportedExtensions();
         _renderer.context.getExtension("EXT_frag_depth");
@@ -298,7 +298,7 @@ MLJ.core.Scene = {};
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-        var offset = BBGlobal.center().negate();;
+        var offset = BBGlobal.center().negate();
         _group.scale.set(scaleFac,scaleFac,scaleFac);
         _group.position.set(offset.x*scaleFac,offset.y*scaleFac,offset.z*scaleFac);
         _group.updateMatrix();
@@ -377,7 +377,8 @@ MLJ.core.Scene = {};
             if (visible) layer.__mlj_histogram.show();
             else layer.__mlj_histogram.hide();
         }
-        
+        //event fired when change the visibility of current layer: this event is fired by tool panel
+        $(document).trigger("SceneLayerVisibility", [layerName,visible]);
         MLJ.core.Scene.render();
     };
 
@@ -429,7 +430,8 @@ MLJ.core.Scene = {};
         }
         
         layer.overlays.set(name,mesh);
-
+        //set the proper name to a mesh going in Object3D Group
+        mesh.name= layer.name;
         mesh.visible = layer.getThreeMesh().visible;
         if (overlay2D) {
             _scene2D.add(mesh);
