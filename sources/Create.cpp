@@ -66,7 +66,7 @@ void CreateSuperEllipsoid(uintptr_t _m, float rFeature, float sFeature, float tF
 {
     MyMesh &m = *((MyMesh*) _m);
     printf("Creating a superellipsoid with subdivision level %i\n",refinement);
-    tri::SuperEllipsoid(m,rFeature,sFeature,tFeature,refinement*2,refinement);
+    tri::SuperEllipsoid(m,rFeature,sFeature,tFeature,refinement,refinement*2);
     m.UpdateBoxAndNormals();
 }
 void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
