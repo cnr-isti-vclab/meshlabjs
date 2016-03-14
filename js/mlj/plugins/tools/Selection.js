@@ -11,7 +11,7 @@
     var plug = new plugin.Tool({
         name: "Selection Tool",
         tooltip: "Selection Tooltip",
-        icon: "img/icons/color.png",
+        icon: "img/icons/selectTool.png",
         toggle: true,
         on: false,
         updateOnLayerAdded: false

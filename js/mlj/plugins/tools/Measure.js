@@ -15,7 +15,7 @@
     var plug = new plugin.Tool({
         name: "Measure Tool",
         tooltip: "Measure Tooltip",
-        icon: "img/icons/color.png",
+        icon: "img/icons/points.png",
         toggle: true,
         on: false
     }, DEFAULTS);
