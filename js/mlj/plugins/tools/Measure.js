@@ -95,6 +95,20 @@
                     }
                     function getWorldPos(mouse2D){
                         var camera=MLJ.core.Scene.getCamera();
+                        
+                        sceneGroup.getObjectByName(layerName).geometry.computeBoundingBox();
+                        sceneGroup.getObjectByName(layerName).geometry.computeBoundingSphere();
+                        sceneGroup.getObjectByName(layerName).geometry.computeFaceNormals();
+                        sceneGroup.getObjectByName(layerName).geometry.computeVertexNormals();
+                        try{
+                            sceneGroup.getObjectByName(layerName).geometry.computeMorphNormals();
+                        }
+                        catch(err){}
+                        scene.render();
+                        camera.updateMatrixWorld();
+                        camera.updateMatrix();
+                        camera.updateProjectionMatrix();
+ 
                         var raycaster=new THREE.Raycaster();
                         raycaster.setFromCamera(mouse2D,camera);
                         var intersects=raycaster.intersectObject(sceneGroup.getObjectByName(layerName),true);
