@@ -44,87 +44,7 @@
                     var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
                     var layerName=MLJ.core.Scene.getSelectedLayer().name;
                     var camera= scene.getCamera();
-                    function makeTextSprite( message, position, parameters, scalability )
-                    {
-                        if ( parameters === undefined ) parameters = {};
-                        var fontface = parameters.hasOwnProperty("fontFace") ?
-                            parameters["fontFace"] : "Arial";
-                        var fontsize = parameters.hasOwnProperty("fontSize") ?
-                                parameters["fontSize"] : 10;
-                        var fontweight = parameters.hasOwnProperty("fontWeight") ?
-                            parameters["fontWeight"] : "normal" //white, visible
-                        var borderThickness = parameters.hasOwnProperty("borderThickness") ?
-                                parameters["borderThickness"] : 4;
-                        var borderColor = parameters.hasOwnProperty("borderColor") ?
-                                parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 }; //black, visible
-                        var backgroundColor = parameters.hasOwnProperty("bgColor") ?
-                                parameters["bgColor"] : {r:255, g:255, b:255, a:1.0} //white, visible
-                        //prepare label
-                        var canvas = document.createElement('canvas');
-                        var context = canvas.getContext('2d');
-                        context.font = fontweight + " " + fontsize + "px " + fontface;
-                        // get size data (height depends only on font size)
-                        var textWidth = context.measureText(message).width;
-                        canvas.width = textWidth + borderThickness * 2;
-                        canvas.height = fontsize + borderThickness * 2;
-                        //set the param font into context
-                        context.font = fontweight + " " + fontsize + "px " + fontface;
-                        //set context background color
-                        context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
-                                                                                  + backgroundColor.b + "," + backgroundColor.a + ")";
-                        //set context border color
-                        context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
-                                                                                  + borderColor.b + "," + borderColor.a + ")";
-                        //set border thickness
-                        context.lineWidth = borderThickness;
-                        /** //MEMO : (add +x) ~~ go right; (add +y) ~~ go down) ]
-                           Set the rectangular frame (ctx, top-left, top, width, height, radius of the 4 corners)
-                        */
-                        roundRect(context,
-                                  borderThickness/2,
-                                  borderThickness/2,
-                                  textWidth + borderThickness,
-                                  fontsize + borderThickness,
-                                  6);
-                        context.fillStyle = "rgba(255, 255, 255, 1.0)";
-                        /** Set starting point of text, in which pt(borderThickness, fontsize+borderThickness/2) represent the
-                        top left of the top-left corner of the texture text in the canvas. */
-                        context.fillText( message, borderThickness, fontsize + borderThickness/2);
-                        //canvas contents will be used for create a texture
-                        var texture = new THREE.Texture(canvas);
-                        texture.needsUpdate = true;
-                        texture.minFilter = THREE.LinearFilter;
-                        var spriteMaterial = new THREE.SpriteMaterial({ 
-                            map: texture,
-                            useScreenCoordinates: false, 
-                            color: 0xffffff, 
-                            depthWrite: false,
-                            depthTest: false, 
-                            fog: true  } );
-                        var sprite = new THREE.Sprite( spriteMaterial );
-                        var scaleFact= scalability.param1/scalability.param2;
-                        sprite.scale.set(0.3*scaleFact,0.05*scaleFact,1);
-                        sprite.position.set( position.x , position.y, position.z);
-                        return sprite;
-                    }
                     
-                    //function for drawing rounded rectangles
-                    function roundRect(ctx, x, y, w, h, r)
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(x+r, y);
-                        ctx.lineTo(x+w-r, y);
-                        ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-                        ctx.lineTo(x+w, y+h-r);
-                        ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-                        ctx.lineTo(x+r, y+h);
-                        ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-                        ctx.lineTo(x, y+r);
-                        ctx.quadraticCurveTo(x, y, x+r, y);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    }
                     function checkKeyPressed(event){
                         if(event.altKey){
                             bindMeasureEvent(false);
@@ -176,7 +96,6 @@
                     function getWorldPos(mouse2D){
                         var camera=MLJ.core.Scene.getCamera();
                         var raycaster=new THREE.Raycaster();
-                        
                         raycaster.setFromCamera(mouse2D,camera);
                         var intersects=raycaster.intersectObject(sceneGroup.getObjectByName(layerName),true);
                         var pickedInfo;
@@ -188,6 +107,7 @@
                             //console.log(scalingMatrix);
                             pickedInfo.point.applyMatrix4(scalingMatrix);
                         }
+                        //console.log(camera.position.distanceTo(new THREE.Vector3(mouse2D.x,mouse2D.y,0.5)));
                         return pickedInfo;
                     }
                     function getPickedPoint(event) {
@@ -197,24 +117,19 @@
                           x: event.pageX - this.offsetLeft,
                           y: event.pageY - this.offsetTop
                         };
-                        var lblParameters = {
-                        
-                            fontSize : 15,
-                            borderThickness : 5,
-                            borderColor : {r:229, g:244, b:248, a:0},
-                            bgColor : {r:255, g:100, b:100, a:0.5}
-
-                        };
+                        var lblParameters = {};
                         mouse2D.x = (mouse2D.x / _canvas.width()) * 2 - 1;
                         mouse2D.y = -(mouse2D.y / _canvas.height()) * 2 + 1;
                         var pickedInfo=getWorldPos(mouse2D);
                         if(pickedInfo !== undefined&& pickedInfo.object.visible === true){
                             
                             var point=pickedInfo.point;
+                            //console.log(camera.position.distanceTo(pickedInfo.point.applyMatrix4(sceneGroup.matrixWorld)));
                             var scalability={
-                                param1: pickedInfo.distance,
+                                param1: camera.position.distanceTo(new THREE.Vector3(mouse2D.x,mouse2D.y,0.5)),
                                 param2: sceneGroup.scale.length()
-                            }
+                            };
+                            //console.log(pickedInfo);
                             //console.log(scalability.param1+" "+scalability.param2);
                             point.x=Math.round(point.x*1000)/1000;
                             point.y=Math.round(point.y*1000)/1000;
@@ -233,13 +148,12 @@
                                 firstSphere.position.y=point1.y;
                                 firstSphere.position.z=point1.z;
                                 sceneGroup.add( firstSphere );
-                                labelPoint1 = makeTextSprite(
+                                scene.makeTextSprite(
                                     "("+point1.x+","+point1.y+","+point1.z+")",
-                                    { x: point1.x, y: point1.y, z: point1.z},
-                                    lblParameters,scalability
+                                    point1,
+                                    {name:"labelP1"},
+                                    sceneGroup 
                                 );
-                                labelPoint1.name="labelP1";
-                                sceneGroup.add( labelPoint1 );
                                 scene.render();
                             }
                             else if(sceneGroup.getObjectByName("s2") === undefined){
@@ -250,7 +164,7 @@
                                 secondSphere.position.y=point2.y;
                                 secondSphere.position.z=point2.z;
                                 sceneGroup.add( secondSphere );
-                                distance= Math.round((point2.distanceTo(point1))*1000000)/1000000;
+                                distance= Math.round((point2.distanceTo(point1))*1000)/1000;
                                 var materialLineDown = new THREE.LineDashedMaterial({
                                         color: 0xffff00,
                                         dashSize: distance/500,
@@ -274,21 +188,19 @@
                                 lineUp.name="Lineup";
                                 sceneGroup.add( lineUp );
                                 
-                                labelDistance = makeTextSprite(
+                                scene.makeTextSprite(
                                     distance,
-                                    { x: (point1.x+point2.x)/2, y: (point1.y+point2.y)/2, z: (point1.z+point2.z)/2},
-                                    lblParameters,scalability
+                                    new THREE.Vector3((point1.x+point2.x)/2,(point1.y+point2.y)/2,(point1.z+point2.z)/2),
+                                    {name:"labelDist"},
+                                    sceneGroup
                                 );
-                                labelDistance.name="labelDist";
-                                sceneGroup.add( labelDistance );
                                 
-                                labelPoint2 = makeTextSprite(
+                                scene.makeTextSprite(
                                     "("+point2.x+","+point2.y+","+point2.z+")",
-                                    { x: point2.x, y: point2.y, z: point2.z},
-                                    lblParameters,scalability
+                                    point2,
+                                    {name: "labelP2"},
+                                    sceneGroup
                                 );
-                                labelPoint2.name="labelP2";
-                                sceneGroup.add( labelPoint2 );
                                 scene.render();
                             }
                             else {

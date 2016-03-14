@@ -779,7 +779,99 @@ MLJ.core.Scene = {};
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
     };
+    
+    this.makeTextSprite=function(message, point, parameters, nodeJs)
+    {
+        if(!(point instanceof THREE.Vector3)||!(nodeJs instanceof THREE.Object3D))
+        {
+            console.log("MLJ.core.Scene.makeTextSprite(): point parameter or nodeJs parameter not a correct instance");
+            return;
+        }
+        if ( parameters === undefined ) parameters = {};
+        var fontface = parameters.hasOwnProperty("fontFace") ?
+            parameters["fontFace"] : "Arial";
+        var fontsize = parameters.hasOwnProperty("fontSize") ?
+                parameters["fontSize"] : 30;
+        var fontweight = parameters.hasOwnProperty("fontWeight") ?
+            parameters["fontWeight"] : "normal"; //white, visible
+        var borderThickness = parameters.hasOwnProperty("borderThickness") ?
+                parameters["borderThickness"] : 8;
+        var borderColor = parameters.hasOwnProperty("borderColor") ?
+                parameters["borderColor"] : {r:229, g:244, b:248, a:0}; //black, visible
+        var backgroundColor = parameters.hasOwnProperty("bgColor") ?
+                parameters["bgColor"] : {r:255, g:100, b:100, a:0.5}; //white, visible
+        //prepare label
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        context.font = fontweight + " " + fontsize + "px " + fontface;
+        // get size data (height depends only on font size)
+        var textWidth = context.measureText(message).width;
+        canvas.width = textWidth + borderThickness * 2;
+        canvas.height = fontsize + borderThickness * 2;
+        //set the param font into context
+        context.font = fontweight + " " + fontsize + "px " + fontface;
+        //set context background color
+        context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
+                                                                  + backgroundColor.b + "," + backgroundColor.a + ")";
+        //set context border color
+        context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
+                                                                  + borderColor.b + "," + borderColor.a + ")";
+        //set border thickness
+        context.lineWidth = borderThickness;
+        /** //MEMO : (add +x) ~~ go right; (add +y) ~~ go down) ]
+           Set the rectangular frame (ctx, top-left, top, width, height, radius of the 4 corners)
+        */
+        roundRect(context,
+                  borderThickness/2,
+                  borderThickness/2,
+                  textWidth + borderThickness,
+                  fontsize + borderThickness,
+                  6);
+        context.fillStyle = "rgba(255, 255, 255, 1.0)";
+        /** Set starting point of text, in which pt(borderThickness, fontsize+borderThickness/2) represent the
+        top left of the top-left corner of the texture text in the canvas. */
+        context.fillText( message, borderThickness, fontsize + borderThickness/2);
+        //canvas contents will be used for create a texture
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+        var spriteMaterial = new THREE.SpriteMaterial({ 
+            map: texture,
+            useScreenCoordinates: true, 
+            color: 0xffffff, 
+            depthWrite: false,
+            depthTest: false, 
+            fog: true  } );
+        var sprite = new THREE.Sprite( spriteMaterial );
+        
+        var scaleObject =nodeJs.scale.length();
+        var pointWorld=point.clone();
+        var scaleDistance=_camera.position.distanceTo(pointWorld.applyMatrix4(nodeJs.matrixWorld));
+        var scaleFactor= scaleDistance/scaleObject;
+        sprite.scale.set(0.0015*textWidth*scaleFactor,0.05*scaleFactor,1);
+        sprite.position.set( point.x , point.y, point.z);
+        sprite.name=parameters["name"];
+        
+        nodeJs.add(sprite);
+    }
 
+    //function for drawing rounded rectangles
+    function roundRect(ctx, x, y, w, h, r)
+    {
+        ctx.beginPath();
+        ctx.moveTo(x+r, y);
+        ctx.lineTo(x+w-r, y);
+        ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+        ctx.lineTo(x+w, y+h-r);
+        ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+        ctx.lineTo(x+r, y+h);
+        ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+        ctx.lineTo(x, y+r);
+        ctx.quadraticCurveTo(x, y, x+r, y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
 
 
     this.takeSnapshot = function() {
