@@ -335,7 +335,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             //if(layer !== selected){
                 //console.log("disableSelection");
                 _this._applyTo(layer,false);
-                btn.toggle("off",event);
+                btn.toggle("off");
                 MLJ.core.Scene.updateLayer(layer);
             //}
         }
