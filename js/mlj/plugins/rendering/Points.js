@@ -3,6 +3,7 @@
 
     const COL_FIXED = 0,
           COL_VERTEX = 1;
+    var loader = new THREE.TextureLoader();
 
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
@@ -12,8 +13,8 @@
         specular: new THREE.Color('#505050'),
         shininess: 15.0,
         //discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
-        discBorder: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_border.png"),
-        discShaded: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png"),
+        discBorder: loader.load("js/mlj/plugins/rendering/textures/sprites/disc_border.png"),
+        discShaded: loader.load("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png"),
         backPointsCulling: 0,
         deepSplat: 1
     };

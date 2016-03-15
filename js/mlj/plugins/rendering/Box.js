@@ -1,5 +1,6 @@
 
 (function (plugin, core, scene) {
+    var loader = new THREE.TextureLoader();
 
     var DEFAULTS = {
             //next values are code blocked values
@@ -7,7 +8,8 @@
             medPointSize : 0.25,
             majPointSize : 0.5,
             minSize : 1.5,
-            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/square.png"),
+//            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/square.png"),
+            pntTexture: loader.load("js/mlj/plugins/rendering/textures/sprites/square.png"),
             epsilonPercentage : 1.5/100.0,
             spriteOffset : 2.5,
             //next are GUI settable values
