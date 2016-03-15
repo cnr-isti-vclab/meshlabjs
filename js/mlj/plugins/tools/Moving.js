@@ -16,8 +16,8 @@
     var DECREASE=6;
     
     var camera=scene.getCamera();
-    var _canvas=$('#_3D');
-    var control= new THREE.TransformControls( camera, document );
+    //var _canvas=$('#_3D');
+    var control;
     
     var DEFAULTS = {
        movingMode : MOVING_TRANSLATE,
@@ -48,6 +48,8 @@
                     if(movMode.getValue()===0) control.setMode("traslate");
                     else if (movMode.getValue()===1) control.setMode("rotate");
                     else if(movMode.getValue()===2) control.setMode("scale");
+                    camera.updateProjectionMatrix();
+                    scene.render();
                 };
                 bindToFun.toString = function () {};
                 return bindToFun;
@@ -63,6 +65,8 @@
             bindTo: (function() {
                 var bindToFun = function () {
                     control.setSpace( control.space === "local" ? "world" : "local" );
+                    camera.updateProjectionMatrix();
+                    scene.render();
                 };
                 bindToFun.toString = function () {};
                 return bindToFun;
@@ -79,6 +83,8 @@
                 var bindToFun = function () {
                     if(changeSett.getValue()===INCREASE) control.setSize(control.size+0.1);
                     else control.setSize(Math.max(control.size-0.1, 0.1));
+                    camera.updateProjectionMatrix();
+                    scene.render();
                 };
                 bindToFun.toString = function () {};
                 return bindToFun;
@@ -93,10 +99,10 @@
             var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
             var selectedLayer=scene.getSelectedLayer().name;
             var camera=scene.getCamera();
-            var _canvas=$('#_3D');
-            control= new THREE.TransformControls(camera,$(document));
+            var _canvas=document.getElementById("_3D");
+            control= new THREE.TransformControls(camera,_canvas);
             control.attach(sceneGroup.getObjectByName(selectedLayer));
-            scene.add(control);
+            scene.getScene().add(control);
         }
         else{
             if(control instanceof THREE.TransformControls) control.detach();
