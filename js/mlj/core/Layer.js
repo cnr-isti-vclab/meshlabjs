@@ -143,7 +143,7 @@ MLJ.core.Layer = function (name, cppMesh) {
         if (geometry.getAttribute('index') !== undefined) {
             delete geometry.attributes.index;
         }
-        if (indexAttrib !== null) geometry.addAttribute('index', indexAttrib);
+        if (indexAttrib !== null) geometry.setIndex(indexAttrib);
 		geometry.computeBoundingBox (); //update the boundingbox
     };
 
