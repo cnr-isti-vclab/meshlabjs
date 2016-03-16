@@ -193,7 +193,7 @@
             lights: true
         });
 
-        var points = new THREE.PointCloud(geometry, shaderMaterial);
+        var points = new THREE.Points(geometry, shaderMaterial);
 /*
         var material = new THREE.PointCloudMaterial(
             {   color: params.color,
