@@ -23,6 +23,7 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],            
             {
                 "size": {type: "f", value: DEFAULTS.size},
                 "usePerVertexColor": {type: "i", value: 0},
@@ -185,7 +186,7 @@
 */
         var shaderMaterial = new THREE.RawShaderMaterial({
             uniforms: pointsUniforms,
-            attributes: geometry.attributes,
+//            attributes: geometry.attributes,
             vertexShader: this.shaders.getByKey("ShadedPointsVertex.glsl"),
             fragmentShader: this.shaders.getByKey("ShadedPointsFragment.glsl"),
             //transparent: true,

@@ -15,6 +15,7 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],          
             {
                 "color": {type: "c", value: DEFAULTS.color},
                 "thickness": {type: "f", value: DEFAULTS.thickness},
@@ -118,7 +119,7 @@
             vertexShader: this.shaders.getByKey("WireVertex.glsl"),
             fragmentShader: this.shaders.getByKey("WireFragment.glsl"),
             uniforms: uniforms,
-            attributes: attributes,
+//            attributes: attributes,
             transparent: true,
             lights: true,
             side: params.sides

@@ -18,6 +18,7 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],
             {
                 "shading": {type: "i", value: DEFAULTS.shading},
                 "diffuse": {type: "c", value: {}},
@@ -145,7 +146,7 @@
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
-                attributes: geom.attributes,
+//                attributes: geom.attributes,
                 lights: true,
                 side: params.sides
             };
