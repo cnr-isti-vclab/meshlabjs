@@ -136,10 +136,9 @@
             pntSize: {type: "f", value: params.pntSize},
             pntTexture: {type: "t", value: DEFAULTS.pntTexture}
         };
-
+        var geometryBox=new THREE.BufferGeometry({attributes:attributes});
         var shaderMaterial = new THREE.ShaderMaterial({
                 uniforms: uniforms,
-                attributes: attributes,
                 vertexShader: this.shaders.getByKey("BoxVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("BoxFragment.glsl"),
                 alphaTest: 0.5,
@@ -159,7 +158,7 @@
         };
 
         //var needed to group all (pseudo) "subclasses" of THREE.Mesh
-        var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
+        var meshesGroup = new THREE.Mesh( geometryBox, shaderMaterial);
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
 

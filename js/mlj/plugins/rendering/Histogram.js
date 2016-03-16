@@ -165,7 +165,6 @@
     
         var dl = new THREE.PointCloud(geometry, new THREE.ShaderMaterial({
             uniforms: {},
-            attributes: geometry.attributes,
             vertexShader: "attribute float pointSize; \
                            void main() { \
                                gl_PointSize = pointSize; \
