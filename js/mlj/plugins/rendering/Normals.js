@@ -169,10 +169,6 @@
             faceNormalsGeometry.addAttribute('normal',   new THREE.BufferAttribute( normalArray,   3 ) );
             faceNormalsGeometry.addAttribute('mask',     new THREE.BufferAttribute( masksArray,    1 ) );
 
-            var attributeFN = {
-                mask: {type: 'f', value: []}
-            };
-
             var uniformFN = {
                 size: {type: "f", value: params.normalFaceSize},
                 color: {type: "c", value: params.normalFaceColor}
@@ -181,15 +177,12 @@
             var parameters = {
                 vertexShader: this.shaders.getByKey("NormalsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("NormalsFragment.glsl"),
-                attributes: attributeFN,
                 uniforms: uniformFN,
-                wireframe : true,
-                transparent: true,
-                side: THREE.DoubleSide
+                transparent: true,                
             };
 
             var faceNormalsMat = new THREE.RawShaderMaterial(parameters);
-            var faceNormals    = new THREE.Mesh(faceNormalsGeometry, faceNormalsMat);
+            var faceNormals    = new THREE.LineSegments(faceNormalsGeometry, faceNormalsMat);
 
             return faceNormals;
         }
@@ -216,10 +209,6 @@
             vertexNormalsGeometry.addAttribute('normal', new THREE.BufferAttribute( normals, 3 ) );
             vertexNormalsGeometry.addAttribute('mask', new THREE.BufferAttribute( masks, 1 ) );
 
-            var attributes = {
-                mask: {type: 'f', value: []}
-            };
-
             var uniforms = {
                 size: {type: "f", value: params.normalVertexSize},
                 color: {type: "c", value: params.normalVertexColor}
@@ -228,15 +217,12 @@
             var parameters = {
                 vertexShader: this.shaders.getByKey("NormalsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("NormalsFragment.glsl"),
-                attributes: attributes,
                 uniforms: uniforms,
-                wireframe : true,
                 transparent: true,
-                side: THREE.DoubleSide
             };
 
             var vertexNormalsMat = new THREE.RawShaderMaterial(parameters);
-            var vertexNormals = new THREE.Mesh(vertexNormalsGeometry, vertexNormalsMat);
+            var vertexNormals = new THREE.LineSegments(vertexNormalsGeometry, vertexNormalsMat);
 
             return vertexNormals;
         }
