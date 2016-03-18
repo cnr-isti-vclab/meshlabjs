@@ -274,8 +274,6 @@
 
             // create a material for selected points
 
-            var attributes = { minSize: {type: 'f', value: null} };
-
             var uniforms = {
                 color: {type: "c", value: params.pointColor},
                 size: {type: "f", value: params.pointSize},
@@ -285,7 +283,6 @@
 
             var shaderMaterial = new THREE.RawShaderMaterial({
                 uniforms: uniforms,
-                attributes: attributes,
                 vertexShader: this.shaders.getByKey("PointsVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("PointsFragment.glsl"),
                 //alphaTest: 0.9,
@@ -306,7 +303,7 @@
              }
              */
 
-            var pointCloud = new THREE.PointCloud(selectedPointsGeometry, shaderMaterial);
+            var pointCloud = new THREE.Points(selectedPointsGeometry, shaderMaterial);
 
             if (selectionWidget.getValue() == ONLY_SELECTED_FACES) {
                 pointCloud.visible = false;

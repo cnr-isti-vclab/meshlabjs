@@ -196,7 +196,7 @@
 
             //adding internal quotes and labels
             geometry = generatePointCloudGeometry(bboxmax, bboxmin, x, y, z, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
-            var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
+            var pcBuffer = new THREE.Points( geometry, shaderMaterial);
 
             meshesGroup.add(pcBuffer);
             meshesGroup.add(labelsGroup);
