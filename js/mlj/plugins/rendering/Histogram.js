@@ -163,7 +163,7 @@
         geometry.addAttribute('pointSize', new THREE.BufferAttribute(new Float32Array(sizes), 1));
     
     
-        var dl = new THREE.PointCloud(geometry, new THREE.ShaderMaterial({
+        var dl = new THREE.Points(geometry, new THREE.ShaderMaterial({
             uniforms: {},
             vertexShader: "attribute float pointSize; \
                            void main() { \
