@@ -278,7 +278,7 @@
             edgesMaterial.linewidth = params.width;
             edgesMaterial.transparent = true;
 
-            var edgesMesh = new THREE.Line(nonManifEdgesGeometry, edgesMaterial, THREE.LinePieces);
+            var edgesMesh = new THREE.LineSegment(nonManifEdgesGeometry, edgesMaterial);
 
             // now create a buffer geometry for the faces
             var facesGeometry = new THREE.BufferGeometry();
@@ -336,15 +336,6 @@
             var nonManifVerticesGeometry = new THREE.BufferGeometry();
             nonManifVerticesGeometry.addAttribute('position', new THREE.BufferAttribute( vertsCoordsVec, 3 ) );
 
-/*
-            var vertMaterial = new THREE.PointCloudMaterial(
-                {   color: params.colorNonManifVert,
-                    size: params.sizeNonManifVert,
-                    sizeAttenuation: true,
-                    transparent: true
-                });
-*/
-
             var pointsUniforms ={
                 color: {type: "c", value: params.colorNonManifVert},
                 size: {type: "f", value: params.sizeNonManifVert},
@@ -361,7 +352,7 @@
                 //alphaTest: 0.9
             });
 
-            var nonManifVertices = new THREE.PointCloud(nonManifVerticesGeometry, vertMaterial);
+            var nonManifVertices = new THREE.Points(nonManifVerticesGeometry, vertMaterial);
 
             // now create a buffer geometry for the faces
             var facesGeometry = new THREE.BufferGeometry();
@@ -427,7 +418,7 @@
             material.color = params.color;
             material.linewidth = params.width;
 
-            var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces);
+            var edgesMesh = new THREE.LineSegments( boundaryEdgesGeometry, material);
 
             // now create a buffer geometry for the faces
             var boundaryFacesGeometry = new THREE.BufferGeometry();

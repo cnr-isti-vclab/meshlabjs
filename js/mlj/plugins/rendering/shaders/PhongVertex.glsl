@@ -18,10 +18,6 @@ uniform int mljColorMode;
 
 void main() {
     vec3 objectNormal = normal;
-
-    #ifdef FLIP_SIDED
-	objectNormal = -objectNormal;
-    #endif
     
     vec3 transformedNormal = normalMatrix * objectNormal;
     if(shading == SMOOTH) {
