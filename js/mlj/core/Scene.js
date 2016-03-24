@@ -390,7 +390,7 @@ MLJ.core.Scene = {};
      */
     this.addLayer = function (layer) {
         if (!(layer instanceof MLJ.core.Layer)) {
-            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            console.error("The parameter must be an instance of MLJ.core.Layer");
             return;
         }
         
