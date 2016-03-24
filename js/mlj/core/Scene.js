@@ -393,6 +393,7 @@ MLJ.core.Scene = {};
         
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
+        _group.add(layer.getThreeMesh());
 
         //Add new mesh to associative array _layers            
         _layers.set(layer.name, layer);
@@ -432,7 +433,8 @@ MLJ.core.Scene = {};
         if (overlay2D) {
             _scene2D.add(mesh);
         } else {
-            _group.add(mesh);
+//            _group.add(mesh);
+            layer.getThreeMesh().add(mesh);
         }
 
         _this.render();
@@ -453,7 +455,8 @@ MLJ.core.Scene = {};
             if (overlay2D) {
                 _scene2D.remove(mesh);                        
             } else {
-                _group.remove(mesh);                        
+                layer.getThreeMesh().remove(mesh);   
+//                _group.remove(mesh);                        
             }
 
             mesh.traverse(disposeObject);
