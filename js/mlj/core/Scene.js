@@ -293,17 +293,19 @@ MLJ.core.Scene = {};
             iter = _layers.iterator();
             while (iter.hasNext()) {
                 threeMesh = iter.next().getThreeMesh();
+                // Note that the 3js method return the bbox wrt to the current transformation. 
                 var bbox = new THREE.Box3().setFromObject(threeMesh);
                 BBGlobal.union(bbox);
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-        var offset = BBGlobal.center().negate();;
-        _group.scale.set(scaleFac,scaleFac,scaleFac);
-        _group.position.set(offset.x*scaleFac,offset.y*scaleFac,offset.z*scaleFac);
+        var offset = BBGlobal.center().negate();
+        offset.multiplyScalar(scaleFac);
+        _group.scale.multiplyScalar(scaleFac);
+        _group.position.add(offset);
         _group.updateMatrix();
-//        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
-//        console.log("ScaleFactor:" + scaleFac);
+        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
+        console.log("ScaleFactor:" + _group.scale);
         return BBGlobal;
     }
 
