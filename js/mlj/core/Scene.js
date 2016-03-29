@@ -285,27 +285,26 @@ MLJ.core.Scene = {};
      */
     function _computeGlobalBBbox()
     {
-        var BBGlobal;
+        console.time("Time to update bbox: ");
+        _group.scale.set(1,1,1);
+        _group.position.set(0,0,0);
+        _group.updateMatrixWorld();
+        
         if (_layers.size() === 0) // map to the canonical cube
             BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         else {
-            BBGlobal = new THREE.Box3(); // map to the layers' boxes union
-            iter = _layers.iterator();
-            while (iter.hasNext()) {
-                threeMesh = iter.next().getThreeMesh();
-                // Note that the 3js method return the bbox wrt to the current transformation. 
-                var bbox = new THREE.Box3().setFromObject(threeMesh);
-                BBGlobal.union(bbox);
-            }
+            BBGlobal = new THREE.Box3();
+            BBGlobal.setFromObject(_group);
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
         var offset = BBGlobal.center().negate();
         offset.multiplyScalar(scaleFac);
-        _group.scale.multiplyScalar(scaleFac);
-        _group.position.add(offset);
-        _group.updateMatrix();
-        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
-        console.log("ScaleFactor:" + _group.scale);
+        _group.scale.set(scaleFac,scaleFac,scaleFac);
+        _group.position.set(offset.x,offset.y,offset.z);
+        _group.updateMatrixWorld();
+        //console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
+        //console.log("ScaleFactor:" + _group.scale.x  +" "+ _group.scale.x  +" "+ _group.scale.x);
+        //console.timeEnd("Time to update bbox: ");
         return BBGlobal;
     }
 
@@ -389,7 +388,7 @@ MLJ.core.Scene = {};
      */
     this.addLayer = function (layer) {
         if (!(layer instanceof MLJ.core.Layer)) {
-            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            console.error("The parameter must be an instance of MLJ.core.Layer");
             return;
         }
         
@@ -579,7 +578,7 @@ MLJ.core.Scene = {};
         if (layer !== undefined) {
             //remove layer from list
             _layers.remove(name);
-                                                
+            _group.remove(layer.getThreeMesh());
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
             
             layer.dispose();
