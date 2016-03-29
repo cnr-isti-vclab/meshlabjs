@@ -9,47 +9,66 @@
 using namespace vcg;
 using namespace std;
 
-void DuplicateLayer(uintptr_t _baseM, uintptr_t _newM)
-{
-    MyMesh &baseM = *((MyMesh*) _baseM);
-    MyMesh &newM = *((MyMesh*) _newM);
-    tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
-    newM.tr = baseM.tr;
-}
-
 void AddLayerToLayer(uintptr_t _baseM, uintptr_t _newM)
 {
-  DuplicateLayer(_baseM,_newM);
+  MyMesh &baseM = *((MyMesh*) _baseM);
+  MyMesh &newM = *((MyMesh*) _newM);
+  tri::Append<MyMesh, MyMesh>::Mesh(newM, baseM);
+  newM.tr = baseM.tr;
 }
+
 void CreatePlatonic(uintptr_t _m, int index)
 {
-    MyMesh &m = *((MyMesh*) _m);
-    switch(index)
-    {
-    case 0: tri::Tetrahedron(m); break;
-    case 1: tri::Octahedron(m); break;
-    case 2: tri::Hexahedron(m); break;
-    case 3: tri::Dodecahedron(m); break;
-    case 4: tri::Icosahedron(m); break;
-    }
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+  MyMesh &m = *((MyMesh*) _m);
+  switch(index)
+  {
+  case 0: tri::Tetrahedron(m); break;
+  case 1: tri::Octahedron(m); break;
+  case 2: tri::Hexahedron(m); break;
+  case 3: tri::Dodecahedron(m); break;
+  case 4: tri::Icosahedron(m); break;
+  }
+  m.UpdateBoxAndNormals();
 }
+
 void CreateSphere(uintptr_t _m, int refinement)
 {
   printf("Creating a sphere with subdivision level %i\n",refinement);
-    MyMesh &m = *((MyMesh*) _m);
-    tri::Sphere(m,refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+  MyMesh &m = *((MyMesh*) _m);
+  tri::Sphere(m,refinement);
+  m.UpdateBoxAndNormals();
 }
 
+void CreateSphericalCap(uintptr_t _m, float angleDeg, int refinement)
+{
+  printf("Creating a spherical cap of a given angle aplitude and with specified subdivision level %i\n",refinement);
+  MyMesh &m = *((MyMesh*) _m);
+  tri::SphericalCap(m,math::ToRad(angleDeg), refinement);    
+  m.UpdateBoxAndNormals();
+}
+ 
 void CreateTorus(uintptr_t _m, int refinement, float radiusRatio)
 {
-    MyMesh &m = *((MyMesh*) _m);
-    printf("Creating a torus of %i %f\n",refinement, radiusRatio);
-    tri::Torus(m,1.0,radiusRatio,refinement*2,refinement);
-    tri::UpdateNormal<MyMesh>::PerVertexNormalizedPerFace(m);
+  MyMesh &m = *((MyMesh*) _m);
+  printf("Creating a torus of %i %f\n",refinement, radiusRatio);
+  tri::Torus(m,1.0,radiusRatio,refinement*2,refinement);
+  m.UpdateBoxAndNormals();
 }
 
+void CreateSuperToroid(uintptr_t _m, float radiusRatio, float vSquare, float hSquare, int refinement)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    printf("Creating a supertoroid with subdivision level %i and ratio %f\n",refinement, radiusRatio);
+    tri::SuperToroid(m,1.0, radiusRatio,vSquare,hSquare,refinement*2,refinement);
+    m.UpdateBoxAndNormals();
+}
+void CreateSuperEllipsoid(uintptr_t _m, float rFeature, float sFeature, float tFeature, int refinement)
+{
+    MyMesh &m = *((MyMesh*) _m);
+    printf("Creating a superellipsoid with subdivision level %i\n",refinement);
+    tri::SuperEllipsoid(m,rFeature,sFeature,tFeature,refinement,refinement*2);
+    m.UpdateBoxAndNormals();
+}
 void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
 {
   MyMesh &m = *((MyMesh*) _m);
@@ -69,6 +88,7 @@ void CreateNoisyIsosurface(uintptr_t _m, int gridSize)
   printf("[MARCHING CUBES] Building mesh...\n");
   MyMarchingCubes mc(m, walker);
   walker.BuildMesh<MyMarchingCubes>(m, volume, mc, (gridSize*gridSize)/10);
+  m.UpdateBoxAndNormals();
 }
 
 
@@ -119,6 +139,7 @@ void CreateSpherePointCloud(uintptr_t _m, int pointNum, int sphereGenTech)
   for(size_t i=0;i<sampleVec.size();++i)
     tri::Allocator<MyMesh>::AddVertex(m,sampleVec[i],sampleVec[i]);
 
+  m.UpdateBoxAndNormals();
 }
 
 
@@ -131,10 +152,11 @@ void CreatePluginTEST()
     assert(IsWaterTight(m));
   }
 
-  for(int i=0;i<5;++i)
+  for(int i=0;i<4;++i)
   {
   MyMesh m;
   CreateSphere(uintptr_t(&m),i);
+  CreateSphericalCap(uintptr_t(&m),30+i*30,i);
   assert(IsWaterTight(m));
   }
 
@@ -149,6 +171,24 @@ void CreatePluginTEST()
       if(i!=4) assert(IsWaterTight(m));
       tri::RequireCompactness(m);
     }
+
+
+    for(int i=1;i<=8;++i)
+    {
+      MyMesh m;
+      CreateSuperToroid(uintptr_t(&m),1,0.25*i,0.25*i,32);
+      assert(IsWaterTight(m));
+      tri::RequireCompactness(m);
+    }
+
+    for(int i=1;i<=8;++i)
+    {
+      MyMesh m;
+      CreateSuperEllipsoid(uintptr_t(&m),0.5*i,0.5*i,0.5*i,32);
+      assert(IsWaterTight(m));
+      tri::RequireCompactness(m);
+    }
+    printf("FINITO\n");
 }
 
 
@@ -158,10 +198,12 @@ void CreatePluginTEST()
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     emscripten::function("CreatePlatonic", &CreatePlatonic);
     emscripten::function("CreateTorus", &CreateTorus);
+    emscripten::function("CreateSuperToroid", &CreateSuperToroid);
     emscripten::function("CreateSphere", &CreateSphere);
+    emscripten::function("CreateSphericalCap", &CreateSphericalCap);
     emscripten::function("CreateSpherePointCloud", &CreateSpherePointCloud);
-    emscripten::function("DuplicateLayer", &DuplicateLayer);
     emscripten::function("AddLayerToLayer", &AddLayerToLayer);
     emscripten::function("CreateNoisyIsosurface", &CreateNoisyIsosurface);
+    emscripten::function("CreateSuperEllipsoid", &CreateSuperEllipsoid);
 }
 #endif

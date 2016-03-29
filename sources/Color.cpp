@@ -1,5 +1,4 @@
 #include "mesh_def.h"
-#include "ColorHistogram.h"
 
 #include <vcg/complex/algorithms/update/color.h>
 #include <vcg/complex/algorithms/update/flag.h>
@@ -65,65 +64,14 @@ void ColorizeByBorderDistance(uintptr_t meshptr)
 	}
 }
 
-ColorHistogramf ComputeColorHistogram(
-		uintptr_t meshptr, bool vertexQuality, int binNum, bool areaWeighted, bool customRange, float rangeMin, float rangeMax)
+void ColorPluginTEST()
 {
-	MyMesh &m = *((MyMesh*) meshptr); 
-	ColorHistogramf ch;
 
-	if (binNum <= 2) {
-		binNum = 2;
-		printf("Warning(Histogram): forcing bin number to %d\n", binNum);
-	}
-
-	std::pair<float,float> minmax;
-	if (customRange) {
-		minmax.first = rangeMin;
-		minmax.second = rangeMax;
-	} else {
-		if (vertexQuality) minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
-		else minmax = tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m);
-	}
-
-	ch.SetRange(minmax.first, minmax.second, binNum);
-
-	if (vertexQuality) {
-		if (areaWeighted) {
-			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-				if (!fi->IsD()) {
-					float contribution = DoubleArea(*fi)/6.0f;
-					for (int i = 0; i < 3; ++i) ch.Add(fi->V(i)->Q(), fi->V(i)->C(), contribution);
-				}
-			}
-		} else {
-			for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-				if (!vi->IsD()) ch.Add(vi->Q(), vi->C(), 1.0f);
-			}
-		}
-	} else {
-		if (areaWeighted) {
-			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-				if (!fi->IsD()) ch.Add(fi->Q(), fi->C(), DoubleArea(*fi)*0.5f);
-			}
-		} else {
-			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-				if (!fi->IsD()) ch.Add(fi->Q(), fi->C(), 1.0f);
-			}
-		}
-	}
-
-	for(MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-		if (!vi->IsD()) {
-			ch.Add(vi->Q(), vi->C(), 1.0f);
-		}
-	}
-	return ch;
 }
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ColorizePlugin) {
 	emscripten::function("ColorizeByVertexQuality", &ColorizeByVertexQuality);
 	emscripten::function("ColorizeByBorderDistance", &ColorizeByBorderDistance);
-	emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);
 }
 #endif

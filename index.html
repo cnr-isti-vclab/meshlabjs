@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <meta name="description" content="MeshLabJS: the javascript mesh processing tool. Built using vcg library, emscripten and webgl. Developed by the Visual Computing Lab of ISTI - CNR and by the students of the FGT course.">
-        <title>MeshLabJS 16.02</title>
+        <title>MeshLabJS 16.03</title>
         <link rel="icon" href="img/favicon.png" type="image/x-icon"/>             
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
@@ -56,7 +56,7 @@
         <script src="js/mlj/core/plugin/Rendering.js"></script>
         <script src="js/mlj/core/plugin/Manager.js"></script>
         
-        <script src="js/mlj/plugins/filters/Smooth.js"></script> 
+        <script src="js/mlj/plugins/filters/Transform.js"></script> 
         <script src="js/mlj/plugins/filters/Refine.js"></script>
         <script src="js/mlj/plugins/filters/Selection.js"></script>
         <script src="js/mlj/plugins/filters/Create.js"></script>
@@ -101,7 +101,7 @@
             Module['onRuntimeInitialized'] = function() {
                 filterName = MLJ.util.getURLParam("filterName");
                 if(filterName)
-                    MLJ.core.plugin.Manager.executeFilter(filterName);
+                    MLJ.core.plugin.Manager.executeCreateFilter(filterName);
             };
         </script>
     </body>

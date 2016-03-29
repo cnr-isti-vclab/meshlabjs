@@ -1,10 +1,8 @@
 #include "mesh_def.h"
-#include <vector>
-#include <set>
+#include "ColorHistogram.h"
 
 using namespace vcg;
 using namespace std;
-
 
 #define NUM_VERTICES_PER_EDGE 2
 #define NUM_VERTICES_PER_FACE 3
@@ -508,6 +506,61 @@ uintptr_t buildAttributesVecForWireframeRendering(uintptr_t _mIn) {
 	return (uintptr_t)((void *)startBuffer);
 }
 
+ColorHistogramf ComputeColorHistogram(
+		uintptr_t meshptr, bool vertexQuality, int binNum, bool areaWeighted, bool customRange, float rangeMin, float rangeMax)
+{
+	MyMesh &m = *((MyMesh*) meshptr); 
+	ColorHistogramf ch;
+
+	if (binNum <= 2) {
+		binNum = 2;
+		printf("Warning(Histogram): forcing bin number to %d\n", binNum);
+	}
+
+	std::pair<float,float> minmax;
+	if (customRange) {
+		minmax.first = rangeMin;
+		minmax.second = rangeMax;
+	} else {
+		if (vertexQuality) minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+		else minmax = tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m);
+	}
+
+	ch.SetRange(minmax.first, minmax.second, binNum);
+
+	if (vertexQuality) {
+		if (areaWeighted) {
+			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+				if (!fi->IsD()) {
+					float contribution = DoubleArea(*fi)/6.0f;
+					for (int i = 0; i < 3; ++i) ch.Add(fi->V(i)->Q(), fi->V(i)->C(), contribution);
+				}
+			}
+		} else {
+			for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+				if (!vi->IsD()) ch.Add(vi->Q(), vi->C(), 1.0f);
+			}
+		}
+	} else {
+		if (areaWeighted) {
+			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+				if (!fi->IsD()) ch.Add(fi->Q(), fi->C(), DoubleArea(*fi)*0.5f);
+			}
+		} else {
+			for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+				if (!fi->IsD()) ch.Add(fi->Q(), fi->C(), 1.0f);
+			}
+		}
+	}
+
+	for(MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+		if (!vi->IsD()) {
+			ch.Add(vi->Q(), vi->C(), 1.0f);
+		}
+	}
+	return ch;
+}
+
 
 #ifdef __EMSCRIPTEN__
 using namespace emscripten;
@@ -529,5 +582,6 @@ EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
     emscripten::function("buildNonManifoldEdgeCoordsVec", &buildNonManifoldEdgeCoordsVec);
     emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
     emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
+    emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);
 }
 #endif

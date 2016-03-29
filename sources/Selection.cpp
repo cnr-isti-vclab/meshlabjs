@@ -111,24 +111,28 @@ void SelectionNone(uintptr_t _baseM, bool vertFlag, bool faceFlag)
   if(faceFlag) tri::UpdateSelection<MyMesh>::FaceClear(m);
 }
 
-void SelectionByQuality(uintptr_t _baseM, float threshold, bool vertFlag)
+void SelectionByQuality(uintptr_t _baseM, float threshold, bool vertFlag, int  selectionMode)
 {
   MyMesh &m = *((MyMesh*) _baseM);
   int cnt=0;
-  std::pair<float,float> minmax;
-
-  if(vertFlag) {
-    minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
-    cnt = tri::UpdateSelection<MyMesh>::VertexFromQualityRange(m,-std::numeric_limits<float>::max(),
-                                                               minmax.first + threshold * (minmax.second-minmax.first));
+  Distribution<float> H;
+  float actualThr;
+  
+  if(vertFlag)  tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,H);
+  else          tri::Stat<MyMesh>::ComputePerFaceQualityDistribution  (m,H);
+  
+  switch(selectionMode)
+  {
+  case 0:  actualThr = H.Min() + threshold*(H.Max()-H.Min()); break; // Percentage
+  case 1:  actualThr = H.Percentile(threshold);               break; // Precentile
+  case 2:  actualThr = threshold;                             break; // Actual Value
+  default: assert(0);
   }
-  else {
-    minmax = tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m);
-    cnt = tri::UpdateSelection<MyMesh>::FaceFromQualityRange(m,-std::numeric_limits<float>::max(),
-                                                       minmax.first + threshold * (minmax.second-minmax.first));
-  }
-  printf("Selected %i elems where quality was lower than %f in a range %f %f\n",cnt,
-         minmax.first + threshold * (minmax.second-minmax.first),minmax.first,minmax.second);
+  
+  if(vertFlag)   cnt = tri::UpdateSelection<MyMesh>::VertexFromQualityRange(m,H.Min(), actualThr,false);
+  else           cnt = tri::UpdateSelection<MyMesh>::FaceFromQualityRange  (m,H.Min(), actualThr,false);
+  
+  printf("Selected %i elems where quality was lower than %f in a range %f %f\n",cnt, actualThr, H.Min(), H.Max());
 }
 
 void SelectionByConnectedComponentSize(uintptr_t _baseM, float sizeThreshold)
@@ -141,7 +145,7 @@ void SelectionByConnectedComponentSize(uintptr_t _baseM, float sizeThreshold)
    for(size_t i=0;i<CCV.size();++i)
    {
      maxSize=std::max(maxSize,CCV[i].first);
-     printf("CC %i %i\n",i,CCV[i].first);
+     printf("CC %i %i\n",int(i),CCV[i].first);
    }  
    
    tri::UpdateSelection<MyMesh>::Clear(m);
@@ -166,6 +170,7 @@ void QualitybyPointOutlier(uintptr_t _baseM, int kNearestNum)
 
   for(MyMesh::VertexIterator vi=mesh.vert.begin();vi!=mesh.vert.end();++vi)
     vi->Q() = outlierScore[vi];
+  
 }
 
 void SelectionPluginTEST()
