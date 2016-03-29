@@ -39,7 +39,7 @@
     <div class="container-overview">
     
         
-            <div class="description">MLJ.core.File namespace</div>
+            <div class="description"><p>MLJ.core.File namespace</p></div>
         
 
         
@@ -117,14 +117,14 @@
 
     
 
-    <h4 class="name" id=".this.createCppMeshFile"><span class="type-signature">(static) </span>this.createCppMeshFile<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a>}</span></h4>
+    <h4 class="name" id=".this.createLayer"><span class="type-signature">(static) </span>this.createLayer<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="MLJ.core.Layer.html">MLJ.core.Layer</a>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Creates a new mesh file using the c++ functions bound to JavaScript
+    <p>Creates a new mesh file using the c++ functions bound to JavaScript</p>
 </div>
 
 
@@ -176,7 +176,7 @@
 
             
 
-            <td class="description last">The name of the new mesh file</td>
+            <td class="description last"><p>The name of the new mesh file</p></td>
         </tr>
 
     
@@ -224,7 +224,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line169">line 169</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line563">line 563</a>
     </li></ul></dd>
     
 
@@ -251,7 +251,7 @@
 
         
 <div class="param-desc">
-    The new mesh file
+    <p>The new layer</p>
 </div>
 
 
@@ -262,7 +262,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
     </dd>
@@ -277,14 +277,14 @@
 
     
 
-    <h4 class="name" id=".this.openMeshFile"><span class="type-signature">(static) </span>this.openMeshFile<span class="signature">(file)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".this.openMeshFile"><span class="type-signature">(static) </span>this.openMeshFile<span class="signature">(toOpen)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Opens a mesh file or a list of mesh files
+    <p>Opens a mesh file or a list of mesh files</p>
 </div>
 
 
@@ -320,7 +320,7 @@
 
         <tr>
             
-                <td class="name"><code>file</code></td>
+                <td class="name"><code>toOpen</code></td>
             
 
             <td class="type">
@@ -339,7 +339,7 @@
 
             
 
-            <td class="description last">A single mesh file or a list of mesh files</td>
+            <td class="description last"><p>A single mesh file or a list of mesh files</p></td>
         </tr>
 
     
@@ -387,7 +387,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line195">line 195</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -423,14 +423,15 @@
 
     
 
-    <h4 class="name" id=".this.reloadMeshFileByName"><span class="type-signature">(static) </span>this.reloadMeshFileByName<span class="signature">(name)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".this.reloadMeshFile"><span class="type-signature">(static) </span>this.reloadMeshFile<span class="signature">(mf)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Reloads a mesh file by name
+    <p>Reloads an existing layer, that is recovers the file linked to the layer
+and reinitializes the cppMesh of the layer with it</p>
 </div>
 
 
@@ -466,13 +467,13 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>mf</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -482,7 +483,7 @@
 
             
 
-            <td class="description last">The name of the mesh file needs to be reloaded</td>
+            <td class="description last"><p>the MeshFile to be reloaded</p></td>
         </tr>
 
     
@@ -513,13 +514,6 @@
     
 
     
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
 
     
 
@@ -530,7 +524,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line130">line 130</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line166">line 166</a>
     </li></ul></dd>
     
 
@@ -581,7 +575,7 @@
 
 
 <div class="description">
-    Triggered when a mash file is opened
+    <p>Triggered when a mash file is opened</p>
 </div>
 
 
@@ -638,7 +632,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -648,7 +642,7 @@
 
             
 
-            <td class="description last">The opened mesh file</td>
+            <td class="description last"><p>The opened mesh file</p></td>
         </tr>
 
     
@@ -687,7 +681,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line199">line 199</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line140">line 140</a>
     </li></ul></dd>
     
 
@@ -736,7 +730,7 @@
 
 
 <div class="description">
-    Triggered when a mesh file is reloaded
+    <p>Triggered when a mesh file is reloaded</p>
 </div>
 
 
@@ -793,7 +787,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -803,7 +797,7 @@
 
             
 
-            <td class="description last">The reloaded mesh file</td>
+            <td class="description last"><p>The reloaded mesh file</p></td>
         </tr>
 
     
@@ -842,7 +836,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line141">line 141</a>
+        <a href="core_File.js.html">core/File.js</a>, <a href="core_File.js.html#line176">line 176</a>
     </li></ul></dd>
     
 
@@ -891,13 +885,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></li><li><a href="MLJ.core.plugin.BaseRendering.html">MLJ.core.plugin.BaseRendering</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GlobalRendering.html">MLJ.core.plugin.GlobalRendering</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.component.LayerSelection.html">MLJ.gui.component.LayerSelection</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.LayerSelection.html">MLJ.gui.Param.LayerSelection</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget_.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 29 2016 10:13:48 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

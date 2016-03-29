@@ -39,11 +39,11 @@
     <div class="container-overview">
     
         
-            <div class="description">The MLJ.core.Scene namespace defines the functions to manage the scene, 
+            <div class="description"><p>The MLJ.core.Scene namespace defines the functions to manage the scene, 
 i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
 This namespace also actually stores the set of meshes, the reference to current mesh, 
 the threejs container for the scene, the threejs camera and the threejs renderer 
-(e.g. the webgl context where the scene is rendered).</div>
+(e.g. the webgl context where the scene is rendered).</p></div>
         
 
         
@@ -116,16 +116,89 @@ the threejs container for the scene, the threejs camera and the threejs renderer
 
         
             
+<h4 class="name" id="._decorators"><span class="type-signature">(static) </span>_decorators<span class="type-signature"> :<a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Associative array that contains all the scene level &quot;background&quot; 
+decorators (axes, background grid etc..)</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="._group"><span class="type-signature">(static) </span>_group<span class="type-signature"> :THREE.Object</span></h4>
 
 
 
 
 <div class="description">
-    The ThreeJs group that contains all the layers. 
+    <p>The ThreeJs group that contains all the layers. 
 It also store the global transformation (scale + translation) 
 that brings the global bbox of the scene
-in the origin of the camera reference system.
+in the origin of the camera reference system.</p>
 </div>
 
 
@@ -173,7 +246,7 @@ in the origin of the camera reference system.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line76">line 76</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line92">line 92</a>
     </li></ul></dd>
     
 
@@ -197,7 +270,7 @@ in the origin of the camera reference system.
 
 
 <div class="description">
-    Associative Array that contains all the meshes in the scene
+    <p>Associative Array that contains all the meshes in the scene</p>
 </div>
 
 
@@ -263,14 +336,87 @@ in the origin of the camera reference system.
 
         
             
+<h4 class="name" id="._postProcessPasses"><span class="type-signature">(static) </span>_postProcessPasses<span class="type-signature"> :<a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Associative array that contains all the currently active post process
+rendering passes. For details see MLJ.core.Scene.addPostProcessPass.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="._scene"><span class="type-signature">(static) </span>_scene<span class="type-signature"> :THREE.Scene</span></h4>
 
 
 
 
 <div class="description">
-    It contains the ThreeJs Representation of the current set of layers. 
-Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshFile object.
+    <p>It contains the ThreeJs Representation of the current set of layers. 
+Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshFile object.</p>
 </div>
 
 
@@ -318,7 +464,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line66">line 66</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line82">line 82</a>
     </li></ul></dd>
     
 
@@ -336,13 +482,75 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
         
             
-<h4 class="name" id="._selectedLayer"><span class="type-signature">(static) </span>_selectedLayer<span class="type-signature"> :<a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span></h4>
+<h4 class="name" id="._scene2D"><span class="type-signature">(static) </span>_scene2D<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    Reference to current layer
+    <p>This scene contains 2D overlays that are drawn on top of everything else</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line100">line 100</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._selectedLayer"><span class="type-signature">(static) </span>_selectedLayer<span class="type-signature"> :<a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Reference to current layer</p>
 </div>
 
 
@@ -351,7 +559,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     <ul>
         <li>
             
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
         </li>
@@ -390,7 +598,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line58">line 58</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -417,14 +625,14 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
     
 
-    <h4 class="name" id=".this.addLayer"><span class="type-signature">(static) </span>this.addLayer<span class="signature">(meshFile)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".this.addLayer"><span class="type-signature">(static) </span>this.addLayer<span class="signature">(layer)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Adds a new layer in the scene
+    <p>Adds a new layer in the scene</p>
 </div>
 
 
@@ -460,13 +668,13 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>layer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -476,7 +684,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
             
 
-            <td class="description last">The mesh file to add</td>
+            <td class="description last"><p>The mesh file to add</p></td>
         </tr>
 
     
@@ -524,7 +732,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line294">line 294</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line389">line 389</a>
     </li></ul></dd>
     
 
@@ -555,14 +763,25 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
     
 
-    <h4 class="name" id=".this.getLayerByName"><span class="type-signature">(static) </span>this.getLayerByName<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a>}</span></h4>
+    <h4 class="name" id=".this.addPostProcessPass"><span class="type-signature">(static) </span>this.addPostProcessPass<span class="signature">(name, pass)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Returns the layer corresponding to the given name
+    <p>Adds a post process pass to the rendering chain. As of now the interface
+to post process effects is minimal: an effect is simply a callable object
+that must accept two render buffers as parameters. The first buffer 
+contains the color generated by the rendering chain of MeshLabJS up to
+the effect invocation, (this includes the basic scene rendering plus the
+result of any post process effect that was applied before the current
+one). The second buffer must be used as the render target of the pass,
+will be forwarded as input to the next effect, or will be transfered to
+the canvas if no other effects are active. Both buffers have the same
+size as the page canvas. Any other information that may be needed by an
+effect must be passed with closure variables or queried directly to
+<a href="MLJ.core.Scene.html">MLJ.core.Scene</a>.</p>
 </div>
 
 
@@ -614,7 +833,318 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
             
 
-            <td class="description last">The name of the layer</td>
+            <td class="description last"><p>The name of the pass</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callable (function) object that will apply the pass</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line684">line 684</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.addSceneDecorator"><span class="type-signature">(static) </span>this.addSceneDecorator<span class="signature">(name, decorator)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a scene decorator. A scene decorator differs fron an overlay layer in
+that it's not tied to a particular layer, but to the scene as a whole (for
+example an axes descriptor that highlights the direction of the x, y, and z
+coordinates).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the decorator</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>decorator</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">THREE.Object3D</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The decorator object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line608">line 608</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.getLayerByName"><span class="type-signature">(static) </span>this.getLayerByName<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="MLJ.core.Layer.html">MLJ.core.Layer</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Returns the layer corresponding to the given name</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the layer</p></td>
         </tr>
 
     
@@ -662,7 +1192,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line417">line 417</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line523">line 523</a>
     </li></ul></dd>
     
 
@@ -689,7 +1219,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
         
 <div class="param-desc">
-    The layer corresponding to the given name
+    <p>The layer corresponding to the given name</p>
 </div>
 
 
@@ -700,7 +1230,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     </dt>
     <dd>
         
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
     </dd>
@@ -722,7 +1252,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
 
 <div class="description">
-    Returns the layers list
+    <p>Returns the layers list</p>
 </div>
 
 
@@ -773,7 +1303,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line473">line 473</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line657">line 657</a>
     </li></ul></dd>
     
 
@@ -800,7 +1330,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
         
 <div class="param-desc">
-    The layers list
+    <p>The layers list</p>
 </div>
 
 
@@ -826,14 +1356,14 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
     
 
-    <h4 class="name" id=".this.getSelectedLayer"><span class="type-signature">(static) </span>this.getSelectedLayer<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a>}</span></h4>
+    <h4 class="name" id=".this.getSelectedLayer"><span class="type-signature">(static) </span>this.getSelectedLayer<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="MLJ.core.Layer.html">MLJ.core.Layer</a>}</span></h4>
 
     
 
 
 
 <div class="description">
-    Returns the currently selected layer
+    <p>Returns the currently selected layer</p>
 </div>
 
 
@@ -884,7 +1414,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line463">line 463</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line647">line 647</a>
     </li></ul></dd>
     
 
@@ -911,7 +1441,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
         
 <div class="param-desc">
-    The currently selected layer
+    <p>The currently selected layer</p>
 </div>
 
 
@@ -922,7 +1452,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     </dt>
     <dd>
         
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
     </dd>
@@ -944,7 +1474,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
 
 <div class="description">
-    Removes the layer corresponding to the given name
+    <p>Removes the layer corresponding to the given name</p>
 </div>
 
 
@@ -996,7 +1526,7 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
             
 
-            <td class="description last">The name of the layer which must be removed</td>
+            <td class="description last"><p>The name of the layer which must be removed</p></td>
         </tr>
 
     
@@ -1044,7 +1574,269 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line428">line 428</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line575">line 575</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.removePostProcessPass"><span class="type-signature">(static) </span>this.removePostProcessPass<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Removes a post process effect from the rendering chain.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the pass to remove</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line697">line 697</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.removeSceneDecorator"><span class="type-signature">(static) </span>this.removeSceneDecorator<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Removes a decorator object from the scene.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the decorator to remove</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line625">line 625</a>
     </li></ul></dd>
     
 
@@ -1082,7 +1874,12 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
 
 <div class="description">
-    Renders the scene
+    <p>Renders the scene. If there are no post process effects enabled, the 
+THREE.js scene that contains all the scene decorators and the overlay
+layers is rendered straight to the canvas. Otherwise, the basic scene is 
+rendered to an off screen render target, and post process effects are
+applied one after the other (according to the user's activation order)
+before displaying the result.</p>
 </div>
 
 
@@ -1091,6 +1888,438 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
 
 
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line750">line 750</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.selectLayerByName"><span class="type-signature">(static) </span>this.selectLayerByName<span class="signature">(layerName)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Selects the layer with the name <code>layerName</code></p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layerName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the layer</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line338">line 338</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.setLayerVisible"><span class="type-signature">(static) </span>this.setLayerVisible<span class="signature">(layerName, visible)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the visibility of layer with the name <code>layerName</code></p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layerName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the layer</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>visible</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p><code>true</code> if the layers must be visible,
+<code>false</code> otherwise</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Stefano Gabriele</li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line364">line 364</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".this.updateLayer"><span class="type-signature">(static) </span>this.updateLayer<span class="signature">(layer)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Updates a layer. This function should be called if the <code>layer</code>
+geometry or properties was modified.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The mesh file corresponding to the level</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -1158,451 +2387,12 @@ Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshF
 
 
 
-
-        
-            
-
-    
-
-    <h4 class="name" id=".this.selectLayerByName"><span class="type-signature">(static) </span>this.selectLayerByName<span class="signature">(layerName)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Selects the layer with the name <code>layerName</code>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>layerName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The name of the layer</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line249">line 249</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".this.setLayerVisible"><span class="type-signature">(static) </span>this.setLayerVisible<span class="signature">(layerName, visible)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Sets the visibility of layer with the name <code>layerName</code>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>layerName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The name of the layer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>visible</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><code>true</code> if the layers must be visible,
-<code>false</code> otherwise</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line275">line 275</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".this.updateLayer"><span class="type-signature">(static) </span>this.updateLayer<span class="signature">(meshFile)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Updates a layer. This function should be called if the <code>meshFile</code>
-geometry or properties was modified.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>meshFile</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The mesh file corresponding to the level</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-author">Author:</dt>
-    <dd class="tag-author">
-        <ul>
-            <li>Stefano Gabriele</li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line377">line 377</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <h5>Example</h5>
     
     <pre class="prettyprint"><code>//Apply Laplacian smooth filter
-Module.LaplacianSmooth(meshFile.ptrMesh, 1, false);
+Module.LaplacianSmooth(layer.ptrMesh, 1, false);
 //The filter has changed mesh geometry ...
-scene.updateLayer(meshFile);</code></pre>
+scene.updateLayer(layer);</code></pre>
 
 
 
@@ -1626,7 +2416,7 @@ scene.updateLayer(meshFile);</code></pre>
 
 
 <div class="description">
-    Triggered when a layer is added
+    <p>Triggered when a layer is added</p>
 </div>
 
 
@@ -1677,13 +2467,13 @@ scene.updateLayer(meshFile);</code></pre>
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>layer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -1693,7 +2483,7 @@ scene.updateLayer(meshFile);</code></pre>
 
             
 
-            <td class="description last">The last mesh file added</td>
+            <td class="description last"><p>The last mesh file added</p></td>
         </tr>
 
     
@@ -1716,7 +2506,7 @@ scene.updateLayer(meshFile);</code></pre>
 
             
 
-            <td class="description last">The number of layers in the scene</td>
+            <td class="description last"><p>The number of layers in the scene</p></td>
         </tr>
 
     
@@ -1755,7 +2545,7 @@ scene.updateLayer(meshFile);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line310">line 310</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line405">line 405</a>
     </li></ul></dd>
     
 
@@ -1785,7 +2575,7 @@ scene.updateLayer(meshFile);</code></pre>
         <p class="code-caption">Event Interception:</p>
     
     <pre class="prettyprint"><code> $(document).on("SceneLayerAdded",
-     function (event, meshFile, layersNumber) {
+     function (event, layer, layersNumber) {
          //do something
      }
  );</code></pre>
@@ -1804,7 +2594,7 @@ scene.updateLayer(meshFile);</code></pre>
 
 
 <div class="description">
-    Triggered when a layer is reloaded
+    <p>Triggered when a layer is reloaded</p>
 </div>
 
 
@@ -1855,13 +2645,13 @@ scene.updateLayer(meshFile);</code></pre>
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>layer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -1871,7 +2661,7 @@ scene.updateLayer(meshFile);</code></pre>
 
             
 
-            <td class="description last">The reloaded mesh file</td>
+            <td class="description last"><p>The reloaded mesh file</p></td>
         </tr>
 
     
@@ -1910,7 +2700,7 @@ scene.updateLayer(meshFile);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line196">line 196</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line262">line 262</a>
     </li></ul></dd>
     
 
@@ -1940,7 +2730,7 @@ scene.updateLayer(meshFile);</code></pre>
         <p class="code-caption">Event Interception:</p>
     
     <pre class="prettyprint"><code> $(document).on("SceneLayerReloaded",
-     function (event, meshFile) {
+     function (event, layer) {
          //do something
      }
  );</code></pre>
@@ -1959,7 +2749,7 @@ scene.updateLayer(meshFile);</code></pre>
 
 
 <div class="description">
-    Triggered when a layer is selected
+    <p>Triggered when a layer is selected</p>
 </div>
 
 
@@ -2010,13 +2800,13 @@ scene.updateLayer(meshFile);</code></pre>
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>layer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -2026,7 +2816,7 @@ scene.updateLayer(meshFile);</code></pre>
 
             
 
-            <td class="description last">The selected mesh file</td>
+            <td class="description last"><p>The selected mesh file</p></td>
         </tr>
 
     
@@ -2065,7 +2855,7 @@ scene.updateLayer(meshFile);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line251">line 251</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line340">line 340</a>
     </li></ul></dd>
     
 
@@ -2095,7 +2885,7 @@ scene.updateLayer(meshFile);</code></pre>
         <p class="code-caption">Event Interception:</p>
     
     <pre class="prettyprint"><code> $(document).on("SceneLayerSelected",
-     function (event, meshFile) {
+     function (event, layer) {
          //do something
      }
  );</code></pre>
@@ -2114,7 +2904,7 @@ scene.updateLayer(meshFile);</code></pre>
 
 
 <div class="description">
-    Triggered when a layer is updated
+    <p>Triggered when a layer is updated</p>
 </div>
 
 
@@ -2165,13 +2955,13 @@ scene.updateLayer(meshFile);</code></pre>
 
         <tr>
             
-                <td class="name"><code>meshFile</code></td>
+                <td class="name"><code>layer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></span>
+<span class="param-type"><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></span>
 
 
             
@@ -2181,7 +2971,7 @@ scene.updateLayer(meshFile);</code></pre>
 
             
 
-            <td class="description last">The updated mesh file</td>
+            <td class="description last"><p>The updated mesh file</p></td>
         </tr>
 
     
@@ -2220,7 +3010,7 @@ scene.updateLayer(meshFile);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line390">line 390</a>
+        <a href="core_Scene.js.html">core/Scene.js</a>, <a href="core_Scene.js.html#line496">line 496</a>
     </li></ul></dd>
     
 
@@ -2250,7 +3040,7 @@ scene.updateLayer(meshFile);</code></pre>
         <p class="code-caption">Event Interception:</p>
     
     <pre class="prettyprint"><code> $(document).on("SceneLayerUpdated",
-     function (event, meshFile) {
+     function (event, layer) {
          //do something
      }
  );</code></pre>
@@ -2269,13 +3059,13 @@ scene.updateLayer(meshFile);</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></li><li><a href="MLJ.core.plugin.BaseRendering.html">MLJ.core.plugin.BaseRendering</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GlobalRendering.html">MLJ.core.plugin.GlobalRendering</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.component.LayerSelection.html">MLJ.gui.component.LayerSelection</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.LayerSelection.html">MLJ.gui.Param.LayerSelection</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget_.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 29 2016 10:13:48 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -55,37 +55,26 @@
  */
 
 MLJ.core.plugin.Rendering = function (parameters, defaults) {
-    MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
-
-    //if is defined parameters.loadShader, this.shaders is an associative array
-    //mapping the shader name with its code
-    this.shaders = null;
+    var renderingClass = "mlj_rendering_overlay";
+    MLJ.core.plugin.BaseRendering.call(this, parameters, renderingClass);
 
     var _this = this;
+    
     MLJ.core.setDefaults(_this.getName(), defaults);
 
-    var pane = new MLJ.gui.component.Pane();
-    var UID = MLJ.gui.generateUID();
-    pane.$.css("position", "absolute").attr("id", UID);
-    pane.$.hide();
-
-    var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
-    var tbBuilder = new MLJ.core.plugin.RenderingBarBuilder(
-            MLJ.widget.TabbedPane.getRendToolBar());
-    var renderingPane = MLJ.widget.TabbedPane.getRenderingPane();
-
-    var btn = tbBuilder.Button(parameters);
-
-    var group = MLJ.gui.makeGroup("rendButtons");
-    if (btn instanceof MLJ.gui.component.CustomToggleButton) {
-        group.addItem(btn);
-        MLJ.gui.disabledOnSceneEmpty(btn);
-    }
+    var btn = this.getButton();
+    MLJ.gui.disabledOnSceneEmpty(btn);
 
     if (parameters.toggle === true) {
-
+        
         //Click on button
-        btn.onToggle(function (on, event) {            
+        btn.onToggle(function (on, event) {
+            
+            if (on) {
+                //show the options pane
+                _this._showOptionsPane();                
+            }
+            
             //Apply rendering pass to all mesh
             if (event.ctrlKey === true) {                
                 var passName = parameters.name;
@@ -98,10 +87,18 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 //apply rendering pass with 'selParams' to all layers
                 while (ptr.hasNext()) {
                     layer = ptr.next();    
-                    if (layer.getThreeMesh().visible) {                        
-                        layer.overlaysParams.set(passName,selParams);
+                    if (layer.getThreeMesh().visible) {
+                        var lParams = layer.overlaysParams.getByKey(passName);
+                        for (var opName in selParams) { // each layer gets it's own copy
+                            lParams[opName] = selParams[opName];
+                        }
+                        // Watch out for undefined 'properties' values (overlays that were never activated)
+                        if (on !== (layer.properties.getByKey(passName)===true)) { // simply toggle the pass
+                            _this._applyTo(layer, on);
+                        } else { // if pass is active reapply with changed parameters, otherwise switch it off
+                            on ? reapply(on, layer) : _this._applyTo(layer, on);
+                        }
                         layer.properties.set(passName, on);
-                        _this._applyTo(layer, on);                        
                     }
                 }
                 
@@ -111,44 +108,46 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                     _this._applyTo(selected, on);
                     selected.properties.set(parameters.name, on);
                 }
-            }
+            }                        
         });
 
         //Clicked with mouse right button
-        btn.onRightButtonClicked(function () {
-            btn.toggle("off", true);
-            var items = group.getItems();
-            var item;
-
-            for (var key in items) {
-                item = items[key];
-                if (item !== btn) {
-                    item.toggle("on", true);
+        btn.onRightButtonClicked(function (event) {
+            if (!btn.isOn()) {
+                btn.toggle("on", event);
+            }
+            var items = MLJ.gui.group[renderingClass].getItems();
+            for (var i = 0; i &lt; items.length; ++i) {
+                if (items[i].isOn() &amp;&amp; items[i] !== btn) {
+                    items[i].toggle("off", event);
                 }
             }
         });
 
-        //Click on arrow
-        btn.onArrowClicked(function () {
-            renderingPane.children().each(function (key, val) {
-                if ($(val).attr("id") === UID) {
-                    $(val).fadeIn();
-                } else {
-                    $(val).fadeOut();
-                }
-            });
-
-        });             
+        $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
+            if (layer.properties.getByKey(parameters.name) === true) {
+                layer.properties.set(parameters.name, false);
+                _this._applyTo(layer, false); // Remove the pass
+            }
+        });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
-                    //Check if the renderinfg fetaure is on by default
-                    if (btn.isOn() === parameters.on) {
+                    if (event.type === "SceneLayerReloaded") {
+                        if (meshFile.properties.getByKey(parameters.name) === true) {
+                            _this._applyTo(meshFile, false);
+                        }
+                    }
+                    //Check if the rendering feature is enabled
+                    if (!(meshFile.properties.getByKey(parameters.name) === false) &amp;&amp; 
+                            (parameters.on || meshFile.properties.getByKey(parameters.name) === true) ) {
+                        btn.toggle("on");
                         _this._applyTo(meshFile, btn.isOn());
                         meshFile.properties.set(parameters.name, btn.isOn());
                         update();
                     } else {
                         btn.toggle("off");
+                        if (btn.isArrowSelected()) update();
                     }
                     
                     //if the rendering pass need to be updated when a 
@@ -158,43 +157,48 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         var layer, isOn;
                         while (ptr.hasNext()) {
                             layer = ptr.next();
-                            isOn = layer.properties.getByKey(parameters.name);
-                            reapplay(isOn,layer);                            
+                            isOn = layer.properties.getByKey(parameters.name) === true;
+                            reapply(isOn,layer);                            
                         }
                     }
 
                 });
 
-        $(document).on("SceneLayerUpdated",
-                function (event, meshFile) {
-                    reapplay(btn.isOn(),meshFile);                    
+        $(document).on("SceneLayerUpdated", function (event, layer) {
+            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
+        });
+        
+        if (parameters.applyOnEvent !== undefined) {
+            $(window).ready(function() {
+                $($('canvas')[0]).on(parameters.applyOnEvent, function() {
+                    var it = MLJ.core.Scene.getLayers().iterator();
+                    while (it.hasNext()) {
+                        var layer = it.next();
+                        if (layer.properties.getByKey(parameters.name) === true) {
+                            reapply(true, layer);
+                        }
+                    }
                 });
-
+            });
+        }
+        
     } else {
         btn.onClick(function () {
-
-            renderingPane.children().each(function (key, val) {
-                if ($(val).attr("id") === UID) {
-                    $(val).fadeIn();
-                } else {
-                    $(val).fadeOut();
-                }
-            });
+            _this._showOptionsPane();
         });
         
         $(document).on("SceneLayerAdded SceneLayerReloaded",
-                function (event, meshFile, layersNumber) {
-                    _this._applyTo(meshFile, true);
-                    update();
-                });
-
+            function (event, meshFile, layersNumber) {
+                _this._applyTo(meshFile, true);
+                update();
+            });            
     }
 
-    $(document).on("SceneLayerSelected", function (event, meshFile) {
+    $(document).on("SceneLayerSelected", function (event, layer) {
         update();
 
         if (parameters.toggle === true) {
-            var val = meshFile.properties.getByKey(parameters.name);
+            var val = layer.properties.getByKey(parameters.name);
             if (val === true) {
                 btn.toggle("on");
             } else {
@@ -215,36 +219,42 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
         var params = selected.overlaysParams.getByKey(_this.getName());
-        var param;
-        for (var key in params) {
-            param = guiBuilder.params.getByKey(key);
-            if (param !== undefined) {
-                param._changeValue(params[key]);
+        var paramWidget;
+        for (var pname in params) {
+            paramWidget = _this.getParam(pname);
+            if (paramWidget !== undefined) {
+                paramWidget._changeValue(params[pname]);
             }
         }
     }
 
-    function reapplay(applay, meshFile) {
-        if (applay) {
+    function reapply(apply, meshFile) {
+        if (apply) {
             _this._applyTo(meshFile, false);
             _this._applyTo(meshFile, true);
         }
     }
 
-    guiBuilder.setOnParamChange(function (paramProp, value) {
-        var meshFile = MLJ.core.Scene.getSelectedLayer();
-        var params = meshFile.overlaysParams.getByKey(_this.getName());
+    this._setOnParamChange(function (paramProp, value) {
+        var layer = MLJ.core.Scene.getSelectedLayer();
+        var params = layer.overlaysParams.getByKey(_this.getName());
+
+        // update parameter
         params[paramProp] = value;
               
         if (parameters.global === true) {
-            var iter = meshFile.overlays.iterator();
+            var iter = layer.overlays.iterator();
             var overlay;
-            //Update the global paramter for all overlay layers
+            //Update the global parameter for all overlay layers
             while (iter.hasNext()) {
                 overlay = iter.next();
-                //check if overlay has this uniform defined
-                if (overlay.material.uniforms[paramProp] !== undefined) {
+                // check if overlay has the property defined as a uniform
+                if (overlay.material &amp;&amp; overlay.material.uniforms[paramProp]) {
                     overlay.material.uniforms[paramProp].value = value;
+                }
+                // also check if the property is a callable object
+                if (jQuery.isFunction(paramProp)) {
+                    paramProp(value, overlay, layer);
                 }
             }
 
@@ -252,7 +262,11 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             return;
         }
 
-        var overlay = meshFile.overlays.getByKey(_this.getName());
+        var overlay = layer.overlays.getByKey(_this.getName());
+
+        if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
+            paramProp(value, overlay);
+        }
 
         //if overlay undefined just return
         if (overlay === undefined) {
@@ -260,48 +274,15 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         }
         
         //is 'bindTo' property a uniform?
-        if (overlay.material.uniforms !== undefined 
-                &amp;&amp; overlay.material.uniforms[paramProp] !== undefined) {
+        if (overlay.material &amp;&amp; overlay.material.uniforms &amp;&amp; overlay.material.uniforms[paramProp]) {
             overlay.material.uniforms[paramProp].value = value;
-            MLJ.core.Scene.render();
-            return;
-        }
-        
-        //is 'bindTo' property a function?
-        if(jQuery.isFunction(paramProp)) {
-            paramProp(value, overlay);
         }
 
+        MLJ.core.Scene.render();
     });
-
-    this._main = function () {
-        //if loadShader property is setted, load shader files
-        if (parameters.loadShader !== undefined) {
-
-            //Prevent that the rendering pass will be applied if the shader
-            //files are not completely loaded
-            btn.$.hide();
-
-            var pathBase = "./js/mlj/plugins/rendering/shaders/";
-            //Set shader files path
-            for (var i = 0, m = parameters.loadShader.length; i &lt; m; i++) {
-                parameters.loadShader[i] = pathBase + parameters.loadShader[i];
-            }
-
-            MLJ.util.loadFile(parameters.loadShader, function (results) {
-                //Shader loaded
-                _this.shaders = results;
-                //Show button
-                btn.$.show();
-            });
-        }
-        _this._init(guiBuilder);
-        renderingPane.append(pane.$);
-    };
-
 };
 
-MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
+MLJ.extend(MLJ.core.plugin.BaseRendering, MLJ.core.plugin.Rendering);
 </code></pre>
         </article>
     </section>
@@ -312,13 +293,13 @@ MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></li><li><a href="MLJ.core.plugin.BaseRendering.html">MLJ.core.plugin.BaseRendering</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GlobalRendering.html">MLJ.core.plugin.GlobalRendering</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.component.LayerSelection.html">MLJ.gui.component.LayerSelection</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.LayerSelection.html">MLJ.gui.Param.LayerSelection</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget_.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 29 2016 10:13:48 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -43,66 +43,95 @@
 
 
     <section>
-        <article><h1>MeshLabJS Code Documentation</h1><h2>Basic Concepts</h2><h2>Filters</h2><p>MeshLabJS works on a flat set of meshes, called layers. 
-Filters are simple functional processing pieces that works on the current meshes and, according to the parameters perform some mesh processing task. 
-Filters structure is quite rigid. There are three kind of filters according to the number of meshes that they can take in input: </p>
+        <article><h1>MeshLabJS Code Documentation</h1><h2>Basic Concepts</h2><h2>Filters</h2><p>MeshLabJS works on a flat set of meshes, called layers.
+Filters are simple functional processing pieces that works on the current meshes and, according to the parameters perform some mesh processing task.
+Filters structure is quite rigid. There are three kinds of filters according to the number of meshes that they can take in input:</p>
 <ul>
 <li>0 - Creation filters</li>
-<li>1 - Single mesh filters (they can be applied to all the layers togheter</li>
+<li>1 - Single mesh filters (they can be applied to all the layers together</li>
 <li>n&gt;1 - Filters that take in input two or more meshes and perform something else (like transferring information, computing distances etc.)</li>
 </ul>
-<p>Filters parameters are standardized and there are only a few possible types of input. Each type correspond to a widget defined in MLJ.gui.MLWidget This is a requirement for building up uniform interfaces. </p>
+<p>Filters parameters are standardized and there are only a few possible types of input. 
+Each type correspond to a widget defined in MLJ.gui.MLWidget.
+This is a requirement for building up uniform interfaces.</p>
 <ul>
 <li>Integer</li>
-<li>Float </li>
+<li>Float</li>
 <li>Color MLJ.gui.MLWidget.Color</li>
+<li>Layer</li>
 </ul>
-<h2>Rendering Passes</h2><p>Rendering is organized in <em>passes</em>. Code for the pass is independent and isolated (as plugins).<br>Each pass can be switched on/off independently per layer and the pass parameters are independent per layer. 
-The tab is organized as a list of icons. The first two icons are different and global (see below). 
-For each pass there is an icon with a small triangle below. 
+<p>The filters have the following strict requirements:</p>
+<ul>
+<li>You can assume that the vcg mesh is compact and you have to leave it so.</li>
+<li>You can assume that the bounding box is computed and you have to leave it so.</li>
+<li>You can assume that in triangular meshes normals per vertex and per face are computed and they are normalized.</li>
+</ul>
+<h2>Rendering Passes</h2><p>Rendering is organized in <em>passes</em>. Code for the pass is independent and isolated (as plugins).<br>Each pass can be switched on/off independently per layer and the pass parameters are independent per layer.
+The tab is organized as a list of icons. The first two icons are different and global (see below).
+For each pass there is an icon with a small triangle below.
 Behaviour:</p>
 <ul>
-<li>Click on icon -&gt; on/off rendering pass for the current layer. When a pass is off, nothing is done for that pass, the rendering callback for that layer is skipped (so if all the passes are off nothing is rendered) </li>
-<li>‘Control’ modifier means “apply to all layers”. This means also that the current pass parameters are applied to all the layers. </li>
-<li>Right Click on icon-&gt; on of the pass e off all the other ones. </li>
+<li>Click on icon -&gt; on/off rendering pass for the current layer. When a pass is off, nothing is done for that pass, the rendering callback for that layer is skipped (so if all the passes are off nothing is rendered)</li>
+<li>‘Control’ modifier means “apply to all layers”. This means also that the current pass parameters are applied to all the layers.</li>
+<li>Right Click on icon-&gt; on of the pass e off all the other ones.</li>
 <li>Click on triangle -&gt; show parameters (for current layer)
 change of the current layer means that the displayed status of the icons and of the parameters has to be updated accordingly.</li>
 </ul>
 <h2>Code Structure</h2><p>The main namespace is MLJ.core and the two main elements are the <a href="MLJ.core.Scene.html">MLJ.core.Scene</a>
  namespace that holds the whole document concept of the system, e.g. the set of meshes on which
- you work, and the <a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a> class that actually holds each one of the mesh.</p>
-<p>Two part of MeshLabJs are designed for extendability, <em>filters</em> and <em>rendering passes</em>.</p>
+ you work, and the <a href="MLJ.core.Layer.html">MLJ.core.Layer</a> class that actually holds each one of the mesh.</p>
+<p>Two part of MeshLabJs are designed for extendibility, <em>filters</em> and <em>rendering passes</em>.</p>
 <h2>Interface</h2><p>The system at startup builds the whole interface as follows...</p>
-<h2>Development Environment</h2><h2>Development Environment</h2><p>MeshLabJS is written in C++ and JavaScript. All the code in C++ is compiled to Javascript with emscripten compiler.<br>It also use various libraries:</p>
+<h2>Development Environment</h2><p>MeshLabJS is written in C++ and JavaScript. All the code in C++ is compiled to Javascript with emscripten compiler.
+It also use various libraries:</p>
 <ul>
-<li>VCG: a open source portable C++ templated library for manipulation, processing and displaying with OpenGL of triangle and tetrahedral meshes.</li>
-<li>Thress.js: a library for a simpler use of WebGL. Used for the rendering part.</li>
-<li>jQuery: the famous JavaScript library.</li>
+<li><a href="http://vcg.isti.cnr.it/vcglib/"><strong>VCG Library</strong></a>: a open source portable C++ templated library for manipulation, processing and displaying with OpenGL of triangle and tetrahedral meshes.</li>
+<li><a href="http://threejs.org/"><strong>Threes.js</strong></a>: a library for a simpler use of WebGL. Used for the rendering part.</li>
+<li><a href="https://jquery.com/"><strong>jQuery</strong></a>: the famous JavaScript library.</li>
 </ul>
-<h3>Build instructions</h3><p>For both Windows and Linux, you need to:</p>
-<ul>
-<li>download and install <a href="https://kripken.github.io/emscripten-site/"><strong>Emscripten</strong></a></li>
-<li>download <a href="http://vcg.isti.cnr.it/vcglib/"><strong>VCG</strong></a></li>
-<li>download a generic webserver (<strong>xammp</strong>, <strong>lamp</strong>)</li>
-<li>clone the repository of <em>MeshLabJS</em> to the webserver public directory</li>
-<li>create a folder named <em>generated</em> in <em>MeshLabJS/js/</em>. In this folder will be copied the compiled files.</li>
-<li>open <em>MeshLabJs/source/</em></li>
-</ul>
+<h3>Build Instructions</h3><p>For both Windows and Linux, you need to:  </p>
+<ol>
+<li>Download and install <a href="https://kripken.github.io/emscripten-site/"><strong>Emscripten</strong></a>.  </li>
+<li>Download and install a generic webserver (<strong>xammp</strong>, <strong>lamp</strong>), necessary for cross origin requests used in the code.  </li>
+<li>Download <a href="http://vcg.isti.cnr.it/vcglib/install.html"><strong>VCG Library</strong></a> in the webserver public folder.  </li>
+<li>Clone the repository of <em>MeshLabJS</em> in the same folder of <em>vcglib</em>.  </li>
+</ol>
+<p>After those passages the folder structure should be:</p>
+<pre class="prettyprint source"><code>htdocs_or_www_webserver_folder  
+|-- MeshLabJS  
+|   |-- css
+|   |-- doc
+|   |-- img
+|   |-- js
+|   |-- mesh
+|   |-- sources
+|   |   |-- build.bat
+|   |   `-- MakeFileJS
+|   |-- test
+|   |-- index.html
+|   |-- LICENSE
+|   `-- README.md
+|-- vcglib
+    |-- apps
+    |-- docs
+    |-- eigenlib
+    |-- img
+    |-- vcg
+    `-- wrap</code></pre><p>Note: not all file are listed above.</p>
 <h5>Windows</h5><ul>
-<li>edit <em>build.bat</em>  according to your <em>vcglib</em> path</li>
-<li>launch <em>build.bat</em> </li>
+<li>open <em>MeshLabJS/sources/</em> and launch <em>build.bat</em></li>
 </ul>
 <h5>Linux</h5><ul>
-<li>edit <em>MakeFileJS</em> according to your <em>vcglib</em> path</li>
-<li>execute the following commands:<blockquote>
+<li>open a terminal in <em>MeshLabJS/sources/</em></li>
+<li>execute the following commands:  <blockquote>
 <p>make -f MakefileJS clean<br>make -f MakefileJS<br>make -f MakefileJS install</p>
 </blockquote>
 </li>
 </ul>
-<h5>Using</h5><ul>
-<li>launch the webserver and open the public folder with any javascript-capable browser</li>
-</ul>
-<h2>Javascript &amp; C++ Interaction</h2><p>All the mesh processing tasks are performed in C++ compiled to asm.js using emscripten.<br>In the C++ functions is necessary to specify a emscripten bindings for the functions to be exported:</p>
+<h5>Using</h5><p>Launch a local webserver serving the pages from the root of the git repo and open the <em>MeshLabJS</em> folder (usually <em>http://localhost/MeshLabJS/</em>) with your web browser.</p>
+<h3>Documentation</h3><p>For building the code documentation see <em>MeshLabJS/doc/readme.md</em> file.</p>
+<h2>Javascript &amp; C++ Interaction</h2><p>All the mesh processing tasks are performed in C++ compiled to asm.js using emscripten.
+In the C++ functions is necessary to specify a emscripten bindings for the functions to be exported:</p>
 <pre class="prettyprint source lang-cpp"><code>#ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
@@ -110,9 +139,27 @@ EMSCRIPTEN_BINDINGS(MLCreatePlugin) {
     ...
     emscripten::function(&quot;FunctionNName&quot;, &FunctionNPointer);
 }
-#endif</code></pre><p>After that, with the object <em>Module</em> (a global JavaScript object with attributes that Emscripten-generated code calls at various points in its execution) is possible to call the function:
-```javascript
-Module.Function1Name(parameter_1, ...., parameter_n);</p></article>
+#endif</code></pre><p>After that, with the object <em>Module</em> (a global JavaScript object with attributes that Emscripten-generated code calls at various points in its execution) is possible to call the function:</p>
+<pre class="prettyprint source lang-javascript"><code>Module.Function1Name(parameter_1, ...., parameter_n);</code></pre><h2>Scene Rendering in MeshLabJS</h2><p>A scene in MeshLabJS is composed by a set of meshes (called layers) loaded from files or generated through filter tools and rendered using modes such as filled, wireframe or point, eventually enhanced with the visualization of face/vertex normals,  selected vertices/faces, etc. and with some effects as radiance scaling and screen space ambient occlusion.</p>
+<p>Internally MeshLabJS represents mesh entities as layers objects, rendering modes/enhancements as overlaying 3js mesh objects and special effects through objects that force the render system to use deferred rendering like techniques.</p>
+<h6>Layers, overlays and rendering plugins</h6><p>A <a href="MLJ.core.Layer.html">MLJ.core.Layer</a> object represents a single loaded or computed mesh. It is based on a cppMesh object which stores the actual mesh representation and offers access to vcg library functions compiled in asm.js for querying information about the mesh: 
+vertices, indices to vertices, normals, colors are extracted to fill some <a href="http://threejs.org/docs/#Reference/Core/BufferAttribute">3js BufferAttribute</a> objects and to build then a <a href="http://threejs.org/docs/#Reference/Core/BufferGeometry">3js BufferGeometry</a> and from this a <a href="http://threejs.org/docs/#Reference/Objects/Mesh">3js Mesh</a> object. This 3js object is also used as group contained and will store temporary transformations. The mesh of a layer can be visualized only through the activation of one or more rendering modes (filled, wired etc). Each rendering mode and other enhancements (show selected vertices/faces, normals etc) is handled by a separate rendering plugin which creates a new <a href="http://threejs.org/docs/#Reference/Objects/Mesh">3js Mesh</a> every time it's activated. This 3js mesh is attached as son of the layer 3js mesh. Each overlay 3js node  uses a <a href="http://threejs.org/docs/#Reference/Core/BufferGeometry">BufferGeometry</a> which is either the original BufferGeometry of the layer (parent) or a newly created one (to represent for example a subset of the whole geometry or a new geometry as the lines that represent normals) and to a new <a href="http://threejs.org/docs/#Reference/Materials/Material">3js Material</a> created using plugin-specific shaders and values for shader uniforms/parameters taken from the current settings displayed by the widgets on the left, in the rendering tab of the gui.
+Each layer maintains a collection overlays parameters corresponding to each option that can be changed from the gui widgets.
+Since those widgets can be used to visualize the settings for different layers in different times, in MeshLabJS there is a notion of current selected layer from which the current settings can be read and visualized.
+Another type of rendering plugin is the one used to activate effects which require post processings on the scene. At each activation, an object which encapsulates a post processing logic is created, saved and used in rendering.</p>
+<h6>How to add a new rendering plugin</h6><p>Current rendering plugins all share a common structure. To extend MeshLabJS framework with new plugins we can proceed using that structure. 
+If we define a new plugin in newPlugin.js in js/mlj/plugins/rendering folder, we add this in head element in index.html:</p>
+<pre class="prettyprint source"><code>&lt;script src=&quot;js/mlj/plugins/rendering/newPlugin.js&quot;>&lt;/script>.</code></pre><p>We proceed creating a JavaScript IIFE:</p>
+<pre class="prettyprint source lang-javascript"><code>(function (plugin, core, scene) {
+    // we put our new plugin definition here:
+        // plugin object creation
+        // data (for plugin logic, parameters, materials etc)
+        // definition of _init and _applyTo
+        // installation within the framework
+})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);</code></pre><p>To create a new plugin, we create a new object representing a plugin in the framework and then we define two functions, _init and _applyTo as its methods. The first, _init, executes at framework startup, and  usually instantiates widgets to permit the users to change plugin's associated parameters and defines callbacks to be invoked at each parameter change. The second, _applyTo, executes every time the user activates/deactivates the plugin for the current layer. In case of a new rendering mode for example, in _applyTo usually we define a new <a href="http://threejs.org/docs/#Reference/Objects/Mesh">3js Mesh</a> from a <a href="http://threejs.org/docs/#Reference/Core/BufferGeometry">BufferGeometry</a> and a <a href="http://threejs.org/docs/#Reference/Materials/Material">3js Material</a>. Then we add the new mesh as a new overlay of the current layer. In case of a new post process effect, we add a function which implements the effect as a new post processing pass. Finally we install the plugin inside the framework.</p>
+<h6>Scene Graph</h6><p>The <a href="MLJ.core.Scene.html">MLJ.core.Scene</a> object which represent a MeshLabJS scene organizes its entites on several collections: a collection of layers, a collection of decorators which represent scene level &quot;background&quot; meshes, a collection of post processing passes which represent the effects that require a post processing pass and a collection of 2d scene overlays. But to effectively render an image from 3D data with 3js, a scene has to be created, so the Scene object also stores and initializes a <a href="http://threejs.org/docs/#Reference/Scenes/Scene">3js scene</a> object, a <a href="http://threejs.org/docs/#Reference/Cameras/PerspectiveCamera">3js camera</a> for perspective rendering, a <a href="http://threejs.org/docs/#Reference/Cameras/OrthographicCamera">3js camera</a> for orthographic rendering for special effects, and a <a href="http://threejs.org/docs/#Reference/Lights/DirectionalLight">directional light</a>. A typical scene in 3js consists of several hierarchical 3D objects each with different transformations and properties, here instead a single <a href="http://threejs.org/docs/#Reference/Core/Object3D">3js 3D object</a> is used as a group for all the meshes of the scene. It stores the global transformation that brings the global bbox of the scene in the camera reference system and all 3js meshes object of scene decorators and of current active layers overlays are added to it as its children. In this way scene MeshLabJS delegates to 3js the scene managament for rendering.</p>
+<h6>Rendering</h6><p>When the stats option for fps/ms counting is disabled, a scene is rendered only when an event associated to the underlying canvas occurs (for example, mouse movement or drag) or when the scene changes. Otherwise, when stats counting is active, a traditional rendering loop with requestAnimationFrame is used. In either cases to render a scene, if there are no post process effects enabled, MeshLabJS uses  3js to do a classic forward rendering of its scene containing a single 3D group object with all the created  meshes from overlays and decorators. Note that MeshLabJS does not ensure any specific criterion for sorting meshes to render, so all depends on  3js which actually sorts and renders opaque meshes in front to back and then sorts and renders transparent meshes in back to front. MeshLabJS uses this fact to render as transparent not only those meshes that require transparency (for example the meshes for wireframe rendering, see the technique in corresponding fragment shader) but also those meshes that should be rendered after the opaque ones (such as the meshes containing the selected faces/vertices, which do only z reading and not z buffering). But obviously, among opaque or transparent meshes, MeshLabJS has no control on the rendering order, in particular 3js sorts opaque/transparent meshes with same depth in an arbitrary way. 
+Otherwise to render a scene when some post process effect is enabled, 3js is used first to render the scene to an off screen buffer on which post process passes are applied one after the other according to the user's activation order, finally the resulting buffer is rendered to the screen.</p></article>
     </section>
 
 
@@ -138,8 +185,8 @@ Module.Function1Name(parameter_1, ...., parameter_n);</p></article>
     <div class="container-overview">
     
         
-            <div class="description">Defines Emscripten Module object, MLJ.core namspace and the basic 
-classes used to create a Scene</div>
+            <div class="description"><p>Defines Emscripten Module object, MLJ.core namspace and the basic 
+classes used to create a Scene</p></div>
         
 
         
@@ -239,7 +286,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the functions to manage files</div>
+            <div class="description"><p>Defines the functions to manage files</p></div>
         
 
         
@@ -329,7 +376,7 @@ classes used to create a Scene</div>
 <header>
     
         <h2>
-        core/MeshFile.js
+        core/Layer.js
         </h2>
         
     
@@ -339,7 +386,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the MeshFile class</div>
+            <div class="description"><p>Defines the Layer class</p></div>
         
 
         
@@ -381,7 +428,100 @@ classes used to create a Scene</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="core_MeshFile.js.html">core/MeshFile.js</a>, <a href="core_MeshFile.js.html#line24">line 24</a>
+        <a href="core_Layer.js.html">core/Layer.js</a>, <a href="core_Layer.js.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        core/plugin/BaseRendering.js
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Defines the basic features common to all rendering plugins</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_plugin_BaseRendering.js.html">core/plugin/BaseRendering.js</a>, <a href="core_plugin_BaseRendering.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -439,7 +579,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the basic class to create a filter plugin</div>
+            <div class="description"><p>Defines the basic class to create a filter plugin</p></div>
         
 
         
@@ -529,6 +669,101 @@ classes used to create a Scene</div>
 <header>
     
         <h2>
+        core/plugin/GlobalRendering.js
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Defines the class to create &quot;scene level&quot; rendering plugins. These plugins
+implement rendering passes that are not tied to a particular mesh layer, but
+affect the whole scene.</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_plugin_GlobalRendering.js.html">core/plugin/GlobalRendering.js</a>, <a href="core_plugin_GlobalRendering.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
         core/plugin/Manager.js
         </h2>
         
@@ -539,7 +774,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the functions to manage and install plugins</div>
+            <div class="description"><p>Defines the functions to manage and install plugins</p></div>
         
 
         
@@ -639,7 +874,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the basic classes to create plugins</div>
+            <div class="description"><p>Defines the basic classes to create plugins</p></div>
         
 
         
@@ -739,7 +974,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the basic class to create a rendering plugin</div>
+            <div class="description"><p>Defines the basic class to create a rendering plugin</p></div>
         
 
         
@@ -937,7 +1172,7 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Component description ...</div>
+            <div class="description"><p>Component description ...</p></div>
         
 
         
@@ -1039,8 +1274,8 @@ classes used to create a Scene</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the functions and classes to create and to manage the 
-graphical user interface of MeshLabJS</div>
+            <div class="description"><p>Defines the functions and classes to create and to manage the 
+graphical user interface of MeshLabJS</p></div>
         
 
         
@@ -1140,8 +1375,8 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the Info widget the area where the informations
-about mesh are shown</div>
+            <div class="description"><p>Defines and installs the Info widget the area where the informations
+about mesh are shown</p></div>
         
 
         
@@ -1241,8 +1476,8 @@ about mesh are shown</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the Layers pane widget that provides the features of
-select and show/hide layers</div>
+            <div class="description"><p>Defines and installs the Layers pane widget that provides the features of
+select and show/hide layers</p></div>
         
 
         
@@ -1342,7 +1577,7 @@ select and show/hide layers</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the Log widget the text area used like standard output</div>
+            <div class="description"><p>Defines and installs the Log widget the text area used like standard output</p></div>
         
 
         
@@ -1442,7 +1677,7 @@ select and show/hide layers</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the Logo widget</div>
+            <div class="description"><p>Defines and installs the Logo widget</p></div>
         
 
         
@@ -1542,8 +1777,8 @@ select and show/hide layers</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the functions and classes to create and to manage the 
-graphical user interface of MeshLabJS</div>
+            <div class="description"><p>Defines the functions and classes to create and to manage the 
+graphical user interface of MeshLabJS</p></div>
         
 
         
@@ -1643,7 +1878,7 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the SceneBar widget</div>
+            <div class="description"><p>Defines and installs the SceneBar widget</p></div>
         
 
         
@@ -1743,7 +1978,7 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines and installs the SearchTool widget</div>
+            <div class="description"><p>Defines and installs the SearchTool widget</p></div>
         
 
         
@@ -1843,7 +2078,7 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines the Widget base class</div>
+            <div class="description"><p>Defines the Widget base class</p></div>
         
 
         
@@ -1943,7 +2178,7 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Base library file, defines MLJ namespace and some global functions</div>
+            <div class="description"><p>Base library file, defines MLJ namespace and some global functions</p></div>
         
 
         
@@ -2043,7 +2278,7 @@ graphical user interface of MeshLabJS</div>
     <div class="container-overview">
     
         
-            <div class="description">Defines MLJ.util namespace and AssociativeArray class</div>
+            <div class="description"><p>Defines MLJ.util namespace and AssociativeArray class</p></div>
         
 
         
@@ -2128,13 +2363,13 @@ graphical user interface of MeshLabJS</div>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.MeshFile.html">MLJ.core.MeshFile</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget_.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MLJ.core.AmbientLight.html">MLJ.core.AmbientLight</a></li><li><a href="MLJ.core.Headlight.html">MLJ.core.Headlight</a></li><li><a href="MLJ.core.Layer.html">MLJ.core.Layer</a></li><li><a href="MLJ.core.plugin.BaseRendering.html">MLJ.core.plugin.BaseRendering</a></li><li><a href="MLJ.core.plugin.Filter.html">MLJ.core.plugin.Filter</a></li><li><a href="MLJ.core.plugin.GlobalRendering.html">MLJ.core.plugin.GlobalRendering</a></li><li><a href="MLJ.core.plugin.GUIBuilder.html">MLJ.core.plugin.GUIBuilder</a></li><li><a href="MLJ.core.plugin.Plugin.html">MLJ.core.plugin.Plugin</a></li><li><a href="MLJ.Error.html">MLJ.Error</a></li><li><a href="MLJ.gui.component.Accordion.html">MLJ.gui.component.Accordion</a></li><li><a href="MLJ.gui.component.AccordionEntry.html">MLJ.gui.component.AccordionEntry</a></li><li><a href="MLJ.gui.component.Button.html">MLJ.gui.component.Button</a></li><li><a href="MLJ.gui.component.ButtonSet.html">MLJ.gui.component.ButtonSet</a></li><li><a href="MLJ.gui.component.CheckBox.html">MLJ.gui.component.CheckBox</a></li><li><a href="MLJ.gui.component.ColorPicker.html">MLJ.gui.component.ColorPicker</a></li><li><a href="MLJ.gui.component.ComboBox.html">MLJ.gui.component.ComboBox</a></li><li><a href="MLJ.gui.component.Component.html">MLJ.gui.component.Component</a></li><li><a href="MLJ.gui.component.CustomToggleButton.html">MLJ.gui.component.CustomToggleButton</a></li><li><a href="MLJ.gui.component.Dialog.html">MLJ.gui.component.Dialog</a></li><li><a href="MLJ.gui.component.FileButton.html">MLJ.gui.component.FileButton</a></li><li><a href="MLJ.gui.component.Label.html">MLJ.gui.component.Label</a></li><li><a href="MLJ.gui.component.LayerSelection.html">MLJ.gui.component.LayerSelection</a></li><li><a href="MLJ.gui.Component.MLJ.gui.component.RangedFloat.html">MLJ.gui.Component.MLJ.gui.component.RangedFloat</a></li><li><a href="MLJ.gui.component.Pane.html">MLJ.gui.component.Pane</a></li><li><a href="MLJ.gui.component.PiP.html">MLJ.gui.component.PiP</a></li><li><a href="MLJ.gui.component.Spinner.html">MLJ.gui.component.Spinner</a></li><li><a href="MLJ.gui.component.TextField.html">MLJ.gui.component.TextField</a></li><li><a href="MLJ.gui.component.ToggleButton.html">MLJ.gui.component.ToggleButton</a></li><li><a href="MLJ.gui.component.ToolBar.html">MLJ.gui.component.ToolBar</a></li><li><a href="MLJ.gui.Param.html">MLJ.gui.Param</a></li><li><a href="MLJ.gui.Param.Color.html">MLJ.gui.Param.Color</a></li><li><a href="MLJ.gui.Param.LayerSelection.html">MLJ.gui.Param.LayerSelection</a></li><li><a href="MLJ.gui.Param.RangedFloat.html">MLJ.gui.Param.RangedFloat</a></li><li><a href="MLJ.gui.Widget.html">MLJ.gui.Widget</a></li><li><a href="MLJ.gui.widget._Info.html">MLJ.gui.widget._Info</a></li><li><a href="MLJ.gui.widget._LayersPane.html">MLJ.gui.widget._LayersPane</a></li><li><a href="MLJ.gui.widget._Log.html">MLJ.gui.widget._Log</a></li><li><a href="MLJ.gui.widget._Logo.html">MLJ.gui.widget._Logo</a></li><li><a href="MLJ.gui.widget._SceneBar.html">MLJ.gui.widget._SceneBar</a></li><li><a href="MLJ.gui.widget._SearchTool.html">MLJ.gui.widget._SearchTool</a></li><li><a href="MLJ.util.AssociativeArray.html">MLJ.util.AssociativeArray</a></li><li><a href="MLJ.util.AssociativeArray-_Iterator.html">MLJ.util.AssociativeArray~_Iterator</a></li></ul><h3>Events</h3><ul><li><a href="MLJ.core.File.html#event:MeshFileOpened">MLJ.core.File#event:MeshFileOpened</a></li><li><a href="MLJ.core.File.html#event:MeshFileReloaded">MLJ.core.File#event:MeshFileReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerAdded">MLJ.core.Scene#event:SceneLayerAdded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerReloaded">MLJ.core.Scene#event:SceneLayerReloaded</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerSelected">MLJ.core.Scene#event:SceneLayerSelected</a></li><li><a href="MLJ.core.Scene.html#event:SceneLayerUpdated">MLJ.core.Scene#event:SceneLayerUpdated</a></li></ul><h3>Namespaces</h3><ul><li><a href="MLJ.html">MLJ</a></li><li><a href="MLJ.core.File.html">MLJ.core.File</a></li><li><a href="MLJ.core.plugin.html">MLJ.core.plugin</a></li><li><a href="MLJ.core.Scene.html">MLJ.core.Scene</a></li><li><a href="MLJ.gui.html">MLJ.gui</a></li><li><a href="MLJ.gui.component.html">MLJ.gui.component</a></li><li><a href="MLJ.gui.widget_.html">MLJ.gui.widget</a></li><li><a href="MLJ.util.html">MLJ.util</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Module">Module</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Sat Aug 08 2015 08:39:32 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Mar 29 2016 10:13:48 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
