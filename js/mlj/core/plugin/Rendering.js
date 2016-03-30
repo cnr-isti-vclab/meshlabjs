@@ -139,6 +139,9 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         $(document).on("SceneLayerUpdated", function (event, layer) {
             reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
         });
+        $(document).on("SceneLayerUpdatedRendering", function (event, layer) {
+            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
+        });
         
         if (parameters.applyOnEvent !== undefined) {
             $(window).ready(function() {

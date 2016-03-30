@@ -257,7 +257,7 @@
     plug._applyTo = function (meshFile, on) {
         if(on){
             distancePoints._changeValue(DISTANCEPOINTS_ENABLED);
-            MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call()
+            MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call();
         }
         else{
             var sceneGroup = MLJ.core.Scene.getThreeJsGroup();

@@ -47,11 +47,21 @@ void initSelection(uintptr_t meshptr, float near, float far, int width, int heig
         tri::UpdateSelection<MyMesh>::FaceFromVertexLoose(m);
     }
 }
-
+void moveMesh(uintptr_t meshptr, uintptr_t transformM){
+    MyMesh &m = *((MyMesh*) meshptr);
+    float* transformationM=((float*)transformM);
+    //float* objM=((float*)objectM);
+    Matrix44<MyMesh::ScalarType> transformMatrix (transformationM);
+    transformMatrix= transformMatrix.transpose();
+    //Matrix44<MyMesh::ScalarType> objectMatrix (objM);
+    tri::UpdatePosition<MyMesh>::Matrix(m,transformMatrix);
+    m.UpdateBoxAndNormals();
+}
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ShotPlugin) {
     emscripten::function("initSelection", &initSelection);
+    emscripten::function("moveMesh", &moveMesh);
     emscripten::enum_<SelectionMode>("SelectionMode")
            .value("vertexOn",  VERTEX_SELECTION_ADD)
            .value("vertexOff", VERTEX_SELECTION_SUB)
