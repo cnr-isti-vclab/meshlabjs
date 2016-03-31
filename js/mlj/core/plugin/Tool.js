@@ -263,9 +263,6 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
 
     $(document).on("SceneLayerSelected", function (event, meshFile) {
         disableSelection();
-        
-        
-        
         update();
 
         if (parameters.toggle === true) {
@@ -283,7 +280,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             var selected=MLJ.core.Scene.getSelectedLayer();
             if(selected ===layerInvisible)
             {
-                _this._applyTo(layer,false);
+                _this._applyTo(selected,false);
                 btn.toggle("off",event);
             }
         }
@@ -325,21 +322,18 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
      * this function is used to disable the selection mode when the user change the focus between the current layer
      * and another one
      */
+    
+    //this function disable all tools's layers when a layer is changed, reloaded or others------
     function disableSelection(){
-        var selected = MLJ.core.Scene.getSelectedLayer();
+        
         var ptr = MLJ.core.Scene.getLayers().iterator();     
-        //console.log(selected);
         while (ptr.hasNext()) {
-            layer = ptr.next();
-            //console.log(layer);
-            //if(layer !== selected){
-                //console.log("disableSelection");
-                _this._applyTo(layer,false);
-                btn.toggle("off");
-                MLJ.core.Scene.updateLayer(layer);
-            //}
+            var layer = ptr.next();
+            _this._applyTo(layer,false);
+            btn.toggle("off",event);
         }
     }
+    //--------------------
     this._setOnParamChange(function (paramProp, value) {
         var layer = MLJ.core.Scene.getSelectedLayer();
         var params = layer.overlaysParams.getByKey(_this.getName());
