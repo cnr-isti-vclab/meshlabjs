@@ -44,8 +44,9 @@ MLJ.core.Layer = function (name, cppMesh) {
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
     this.VN = this.FN = this.threeMesh = null;
+    // Array of booleans that reflect what are the overlays on or off for this layer.
     this.properties = new MLJ.util.AssociativeArray();
-    //is updated by MLJ.core.Scene and contains overlaying mesh
+    //is updated by MLJ.core.Scene and contains overlay ThreeJS objects
     this.overlays = new MLJ.util.AssociativeArray();
     //contains overlaying mesh parameters
     this.overlaysParams = new MLJ.util.AssociativeArray();
@@ -69,9 +70,16 @@ MLJ.core.Layer = function (name, cppMesh) {
         }
 
         console.time("Time to create mesh: ");
-        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry());
+        // This Threejs object is used as a 'group' 
+        // This node will have as children all the overlays of this layer.
+        // It is also used to store in a single place the geometry that the overlay node will refer. 
+        // So for example point overlay will use/refer the geometry buffers here defined
+        // The node itself will never been rendered (material has the visibile flag == false).
+        //  
+        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({visible: false}));
         _this.updateMeshGeometryData(useIndex);
         _this.updateMeshColorData(cw.colorMode);
+        
         console.timeEnd("Time to create mesh: ");
 
         // If the mesh is a point cloud, enable the "Points" rendering mode
