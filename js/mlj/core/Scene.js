@@ -350,25 +350,26 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      */
     function _computeGlobalBBbox()
     {
-        var BBGlobal;
+        console.time("Time to update bbox: ");
+        _group.scale.set(1,1,1);
+        _group.position.set(0,0,0);
+        _group.updateMatrixWorld();
+        
         if (_layers.size() === 0) // map to the canonical cube
             BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         else {
-            BBGlobal = new THREE.Box3(); // map to the layers' boxes union
-            iter = _layers.iterator();
-            while (iter.hasNext()) {
-                threeMesh = iter.next().getThreeMesh();
-                var bbox = new THREE.Box3().setFromObject(threeMesh);
-                BBGlobal.union(bbox);
-            }
+            BBGlobal = new THREE.Box3();
+            BBGlobal.setFromObject(_group);
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
-        var offset = BBGlobal.center().negate();;
+        var offset = BBGlobal.center().negate();
+        offset.multiplyScalar(scaleFac);
         _group.scale.set(scaleFac,scaleFac,scaleFac);
-        _group.position.set(offset.x*scaleFac,offset.y*scaleFac,offset.z*scaleFac);
-        _group.updateMatrix();
-//        console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
-//        console.log("ScaleFactor:" + scaleFac);
+        _group.position.set(offset.x,offset.y,offset.z);
+        _group.updateMatrixWorld();
+        //console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
+        //console.log("ScaleFactor:" + _group.scale.x  +" "+ _group.scale.x  +" "+ _group.scale.x);
+        //console.timeEnd("Time to update bbox: ");
         return BBGlobal;
     }
 
@@ -450,12 +451,13 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      */
     this.addLayer = function (layer) {
         if (!(layer instanceof MLJ.core.Layer)) {
-            console.error("The parameter must be an instance of MLJ.core.MeshFile");
+            console.error("The parameter must be an instance of MLJ.core.Layer");
             return;
         }
         
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
+        _group.add(layer.getThreeMesh());
 
         //Add new mesh to associative array _layers            
         _layers.set(layer.name, layer);
@@ -495,7 +497,8 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         if (overlay2D) {
             _scene2D.add(mesh);
         } else {
-            _group.add(mesh);
+//            _group.add(mesh);
+            layer.getThreeMesh().add(mesh);
         }
 
         _this.render();
@@ -516,7 +519,8 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             if (overlay2D) {
                 _scene2D.remove(mesh);                        
             } else {
-                _group.remove(mesh);                        
+                layer.getThreeMesh().remove(mesh);   
+//                _group.remove(mesh);                        
             }
 
             mesh.traverse(disposeObject);
@@ -637,8 +641,17 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         
         if (layer !== undefined) {
             //remove layer from list
+<<<<<<< HEAD
             layer.deleted=true;
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);     
+=======
+            _layers.remove(name);
+            _group.remove(layer.getThreeMesh());
+            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
+            
+            layer.dispose();
+                      
+>>>>>>> refs/remotes/origin/master
             if(_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
             } else {

@@ -7,36 +7,43 @@
 
 using namespace vcg;
 
-void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float perc, bool zerosym)
+void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float perc, bool zerosym, int colorMap)
 {
-	MyMesh &m = *((MyMesh*) meshptr);
-	
-	bool usePerc = (perc > 0);
-	Distribution<float> H;
-	tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
-	float percLo = H.Percentile(perc/100.0f);
-	float percHi = H.Percentile(1.0f - (perc/100.0f));
-	
-	if (qMin == qMax) {
-		std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
-		qMin = minmax.first;
-		qMax = minmax.second;
-	}
-
-	if (zerosym) {
-		qMin = std::min(qMin, -math::Abs(qMax));
-		qMax = -qMin;
-		percLo = std::min(percLo, -math::Abs(percHi));
-		percHi = -percLo;
-	}
-
-	if (usePerc) {
-		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, percLo, percHi);
-		printf("Quality Range: %f %f; Used (%f %f) percentile (%f %f)\n", H.Min(), H.Max(), percLo, percHi, perc, (100.0f-perc));
-	} else {
-		tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax);
-		printf("Quality Range: %f %f; Used (%f %f)\n", H.Min(), H.Max(), qMin, qMax);
-	}
+  MyMesh &m = *((MyMesh*) meshptr);
+  
+  bool usePerc = (perc > 0);
+  Distribution<float> H;
+  tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
+  float percLo = H.Percentile(perc/100.0f);
+  float percHi = H.Percentile(1.0f - (perc/100.0f));
+  
+  if (qMin == qMax) {
+    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    qMin = minmax.first;
+    qMax = minmax.second;
+  }
+  
+  if (zerosym) {
+    qMin = std::min(qMin, -math::Abs(qMax));
+    qMax = -qMin;
+    percLo = std::min(percLo, -math::Abs(percHi));
+    percHi = -percLo;
+  }
+  
+  if (usePerc) {
+    qMin = percLo;
+    qMax = percHi;
+    printf("Used (%f %f) percentile (%f %f)\n", percLo, percHi, perc, (100.0f-perc));
+  } 
+  
+  printf("Quality Range: %f %f; Used (%f %f)\n", H.Min(), H.Max(), qMin, qMax);
+  switch (colorMap)
+  { 
+  case 0: tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax); break;
+  case 1: tri::UpdateColor<MyMesh>::PerVertexQualityGray(m, qMin, qMax); break;
+  case 2: tri::UpdateColor<MyMesh>::PerVertexQualityRampParula(m, qMin, qMax); break;
+  default: assert(0);
+  }
 }
 
 void ColorizeByBorderDistance(uintptr_t meshptr)
