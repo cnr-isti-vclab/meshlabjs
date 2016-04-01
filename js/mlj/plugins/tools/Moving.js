@@ -105,6 +105,35 @@
         catch(err){}
         mesh.updateMatrix();
     };
+    function checkKeyPressed(event){
+        if(event.altKey){
+            initializeMoving(false);
+            event.preventDefault(); 
+        }
+        else if(event.shiftKey){
+            //TO DO
+        }
+        else if( event.ctrlKey){
+            //TO DO
+        }
+    }
+    function checkKeyReleased(e){
+        var KeyID = (window.event) ? event.keyCode : e.keyCode;
+        switch(KeyID)
+        {
+           case 18://alt
+                initializeMoving(true);
+           break; 
+
+           case 17://CTRL
+               //TO DO
+           break;
+
+           case 16://SHIFT
+               //TO DO
+           break;
+        }
+    }
     var initializeMoving = function(active){
         var camera=scene.getCamera();
         var object=scene.getSelectedLayer().getThreeMesh();
@@ -231,10 +260,14 @@
         if(on&&meshFile.getThreeMesh().visible===true){
             toolActive=true;
             initializeMoving(true);
+            $(document).bind('keydown.moving',checkKeyPressed);
+            $(document).bind('keyup.moving',checkKeyReleased);
         }
         else if(toolActive===true){
             initializeMoving(false);
             if(isBarycenter===true) setBarycenter(false);
+            $(document).unbind('keydown.moving');
+            $(document).unbind('keyup.moving');
             toolActive=false;
         }
     };
