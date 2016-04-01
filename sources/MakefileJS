@@ -24,9 +24,7 @@ OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
 	$(CC) -o $@ $< $(CFLAGS)
 
 MeshLabCppCore.js: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
-	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
-
+	$(CC) -o ../js/generated/$@ $^ $(CFLAGS)
 
 clean:
 	rm -f *.bc MeshlabGenJs.js
