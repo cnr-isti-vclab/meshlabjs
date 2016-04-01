@@ -103,6 +103,7 @@ MLJ.core.Layer = function (name, cppMesh) {
         var positionAttrib = null, normalAttrib = null, indexAttrib = null;
 
         if (indexed) {
+            console.log("Indexed");
             bufferptr = cppMesh.getVertexVector(true);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
             positionAttrib = new THREE.BufferAttribute(bufferData, 3);
@@ -116,10 +117,12 @@ MLJ.core.Layer = function (name, cppMesh) {
 
                 bufferptr = cppMesh.getFaceIndex();
                 bufferData = new Uint32Array(new Uint32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*3));
-                indexAttrib = new THREE.BufferAttribute(bufferData, 3);
+                indexAttrib = new THREE.BufferAttribute(bufferData, 1   );
                 Module._free(bufferptr);
             }
         } else { // load disconnected triangles
+            console.log("Not Indexed");
+            
             if (_this.FN === 0) {
                 bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
                 bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
@@ -151,7 +154,7 @@ MLJ.core.Layer = function (name, cppMesh) {
         if (geometry.getAttribute('index') !== undefined) {
             delete geometry.attributes.index;
         }
-        if (indexAttrib !== null) geometry.addAttribute('index', indexAttrib);
+        if (indexAttrib !== null) geometry.setIndex(indexAttrib);
 		geometry.computeBoundingBox (); //update the boundingbox
     };
 

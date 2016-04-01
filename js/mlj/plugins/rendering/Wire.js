@@ -15,12 +15,15 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],          
             {
                 "color": {type: "c", value: DEFAULTS.color},
                 "thickness": {type: "f", value: DEFAULTS.thickness},
                 "isShaded" : { type: "i", value: DEFAULTS.isShaded},
                 "specular": {type: "c", value: DEFAULTS.specular},
-                "shininess": {type: "f", value: DEFAULTS.shininess}
+                "shininess": {type: "f", value: DEFAULTS.shininess},
+                "directionalLightPosition" : {type: "v3", value: new THREE.Vector3(0,0,1)},
+                "directionalLightColor" : {type: "c", value: new THREE.Color('#ffffff')}
             }
 
         ])
@@ -109,16 +112,18 @@
         var attributes = {center: {type: 'v3', value: []}};
 
 
-        var uniforms = THREE.UniformsUtils.clone(SHADING.uniforms);
-        uniforms.color.value = params.color;
-        uniforms.thickness.value = params.thickness;
-        uniforms.isShaded.value = params.isShaded;
-
+        var wireuniforms = THREE.UniformsUtils.clone(SHADING.uniforms);
+        wireuniforms.color.value = params.color;
+        wireuniforms.thickness.value = params.thickness;
+        wireuniforms.isShaded.value = params.isShaded;
+        wireuniforms.directionalLightPosition.value = scene.lights.Headlight.position;
+        wireuniforms.directionalLightColor.value = scene.lights.Headlight.color;
+        
         var parameters = {
             vertexShader: this.shaders.getByKey("WireVertex.glsl"),
             fragmentShader: this.shaders.getByKey("WireFragment.glsl"),
-            uniforms: uniforms,
-            attributes: attributes,
+            uniforms: wireuniforms,
+//            attributes: attributes,
             transparent: true,
             lights: true,
             side: params.sides

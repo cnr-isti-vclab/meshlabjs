@@ -17,8 +17,8 @@ uniform mat4 viewMatrix;
 
 
 uniform vec3 ambientLightColor;
-uniform vec3 directionalLightColor[ MAX_DIR_LIGHTS ];
-uniform vec3 directionalLightDirection[ MAX_DIR_LIGHTS ];
+uniform vec3 directionalLightColor;
+uniform vec3 directionalLightPosition;
 
 vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
 	return normalize( ( matrix * vec4( normal, 0.0 ) ).xyz );
@@ -54,24 +54,23 @@ void main() {
 
         vec3 viewPosition = normalize( vViewPosition );
 
-        for( int i = 0; i < MAX_DIR_LIGHTS; i++ ) {
-            vec3 dirVector = transformDirection( directionalLightDirection[ i ], viewMatrix );
+        vec3 dirVector = normalize(directionalLightPosition);
 
-            // diffuse
-            float dotProduct = dot( normal, dirVector );
-            float dirDiffuseWeight = max( dotProduct, 0.0 );
-            totalDiffuseLight += directionalLightColor[ i ] * dirDiffuseWeight;
+        // diffuse
+        float dotProduct = dot( normal, dirVector );
+        float dirDiffuseWeight = max( dotProduct, 0.0 );
+        totalDiffuseLight += directionalLightColor * dirDiffuseWeight;
 
-            // specular
-            vec3 dirHalfVector = normalize( dirVector + viewPosition );
-            float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );
-            float dirSpecularWeight = specularStrength * max( pow( dirDotNormalHalf, shininess ), 0.0 );
+        // specular
+        vec3 dirHalfVector = normalize( dirVector + viewPosition );
+        float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );
+        float dirSpecularWeight = specularStrength * max( pow( dirDotNormalHalf, shininess ), 0.0 );
 
-             float specularNormalization = ( shininess + 2.0 ) / 8.0;
-             vec3 schlick = specular + vec3( 1.0 - specular ) * pow( max( 1.0 - dot( dirVector, dirHalfVector ), 0.0 ), 5.0 );
-             totalSpecularLight += schlick * directionalLightColor[ i ] * dirSpecularWeight * dirDiffuseWeight * specularNormalization;
+         float specularNormalization = ( shininess + 2.0 ) / 8.0;
+         vec3 schlick = specular + vec3( 1.0 - specular ) * pow( max( 1.0 - dot( dirVector, dirHalfVector ), 0.0 ), 5.0 );
+         totalSpecularLight += schlick * directionalLightColor * dirSpecularWeight * dirDiffuseWeight * specularNormalization;
 
-        }
+        
 
         outputColor = diffuseColor * ( totalDiffuseLight + ambientLightColor ) + totalSpecularLight;
     }

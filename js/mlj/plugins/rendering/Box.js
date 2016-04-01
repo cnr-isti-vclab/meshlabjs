@@ -1,5 +1,6 @@
 
 (function (plugin, core, scene) {
+    var loader = new THREE.TextureLoader();
 
     var DEFAULTS = {
             //next values are code blocked values
@@ -7,7 +8,8 @@
             medPointSize : 0.25,
             majPointSize : 0.5,
             minSize : 1.5,
-            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/square.png"),
+//            pntTexture: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/square.png"),
+            pntTexture: loader.load("js/mlj/plugins/rendering/textures/sprites/square.png"),
             epsilonPercentage : 1.5/100.0,
             spriteOffset : 2.5,
             //next are GUI settable values
@@ -134,10 +136,9 @@
             pntSize: {type: "f", value: params.pntSize},
             pntTexture: {type: "t", value: DEFAULTS.pntTexture}
         };
-
+        var geometryBox=new THREE.BufferGeometry({attributes:attributes});
         var shaderMaterial = new THREE.ShaderMaterial({
                 uniforms: uniforms,
-                attributes: attributes,
                 vertexShader: this.shaders.getByKey("BoxVertex.glsl"),
                 fragmentShader: this.shaders.getByKey("BoxFragment.glsl"),
                 alphaTest: 0.5,
@@ -157,7 +158,7 @@
         };
 
         //var needed to group all (pseudo) "subclasses" of THREE.Mesh
-        var meshesGroup = new THREE.Mesh( undefined, shaderMaterial);
+        var meshesGroup = new THREE.Mesh( geometryBox, shaderMaterial);
 
         /* Overlay bounding box (a THREE.BoxHelper overlay) */
 
@@ -195,7 +196,7 @@
 
             //adding internal quotes and labels
             geometry = generatePointCloudGeometry(bboxmax, bboxmin, x, y, z, boxMinorFactorWidget.getValue(), boxMajorFactorWidget.getValue(), lblParameters, labelsGroup);
-            var pcBuffer = new THREE.PointCloud( geometry, shaderMaterial);
+            var pcBuffer = new THREE.Points( geometry, shaderMaterial);
 
             meshesGroup.add(pcBuffer);
             meshesGroup.add(labelsGroup);

@@ -3,6 +3,7 @@
 
     const COL_FIXED = 0,
           COL_VERTEX = 1;
+    var loader = new THREE.TextureLoader();
 
     var DEFAULTS = {
         color: new THREE.Color('#0277BD'),
@@ -12,8 +13,8 @@
         specular: new THREE.Color('#505050'),
         shininess: 15.0,
         //discAlpha: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc.png"),
-        discBorder: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_border.png"),
-        discShaded: THREE.ImageUtils.loadTexture("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png"),
+        discBorder: loader.load("js/mlj/plugins/rendering/textures/sprites/disc_border.png"),
+        discShaded: loader.load("js/mlj/plugins/rendering/textures/sprites/disc_shaded.png"),
         backPointsCulling: 0,
         deepSplat: 1
     };
@@ -22,6 +23,7 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],            
             {
                 "size": {type: "f", value: DEFAULTS.size},
                 "usePerVertexColor": {type: "i", value: 0},
@@ -36,7 +38,9 @@
                 "deepSplat": { type: "i", value: DEFAULTS.deepSplat},
                 "screenWidth": {type: "f", value: 0},
                 "screenHeight": {type: "f", value: 0},
-                "fov": {type: "f", value: 0}
+                "fov": {type: "f", value: 0},
+                "directionalLightPosition" : {type: "v3", value: new THREE.Vector3(0,0,1)},
+                "directionalLightColor" : {type: "c", value: new THREE.Color('#ffffff')}
             }
         ])
     };
@@ -69,7 +73,7 @@
             ],
             bindTo: (function() {
                     var bindToFun = function (colorSource, overlay) {
-                        if (colorSource == COL_VERTEX && overlay.material.attributes['col']) {
+                        if (colorSource == COL_VERTEX && overlay.geometry.attributes['col']) {
                             overlay.material.uniforms.usePerVertexColor.value = COL_VERTEX;
                         } else {
                             overlay.material.uniforms.usePerVertexColor.value = COL_FIXED;
@@ -129,9 +133,13 @@
     plug._applyTo = function (layer, on) {
         if (on === false) {
             scene.removeOverlayLayer(layer, plug.getName());
-            if (layer.__mlj_points_buffer) {
-                Module._free(layer.__mlj_points_buffer);
-                delete layer.__mlj_points_buffer;
+            if (layer.position_buffer) {
+                Module._free(layer.position_buffer);
+                delete layer.position_buffer;
+            }
+            if (layer.normal_buffer) {
+                Module._free(layer.normal_buffer);
+                delete layer.normal_buffer;
             }
             if (layer.color_buffer) {
                 Module._free(layer.color_buffer);
@@ -140,16 +148,15 @@
             return;
         }
 
-        layer.__mlj_points_buffer = layer.cppMesh.getVertexVector(true);
+        layer.position_buffer = layer.cppMesh.getVertexVector(true);
         layer.normal_buffer = layer.cppMesh.getVertexNormalVector(true);
 
-        var particlesBuffer = new Float32Array(Module.HEAPU8.buffer, layer.__mlj_points_buffer, layer.VN*3);
-        var normalsBuffer = new Float32Array(Module.HEAPU8.buffer, layer.normal_buffer, layer.VN*3);
-
+        var particlesBuffer = new Float32Array(Module.HEAPU8.buffer, layer.position_buffer, layer.VN*3);
+        var normalsBuffer   = new Float32Array(Module.HEAPU8.buffer, layer.normal_buffer,   layer.VN*3);
         var geometry = new THREE.BufferGeometry();
 
         geometry.addAttribute('position', new THREE.BufferAttribute(particlesBuffer, 3));
-        geometry.addAttribute('normal', new THREE.BufferAttribute(normalsBuffer, 3));
+        geometry.addAttribute('normal',   new THREE.BufferAttribute(normalsBuffer, 3));
 
         var params = layer.overlaysParams.getByKey(plug.getName());
 
@@ -174,37 +181,18 @@
         //pointsUniforms.discAlpha.value = DEFAULTS.discAlpha;
         pointsUniforms.discBorder.value = DEFAULTS.discBorder;
         pointsUniforms.discShaded.value = DEFAULTS.discShaded;
-
-/*
-        var pointsUniforms = {
-            color: {type: "c", value: params.color},
-            size: {type: "f", value: params.size},
-            texture: {type: "t", value: DEFAULTS.texture}
-        };
-*/
+        pointsUniforms.directionalLightPosition.value = scene.lights.Headlight.position;
+        pointsUniforms.directionalLightColor.value = scene.lights.Headlight.color;
         var shaderMaterial = new THREE.RawShaderMaterial({
             uniforms: pointsUniforms,
-            attributes: geometry.attributes,
-            vertexShader: this.shaders.getByKey("ShadedPointsVertex.glsl"),
+//            attributes: geometry.attributes,
+//            vertexShader: THREE.ShaderChunk[ "lights_pars" ]+this.shaders.getByKey("ShadedPointsVertex.glsl"),
+              vertexShader: this.shaders.getByKey("ShadedPointsVertex.glsl"),
             fragmentShader: this.shaders.getByKey("ShadedPointsFragment.glsl"),
-            //transparent: true,
             lights: true
         });
 
-        var points = new THREE.PointCloud(geometry, shaderMaterial);
-/*
-        var material = new THREE.PointCloudMaterial(
-            {   color: params.color,
-                size: params.size,
-                sizeAttenuation: true,
-                map: DEFAULTS.texture,
-                alphaTest: 0.3,
-                transparent: true,
-                lights: true
-            });
-
-        var points = new THREE.PointCloud(geometry, material);
-*/
+        var points = new THREE.Points(geometry, shaderMaterial);
         scene.addOverlayLayer(layer, plug.getName(), points);
     }
 

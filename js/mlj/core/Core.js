@@ -112,37 +112,37 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
     this.setOn(_on);
 };
 
-
-/**         
- * @class Creates a new Headlight
- * @param {THREE.Scene} scene The scene object
- * @param {THREE.Camera} camera The camera object
- * @param {THREE.WebGLRenderer} renderer The renderer object
- * @memberOf MLJ.core
- * @author Stefano Gabriele 
- */
-MLJ.core.Headlight = function (scene, camera, renderer) {
-    var _on = true;
-    var _light = new THREE.DirectionalLight("#ffffff",0.5);
-    _light.position.set( 0, -1, 0 );
-
-
-    /**
-     * Sets this headlight on/off
-     * @param {Boolean} on If <code>true</code>, this headlight is enabled; 
-     * otherwise this headlight is disabled
-     * @author Stefano Gabriele
-     */
-    this.setOn = function (on) {
-        if (on) {
-            camera.add(_light);
-        } else {
-            camera.remove(_light);
-        }
-        renderer.render(scene, camera);
-    };
-
-    //Init
-    this.setOn(_on);
-
-};
+//
+///**         
+// * @class Creates a new Headlight
+// * @param {THREE.Scene} scene The scene object
+// * @param {THREE.Camera} camera The camera object
+// * @param {THREE.WebGLRenderer} renderer The renderer object
+// * @memberOf MLJ.core
+// * @author Stefano Gabriele 
+// */
+//MLJ.core.Headlight = function (scene, camera, renderer) {
+//    var _on = true;
+//    var _light = new THREE.DirectionalLight("#ff80ff",0.5);
+//    _light.position.set( 0, -1, 0 );
+//    console.log("Headlight\n");
+//
+//    /**
+//     * Sets this headlight on/off
+//     * @param {Boolean} on If <code>true</code>, this headlight is enabled; 
+//     * otherwise this headlight is disabled
+//     * @author Stefano Gabriele
+//     */
+//    this.setOn = function (on) {
+//        if (on) {
+//            camera.add(_light);
+//        } else {
+//            camera.remove(_light);
+//        }
+//        renderer.render(scene, camera);
+//    };
+//
+//    //Init
+//    this.setOn(_on);
+//
+//};

@@ -217,8 +217,11 @@ MLJ.core.Scene = {};
         
         //INIT LIGHTS 
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
-
+        //_this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+        //_this.lights.Headlight = new THREE.DirectionalLight("#ffffff",0.5);
+        _this.lights.Headlight = new THREE.DirectionalLight("#808080",1.0);
+        _this.lights.Headlight.position.set( 0, 0, 1 );
+        _camera.add(_this.lights.Headlight);
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
         $canvas.addEventListener('touchmove', _controls.update.bind(_controls), false);

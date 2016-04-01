@@ -18,6 +18,7 @@
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib[ "common" ],
             THREE.UniformsLib[ "lights" ],
+            THREE.UniformsLib[ "ambient" ],
             {
                 "shading": {type: "i", value: DEFAULTS.shading},
                 "diffuse": {type: "c", value: {}},
@@ -25,7 +26,9 @@
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
                 "lights": {type: "i", value: DEFAULTS.lights},
-                "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
+                "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode},
+                "directionalLightPosition" : {type: "v3", value: new THREE.Vector3(0,0,1)},
+                "directionalLightColor" : {type: "c", value: new THREE.Color('#ffffff')}
             }
 
         ])        
@@ -139,13 +142,14 @@
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
             uniforms.mljColorMode.value = colorParams.mljColorMode;
-
+            uniforms.directionalLightPosition.value = scene.lights.Headlight.position;
+            uniforms.directionalLightColor.value = scene.lights.Headlight.color;
             // we create an object for material parameters
             var parameters = {
                 fragmentShader: this.shaders.getByKey("PhongFragment.glsl"),
                 vertexShader: this.shaders.getByKey("PhongVertex.glsl"),
                 uniforms: uniforms,
-                attributes: geom.attributes,
+//                attributes: geom.attributes,
                 lights: true,
                 side: params.sides
             };
