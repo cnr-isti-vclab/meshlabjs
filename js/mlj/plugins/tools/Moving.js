@@ -37,7 +37,7 @@
     var movMode, spaMode, changeSize;
     plug._init = function (guiBuilder) {
         movMode = guiBuilder.Choice({
-            label: "Moving Mode",
+            label: "Mode",
             tooltip: "Choose one of the possible ways to move the current layer by translation, rotation or scalation.",
             options: [
                 {content: "Translate", value: MOVING_TRANSLATE, selected : true},
@@ -58,7 +58,7 @@
             }())
         });
         spaMode = guiBuilder.Choice({
-            label: "Tool Mode",
+            label: "Transformation origin",
             tooltip: "Select the mode to view the gizmo on the screen: always at the world center or centered into the current mesh.",
             options: [
                 {content: "Global", value: GLOBAL, selected : true},
@@ -76,7 +76,7 @@
             }())
         });
         changeSize = guiBuilder.RangedFloat({
-            label: "Change setting size",
+            label: "Gizmo size",
             tooltip: "Increase or decrease the setting size useful to translate, rotate or scale the current layer.",
             min: 0.1, max: 3, step: 0.1,
             defval: DEFAULTS.sizeGizmo,
@@ -167,7 +167,7 @@
                 }
             }
             control.addEventListener( 'change', updateControls );
-            control.setScaleSpeed(Math.round(diameterMesh));
+            //control.setScaleSpeed(Math.round(diameterMesh));
             control.attach(object);
             scene.getScene().add(control);
             control.name="transformControl";
