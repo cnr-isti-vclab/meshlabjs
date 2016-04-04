@@ -263,6 +263,7 @@ MLJ.core.File = {
           formData.append("tags", data[3].value + " meshlab meshlabjs");   
           formData.append("private", data[4].value);  
           formData.append("password", data[5].value);
+          formData.append("source", "meshlabjs");
           
 //          var entries = formData.entries();
 //          console.log(entries.next().value);
