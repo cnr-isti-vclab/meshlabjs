@@ -1,13 +1,13 @@
 (function (plugin, scene) {
     
-    /******************************************************************************/  
+    /******************************************************************************/ 
+    
     var ClampVertexQualityFilter = new plugin.Filter({
         name: "Clamp Vertex Quality",
         tooltip: "Clamp vertex quality values to a given range according to specific values or to percentiles",
         arity: 1
     });
-    
-//    var ClampVertexQualityWidget;
+   
     
     var min, max, percentile, zeroSym;
 
@@ -34,35 +34,13 @@
             });
     };
     
-//    ClampVertexQualityFilter._init = function (builder) { 
-//    ClampVertexQualityWidget = builder.Choice({
-//            label: "Element",
-//            tooltip: "Select to what element the filter should be applied",
-//            options: [
-//                {content: "Both", value: USE_BOTH, selected: true},
-//                {content: "Face", value: USE_FACE},
-//                {content: "Vert", value: USE_VERT}
-//            ]
-//        });
-//    };
 
     ClampVertexQualityFilter._applyTo = function(meshFile) {
         Module.ClampVertexQuality(meshFile.ptrMesh(), min.getValue(), max.getValue(), percentile.getValue(), zeroSym.getValue());
-//        meshFile.cppMesh.addPerVertexColor();
-//        meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
     };
 
     plugin.Manager.install(ClampVertexQualityFilter);
 
-//    ClampVertexQualityFilter._applyTo = function (meshFile) {
-//        var vertFlag,faceFlag;
-//        switch(SelectionAllWidget.getValue()) {
-//            case USE_BOTH: vertFlag = true;  faceFlag = true; break;
-//            case USE_FACE: vertFlag = false; faceFlag = false; break;
-//            case USE_VERT: vertFlag = true;  faceFlag = false; break;
-//        }
-//        Module.SelectionAll(meshFile.ptrMesh(),vertFlag,faceFlag);
-//    };
 /******************************************************************************/  
 
     var SmoothVertexQualityFilter = new plugin.Filter({
@@ -71,19 +49,83 @@
         arity: 1
     });
     
-//    var ClampVertexQualityWidget;
-    
-    var min, max, percentile, zeroSym;
-
-    SmoothVertexQualityFilter._init = function (builder) {
-        
-    };
-    
     SmoothVertexQualityFilter._applyTo = function(meshFile) {
         Module.SmoothVertexQuality(meshFile.ptrMesh());
     };
 
     plugin.Manager.install(SmoothVertexQualityFilter);
+
+/******************************************************************************/  
+
+var ComputeQualityAsFaceQualityFilter = new plugin.Filter({
+        name: "Compute Quality as Face Quality",
+        tooltip: "Compute a quality and colorize faces depending on triangle quality: <br>"
+                +"1: minimum ratio height/edge among the edges<br>"
+                +"2: ratio between radii of incenter and circumcenter<br>"
+                +"3: 2*sqrt(a, b)/(a+b), a, b the eigenvalues of M^tM, M transform triangle into equilateral",
+        arity: 1
+    });
+    
+
+    var choiceWidget;
+
+    ComputeQualityAsFaceQualityFilter._init = function (builder) {
+        choiceWidget = builder.Choice({
+            label: "Metric",
+            tooltip: "Choose a metric to compute triangle quality",
+            options: [
+                {content: "area/max side", value: "0", selected: true},
+                {content: "inradius/circumradius", value: "1"},
+                {content: "mean ratio", value: "2"},
+                {content: "Area", value: "3"},
+            ]
+        });
+    };
+    
+    ComputeQualityAsFaceQualityFilter._applyTo = function(meshFile) {
+        Module.ComputeQualityAsFaceQuality(meshFile.ptrMesh(), parseInt(choiceWidget.getValue()));
+    };
+
+    plugin.Manager.install(ComputeQualityAsFaceQualityFilter);
+    
+    
+/******************************************************************************/  
+
+    var FaceQualityFromVertexFilter = new plugin.Filter({
+        name: "Face Quality From Vertex",
+        tooltip: "Transfers vertex quality to face",
+        arity: 1
+    });
+    
+    FaceQualityFromVertexFilter._applyTo = function(meshFile) {
+        Module.FaceQualityFromVertex(meshFile.ptrMesh());
+    };
+
+    plugin.Manager.install(FaceQualityFromVertexFilter);
+
+/******************************************************************************/  
+
+    var VertexQualityFromFaceFilter = new plugin.Filter({
+        name: "Vertex Quality From Face",
+        tooltip: "Transfers face quality to vertices",
+        arity: 1
+    });
+    
+    var areaWeighted;
+
+    VertexQualityFromFaceFilter._init = function (builder) {
+        areaWeighted = new builder.Bool({
+            defval: true,
+            label: "Area Weighted",
+            tooltip: "If true, to compute the quality will be used a weight that depends on the area of each face"
+        });
+    };
+    
+    VertexQualityFromFaceFilter._applyTo = function(meshFile) {
+        Module.VertexQualityFromFace(meshFile.ptrMesh(), areaWeighted.getValue());
+    };
+
+    plugin.Manager.install(VertexQualityFromFaceFilter);
 
 /******************************************************************************/  
 

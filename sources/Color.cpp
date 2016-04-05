@@ -7,18 +7,28 @@
 
 using namespace vcg;
 
-void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float perc, bool zerosym, int colorMap)
+void ColorizeByQuality(uintptr_t meshptr, bool vertexQuality, float qMin, float qMax, float perc, bool zerosym, int colorMap)
 {
   MyMesh &m = *((MyMesh*) meshptr);
   
   bool usePerc = (perc > 0);
   Distribution<float> H;
-  tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
+  
+  if(vertexQuality)
+    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m, H);
+  else
+    tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m, H);
+  
   float percLo = H.Percentile(perc/100.0f);
   float percHi = H.Percentile(1.0f - (perc/100.0f));
   
   if (qMin == qMax) {
-    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    std::pair<float, float> minmax;
+    
+    if(vertexQuality)
+       minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    else
+      minmax = tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m);
     qMin = minmax.first;
     qMax = minmax.second;
   }
@@ -39,9 +49,21 @@ void ColorizeByVertexQuality(uintptr_t meshptr, float qMin, float qMax, float pe
   printf("Quality Range: %f %f; Used (%f %f)\n", H.Min(), H.Max(), qMin, qMax);
   switch (colorMap)
   { 
-  case 0: tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax); break;
-  case 1: tri::UpdateColor<MyMesh>::PerVertexQualityGray(m, qMin, qMax); break;
-  case 2: tri::UpdateColor<MyMesh>::PerVertexQualityRampParula(m, qMin, qMax); break;
+  case 0: if(vertexQuality) 
+            tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax); 
+          else
+            tri::UpdateColor<MyMesh>::PerFaceQualityRamp(m, qMin, qMax); 
+          break;
+  case 1: if(vertexQuality) 
+            tri::UpdateColor<MyMesh>::PerVertexQualityGray(m, qMin, qMax); 
+          else
+            tri::UpdateColor<MyMesh>::PerFaceQualityGray(m, qMin, qMax); 
+          break;
+  case 2: if(vertexQuality) 
+            tri::UpdateColor<MyMesh>::PerVertexQualityRamp(m, qMin, qMax); 
+          else
+            tri::UpdateColor<MyMesh>::PerFaceQualityRamp(m, qMin, qMax);
+          break;
   default: assert(0);
   }
 }
@@ -78,7 +100,7 @@ void ColorPluginTEST()
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(ColorizePlugin) {
-	emscripten::function("ColorizeByVertexQuality", &ColorizeByVertexQuality);
+	emscripten::function("ColorizeByQuality", &ColorizeByQuality);
 	emscripten::function("ColorizeByBorderDistance", &ColorizeByBorderDistance);
 }
 #endif
