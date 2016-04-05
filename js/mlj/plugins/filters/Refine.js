@@ -3,7 +3,7 @@
 
     var filter = new plugin.Filter({
         name: "Refine",
-        tooltip: "Apply a subdvision surface refinement step, using various approach (midpoint/loop)",
+        tooltip: "Apply a subdvision surface refinement step, using various approach (midpoint, butterfly, loop)",
         arity: 1
     });
 
