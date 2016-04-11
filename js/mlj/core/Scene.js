@@ -400,7 +400,7 @@ MLJ.core.Scene = {};
         
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
-        _group.add(layer.getThreeMesh());
+        _group.add(layer.getThreeMeshOrigin());
 
         //Add new mesh to associative array _layers            
         _layers.set(layer.name, layer);

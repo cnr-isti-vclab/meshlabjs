@@ -69,14 +69,24 @@ MLJ.core.Layer = function (name, cppMesh) {
             useIndex = false;
         }
 
+
         console.time("Time to create mesh: ");
+        
+        // This Threejs object is used as a 'master transformation group' 
+        // This node will have as children onlyt the  threeMesh node
+        // it is used only internally for hiding relative transformations for moving the gizmos 
+        // in the right places. It will be probably removed when threejs transformcontrols will be allowed
+        // general positions instead of local origin only.
+        
+        _this.threeMeshOrigin = new THREE.Object3D();
+        
         // This Threejs object is used as a 'group' 
         // This node will have as children all the overlays of this layer.
         // It is also used to store in a single place the geometry that the overlay node will refer. 
         // So for example point overlay will use/refer the geometry buffers here defined
         // The node itself will never been rendered (material has the visibile flag == false).
-        //  
         _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({visible: false}));
+        _this.threeMeshOrigin.add(_this.threeMesh);        
         _this.updateMeshGeometryData(useIndex);
         _this.updateMeshColorData(cw.colorMode);
         
@@ -197,10 +207,13 @@ MLJ.core.Layer = function (name, cppMesh) {
     /**
      * Returns this THREE.Mesh object
      * @returns {THREE.Mesh} this THREE.Mesh object
-     * @author Stefano Gabriele     
      */
     this.getThreeMesh = function () {
         return this.threeMesh;
+    };
+
+    this.getThreeMeshOrigin = function () {
+        return this.threeMeshOrigin;
     };
 
     /**
