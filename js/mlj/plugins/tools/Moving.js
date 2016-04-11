@@ -94,47 +94,8 @@
         control.update();
         scene.render();
     };
-    var updateGeometry = function(mesh){
-        mesh.geometry.computeBoundingBox();
-        mesh.geometry.computeBoundingSphere();
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals();
-        try{
-            mesh.geometry.computeMorphNormals();
-        }
-        catch(err){}
-        mesh.updateMatrix();
-    };
-    function checkKeyPressed(event){
-        if(event.altKey){
-            initializeMoving(false);
-            event.preventDefault(); 
-        }
-        else if(event.shiftKey){
-            //TO DO
-        }
-        else if( event.ctrlKey){
-            //TO DO
-        }
-    }
-    function checkKeyReleased(e){
-        var KeyID = (window.event) ? event.keyCode : e.keyCode;
-        switch(KeyID)
-        {
-           case 18://alt
-                initializeMoving(true);
-           break; 
-
-           case 17://CTRL
-               //TO DO
-           break;
-
-           case 16://SHIFT
-               //TO DO
-           break;
-        }
-    }
-    var initializeMoving = function(active){
+    
+    var toolEnabled = function(active){
         var camera=scene.getCamera();
         var object=scene.getSelectedLayer().getThreeMesh();
         var layer=scene.getSelectedLayer();
@@ -168,7 +129,7 @@
             }
             control.addEventListener( 'change', updateControls );
             //control.setScaleSpeed(Math.round(diameterMesh));
-            control.attach(object);
+            //control.attach(object);
             scene.getScene().add(control);
             control.name="transformControl";
             updateControls();
@@ -207,9 +168,10 @@
         var object=scene.getSelectedLayer().getThreeMesh();
         if(active&&isBarycenter===false){
             setBary=object.geometry.boundingSphere.center.clone().negate();
+            //sceneGroup.worldToLocal(setBary);
             unsetBary.copy(object.geometry.boundingSphere.center.clone());
             barycenterTra.makeTranslation(setBary.x,setBary.y,setBary.z);
-            for(var i=0; i<sceneGroup.children.length;i++){
+            /*for(var i=0; i<sceneGroup.children.length;i++){
                 var mesh=sceneGroup.children[i];
                 mesh.geometry.applyMatrix(barycenterTra);
                 updateGeometry(mesh);
@@ -224,7 +186,25 @@
                 }
                 $(document).trigger("SceneLayerUpdatedRendering",[layer]);
                 
-            }
+            }*/
+            //console.log("setBary is:");
+            //console.log(setBary);
+            //console.log("position is:");
+            //console.log(sceneGroup.localToWorld(sceneGroup.position));
+            var m=scene.getSelectedLayer().getThreeMesh();
+            m.position.applyMatrix4(barycenterTra);
+            m.updateMatrix();
+            m.updateMatrixWorld();
+            var obj=new THREE.Object3D();
+            obj.name="pippo";
+            obj.position.set(unsetBary.x,unsetBary.y,unsetBary.z);
+            var m1=m.clone();
+            m1.name="newMesh";
+            obj.add(m1);
+            scene.getThreeJsGroup().add(obj);
+            control.attach(obj);
+            
+            
             setBary=new THREE.Vector3();
             isBarycenter=true;
         }
@@ -233,7 +213,7 @@
             for(var i=0; i<sceneGroup.children.length;i++){
                 var mesh=sceneGroup.children[i];
                 mesh.geometry.applyMatrix(barycenterTra);
-                updateGeometry(mesh);
+                scene.updateGeometry(mesh);
             }
             var iter=scene.getLayers().iterator();
             while(iter.hasNext()){
@@ -253,21 +233,38 @@
         scene.getBBox();
         updateControls();
     };
-
-    plug._applyTo = function (meshFile, on) {
-        
-        
+    var fireKeyEvent= function(keyParam){
+         if(keyParam.keyPressed===true){
+            if(keyParam.event.altKey){
+                toolEnabled(false);
+                keyParam.event.preventDefault(); 
+            }
+        }
+        if(keyParam.keyReleased===true){
+            var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
+            if(KeyID===18){
+                toolEnabled(true);
+            }
+        }
+    };
+    plug._applyTo = function (meshFile, on, keyParam) {
+        if(keyParam !== undefined){
+            if(keyParam.event!== null) {
+                fireKeyEvent(keyParam);
+                return;
+            }
+        }
         if(on&&meshFile.getThreeMesh().visible===true){
             toolActive=true;
-            initializeMoving(true);
-            $(document).bind('keydown.moving',checkKeyPressed);
-            $(document).bind('keyup.moving',checkKeyReleased);
+            toolEnabled(true);
+            //$(document).bind('keydown.moving',checkKeyPressed);
+            //$(document).bind('keyup.moving',checkKeyReleased);
         }
         else if(toolActive===true){
-            initializeMoving(false);
+            toolEnabled(false);
             if(isBarycenter===true) setBarycenter(false);
-            $(document).unbind('keydown.moving');
-            $(document).unbind('keyup.moving');
+            //$(document).unbind('keydown.moving');
+            //$(document).unbind('keyup.moving');
             toolActive=false;
         }
     };

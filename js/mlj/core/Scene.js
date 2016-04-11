@@ -879,7 +879,17 @@ MLJ.core.Scene = {};
         ctx.fill();
         ctx.stroke();
     }
-
+    this.updateGeometry = function(mesh){
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.computeBoundingSphere();
+        mesh.geometry.computeFaceNormals();
+        mesh.geometry.computeVertexNormals();
+        try{
+            mesh.geometry.computeMorphNormals();
+        }
+        catch(err){}
+        mesh.updateMatrix();
+    };
 
     this.takeSnapshot = function() {
         var canvas = _renderer.context.canvas;        

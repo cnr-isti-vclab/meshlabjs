@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-MLJ.core.plugin.ToolRendering = function (parameters, renderingClass) {
+MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
 
     var _this = this;
@@ -21,7 +21,7 @@ MLJ.core.plugin.ToolRendering = function (parameters, renderingClass) {
     var _btn = toggleButtonBuilder.Button(parameters);
 
     // Group ToggleButtons of the same rendering class
-    var group = MLJ.gui.makeGroup(renderingClass);
+    var group = MLJ.gui.makeGroup(toolClass);
     if (_btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(_btn);
         _btn.onArrowClicked(function () {
@@ -109,8 +109,8 @@ MLJ.core.plugin.ToolRendering = function (parameters, renderingClass) {
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.ToolRendering);
 
 MLJ.core.plugin.Tool = function (parameters, defaults) {
-    var renderingClass = "mlj_tool_overlay";
-    MLJ.core.plugin.ToolRendering.call(this, parameters, renderingClass);
+    var toolClass = "mlj_tool_overlay";
+    MLJ.core.plugin.ToolRendering.call(this, parameters, toolClass);
 
     var _this = this;
     
@@ -128,7 +128,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 //show the options pane
                 _this._showOptionsPane();
                 //when active a tool panel disable others ----
-                var items = MLJ.gui.group[renderingClass].getItems();
+                var items = MLJ.gui.group[toolClass].getItems();
                 for (var i = 0; i < items.length; ++i) {
                     if (items[i].isOn() && items[i] !== btn) {
                         items[i].toggle("off", event);
@@ -180,7 +180,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             if (!btn.isOn()) {
                 btn.toggle("on", event);
             }
-            var items = MLJ.gui.group[renderingClass].getItems();
+            var items = MLJ.gui.group[toolClass].getItems();
             for (var i = 0; i < items.length; ++i) {
                 if (items[i].isOn() && items[i] !== btn) {
                     items[i].toggle("off", event);
@@ -194,7 +194,41 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 _this._applyTo(layer, false); // Remove the pass
             }
         });
-        
+        /*
+        var flag=false;
+        var keyEventParam={
+          event: null,
+          keyPressed: false,
+          keyReleased: false
+        };
+        $(document).bind("keydown", function (event) {
+            if(btn.isOn()&&!flag){
+                keyEventParam.event=event;
+                keyEventParam.keyPressed=true;
+                _this._applyTo(null, null, keyEventParam);
+                flag=true;
+                keyEventParam={
+                    event: null,
+                    keyPressed: false,
+                    keyReleased: false
+                  };
+            }  
+              
+        });
+        $(document).bind("keyup", function (event) {
+            if(btn.isOn()) {
+                flag=false;
+                keyEventParam.event=event;
+                keyEventParam.keyReleased=true;
+                _this._applyTo(null, null, keyEventParam);
+                keyEventParam={
+                    event: null,
+                    keyPressed: false,
+                    keyReleased: false
+                  };
+              }
+        });
+        */
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     disableSelection();

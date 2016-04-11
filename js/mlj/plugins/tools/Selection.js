@@ -105,6 +105,7 @@
             var position=new Float32Array(scene.getCamera().position.toArray());
             var projectionMatrix=new Float32Array(scene.getCamera().projectionMatrix.toArray());
             var viewMatrix=new Float32Array(scene.getCamera().matrixWorldInverse.toArray());
+            //ERRORE childre[0]
             var modelMatrix=new Float32Array(MLJ.core.Scene.getScene().children[0].matrixWorld.toArray());
             //let's save the arrays on memory
             var npositionBytes=position.length*position.BYTES_PER_ELEMENT;
