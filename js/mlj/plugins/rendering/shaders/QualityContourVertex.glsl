@@ -1,15 +1,15 @@
 precision highp float;
-precision highp int;
 
 uniform float quality_min;
 uniform float quality_max;
-uniform float stripe_num;  // between -1 and 1
+uniform float stripe_num;  
 uniform float stripe_width;   // between 0 constant and 1 binary.
 
 attribute float vert_quality;
 attribute vec3 position;
 
 varying float scaled_quality;
+
 
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
