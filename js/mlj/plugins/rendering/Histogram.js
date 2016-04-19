@@ -18,7 +18,7 @@
         stripe_ramp: 1
     };
 
-    // Name of the layer that contains the Quality Contour. Needed to differentiate it from the histogram
+    // Name of the layers that contain the quality contour and the quality bar. Needed to differentiate them from the histogram layer
     var qualityContourLayerName = "QualityContour";
     var qualityBarLayerName = "QualityBarLayerContour";   
     
@@ -300,10 +300,8 @@
             label: "Ramp Contour",
             tooltip: "If enabled shows a ramp that gives you info about the gradient of the quality field (transparent to opaque means increasing values)",
             defval: DEFAULTS.stripe_ramp === 1,
-//            bindTo: "stripe_ramp"
             bindTo: (function() {
                 var bindToFun = function() {
-//                    plug._onQualityContourParamChange();
                     plug._onQualityContourParamChange();
                 };
                 bindToFun.toString = function() {
