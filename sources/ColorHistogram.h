@@ -126,7 +126,7 @@ EMSCRIPTEN_BINDINGS(ColorHistogram) {
     .constructor<>()
     .function<float>("maxV",             &vcg::Histogram<float>::MaxV)
     .function<float>("minV",           &vcg::Histogram<float>::MinV)
-    .function<float>("maxCount",         &vcg::Histogram<float>::MaxCount)
+    .function<float>("maxCount",         &vcg::Histogram<float>::MaxCountInRange)
     .function("binNum",      &vcg::Histogram<float>::BinNum)
     .function<float>("binCount", select_overload<float(float)>(&vcg::Histogram<float>::BinCount))
     ;

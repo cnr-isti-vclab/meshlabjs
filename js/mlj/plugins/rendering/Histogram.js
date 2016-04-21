@@ -539,7 +539,7 @@
         // The procedure to create the bar is very similar to the way the histogram is created; only difference 
         // is that the width of the bar is fixed
         for (var i = 0; i < bn; ++i) {
-            var value = ch.minV() + ((len / bn) * i);
+            var value = ch.minV() + ((len / bn) * (i+0.5));
 
             var y1 = (i / bn) * qualityBarH;
             var y2 = ((i + 1) / bn) * qualityBarH;
@@ -609,7 +609,7 @@
 
             // histogram columns are drawn as horizontal rectangles using orthographic projection
             for (var i = 0; i < bn; ++i) {
-                var value = ch.minV() + ((len / bn) * i);
+                var value = ch.minV() + ((len / bn) * (i+0.5));
                 var width = histogramW * (ch.binCount(value) / maxCount);
                 
                 if (width === 0)
