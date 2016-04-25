@@ -4,6 +4,7 @@
 
     var SELECTION_VERTEX=0;
     var SELECTION_FACES=1;
+    var fireKeyEvent;
     var DEFAULTS = {
        selectionMode : 0
     };
@@ -25,18 +26,18 @@
             options: [
                 {content: "Per Vertex", value: SELECTION_VERTEX, selected : true},
                 {content: "Per Face", value: SELECTION_FACES}
-            ],
+            ]/*,
             bindTo: (function() {
                 var bindToFun = function (color) {
                     //enableSelection(true, DEFAULTS.selectionMode);
                 };
                 bindToFun.toString = function () {};
                 return bindToFun;
-            }())
+            }())*/
         });
     };
     
-    var enableSelection = function (enabled,  meshFile){
+    var enableSelection = function (enabled){
         var x1, x2, y1, y2;
         var selection = false;
         var gMOUSEUP = false;
@@ -75,7 +76,7 @@
                 scene.getControls().enabled=true;
                 scene.render();
             }
-        }
+        };
         /*
          * set of fuctions used to properly display the bounding box used for the selection
          */
@@ -92,9 +93,9 @@
          * vertexes or faces in that bounding box to the c++ function
          */
         function canMouseUp(event) {
+            var meshFile=scene.getSelectedLayer();
             if(!selectionAdd&&!selectionSub){ //if no key is pressed before select another box will be deselect all
                 Module.SelectionNone(meshFile.ptrMesh(),true,true);
-                scene.updateLayer(scene.getSelectedLayer());
             }
             //collection of parameters used to initialize the camera in the c++ function
             var near=scene.getCamera().near;
@@ -106,7 +107,7 @@
             var projectionMatrix=new Float32Array(scene.getCamera().projectionMatrix.toArray());
             var viewMatrix=new Float32Array(scene.getCamera().matrixWorldInverse.toArray());
             //ERRORE childre[0]
-            var modelMatrix=new Float32Array(MLJ.core.Scene.getScene().children[0].matrixWorld.toArray());
+            var modelMatrix=new Float32Array(meshFile.getThreeMesh().matrixWorld.toArray());
             //let's save the arrays on memory
             var npositionBytes=position.length*position.BYTES_PER_ELEMENT;
             var nprojMatrixBytes=projectionMatrix.length*projectionMatrix.BYTES_PER_ELEMENT;
@@ -153,7 +154,7 @@
             Module._free(viewMatrixPtr);
             Module._free(modelMatrixPtr);
             Module._free(bBoxPtr);
-            scene.updateLayer(scene.getSelectedLayer());
+            $(document).trigger("SceneLayerUpdatedRendering",[meshFile]);
             selection = false;
             $("#selection").hide();
         }
@@ -194,55 +195,64 @@
                 }
             }
         }
-        function checkKeyPressed(event){
-            if(event.altKey){
-                bindSelectionEvents(false);
-                event.preventDefault(); 
-            }
-            else if(event.shiftKey){
-                selectionSub=true;
-            }
-            else if( event.ctrlKey){
-                selectionAdd=true;
-            }
-        }
-        function checkKeyReleased(e){
-            var KeyID = (window.event) ? event.keyCode : e.keyCode;
-            switch(KeyID)
-            {
-               case 18://alt
-                    bindSelectionEvents(true);
-               break; 
+        
+        fireKeyEvent= function(keyParam){
+            if(keyParam.keyPressed===true){
+               if(keyParam.event.altKey){
+                   bindSelectionEvents(false);
+                   keyParam.event.preventDefault(); 
+               }
+               else if(keyParam.event.shiftKey){
+                   selectionSub=true;
+               }
+               else if( keyParam.event.ctrlKey){
+                   selectionAdd=true;
+               }
+           }
+           if(keyParam.keyReleased===true){
+               var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
+               switch(KeyID)
+               {
+                  case 18://alt
+                       bindSelectionEvents(true);
+                  break; 
 
-               case 17://CTRL
-                   selectionAdd=false;
-               break;
-               
-               case 16://SHIFT
-                   selectionSub=false;
-               break;
-            }
-        }
+                  case 17://CTRL
+                      selectionAdd=false;
+                  break;
+
+                  case 16://SHIFT
+                      selectionSub=false;
+                  break;
+               }
+           }
+       };
         if(enabled){
             bindSelectionEvents(enabled);
-            $(document).bind('keydown.selection',checkKeyPressed);
-            $(document).bind('keyup.selection',checkKeyReleased);
+            //$(document).bind('keydown.selection',checkKeyPressed);
+            //$(document).bind('keyup.selection',checkKeyReleased);
         }
         else{
             bindSelectionEvents(enabled);
-            $(document).unbind('keydown.selection');
-            $(document).unbind('keyup.selection');
+            //$(document).unbind('keydown.selection');
+            //$(document).unbind('keyup.selection');
         }
-    }
+    };
     
-    plug._applyTo = function (meshFile, on) {
-        
-        if(on&&meshFile.getThreeMesh().visible===true){
-            enableSelection(true, meshFile);
+    plug._applyTo = function (meshFile, on, keyParam) {
+        var mesh=scene.getSelectedLayer();
+        if(keyParam !== undefined){
+            if(keyParam.event!== null) {
+                fireKeyEvent(keyParam);
+                return;
+            }
+        }
+        if(on&&mesh.getThreeMesh().visible===true){
+            enableSelection(true);
         }
         else{
-            enableSelection(false,meshFile);  
-            if(meshFile.getThreeMesh().visible===false){
+            enableSelection(false);  
+            if(mesh.getThreeMesh().visible===false){
                 var tool=MLJ.core.plugin.Manager.getToolPlugins().getByKey("Selection Tool");
                 var btn=tool.getButton();
                 btn.toggle("off");

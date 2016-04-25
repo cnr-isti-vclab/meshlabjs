@@ -30,7 +30,7 @@
                 {content: "Disable", value: DISTANCEPOINTS_DISABLED}
             ],
             bindTo: (function() {
-                var bindToFun = function (color) {
+                var bindToFun = function () {
                     var selectedLayer=MLJ.core.Scene.getSelectedLayer();
                     if(selectedLayer.getThreeMesh().visible===false){
                         distancePoints._changeValue(DISTANCEPOINTS_DISABLED);
@@ -75,6 +75,17 @@
             $('#_3D').removeAttr("onmousedown");
 
         }
+    };
+    var removeTool = function(){
+        var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
+        sceneGroup.remove(sceneGroup.getObjectByName("s1"));
+        sceneGroup.remove(sceneGroup.getObjectByName("s2"));
+        sceneGroup.remove(sceneGroup.getObjectByName("Linedown"));
+        sceneGroup.remove(sceneGroup.getObjectByName("Lineup"));
+        sceneGroup.remove(sceneGroup.getObjectByName("labelDist"));
+        sceneGroup.remove(sceneGroup.getObjectByName("labelP1"));
+        sceneGroup.remove(sceneGroup.getObjectByName("labelP2"));
+        scene.render();
     };
     var fireKeyEvent= function(keyParam){
         if(keyParam.keyPressed===true){
@@ -204,14 +215,7 @@
                 scene.render();
             }
             else {
-                sceneGroup.remove(sceneGroup.getObjectByName("s1"));
-                sceneGroup.remove(sceneGroup.getObjectByName("s2"));
-                sceneGroup.remove(sceneGroup.getObjectByName("Linedown"));
-                sceneGroup.remove(sceneGroup.getObjectByName("Lineup"));
-                sceneGroup.remove(sceneGroup.getObjectByName("labelDist"));
-                sceneGroup.remove(sceneGroup.getObjectByName("labelP1"));
-                sceneGroup.remove(sceneGroup.getObjectByName("labelP2"));
-                scene.render();
+                removeTool();
                 point1=undefined;
                 point2=undefined;
             }
@@ -231,17 +235,9 @@
             MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call();
         }
         else{
-            var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
             toolEnabled(false);
             distancePoints._changeValue(DISTANCEPOINTS_DISABLED);
-            sceneGroup.remove(sceneGroup.getObjectByName("s1"));
-            sceneGroup.remove(sceneGroup.getObjectByName("s2"));
-            sceneGroup.remove(sceneGroup.getObjectByName("Linedown"));
-            sceneGroup.remove(sceneGroup.getObjectByName("Lineup"));
-            sceneGroup.remove(sceneGroup.getObjectByName("labelDist"));
-            sceneGroup.remove(sceneGroup.getObjectByName("labelP1"));
-            sceneGroup.remove(sceneGroup.getObjectByName("labelP2"));
-            scene.render();
+            removeTool();
         }
     };
 

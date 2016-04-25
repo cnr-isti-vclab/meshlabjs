@@ -15,7 +15,6 @@
     var SIZE_GIZMO=1;
     
     var control;
-    
     var isBarycenter=false;
     var toolActive= false;
     
@@ -66,9 +65,15 @@
             ],
             bindTo: (function() {
                 var bindToFun = function () {
-                    
-                    if(isBarycenter===false&&toolActive===true) setBarycenter(true);
-                    else if(toolActive===true&&isBarycenter===true) setBarycenter(false);
+                    if(isBarycenter===false&&toolActive===true) {
+                        toolEnabled(false);
+                        toolEnabled(true);
+                    }
+                    else if(toolActive===true&&isBarycenter===true) {
+                        setBarycenter(false);
+                        toolEnabled(false);
+                        toolEnabled(true);
+                    }
                     control.setSize(changeSize.getValue());
                 };
                 bindToFun.toString = function () {};
@@ -93,6 +98,18 @@
     var updateControls = function (){
         control.update();
         scene.render();
+    };
+    var applyTransform =function(matrix){
+        var layer=scene.getSelectedLayer();
+        var matrixMoving=new Float32Array(matrix.toArray());
+            
+        var nMatrixMovBytes=matrixMoving.length*matrixMoving.BYTES_PER_ELEMENT;
+        var matrixMovPtr=Module._malloc(nMatrixMovBytes);
+        for(var i=0;i<16;i++){
+            setValue(matrixMovPtr+(i*matrixMoving.BYTES_PER_ELEMENT),matrixMoving[i],"float");
+        }
+        Module.moveMesh(layer.ptrMesh(), matrixMovPtr);
+        Module._free(matrixMovPtr);
     };
     
     var toolEnabled = function(active){
@@ -129,27 +146,20 @@
             }
             control.addEventListener( 'change', updateControls );
             //control.setScaleSpeed(Math.round(diameterMesh));
-            //control.attach(object);
+            if(isBarycenter===false)control.attach(object);
+            else control.attach(scene.getSelectedLayer().getThreeMeshOrigin());
             scene.getScene().add(control);
             control.name="transformControl";
             updateControls();
         }
         else{
-            var matrixMoving=new Float32Array(object.matrix.toArray());
-            var nMatrixMovBytes=matrixMoving.length*matrixMoving.BYTES_PER_ELEMENT;
-            var matrixMovPtr=Module._malloc(nMatrixMovBytes);
-            for(var i=0;i<16;i++){
-                setValue(matrixMovPtr+(i*matrixMoving.BYTES_PER_ELEMENT),matrixMoving[i],"float");
-            }
-            Module.moveMesh(layer.ptrMesh(), matrixMovPtr);
-            Module._free(matrixMovPtr);
+            if(!object.position.equals(new THREE.Vector3(0,0,0))||!object.scale.equals(new THREE.Vector3(1,1,1))||!object.quaternion.equals(new THREE.Quaternion(0,0,0,1))) applyTransform(object.matrix);
             //reset threejs Object
             object.position.set(0,0,0);
             object.scale.set(1,1,1);
             object.quaternion.set(0,0,0,1);
             object.updateMatrix();
             layer.updateThreeMesh();
-            //scene.getBBox();
             $(document).trigger("SceneLayerUpdatedRendering",[layer]);
             
             if(control instanceof THREE.TransformControls) control.detach();
@@ -159,77 +169,68 @@
         }
     };
     
-    var setBary=new THREE.Vector3();
-    var unsetBary=new THREE.Vector3();
+    var minusBary=new THREE.Vector3();
+    var plusBary=new THREE.Vector3();
+    var matrixMinusBary= new THREE.Matrix4();
+    var matrixPlusBary = new THREE.Matrix4();
     
     var setBarycenter = function(active){
-        var barycenterTra= new THREE.Matrix4();
-        var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
-        var object=scene.getSelectedLayer().getThreeMesh();
         if(active&&isBarycenter===false){
-            setBary=object.geometry.boundingSphere.center.clone().negate();
-            //sceneGroup.worldToLocal(setBary);
-            unsetBary.copy(object.geometry.boundingSphere.center.clone());
-            barycenterTra.makeTranslation(setBary.x,setBary.y,setBary.z);
-            /*for(var i=0; i<sceneGroup.children.length;i++){
-                var mesh=sceneGroup.children[i];
-                mesh.geometry.applyMatrix(barycenterTra);
-                updateGeometry(mesh);
-            }
-            var iter=scene.getLayers().iterator();
-            while(iter.hasNext()){
-                var layer=iter.next();
-                var mesh=layer.getThreeMesh();
-                if(mesh instanceof THREE.Mesh){
-                    Module.Translate(layer.ptrMesh(), setBary.x, setBary.y, setBary.z, false);
-                    layer.updateThreeMesh();
-                }
-                $(document).trigger("SceneLayerUpdatedRendering",[layer]);
-                
-            }*/
-            //console.log("setBary is:");
-            //console.log(setBary);
-            //console.log("position is:");
-            //console.log(sceneGroup.localToWorld(sceneGroup.position));
-            var m=scene.getSelectedLayer().getThreeMesh();
-            m.position.applyMatrix4(barycenterTra);
-            m.updateMatrix();
-            m.updateMatrixWorld();
-            var obj=new THREE.Object3D();
-            obj.name="pippo";
-            obj.position.set(unsetBary.x,unsetBary.y,unsetBary.z);
-            var m1=m.clone();
-            m1.name="newMesh";
-            obj.add(m1);
-            scene.getThreeJsGroup().add(obj);
-            control.attach(obj);
+            var meshGroup = scene.getSelectedLayer().getThreeMeshOrigin();
+            var object=scene.getSelectedLayer().getThreeMesh();
+            object.geometry.computeBoundingSphere();
             
+            minusBary=object.geometry.boundingSphere.center.clone().negate();
+            plusBary.copy(object.geometry.boundingSphere.center.clone());
+            matrixMinusBary.makeTranslation(minusBary.x,minusBary.y,minusBary.z);
+            matrixPlusBary.makeTranslation(plusBary.x,plusBary.y,plusBary.z);
             
-            setBary=new THREE.Vector3();
+            meshGroup.position.set(plusBary.x,plusBary.y,plusBary.z);
+            meshGroup.updateMatrix();
+            //meshGroup.updateMatrixWorld();
+            
+            object.position.applyMatrix4(matrixMinusBary);
+            object.updateMatrix();
+            //object.updateMatrixWorld();
+
+            control.attach(meshGroup);
             isBarycenter=true;
         }
         else if(isBarycenter===true){
-            barycenterTra.makeTranslation(unsetBary.x, unsetBary.y, unsetBary.z);
-            for(var i=0; i<sceneGroup.children.length;i++){
-                var mesh=sceneGroup.children[i];
-                mesh.geometry.applyMatrix(barycenterTra);
-                scene.updateGeometry(mesh);
-            }
-            var iter=scene.getLayers().iterator();
-            while(iter.hasNext()){
-                var layer=iter.next();
-                var mesh=layer.getThreeMesh();
-                if(mesh instanceof THREE.Mesh){
-                    Module.Translate(layer.ptrMesh(), unsetBary.x, unsetBary.y, unsetBary.z, false);
-                    layer.updateThreeMesh();
-                }
-                $(document).trigger("SceneLayerUpdatedRendering",[layer]);
-            }
-            unsetBary=new THREE.Vector3();
+            var meshGroup = scene.getSelectedLayer().getThreeMeshOrigin();
+            var object=scene.getSelectedLayer().getThreeMesh();
+            
+            var positionMove = meshGroup.position.clone();
+            var rotScaleMove=meshGroup.matrix.clone().setPosition(new THREE.Vector3(0,0,0));
+            var positionMatrixMove=new THREE.Matrix4();
+            positionMatrixMove.makeTranslation(positionMove.x,positionMove.y,positionMove.z);
+            //applying rotation and scale changing
+            applyTransform(matrixMinusBary);
+            applyTransform(rotScaleMove);
+            applyTransform(matrixPlusBary);
+            //restore meshGroup to original location
+            meshGroup.position.set(0,0,0);
+            meshGroup.scale.set(1,1,1);
+            meshGroup.quaternion.set(0,0,0,1);
+            meshGroup.updateMatrix();
+            //meshGroup.updateMatrixWorld();
+            //restore object to original location according with plus translation
+            object.position.applyMatrix4(positionMatrixMove);
+            object.updateMatrix();
+            //object.updateMatrixWorld();
+            applyTransform(object.matrix);
+            //restore object
+            object.position.set(0,0,0);
+            object.scale.set(1,1,1);
+            object.quaternion.set(0,0,0,1);
+            object.updateMatrix();
+            
+            control.attach(object);
+            minusBary=new THREE.Vector3();
+            plusBary=new THREE.Vector3();
             isBarycenter=false;
+            
         }
-        sceneGroup.updateMatrix();
-        object.updateMatrix();
         scene.getBBox();
         updateControls();
     };
@@ -257,14 +258,10 @@
         if(on&&meshFile.getThreeMesh().visible===true){
             toolActive=true;
             toolEnabled(true);
-            //$(document).bind('keydown.moving',checkKeyPressed);
-            //$(document).bind('keyup.moving',checkKeyReleased);
         }
         else if(toolActive===true){
-            toolEnabled(false);
             if(isBarycenter===true) setBarycenter(false);
-            //$(document).unbind('keydown.moving');
-            //$(document).unbind('keyup.moving');
+            toolEnabled(false);
             toolActive=false;
         }
     };

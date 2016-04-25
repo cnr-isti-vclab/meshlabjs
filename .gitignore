@@ -22,3 +22,4 @@ sources/Makefile.Debug
 sources/Makefile.Release
 *.Debug
 sources/object_script.FilterTest.Release
+/build/

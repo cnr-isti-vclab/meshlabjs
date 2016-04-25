@@ -194,7 +194,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 _this._applyTo(layer, false); // Remove the pass
             }
         });
-        /*
+        
         var flag=false;
         var keyEventParam={
           event: null,
@@ -228,7 +228,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                   };
               }
         });
-        */
+        
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     disableSelection();
