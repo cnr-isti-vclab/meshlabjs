@@ -35,6 +35,7 @@
 MLJ.core.Layer = function (id,name, cppMesh) {
     this.name = name;
     this.id=id;
+    //deleted property for lazy deletion in scene
     this.deleted=false;
     /**
      * @type {String} - Set if a mesh is read from a file
