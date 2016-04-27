@@ -7,6 +7,160 @@
 using namespace vcg;
 using namespace std;
 
+
+/**
+ * @brief The MeshState class
+ * This class encodes a differntial state of the a Layer/mesh. 
+ * For sake of memory efficiency changes can be differential
+ * 
+ */
+
+class MeshState
+{
+private:
+  enum {
+    UNDEF_STATE,
+    EMPTY_STATE,
+    FULL_STATE,
+    SELECTION_STATE,
+    GEOMETRY_STATE,
+    COLOR_STATE
+  };
+  int _time; 
+  int type;
+  MyMesh *meshCopyPtr; 
+  
+public: 
+  MeshState(int _newTime):_time(_newTime),type(UNDEF_STATE),meshCopyPtr(0){}
+  void Clear()
+  {
+    if(meshCopyPtr) 
+    {
+      delete meshCopyPtr;
+      meshCopyPtr=0;
+    }    
+  }
+  int TimeStamp() const { return _time; }
+  void SaveAll(MyMesh &m)
+  {    
+    meshCopyPtr = new MyMesh();
+    tri::Append<MyMesh,MyMesh>::MeshCopy(*meshCopyPtr,m);
+    type = FULL_STATE;
+  }  
+  
+  void Restore(MyMesh &m)
+  {
+    switch(type)
+    {
+    case FULL_STATE: 
+      tri::Append<MyMesh,MyMesh>::MeshCopy(m,*meshCopyPtr);
+      break;
+    case EMPTY_STATE: 
+      m.Clear();
+      break;
+    default:
+      assert(0);
+    }
+  }
+};
+
+/**
+ * @brief The MeshHistory class
+ * 
+ * Functionality that we want to implement
+ * 
+ *  - Undo/Redo - 
+ *  The interface exposes two buttons for going back and forth, globally, in what we have done. 
+ * 
+ *  - Preview - 
+ *  Some filters should offer preview possibility, so that each parameter change corresponds to a 
+ *  undo and re-application of the filter itself with the new parameters. 
+ * 
+ *  - Memory Awareness - 
+ *  History of changes is recorded upto a given memory amount. 
+ * 
+ * == Internal behaviour ==
+ * Each Layer has its own History
+ * LayerHistory records all the state of the mesh evolution. 
+ * There is a global clock
+ * Each state has a timestamp. 
+ * 
+ *  - Changes: 
+ * Filter Apply: it is recorded 
+ * 
+ * Undo: it is a global action that move back the clock and send to all the layer a kind of 
+ * message to set the state back to this 'time'
+ *
+ * Preview:
+ * - The user check the Preview button -> Timestamp T0 is recorded. The filter is applied, The state is saved
+ * - The user change some params -> RollBack to T0. Purge future, apply filter save state.
+ * - The user uncheck the preview button 
+ * 
+ * 
+ * This class encode the sequential history of changes that occourred to a mesh. 
+ * For sake of memory efficiency changes can be also differential. 
+ * A state encode either a mesh or the difference with the previous state 
+ * for a particular data (color, selection, position). 
+ * Differential state can exists only if the previous one is not empty. 
+ * 
+ */
+
+
+class MeshHistory
+{
+public:
+  // STATE MANAGMENT 
+  
+private :
+  std::vector<MeshState> _stateVec;
+  int _currentTime;
+public: 
+  
+  inline void pushState(int currentTime, MyMesh &m)
+  {
+    _currentTime = currentTime;
+    _stateVec.push_back(MeshState(currentTime));
+    _stateVec.back().SaveAll(m);
+  }
+
+  void Clear(int currentTime)
+  {
+    // First we make sure that the we have not undo nothing.
+    // We remove everything happened after the given time. 
+    while( _stateVec.back().TimeStamp() > currentTime)
+    {
+      _stateVec.back().Clear();
+      _stateVec.pop_back();
+    }
+    _currentTime=currentTime;
+  }
+
+  inline void Undo(MyMesh &m)
+  {    
+    assert(!_stateVec.empty());
+    _stateVec.back().Restore(m);
+    _currentTime = _stateVec.back().TimeStamp();
+  }
+  
+  inline void Redo(MyMesh &m)
+  {
+    
+  }
+  
+  // Restore the last state with a Id less or equal than <timeId>
+  // The rationale is that if we want to restore a global state at a given time
+  // we want to get the most recent state before that
+  
+  inline void restoreState(int timeId)
+  {
+    assert(!_stateVec.empty());
+    int i=0;
+    while(_stateVec[i].TimeStamp() < timeId) ++i;
+    assert(_stateVec[i].TimeStamp() <= timeId);
+  }  
+};   
+
+
 class CppMesh
 {
   public:
