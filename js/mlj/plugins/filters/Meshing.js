@@ -171,6 +171,35 @@
         Module.InvertFaceOrientation(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var CutAlongCrease = new plugin.Filter({
+        name: "Cut Along Crease",
+        tooltip: "Cut the current mesh along the crease edges, e.g. the edges where the two adjacent faces have normals that differs more than a given angle. .",
+        arity: 1
+    });
+    var creaseAngleWidget
+    CutAlongCrease._init = function (builder) {
+                creaseAngleWidget = builder.RangedFloat({
+            max: 90.0, min: 0, step: 10, defval: 70,
+            label: "Crease Angle",
+            tooltip: "All the edges where the adjacent normals spans an angle larger than this value are marked are considered crease and cut."
+        });
+    };
+
+    CutAlongCrease._applyTo = function (basemeshFile) {
+        Module.CutAlongCreaseFilter(basemeshFile.ptrMesh(),creaseAngleWidget.getValue());
+    };
+/******************************************************************************/  
+    var CutTopological = new plugin.Filter({
+        name: "Cut to Topological Disk",
+        tooltip: "Cut the current mesh So that it becomes topologically equivalent to an open disk.",
+        arity: 1
+    });
+    CutTopological._init = function (builder) {};
+
+    CutTopological._applyTo = function (basemeshFile) {
+        Module.CutTopologicalFilter(basemeshFile.ptrMesh());
+    };
+/******************************************************************************/  
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
@@ -179,6 +208,7 @@
     plugin.Manager.install(RemoveUnrefVert);
     plugin.Manager.install(RemoveDupVert);
     plugin.Manager.install(InvertFaceOrientation);
+    plugin.Manager.install(CutAlongCrease);
+    plugin.Manager.install(CutTopological);
     
-
 })(MLJ.core.plugin, MLJ.core.Scene);

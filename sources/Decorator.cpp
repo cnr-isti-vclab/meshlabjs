@@ -561,6 +561,32 @@ ColorHistogramf ComputeColorHistogram(
 	return ch;
 }
 
+float qualityMin(uintptr_t meshptr) {
+    MyMesh &m = *((MyMesh*) meshptr);
+    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    return minmax.first;
+}
+
+float qualityMax(uintptr_t meshptr) {
+    MyMesh &m = *((MyMesh*) meshptr);
+    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    return minmax.second;
+}
+
+uintptr_t buildVertexQualityVec(uintptr_t _mIn) {
+    MyMesh &mIn = *((MyMesh*)_mIn);
+
+    size_t numBytesVertices = mIn.VN() * sizeof(float);
+
+    float *vec = (float *) malloc(numBytesVertices);
+
+    int i = 0;
+
+    for (MyMesh::VertexIterator vi = mIn.vert.begin(); vi != mIn.vert.end(); ++vi) 
+        vec[i++] = vi->Q();
+    
+    return (uintptr_t) ((void *)vec);
+}
 
 #ifdef __EMSCRIPTEN__
 using namespace emscripten;
@@ -583,5 +609,8 @@ EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
     emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
     emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
     emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);
+    emscripten::function("buildVertexQualityVec", &buildVertexQualityVec);
+    emscripten::function("qualityMin", &qualityMin);
+    emscripten::function("qualityMax", &qualityMax);
 }
 #endif

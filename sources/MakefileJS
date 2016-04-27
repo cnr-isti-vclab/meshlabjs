@@ -14,18 +14,17 @@ CC=emcc
 # -s TOTAL_MEMORY=1073741824 
  
 
-CFLAGS=-I.  -I ../../vcglib/ -s TOTAL_MEMORY=1073741824  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
+CFLAGS=-I.  -I ../../vcglib/ -s TOTAL_MEMORY=536870912  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
-      Create.bc Refine.bc Transform.bc Selection.bc \
+      Create.bc Refine.bc Transform.bc Selection.bc Quality.bc \
       ../../vcglib/wrap/ply/plylib.bc
 
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
 MeshLabCppCore.js: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
-	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
+	$(CC) -o ../js/generated/$@ $^ $(CFLAGS)
 
 
 clean:
