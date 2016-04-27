@@ -641,17 +641,13 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         
         if (layer !== undefined) {
             //remove layer from list
-<<<<<<< HEAD
             layer.deleted=true;
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);     
-=======
             _layers.remove(name);
             _group.remove(layer.getThreeMesh());
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
             
             layer.dispose();
-                      
->>>>>>> refs/remotes/origin/master
             if(_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
             } else {
