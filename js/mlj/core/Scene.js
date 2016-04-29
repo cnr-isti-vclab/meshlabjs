@@ -92,6 +92,8 @@ MLJ.core.Scene = {};
     var _group;
     
     var _camera;
+    
+    var _cameraPosition;
 
     /**
      * This scene contains 2D overlays that are drawn on top of everything else
@@ -207,6 +209,7 @@ MLJ.core.Scene = {};
         _controls.staticMoving = true;
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
+
         
         $(document).keydown(function(event) {           
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
@@ -275,6 +278,7 @@ MLJ.core.Scene = {};
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
+    
     
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
@@ -626,10 +630,10 @@ MLJ.core.Scene = {};
         var decorator = _decorators.getByKey(name)
 
         if (decorator !== undefined) {
-            _decorators.remove(name);
+            var mesh = _decorators.remove(name);
             _group.remove(decorator);
-            decorator.geometry.dispose();
-            decorator.material.dispose();  
+            mesh.traverse(disposeObject);
+            disposeObject(mesh);
         } else {
             console.warn("Warning: " + name + " decorator not in the scene");
         }
@@ -789,6 +793,91 @@ MLJ.core.Scene = {};
             saveAs(blob, "snapshot.png");
         });
     };
+    
+    this.takeCameraPositionJSON = function() {
+        // The JSON is a simple javascript object that will get "stringified" with the JSON object function
+        _cameraPosition = {
+            camera: _controls.object.position.clone(),
+            fov: _controls.object.fov,
+            up: _controls.object.up.clone(),
+            target: _controls.target.clone()
+        };
+
+        // We stringify the object; the other parameters define the spacing between the elements
+        return JSON.stringify(_cameraPosition, null, 4);
+    };
+    
+    this.setCameraPosition = function (cameraPos, target, up, fov) {
+        // Changing the parameters
+        _controls.target.copy(target );
+        _controls.object.position.copy(cameraPos);
+        _controls.object.up.copy(up);
+        _controls.object.fov = fov;
+
+        // Updating the camera projection matrix; needed if the view was changed
+        _controls.object.updateProjectionMatrix();
+
+        // Changing the view direction
+        _controls.object.lookAt( _controls.target );
+        
+        // Event taken from the TrackballControls class
+        var changeEvent = { type: 'change' }
+        
+        // Notifying the controls object of the event and updating 
+        _controls.dispatchEvent( changeEvent);
+        _controls.update();
+    };
+    
+    this.setCameraPositionJSON = function(cameraJSON) {
+        var success = true;
+        
+        try {
+            var parsedJSON = JSON.parse(cameraJSON);
+            
+            // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
+            if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
+                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                parsedJSON.target.x === undefined|| parsedJSON.target.y === undefined || parsedJSON.target.z === undefined ||  parsedJSON.fov === undefined)
+            {
+                success = false;
+            }   
+            // If the "up" vector is the zero vector, it's not valid
+            else if(!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
+                success = false;
+            // If the fov is below 1, throw an error
+            else if(parsedJSON.fov < 1)
+                success = false;
+            // Otherwise, we're good to go
+            else
+            {
+                // Saving the parameters
+                _cameraPosition.camera.x = parsedJSON.camera.x;
+                _cameraPosition.camera.y = parsedJSON.camera.y;
+                _cameraPosition.camera.z = parsedJSON.camera.z;
+                _cameraPosition.fov = parsedJSON.fov;
+                _cameraPosition.up.x = parsedJSON.up.x;
+                _cameraPosition.up.y = parsedJSON.up.y;
+                _cameraPosition.up.z = parsedJSON.up.z;
+                _cameraPosition.target.x = parsedJSON.target.x;
+                _cameraPosition.target.y = parsedJSON.target.y;
+                _cameraPosition.target.z = parsedJSON.target.z;
+                
+                // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
+                // just set the z value to be a little more than 0
+                if(!_cameraPosition.camera.x && !_cameraPosition.camera.y && !_cameraPosition.camera.z)
+                    _cameraPosition.camera.z = 0.1;
+
+                // Now that we have all parameters, we can change the viewpoint
+                _this.setCameraPosition(_cameraPosition.camera, _cameraPosition.target, _cameraPosition.up, _cameraPosition.fov);
+            }
+        }
+        catch(e) {
+            success = false;
+        }
+        
+        return success;
+    }
+
     
     this.resetTrackball = function() {
         _controls.reset();

@@ -75,6 +75,23 @@
         _html += "<div id='button-wrapper'><button id='mlj-upload-dialog-button'>Upload</button></div></div>";
         _dialogUpload.appendContent(_html);        
         
+        
+        var _dialogCameraPosition = new component.Dialog({
+            title:"Camera position", modal:true, draggable: false, resizable:false
+        });
+        
+        // This HTML basically contains a div for the dialog, a div with a label, a textarea, 
+        // a div with an invisible error label, a div with a button
+         var _html = "<div id='mlj-cameraPosition-dialog'>";
+            _html += "<br/><div style='text-align: center;> <label for='website'>Camera Position as JSON</label></div> ";
+            _html += "<textarea id='cameraJSON' style='width: 250px; height: 315px; margin-left: 10px; margin-top: 5px'>";
+            _html += "</textarea>";
+            _html += "<div id='errorMessageDiv' style='text-align: center;  margin-bottom: 5px; color: red; display:none>";
+            _html += "<br/><label id='errorMessage' style='font-size: 60%; color: red;'>Wrong values or JSON not well formed</label>";
+            _html += "</div>";
+            _html += "<div id='button-wrapper' style='text-align: center; margin-top: 5px;'><button id='mlj-cameraPosition-dialog-button'>Confirm</button></div></div>";
+        _dialogCameraPosition.appendContent(_html);        
+        
 
         function init() {
 
@@ -114,6 +131,11 @@
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
             
+            var cameraPosition = new component.Button({
+                tooltip: "Camera position",
+                icon: "img/icons/home.png" // Needs a new icon
+            });
+            
             var resetTrackball = new component.Button({
                 tooltip: "Reset trackball",
                 icon: "img/icons/home.png"
@@ -141,7 +163,7 @@
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
             
-            _toolBar.add(open, save, uploadToWebsite, reload, resetTrackball, snapshot, deleteLayer);
+            _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
 			_toolBar.add(doc,git);
 
             // SCENE BAR EVENT HANDLERS
@@ -194,6 +216,40 @@
             deleteLayer.onClick(function() {
                 MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
             })
+            
+            cameraPosition.onClick(function() {
+                // Takes the camera position as JSON
+                var cameraJSON = MLJ.core.Scene.takeCameraPositionJSON();
+                
+                // Shows the dialog
+                _dialogCameraPosition.show();
+                
+                // Hides the error message
+                $('#errorMessageDiv').hide();
+
+                // Fills the text area with the JSON
+                $('#cameraJSON').val(cameraJSON);
+
+                // If button is clicked...
+                $('#mlj-cameraPosition-dialog-button').click(function() {        
+                    // Takes the JSON as string
+                    var cameraJSON = $('#cameraJSON').val();
+                    
+                    // Sets the new camera position
+                    var success = MLJ.core.Scene.setCameraPositionJSON(cameraJSON);
+                    
+                    // If everything goes ok, close the dialog
+                    if(success)
+                    {
+                        _dialogCameraPosition.destroy();
+                        $(this).off();
+                    }
+                    // Otherwise, show the error message
+                    else
+                        $('#errorMessageDiv').show();
+                });
+            });
+            
             
             resetTrackball.onClick(function() {
                 MLJ.core.Scene.resetTrackball();

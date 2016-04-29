@@ -45,9 +45,18 @@ MLJ.core.plugin.GlobalRendering = function (parameters) {
     $(document).on("SceneLayerUpdated", function (event, meshFile) {
         //TODO
     });                
-        
+
     if (parameters.applyOnEvent !== undefined) {
-        // TODO
+        $(window).ready(function() {
+                $($('canvas')[0]).on(parameters.applyOnEvent, function() {
+                    // Reapplying the plugin, but only if it was already on
+                    if(btn.isOn())
+                    {
+                        _this._applyTo(false);
+                        _this._applyTo(true);                       
+                    }
+                });
+            });
     }
 
     $(document).on("SceneLayerSelected", function (event, meshFile) {
