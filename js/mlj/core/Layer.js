@@ -37,6 +37,8 @@ MLJ.core.Layer = function (id,name, cppMesh) {
     this.id=id;
     //deleted property for lazy deletion in scene
     this.deleted=false;
+    //history of the mesh in the current layer
+    this.meshH= new Module.MeshHistory();
     /**
      * @type {String} - Set if a mesh is read from a file
      * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string

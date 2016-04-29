@@ -28,69 +28,73 @@
  */
 
 MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of SceneChange
-    var listSceneChange=new Array();
+    var listSceneChange = new Array();
     var tmpSC; //temporary object to store the actual scene changes
-    
-    this.openSC=function () //aggiungere mandante della applyto
-    //creates a new SceneChange object to store LayerChanges
+
+    this.openSC = function () //creates a new SceneChange object to store LayerChanges
     {
-        tmpSC=new MLJ.core.SceneChange();
+        tmpSC = new MLJ.core.SceneChange();
     }
     //"closes" the registration of LayerChanges and stores it in the array.
     //This is called at every Filter applied, Layer selected or deleted
-    this.closeSC=function () 
+    this.closeSC = function ()
     {
         listSceneChange.push(tmpSC);
-        tmpSC=undefined;
+        tmpSC = undefined;
     }
-    this.addLC=function(newLC) //adds a new LayerChange to the actual SceneChange
+    this.addLC = function (newLC) //adds a new LayerChange to the actual SceneChange
     {
-        if(tmpSC==undefined) //if it's the first LayerChange, creates a new SceneChange
+        if (tmpSC == undefined) //if it's the first LayerChange, creates a new SceneChange
             this.openSC();
         tmpSC.add(newLC);
     }
-    this.toString=function () //debug function to see the result
+    this.toString = function () //debug function to see the result
     {
-        return "SceneChange: "+listSceneChange.map(function(e){return e.toString()}).toString();
+        return "SceneChange: " + listSceneChange.map(function (e) {
+            return e.toString()
+        }).toString();
     }
 };
 MLJ.core.SceneChange = function () { //Scene Changes class, stores a list of LayerChanges
-    var listLayerChange=new Array();
-    this.add=function (newLC) //adds a new LayerChange to the array
+    var listLayerChange = new Array();
+    this.add = function (newLC) //adds a new LayerChange to the array
     {
-        if(newLC instanceof MLJ.core.LayerChange)
+        if (newLC instanceof MLJ.core.LayerChange)
         {
             listLayerChange.push(newLC);
             MLJ.widget.Log.append(newLC.toString());
         }
     }
-    this.toString=function () //debug function to see the content
+
+    this.toString = function () //debug function to see the content
     {
-        return listLayerChange.map(function (e) {return e.toString()}).toString();
+        return listLayerChange.map(function (e) {
+            return e.toString()
+        }).toString();
     }
 };
-MLJ.core.LayerChange=function (id,type) //LayerChange class, structured as 
+MLJ.core.LayerChange = function (id, type) //LayerChange class, structured as 
 {
     var LayerID; //id of the layer changed
     var ChangeType; //type of the change applied to the layer - structure ahead
-    LayerID=id;
-    ChangeType=type;
-    
-    this.toString=function()
+    LayerID = id;
+    ChangeType = type;
+
+    this.toString = function ()
     {
-        return "LayerID: "+LayerID+ " "+ ChangeType;
+        return "LayerID: " + LayerID + " " + ChangeType;
     }
-    
-};
-MLJ.core.ChangeType= //ChangeType is structured like an enumerator which map every type as an integer *provvisory*
-{
-    Creation:"Create",
-    Deletion:"Delete", 
-    Modification:"Modify",
-    Selection:"Select",
-    Unselection:"UnSelect"
 
 };
+MLJ.core.ChangeType = //ChangeType is structured like an enumerator which map every type as an integer *provvisory*
+        {
+            Creation: "Create",
+            Deletion: "Delete",
+            Modification: "Modify",
+            Selection: "Select",
+            Unselection: "UnSelect"
+
+        };
 /**
  * The MLJ.core.Scene namespace defines the functions to manage the scene, 
  * i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
@@ -105,9 +109,10 @@ MLJ.core.ChangeType= //ChangeType is structured like an enumerator which map eve
  */
 
 MLJ.core.Scene = {};
-MLJ.core.Scene.history=new MLJ.core.SceneHistory();
+MLJ.core.Scene.history = new MLJ.core.SceneHistory();
+MLJ.core.Scene.timeStamp=0;
 (function () {
-    
+
     /**
      * Associative Array that contains all the meshes in the scene 
      * @type MLJ.util.AssociativeArray
@@ -145,7 +150,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @memberOf MLJ.core.Scene     
      */
     var _scene;
-    
+
     /**
      * The ThreeJs group that contains all the layers. 
      * It also store the global transformation (scale + translation) 
@@ -155,7 +160,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @memberOf MLJ.core.Scene     
      */
     var _group;
-    
+
     var _camera;
 
     /**
@@ -163,7 +168,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @memberOf MLJ.core.Scene     
      */
     var _scene2D;
-    
+
     /**
      * "Fake" camera object passed to the renderer when rendering the <code>_scene2D</code>
      */
@@ -171,7 +176,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
 
     var _stats;
     var _controls;
-    
+
     /// @type {Object}
     var _renderer;
     var _this = this;
@@ -180,7 +185,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         var _3D = $('#_3D');
 
         return {
-            width: _3D.innerWidth (),
+            width: _3D.innerWidth(),
             height: _3D.innerHeight()
         };
     }
@@ -220,7 +225,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         stats.domElement.style.top = '0px';
         stats.domElement.style.zIndex = 100;
 
-        $("#_3D").append( stats.domElement );
+        $("#_3D").append(stats.domElement);
 
         return stats;
     }
@@ -237,29 +242,29 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         _scene.add(_group);
 
         _scene2D = new THREE.Scene();
-        _camera2D = new THREE.OrthographicCamera(0 , _3DSize.width / _3DSize.height, 1, 0, -1, 1);
+        _camera2D = new THREE.OrthographicCamera(0, _3DSize.width / _3DSize.height, 1, 0, -1, 1);
         _camera2D.position.z = -1;
 
-        _renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
-            alpha: true, 
-            preserveDrawingBuffer:true});
+        _renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            preserveDrawingBuffer: true});
         //_renderer.shadowMapEnabled = true;
         //_renderer.context.getSupportedExtensions();
         _renderer.context.getExtension("EXT_frag_depth");
 
-        
-        _renderer.setPixelRatio( window.devicePixelRatio );
+
+        _renderer.setPixelRatio(window.devicePixelRatio);
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
 
         _stats = initStats();
         /*
-        requestAnimationFrame(function updateStats() {
-                                _stats.update();
-                                requestAnimationFrame(updateStats); });
-        */
+         requestAnimationFrame(function updateStats() {
+         _stats.update();
+         requestAnimationFrame(updateStats); });
+         */
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -272,14 +277,14 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         _controls.staticMoving = true;
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
-        
-        $(document).keydown(function(event) {           
-            if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
+
+        $(document).keydown(function (event) {
+            if ((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
             }
         });
-        
+
         //INIT LIGHTS 
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
@@ -287,11 +292,11 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
         $canvas.addEventListener('touchmove', _controls.update.bind(_controls), false);
-        $canvas.addEventListener('mousemove', _controls.update.bind(_controls), false);        
-        $canvas.addEventListener('mousewheel', _controls.update.bind(_controls), false);        
-        $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false ); // firefox
-        
-        _controls.addEventListener('change', function () {            
+        $canvas.addEventListener('mousemove', _controls.update.bind(_controls), false);
+        $canvas.addEventListener('mousewheel', _controls.update.bind(_controls), false);
+        $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false); // firefox
+
+        _controls.addEventListener('change', function () {
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -320,7 +325,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
 
         $(document).on("MeshFileReloaded",
                 function (event, layer) {
-                    
+
                     // Restore three geometry to reflect the new state of the vcg mesh
                     layer.updateThreeMesh();
 
@@ -336,11 +341,11 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
                      *          //do something
                      *      }
                      *  );
-                     */                    
+                     */
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
-    
+
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
@@ -351,12 +356,12 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
     function _computeGlobalBBbox()
     {
         console.time("Time to update bbox: ");
-        _group.scale.set(1,1,1);
-        _group.position.set(0,0,0);
+        _group.scale.set(1, 1, 1);
+        _group.position.set(0, 0, 0);
         _group.updateMatrixWorld();
-        
+
         if (_layers.size() === 0) // map to the canonical cube
-            BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
+            BBGlobal = new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
         else {
             BBGlobal = new THREE.Box3();
             BBGlobal.setFromObject(_group);
@@ -364,8 +369,8 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
         var offset = BBGlobal.center().negate();
         offset.multiplyScalar(scaleFac);
-        _group.scale.set(scaleFac,scaleFac,scaleFac);
-        _group.position.set(offset.x,offset.y,offset.z);
+        _group.scale.set(scaleFac, scaleFac, scaleFac);
+        _group.position.set(offset.x, offset.y, offset.z);
         _group.updateMatrixWorld();
         //console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
         //console.log("ScaleFactor:" + _group.scale.x  +" "+ _group.scale.x  +" "+ _group.scale.x);
@@ -376,21 +381,21 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
     this.getBBox = function () {
         return _computeGlobalBBbox();
     }
-  
+
     this.lights = {
         AmbientLight: null,
         Headlight: null
     };
-    
-    this.getCamera = function() {
+
+    this.getCamera = function () {
         return _camera;
     };
 
-    this.getStats = function() {
+    this.getStats = function () {
         return _stats;
     }
 
-    this.getThreeJsGroup = function() {
+    this.getThreeJsGroup = function () {
         return _group;
     }
 
@@ -415,8 +420,8 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
          *      }
          *  );
          */
-        $(document).trigger("SceneLayerSelected", [_selectedLayer]); 
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer.id,MLJ.core.ChangeType.Selection));
+        $(document).trigger("SceneLayerSelected", [_selectedLayer]);
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer.id, MLJ.core.ChangeType.Selection));
     };
 
     /**
@@ -430,15 +435,15 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
     this.setLayerVisible = function (layerName, visible) {
         var layer = _layers.getByKey(layerName);
         layer.getThreeMesh().visible = visible;
-        
+
         var iter = layer.overlays.iterator();
-        
-        while(iter.hasNext()) {
+
+        while (iter.hasNext()) {
             iter.next().visible = visible;
         }
 
-       
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Modification));
+
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Modification));
         MLJ.core.Scene.history.closeSC();
         MLJ.core.Scene.render();
     };
@@ -454,7 +459,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             console.error("The parameter must be an instance of MLJ.core.Layer");
             return;
         }
-        
+
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
         _group.add(layer.getThreeMesh());
@@ -463,7 +468,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         _layers.set(layer.name, layer);
         _selectedLayer = layer;
 
-        _computeGlobalBBbox();              
+        _computeGlobalBBbox();
 
         /**
          *  Triggered when a layer is added
@@ -480,18 +485,18 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
          *  );
          */
         $(document).trigger("SceneLayerAdded", [layer, _layers.size()]);
-        
+
         //render the scene
         _this.render();
-    };       
-    
-    this.addOverlayLayer = function(layer, name, mesh, overlay2D) {
-        if(!(mesh instanceof THREE.Object3D)) {
+    };
+
+    this.addOverlayLayer = function (layer, name, mesh, overlay2D) {
+        if (!(mesh instanceof THREE.Object3D)) {
             console.warn("mesh parameter must be an instance of THREE.Object3D");
             return;
         }
-        
-        layer.overlays.set(name,mesh);
+
+        layer.overlays.set(name, mesh);
 
         mesh.visible = layer.getThreeMesh().visible;
         if (overlay2D) {
@@ -505,30 +510,33 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
     };
 
     function disposeObject(obj) {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) obj.material.dispose();
-        if (obj.texture) obj.texture.dispose();
+        if (obj.geometry)
+            obj.geometry.dispose();
+        if (obj.material)
+            obj.material.dispose();
+        if (obj.texture)
+            obj.texture.dispose();
     }
-    
-    this.removeOverlayLayer = function(layer, name, overlay2D) {        
+
+    this.removeOverlayLayer = function (layer, name, overlay2D) {
         var mesh = layer.overlays.getByKey(name);
 
         if (mesh !== undefined) {
-            mesh = layer.overlays.remove(name);      
+            mesh = layer.overlays.remove(name);
 
             if (overlay2D) {
-                _scene2D.remove(mesh);                        
+                _scene2D.remove(mesh);
             } else {
-                layer.getThreeMesh().remove(mesh);   
+                layer.getThreeMesh().remove(mesh);
 //                _group.remove(mesh);                        
             }
 
             mesh.traverse(disposeObject);
             disposeObject(mesh);
 
-            _this.render();                              
+            _this.render();
         }
-    };  
+    };
 
     /**
      * Updates a layer. This function should be called if the <code>layer</code>
@@ -571,7 +579,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             console.error("The parameter must be an instance of MLJ.core.Layer");
         }
 
-        
+
     };
 
     /**
@@ -605,15 +613,18 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
             var collision = false;
             var layerIterator = MLJ.core.Scene.getLayers().iterator();
             while (layerIterator.hasNext() && !collision) {
-                if (meshName === layerIterator.next().name) collision = true;
+                if (meshName === layerIterator.next().name)
+                    collision = true;
             }
-            if (collision) meshName = prefix + "[" + ++maxNumTag + "]" + ext;
-            else break;
+            if (collision)
+                meshName = prefix + "[" + ++maxNumTag + "]" + ext;
+            else
+                break;
         }
         return meshName;
     }
 
-    
+
     /**
      * Creates a new mesh file using the c++ functions bound to JavaScript
      * @param {String} name The name of the new mesh file
@@ -621,39 +632,39 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
-    var lastID=0;
+    var lastID = 0;
     this.createLayer = function (name) {
         var layerName = disambiguateName(name);
-        var layer = new MLJ.core.Layer(lastID++,layerName, new Module.CppMesh());
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Creation));
+        var layer = new MLJ.core.Layer(lastID++, layerName, new Module.CppMesh());
+        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Creation));
         return layer;
     };
-    
+
     /**
      * Removes the layer corresponding to the given name
      * @param {String} name The name of the layer which must be removed  
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele     
      */
-    
+
     this.removeLayerByName = function (name) {
         var layer = this.getLayerByName(name);
-        
+
         if (layer !== undefined) {
             //remove layer from list
             _group.remove(layer.getThreeMesh());
-            
-            layer.deleted=true;
-            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]); 
-            
-            if(_layers.size() > 0) {
+
+            layer.deleted = true;
+            $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
+
+            if (_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
             } else {
                 _this._selectedLayer = undefined;
             }
             _computeGlobalBBbox();
-            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id,MLJ.core.ChangeType.Deletion));
-            MLJ.core.Scene.render(); 
+            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Deletion));
+            MLJ.core.Scene.render();
         }
     };
 
@@ -666,8 +677,8 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @param {THREE.Object3D} decorator - The decorator object
      * @memberOf MLJ.core.Scene
      */
-    this.addSceneDecorator = function(name, decorator) {
-        if(!(decorator instanceof THREE.Object3D)) {
+    this.addSceneDecorator = function (name, decorator) {
+        if (!(decorator instanceof THREE.Object3D)) {
             console.warn("MLJ.core.Scene.addSceneDecorator(): decorator parameter not an instance of THREE.Object3D");
             return;
         }
@@ -683,14 +694,14 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @param {String} name - The name of the decorator to remove
      * @memberOf MLJ.core.Scene
      */
-    this.removeSceneDecorator = function(name) {
+    this.removeSceneDecorator = function (name) {
         var decorator = _decorators.getByKey(name)
 
         if (decorator !== undefined) {
             _decorators.remove(name);
             _group.remove(decorator);
             decorator.geometry.dispose();
-            decorator.material.dispose();  
+            decorator.material.dispose();
         } else {
             console.warn("Warning: " + name + " decorator not in the scene");
         }
@@ -706,7 +717,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @author Stefano Gabriele     
      */
     this.getSelectedLayer = function () {
-        
+
         return _selectedLayer;
     };
 
@@ -720,10 +731,16 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
         return _layers;
     };
 
-    this.get3DSize = function() { return get3DSize(); };
-    this.getRenderer = function() { return _renderer; };
+    this.get3DSize = function () {
+        return get3DSize();
+    };
+    this.getRenderer = function () {
+        return _renderer;
+    };
 
-    this.getScene = function () {return _scene;};
+    this.getScene = function () {
+        return _scene;
+    };
 
     /**
      * Adds a post process pass to the rendering chain. As of now the interface
@@ -744,7 +761,7 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
      * @memberOf MLJ.core.Scene
      */
     this.addPostProcessPass = function (name, pass) {
-        if(!jQuery.isFunction(pass)) {
+        if (!jQuery.isFunction(pass)) {
             console.warn("MLJ.core.Scene.addPostProcessPass(): pass parameter must be callable");
             return;
         }
@@ -776,29 +793,29 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
 
     var plane = new THREE.PlaneBufferGeometry(2, 2);
     var quadMesh = new THREE.Mesh(
-        plane
-    );
+            plane
+            );
 
     var quadScene = new THREE.Scene();
     quadScene.add(quadMesh);
 
     quadMesh.material = new THREE.ShaderMaterial({
         vertexShader:
-            "varying vec2 vUv; \
+                "varying vec2 vUv; \
              void main(void) \
              { \
                  vUv = uv; \
                  gl_Position = vec4(position.xyz, 1.0); \
              }",
-        fragmentShader: 
-            "uniform sampler2D offscreen; \
+        fragmentShader:
+                "uniform sampler2D offscreen; \
              varying vec2 vUv; \
              void main(void) { gl_FragColor = texture2D(offscreen, vUv.xy); }"
     });
     quadMesh.material.uniforms = {
-            offscreen: { type: "t", value: null }
+        offscreen: {type: "t", value: null}
     };
-    
+
 
     /**
      * Renders the scene. If there are no post process effects enabled, the 
@@ -844,19 +861,19 @@ MLJ.core.Scene.history=new MLJ.core.SceneHistory();
 
 
 
-    this.takeSnapshot = function() {
-        var canvas = _renderer.context.canvas;        
+    this.takeSnapshot = function () {
+        var canvas = _renderer.context.canvas;
         // draw to canvas...
-        canvas.toBlob(function(blob) {
+        canvas.toBlob(function (blob) {
             saveAs(blob, "snapshot.png");
         });
     };
-    
-    this.resetTrackball = function() {
+
+    this.resetTrackball = function () {
         _controls.reset();
     };
-    
-    
+
+
     //INIT
     $(window).ready(function () {
         initScene();

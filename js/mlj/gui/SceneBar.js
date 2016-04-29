@@ -37,44 +37,44 @@
 
         var _toolBar = new component.ToolBar();
         var _dialog = new component.Dialog({
-            title:"Save mesh", modal:true, draggable: false, resizable:false
-        });        
-        
-        var _html =  "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
-            _html += "<input id='filename' type='text'/>";
-            _html += "<label for='extension'>Extension:</label><br/>";
-            _html += "<select id='extension'>";
-        
+            title: "Save mesh", modal: true, draggable: false, resizable: false
+        });
+
+        var _html = "<div id='mlj-save-dialog'><label for='filename'>Name:</label><br/>";
+        _html += "<input id='filename' type='text'/>";
+        _html += "<label for='extension'>Extension:</label><br/>";
+        _html += "<select id='extension'>";
+
         var ext;
-        for(var key in MLJ.core.File.SupportedExtensions) {
+        for (var key in MLJ.core.File.SupportedExtensions) {
             ext = MLJ.core.File.SupportedExtensions[key];
-            _html +="<option name='"+ext+"'>"+ext+"</option>";
-        }       
-         
+            _html += "<option name='" + ext + "'>" + ext + "</option>";
+        }
+
         _html += "</select>";
         _html += "Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
         _html += "<div id='button-wrapper'><button id='mlj-save-dialog-button'>Save</button></div></div>";
         _dialog.appendContent(_html);
-        
-        
+
+
         var _dialogUpload = new component.Dialog({
-            title:"Upload mesh", modal:true, draggable: false, resizable:false
+            title: "Upload mesh", modal: true, draggable: false, resizable: false
         });
-        
-         var _html = "<div id='mlj-upload-dialog'>";
-            _html += "<br/><label for='website'>Website:</label> ";
-            _html += "<select id='website' style='width: 150px; margin-left: 10px;'>";
-        
+
+        var _html = "<div id='mlj-upload-dialog'>";
+        _html += "<br/><label for='website'>Website:</label> ";
+        _html += "<select id='website' style='width: 150px; margin-left: 10px;'>";
+
         var ext;
-        for(var key in MLJ.core.File.SupportedWebsites) {
+        for (var key in MLJ.core.File.SupportedWebsites) {
             ext = MLJ.core.File.SupportedWebsites[key];
-            _html +="<option name='"+ext+"'>"+ext+"</option>";
-        }       
-         
+            _html += "<option name='" + ext + "'>" + ext + "</option>";
+        }
+
         _html += "</select>";
         _html += "<div id='button-wrapper'><button id='mlj-upload-dialog-button'>Upload</button></div></div>";
-        _dialogUpload.appendContent(_html);        
-        
+        _dialogUpload.appendContent(_html);
+
 
         function init() {
 
@@ -83,20 +83,20 @@
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0049-folder-open.png",
                 multiple: true
             });
-                        
+
 
             var save = new component.Button({
                 tooltip: "Save mesh file",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0099-floppy-disk.png"
             });
-            
+
             MLJ.gui.disabledOnSceneEmpty(save);
-            
+
             var reload = new component.Button({
                 tooltip: "Reload mesh file",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png"
             });
-                                                          
+
             MLJ.gui.disabledOnSceneEmpty(reload);
             //The reload button must be disalbed if the layer is created by a
             //creation filter
@@ -106,125 +106,154 @@
                 tooltip: "Take snapshot",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0016-camera.png"
             });
-            
+
             MLJ.gui.disabledOnSceneEmpty(snapshot);
 
             var deleteLayer = new component.Button({
                 tooltip: "Delete current layer",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
-            
+
             var resetTrackball = new component.Button({
                 tooltip: "Reset trackball",
                 icon: "img/icons/home.png"
             });
-            
+
             var uploadToWebsite = new component.Button({
                 tooltip: "Upload to website",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0199-upload2.png"
 //                icon: "img/icons/upload-arrow.png"
             });
-            
+            //undo redo buttons
+            var unDo = new component.Button({
+                tooltip: "undo changes",
+                icon: "img/icons/undo.png"
+            });
+
+            var reDo = new component.Button({
+                tooltip: "redo changes",
+                icon: "img/icons/redo.png"
+            });
             var doc = new component.Button({
                 tooltip: "Go to the documentation page",
                 icon: "img/icons/question.png",
-				right:true
+                right: true
             });
-            
+
             var git = new component.Button({
                 tooltip: "Go to the Github page",
                 icon: "img/icons/github.png",
-				right:true
+                right: true
             });
-            
+
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
-            
-            _toolBar.add(open, save, uploadToWebsite, reload, resetTrackball, snapshot, deleteLayer);
-			_toolBar.add(doc,git);
 
+            _toolBar.add(open, save, uploadToWebsite, reload, resetTrackball, snapshot, deleteLayer);
+            _toolBar.add(doc, git);
+            _toolBar.add(unDo, reDo);
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
                 MLJ.core.File.openMeshFile(input.files);
             });
-			doc.onClick(function () {
-				 var win = window.open("./doc/html/", '_blank');
-					win.focus();
-			});
-			git.onClick(function () {
-				 var win = window.open("https://github.com/cnr-isti-vclab/meshlabjs", '_blank');
-					win.focus();
-			});
+            doc.onClick(function () {
+                var win = window.open("./doc/html/", '_blank');
+                win.focus();
+            });
+            git.onClick(function () {
+                var win = window.open("https://github.com/cnr-isti-vclab/meshlabjs", '_blank');
+                win.focus();
+            });
+            unDo.onClick(function ()
+            {
+                if (MLJ.core.Scene.timeStamp > 0)
+                {
+                    MLJ.widget.Log.append("\n\nUndo in progress");
+                    var layers = MLJ.core.Scene.getLayers();
+                    var it = layers.iterator();
+                    
+                    while (it.hasNext())
+                    {
+                        var layer = it.next();
+                        layer.meshH.restoreState(MLJ.core.Scene.timeStamp, layer.ptrMesh());
+                        MLJ.core.Scene.updateLayer(layer);
+                    }
+                    MLJ.core.Scene.timeStamp--;
+                }
+            });
+            reDo.onClick(function ()
+            {
+
+            });
             save.onClick(function () {
                 var layer = MLJ.core.Scene.getSelectedLayer();
                 //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
-                var meshInfo = layer.name.split(".");                
+                var meshInfo = layer.name.split(".");
                 _dialog.show();
                 $('#mlj-save-dialog > #filename').val(meshInfo[0]);
-                
-                $('#mlj-save-dialog > #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]')
-                        .attr('selected','selected');
-               
-                $('#mlj-save-dialog-button').click(function() {                    
+
+                $('#mlj-save-dialog > #extension option[name=".' + meshInfo[meshInfo.length - 1] + '"]')
+                        .attr('selected', 'selected');
+
+                $('#mlj-save-dialog-button').click(function () {
                     var name = $('#mlj-save-dialog > #filename').val();
                     var extension = $('#mlj-save-dialog > #extension').val();
-                    if($('#mlj-save-dialog > #zipCheck').is(':checked')){
+                    if ($('#mlj-save-dialog > #zipCheck').is(':checked')) {
 //                        console.log("COMPRESS");
-                        MLJ.core.File.saveMeshFileZip(layer, name+extension, name+".zip");
-                    }
-                    else{ 
+                        MLJ.core.File.saveMeshFileZip(layer, name + extension, name + ".zip");
+                    } else {
 //                        console.log("DO NOT COMPRESS");
-                        MLJ.core.File.saveMeshFile(layer, name+extension);
+                        MLJ.core.File.saveMeshFile(layer, name + extension);
                     }
                     _dialog.destroy();
                     $(this).off();
                 });
-            });                        
+            });
 
             reload.onClick(function () {
                 var mf = MLJ.core.Scene.getSelectedLayer();
                 MLJ.core.File.reloadMeshFile(mf);
             });
 
-            snapshot.onClick(function () {                
+            snapshot.onClick(function () {
                 MLJ.core.Scene.takeSnapshot();
             });
 
-            deleteLayer.onClick(function() {
+            deleteLayer.onClick(function () {
                 MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
             })
-            
-            resetTrackball.onClick(function() {
+
+            resetTrackball.onClick(function () {
                 MLJ.core.Scene.resetTrackball();
             })
-            
-            uploadToWebsite.onClick(function() {
+
+            uploadToWebsite.onClick(function () {
                 //TODO
                 var layer = MLJ.core.Scene.getSelectedLayer();
                 //Name = meshInfo[0], extension = meshInfo[meshInfo.length-1]
-                var meshInfo = layer.name.split(".");                
+                var meshInfo = layer.name.split(".");
                 _dialogUpload.show();
-                $('#mlj-upload-dialog-button').click(function() {        
+                $('#mlj-upload-dialog-button').click(function () {
                     var website = $('#mlj-upload-dialog > #website').val();
-                    
-                    if(website === MLJ.core.File.SupportedWebsites["SKF"]){
-                        
+
+                    if (website === MLJ.core.File.SupportedWebsites["SKF"]) {
+
                         var sketchFabDialog = new component.Dialog({
-                         title:"Upload to Sketchfab", modal:true, draggable: false, resizable:false
-                        });        
+                            title: "Upload to Sketchfab", modal: true, draggable: false, resizable: false
+                        });
 
 //                        sketchFabDialog.appendContent("<div id=prova> YOLO </div>");
                         var _html = "<div id='sketchfabUpload'>";
                         _html += "Extension: <select id='extension'>";
-        
-                        var ext;
-                        for(var key in MLJ.core.File.SupportedSketchfabExtensions) {
-                            ext = MLJ.core.File.SupportedSketchfabExtensions[key];
-                            _html +="<option name='"+ext+"'>"+ext+"</option>";
-                        }       
 
-                        _html += "</select>";     
+                        var ext;
+                        for (var key in MLJ.core.File.SupportedSketchfabExtensions) {
+                            ext = MLJ.core.File.SupportedSketchfabExtensions[key];
+                            _html += "<option name='" + ext + "'>" + ext + "</option>";
+                        }
+
+                        _html += "</select>";
                         _html += " Compress? <input name='zip' id='zipCheck' type='checkbox' value='1'>"
                         _html += "<form id='the-form' action='https://api.sketchfab.com/v2/models' enctype='multipart/form-data'>";
 //                        _html += "Upload your model file: <br> <input name='modelFile' type='file'> <br><br>";
@@ -235,62 +264,59 @@
                         _html += "<br><br> Private? (Pro only) <input name='private' id='private' type='checkbox' value='0'>";
                         _html += "<br><br> Password (Pro only): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
                         _html += "<br><br> <p> Max file size: Free 50 MB; Pro 200 MB; Business 500 MB</p>";
-                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'></form>"; 
+                        _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'></form>";
                         sketchFabDialog.appendContent(_html);
                         sketchFabDialog.show();
-                          
+
                         $('#sketchfabUpload #name').val(meshInfo[0]);
-                        $('#sketchfabUpload #extension option[name=".'+meshInfo[meshInfo.length-1]+'"]').attr('selected','selected');
+                        $('#sketchfabUpload #extension option[name=".' + meshInfo[meshInfo.length - 1] + '"]').attr('selected', 'selected');
                         $("#private").prop('checked', false);
                         $("#password").prop('disabled', false);
-                        $("#private").change(function() {
-                            if(this.checked) {
+                        $("#private").change(function () {
+                            if (this.checked) {
                                 $("#password").prop('disabled', false);
-                            }
-                            else {
+                            } else {
                                 $("#password").prop('disabled', true);
                             }
                         });
-                        
-                        var characterCounter = function() {
-                                var text_remaining = $(this).attr('maxLength') - $(this).val().length;
-                                var counterId = $(this).attr('id') +"Counter";
-                                if(text_remaining <= 10){
-                                    $('#'+counterId).addClass("overflow");
-                                    $('#'+counterId).text(text_remaining);
-                                }
-                                else{
-                                    $('#'+counterId).text(text_remaining);
-                                    $('#'+counterId).removeClass("overflow");
-                                }
-                            };
-                            
-                            $('#name').keyup(characterCounter);
-                            $('#nameCounter').text($('#name').attr('maxLength') - $('#name').val().length);
-                            $('#description').keyup(characterCounter);
-                            $('#password').keyup(characterCounter);
-                            
-                            $('#uploadButton').prop('disabled', true);
-                            $('#token').keyup(function() {
-                                if($(this).val().length <= 0){
-                                    $('#uploadButton').prop('disabled', true);
-                                }
-                                else{
-                                    $('#uploadButton').prop('disabled', false);                                    
-                                }
-                            });
-                        
-                        $('#the-form').submit(function(event) {
+
+                        var characterCounter = function () {
+                            var text_remaining = $(this).attr('maxLength') - $(this).val().length;
+                            var counterId = $(this).attr('id') + "Counter";
+                            if (text_remaining <= 10) {
+                                $('#' + counterId).addClass("overflow");
+                                $('#' + counterId).text(text_remaining);
+                            } else {
+                                $('#' + counterId).text(text_remaining);
+                                $('#' + counterId).removeClass("overflow");
+                            }
+                        };
+
+                        $('#name').keyup(characterCounter);
+                        $('#nameCounter').text($('#name').attr('maxLength') - $('#name').val().length);
+                        $('#description').keyup(characterCounter);
+                        $('#password').keyup(characterCounter);
+
+                        $('#uploadButton').prop('disabled', true);
+                        $('#token').keyup(function () {
+                            if ($(this).val().length <= 0) {
+                                $('#uploadButton').prop('disabled', true);
+                            } else {
+                                $('#uploadButton').prop('disabled', false);
+                            }
+                        });
+
+                        $('#the-form').submit(function (event) {
                             event.preventDefault();
                             var extension = $('#sketchfabUpload > #extension').val();
                             var zipBool = $('#sketchfabUpload > #zipCheck').is(':checked');
-                            var statusUpdateDialog = new component.Dialog({  title:"Upload to Sketchfab", modal:true, draggable: false, resizable:false });  
+                            var statusUpdateDialog = new component.Dialog({title: "Upload to Sketchfab", modal: true, draggable: false, resizable: false});
                             _html = "<p style='display:inline'>Status:</p> <p id='status' style='display:inline'> </p>";
                             _html += "<div id='sketchfabProgressBar'> <div id='progressBar'> <div id='pBarLabel'>0%</div> </div> </div>"
                             _html += "<button id='exitUpdateButton' type='button'> Cancel </button>";
                             statusUpdateDialog.appendContent(_html);
                             statusUpdateDialog.show();
-                            
+
                             MLJ.core.File.uploadToSketchfab(layer, extension, zipBool, statusUpdateDialog);
                             sketchFabDialog.destroy();
                         });
@@ -298,9 +324,9 @@
                     _dialogUpload.destroy();
                     $(this).off();
                 });
-            })                                             
+            })
         }
-        
+
         /**
          * @author Stefano Gabriele         
          */
