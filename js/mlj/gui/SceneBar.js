@@ -232,7 +232,7 @@
                         _html += "<br><br> Model name: <p id='nameCounter'> 48 </p> <input name='name' id='name' type='text' maxlength='48'>";
                         _html += "<br><br> Model description: <p id='descriptionCounter'> 810 </p> <textarea name='description' id='description' rows='3' maxlength='810'></textarea>";
                         _html += "<br><br> Tags (space separated): <input name='tags' type='text'>";
-                        _html += "<br><br> Private? (Pro only) <input name='private' id='private' type='checkbox' value='1'>";
+                        _html += "<br><br> Private? (Pro only) <input name='private' id='private' type='checkbox' value='0'>";
                         _html += "<br><br> Password (Pro only): <p id='passwordCounter'> 64 </p> <input name='password' id='password' type='password' maxlength='64'>";
                         _html += "<br><br> <p> Max file size: Free 50 MB; Pro 200 MB; Business 500 MB</p>";
                         _html += "<input name='Submit' id='uploadButton' type='submit' value='Upload'></form>"; 

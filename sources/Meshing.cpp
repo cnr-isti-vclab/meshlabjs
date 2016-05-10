@@ -4,6 +4,8 @@
 #include <vcg/complex/algorithms/convex_hull.h>
 #include<vcg/complex/algorithms/point_sampling.h>
 #include<vcg/complex/algorithms/voronoi_processing.h>
+#include<vcg/complex/algorithms/crease_cut.h>
+#include<vcg/complex/algorithms/curve_on_manifold.h>
 
 
 using namespace vcg;
@@ -120,7 +122,7 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
   tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
   ch.UpdateBoxAndNormals();
 } 
-
+ 
 void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
 {
   MyMesh &origMesh = *((MyMesh*) _baseM);
@@ -172,8 +174,45 @@ void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio,
   clusteredMesh.UpdateBoxAndNormals();
 }
 
+
+void CutAlongCreaseFilter(uintptr_t _baseM, float angleDeg)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  printf("Crease angle %f\n",angleDeg);
+  tri::CreaseCut<MyMesh>(m, math::ToRad(angleDeg));
+   
+  m.UpdateBoxAndNormals(); 
+}
+
+void CutTopologicalFilter(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  MyMesh poly;
+  tri::CoM<MyMesh> cc(m);
+  cc.BuildVisitTree(poly);
+  while(cc.OptimizeTree(poly));
+  cc.MarkFauxEdgeWithPolyLine(m,poly);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::CutMeshAlongNonFauxEdges<MyMesh>(m);
+  m.UpdateBoxAndNormals(); 
+}
+
+
 void MeshingPluginTEST()
 {
+    MyMesh platonic; 
+    Dodecahedron(platonic);
+    CutAlongCreaseFilter(uintptr_t(&platonic),40);
+    assert(platonic.vn==72 && platonic.fn==60);
+
+    Hexahedron(platonic);
+    CutAlongCreaseFilter(uintptr_t(&platonic),40);
+    assert(platonic.vn==24 && platonic.fn==12);
+    
+    Torus(platonic,3,1);
+    CutTopologicalFilter(uintptr_t(&platonic));
+      
   for(int i=1;i<5;++i)
   {
     MyMesh mq,mc,mv,ch;
@@ -206,6 +245,8 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
     emscripten::function("InvertFaceOrientation",      &InvertFaceOrientation);
     emscripten::function("VoronoiClustering",          &VoronoiClustering);
+    emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
+    emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
 }
 #endif
 

@@ -7,6 +7,7 @@ CONFIG -= app_bundle
 
 #TARGET = filtertest
 SOURCES += FilterTest.cpp \
+  CppMesh.cpp \ 
   Color.cpp \
   Create.cpp \
   Measure.cpp \
