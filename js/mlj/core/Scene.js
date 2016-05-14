@@ -618,7 +618,7 @@ MLJ.core.Scene = {};
             return;
         }
 
-        _decorators.set(name, decorator)
+        _decorators.set(name, decorator);
         _group.add(decorator);
 
         _this.render();
@@ -786,7 +786,17 @@ MLJ.core.Scene = {};
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
     };
-    
+    /**
+     * It creates a new message and attach it on a specific point in the Object3D provided. It allows you to show
+     * any message you want in a box that will be attached in a given point of a mesh to provide further informations about something.
+     * For example it is used to show up a specific picked point on a mesh by printing its local position
+     * @param {String} message - the message you want to print on the sceen
+     * @param {THREE.Vector3} point - the message will be printed in this point expressed in world coordinates 
+     * @param {String []} parameters - a list of field by which the method can get the box style information that contains the previous message,
+     * such as the fontSize, the borderColor and so on
+     * @param {THREE.Object3D} nodeJs - the message will be included in a THREE.Sprite object and this one will become a son of this parameter 
+     * 
+     */
     this.makeTextSprite=function(message, point, parameters, nodeJs)
     {
         if(!(point instanceof THREE.Vector3)||!(nodeJs instanceof THREE.Object3D))
@@ -796,7 +806,7 @@ MLJ.core.Scene = {};
         }
         if ( parameters === undefined ) parameters = {};
         var fontface = parameters.hasOwnProperty("fontFace") ?
-            parameters["fontFace"] : "Arial";
+            parameters["fontFace"] : "sans-serif";
         var fontsize = parameters.hasOwnProperty("fontSize") ?
                 parameters["fontSize"] : 30;
         var fontweight = parameters.hasOwnProperty("fontWeight") ?
@@ -844,25 +854,38 @@ MLJ.core.Scene = {};
         texture.minFilter = THREE.LinearFilter;
         var spriteMaterial = new THREE.SpriteMaterial({ 
             map: texture,
-            useScreenCoordinates: true, 
+            //useScreenCoordinates: true, 
             color: 0xffffff, 
             depthWrite: false,
             depthTest: false, 
             fog: true  } );
         var sprite = new THREE.Sprite( spriteMaterial );
-        
+        /*
+         * setto correttamente la dimensione del box che conterrà il messaggio in maniera tale che, a prescindere dalla posizione della camera
+         * o dalle dimensioni della mesh su cui operiamo, il messaggio possa essere visualizzato sempre con le stesse proporzioni. Ciò viene fatto
+         * prendendo in considerazione la lunghezza del vettore di scala dell'Object3D a cui faccio riferimento e dividendola per la distanza 
+         * che intercorre fra la posizione della camera e il punto dato espresso in coordinate mondo rispetto sempre a 'nodeJS'. Il tutto poi viene
+         * moltiplicato per opportune costanti.
+         */
         var scaleObject =nodeJs.scale.length();
-        var pointWorld=point.clone();
-        var scaleDistance=_camera.position.distanceTo(pointWorld.applyMatrix4(nodeJs.matrixWorld));
+        var pointWorld=point.clone().applyMatrix4(nodeJs.matrixWorld);
+        var scaleDistance=_camera.position.distanceTo(pointWorld);
         var scaleFactor= scaleDistance/scaleObject;
+        /*
+         * setto la dimensione dell'oggetto sprite rispetto ai parametri precedenti, nonchè ne fisso la posizione
+         */
         sprite.scale.set(0.0015*textWidth*scaleFactor,0.05*scaleFactor,1);
         sprite.position.set( point.x , point.y, point.z);
         sprite.name=parameters["name"];
-        
+        /*
+         * the THREE.Sprite object is added to the nodeJS object like its own son
+         */
         nodeJs.add(sprite);
-    }
+    };
 
-    //function for drawing rounded rectangles
+    /**
+     * Set the rectangular frame - Auxiliary function of the previous method, it builds the box will contain a message.
+     */
     function roundRect(ctx, x, y, w, h, r)
     {
         ctx.beginPath();
@@ -879,16 +902,23 @@ MLJ.core.Scene = {};
         ctx.fill();
         ctx.stroke();
     }
+    /**
+     * This method runs all the functions needed to update the geometry of a specific mesh, from any point of view: boundingBox, boundingSphere 
+     * and so on
+     * @param {THREE.Mesh} mesh - A mesh to update
+     */
     this.updateGeometry = function(mesh){
-        mesh.geometry.computeBoundingBox();
-        mesh.geometry.computeBoundingSphere();
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals();
-        try{
-            mesh.geometry.computeMorphNormals();
+        if ( mesh.geometry !== undefined ) {
+            try{
+                mesh.geometry.computeBoundingBox();
+                mesh.geometry.computeBoundingSphere();
+                mesh.geometry.computeFaceNormals();
+                mesh.geometry.computeVertexNormals();
+                mesh.geometry.computeMorphNormals();
+            }
+            catch(err){}
+            mesh.updateMatrix();
         }
-        catch(err){}
-        mesh.updateMatrix();
     };
 
     this.takeSnapshot = function() {

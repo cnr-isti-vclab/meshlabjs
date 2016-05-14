@@ -145,6 +145,7 @@
 
         // this mesh will contain the two meshes
         var selectionsMesh = new THREE.Mesh();
+        selectionsMesh.geometry = new THREE.BoxGeometry( 0, 0, 0 );
         var addNewMesh = false;
 
         var selectedFacesMesh = createSelectedFacesMesh.call(this);

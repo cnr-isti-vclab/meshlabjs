@@ -5,7 +5,7 @@
         name: "Axes",
         tooltip: "Show world space axes",
         icon: "img/icons/axis.png",
-        on: false,
+        on: false
         //loadShader: []
     });
 

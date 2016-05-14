@@ -155,6 +155,7 @@
             Module._free(modelMatrixPtr);
             Module._free(bBoxPtr);
             $(document).trigger("SceneLayerUpdatedRendering",[meshFile]);
+            scene.render();
             selection = false;
             $("#selection").hide();
         }
