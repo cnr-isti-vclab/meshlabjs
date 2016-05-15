@@ -3,6 +3,37 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+/**         
+ * 
+ * @file Defines the basic class to create and use a tool plugin
+ * @author Antonio Nicoletti
+ *
+ * @class Defines functinalities common to all tool plugin classes like GUI
+ * components management, basic event handling and loading shader files. This class is the symmetrical one 
+ * of the {@link MLJ.core.plugin.BaseRendering} class: the first one manages the tool pane and the second one 
+ * manages the rendering pane which are the same basics functionalities, and the same layout.
+ *
+ * @param {Object} parameters - The parameters passed to the actual plugin constructor. Other than
+ * the tool plugin specific options (listed below), this object should contain the options
+ * passed to this plugin's button constructor (see {@link MLJ.gui.component.Button}
+ * and {@link MLJ.gui.component.CustomToggleButton}).
+ *
+ * @param {string} parameters.name - The name of this plugin, passed to {@link MLJ.core.plugin.Plugin}.
+ *
+ * @param {boolean} [parameters.toggle] - If true the plugin is assigned a
+ * {@link MLJ.gui.component.CustomToggleButton} which allows the plugin to be turned
+ * on or off, otherwise a simple {@link MLJ.gui.component.Button} is used.
+ *
+ * @param {string} toolClass - A string used to distinguish the different classes of
+ * tool plugins, used to group together their GUI elements when group-level actions
+ * are needed (for example toggling all the Layer level overlays at once). This parameter
+ * is handled by the framework and the plugin creation process is oblivious to it.
+ *
+ * @param {string[]} [parameters.loadShader] - If provided, this array should contain
+ * the names of the shader files that the plugin must load.
+ *
+ * @memberOf MLJ.core.plugin
+ */
 MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
 
@@ -16,11 +47,11 @@ MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
     var toggleButtonBuilder = new MLJ.core.plugin.RenderingBarBuilder(
             MLJ.widget.TabbedPane.getToolsToolBar());
-    var renderingPane = MLJ.widget.TabbedPane.getToolPane();
+    var toolPane = MLJ.widget.TabbedPane.getToolPane();
 
     var _btn = toggleButtonBuilder.Button(parameters);
 
-    // Group ToggleButtons of the same rendering class
+    // Group ToggleButtons of the same tool class
     var group = MLJ.gui.makeGroup(toolClass);
     if (_btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(_btn);
@@ -33,7 +64,7 @@ MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
     this.shaders = null;
 
     /**
-     * Displays the options pane of the rendering plugin
+     * Displays the options pane of the tool plugin
      */
     this._showOptionsPane = function () {
         if (parameters.toggle === true) {
@@ -49,7 +80,7 @@ MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
             }
         }
         
-        renderingPane.children().each(function (key, val) {
+        toolPane.children().each(function (key, val) {
             if ($(val).attr("id") === UID) {
                 $(val).fadeIn();
             } else {
@@ -92,7 +123,7 @@ MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
             });
         }
         _this._init(guiBuilder);
-        renderingPane.append(pane.$);
+        toolPane.append(pane.$);
     };
 
     /**
@@ -104,9 +135,26 @@ MLJ.core.plugin.ToolRendering = function (parameters, toolClass) {
     };
 
     this._setOnParamChange = guiBuilder.setOnParamChange;
-}
+};
 
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.ToolRendering);
+
+/**
+ * @class Questa classe anzitutto crea un istanza della classe ToolRendering precedente a cui è affidato il
+ * compito di gestire principalmente la GUI del tool pane nel quale vengono resi disponibili tutti i Tool;
+ * in secondo luogo essa effettua l'_applyTo di ogni tool plugin correttamente caricato nel sistema il che significa 
+ * effettuare tutte quelle operazioni necessarie al suo utilizzo da parte dell'utente. Attiva infine una serie di ascolatori di eventi
+ * per intercettare quando un layer viene rimosso, aggiunto, reso invisibile e cosi via al fine di eseguire determinate
+ * operazioni sui tool plugin conseguenti all'evento scatenatosi.
+ * 
+ * @param {Object} parameters - The parameters passed to the actual plugin constructor. Other than
+ * the tool plugin specific options (listed below), this object should contain the options
+ * passed to this plugin's button constructor (see {@link MLJ.gui.component.Button}
+ * and {@link MLJ.gui.component.CustomToggleButton}).
+ * 
+ * @param {Object} defaults - It contains the default elements to provide to <code> parameters </code>
+ * 
+ */
 
 MLJ.core.plugin.Tool = function (parameters, defaults) {
     var toolClass = "mlj_tool_overlay";
@@ -127,7 +175,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             if (on) {//the tooltip is active
                 //show the options pane
                 _this._showOptionsPane();
-                //when active a tool panel disable others ----
+                //when active a tool plugin disable others ----
                 var items = MLJ.gui.group[toolClass].getItems();
                 for (var i = 0; i < items.length; ++i) {
                     if (items[i].isOn() && items[i] !== btn) {
@@ -136,71 +184,39 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 }
                 //------
             }
-            
-            
-            //Apply rendering pass to all mesh
-            if (event.ctrlKey === true) {                
-                var passName = parameters.name;
-                var ptr = MLJ.core.Scene.getLayers().iterator();                
-                //get selected layer
-                var selLayer = MLJ.core.Scene.getSelectedLayer();                
-                //get this rendering pass paramters of selected layer
-                var selParams = selLayer.overlaysParams.getByKey(passName);
-                var layer;             
-                //apply rendering pass with 'selParams' to all layers
-                while (ptr.hasNext()) {
-                    layer = ptr.next();    
-                    if (layer.getThreeMesh().visible) {
-                        var lParams = layer.overlaysParams.getByKey(passName);
-                        for (var opName in selParams) { // each layer gets it's own copy
-                            lParams[opName] = selParams[opName];
-                        }
-                        // Watch out for undefined 'properties' values (overlays that were never activated)
-                        if (on !== (layer.properties.getByKey(passName)===true)) { // simply toggle the pass
-                            _this._applyTo(layer, on);
-                        } else { // if pass is active reapply with changed parameters, otherwise switch it off
-                            on ? reapply(on, layer) : _this._applyTo(layer, on);
-                        }
-                        layer.properties.set(passName, on);
-                    }
-                }
-                
-            } else { //Apply rendering pass to selected layer
-                var selected = MLJ.core.Scene.getSelectedLayer();
-                if (selected !== undefined) {
-                    //console.log(_this);
-                    _this._applyTo(selected, on);
-                    selected.properties.set(parameters.name, on);
-                }
-            }                        
+            var selected = MLJ.core.Scene.getSelectedLayer();
+            if (selected !== undefined) {
+                //console.log(_this);
+                _this._applyTo(selected, on);
+                selected.properties.set(parameters.name, on);
+            }                      
         });
 
-        //Clicked with mouse right button
-        /*btn.onRightButtonClicked(function (event) {
-            if (!btn.isOn()) {
-                btn.toggle("on", event);
-            }
-            var items = MLJ.gui.group[toolClass].getItems();
-            for (var i = 0; i < items.length; ++i) {
-                if (items[i].isOn() && items[i] !== btn) {
-                    items[i].toggle("off", event);
-                }
-            }
-        });*/
-
-        $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
-            if (layer.properties.getByKey(parameters.name) === true) {
-                layer.properties.set(parameters.name, false);
-                _this._applyTo(layer, false); // Remove the pass
-            }
-        });
         
+        /*
+        * Triggered when the current layer is removed, the action performed is disable the tool plugin active on it
+        */
+        $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
+            disableSelection();
+            
+        });
+       
+        //variables used in the following events to set the main parameters -----------------
         var flag=false;
         var keyEventParam={
           event: null,
           keyPressed: false,
           keyReleased: false
         };
+        /**
+         * Triggered when a key is pressed down; 
+         * dato che ogni tool usa un certo numero di tasti della tastiera in differente modo per usufruire di funzionalità
+         * aggiuntive, la gestione dell'evento viene delegato al tool attualmente attivo attraverso l'invocazione della funzione
+         * _applyTo la quale riceve l'evento scatenatosi e il suo tipo: <code> KeyPressed = true </code> se l'evento in questione
+         * è il KeyDown, <code> keyReleased=true </code> se l'evento in questione è il KeyUp. I primi due parametri della funzione _applyTo 
+         * sono settati a null per indicare che l'invocazione della stessa riguarda la gestione dell'evento comune. La variabile flag 
+         * rimane true fintanto che il tasto rimane premuto.
+         */
         $(document).bind("keydown", function (event) {
             if(btn.isOn()&&!flag){
                 keyEventParam.event=event;
@@ -215,6 +231,9 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             }  
               
         });
+        /*
+         * Triggered when a key is released
+         */
         $(document).bind("keyup", function (event) {
             if(btn.isOn()) {
                 flag=false;
@@ -228,86 +247,32 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                   };
               }
         });
-        
+        //----------------
+        /*
+        * Triggered when the current layer is reloaded or a new layer is added and the current one loses focus,
+        *  the action performed is disable the tool plugin active on it
+        */
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     disableSelection();
-                    if (event.type === "SceneLayerReloaded") {
-                        if (meshFile.properties.getByKey(parameters.name) === true) {
-                            _this._applyTo(meshFile, false);
-                        }
-                    }
-                    //Check if the rendering feature is enabled
-                    if (!(meshFile.properties.getByKey(parameters.name) === false) && 
-                            (parameters.on || meshFile.properties.getByKey(parameters.name) === true) ) {
-                        btn.toggle("on");
-                        _this._applyTo(meshFile, btn.isOn());
-                        meshFile.properties.set(parameters.name, btn.isOn());
-                        update();
-                    } else {
-                        btn.toggle("off");
-                        if (btn.isArrowSelected()) update();
-                    }
-                    
-                    //if the rendering pass need to be updated when a 
-                    //new layer is added
-                    if (parameters.updateOnLayerAdded) {
-                        var ptr = MLJ.core.Scene.getLayers().iterator();
-                        var layer, isOn;
-                        while (ptr.hasNext()) {
-                            layer = ptr.next();
-                            isOn = layer.properties.getByKey(parameters.name) === true;
-                            reapply(isOn,layer);                            
-                        }
-                    }
-
                 });
 
-        $(document).on("SceneLayerUpdated", function (event, layer) {
-            
-            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
-        });
-        
-        if (parameters.applyOnEvent !== undefined) {
-            $(window).ready(function() {
-                $($('canvas')[0]).on(parameters.applyOnEvent, function() {
-                    var it = MLJ.core.Scene.getLayers().iterator();
-                    while (it.hasNext()) {
-                        var layer = it.next();
-                        if (layer.properties.getByKey(parameters.name) === true) {
-                            reapply(true, layer);
-                        }
-                    }
-                });
-            });
-        }
         
     } else {
         btn.onClick(function () {
             _this._showOptionsPane();
         });
-        
-        $(document).on("SceneLayerAdded SceneLayerReloaded",
-            function (event, meshFile, layersNumber) {
-                disableSelection();
-                _this._applyTo(meshFile, true);
-                update();
-            }); 
     }
-
+    /*
+     * Triggered when the current layer loses focus, the action performed is disable the tool plugin active on it
+     */
     $(document).on("SceneLayerSelected", function (event, meshFile) {
         disableSelection();
-        update();
-
-        if (parameters.toggle === true) {
-            var val = meshFile.properties.getByKey(parameters.name);
-            if (val === true) {
-                btn.toggle("on");
-            } else {
-                btn.toggle("off");
-            }
-        }
+        
     });
+    /*
+     * Triggered when the current layer is made invisible, the action performed is disable the tool plugin active on it
+     */
     $(document).on("SceneLayerVisibility", function (event,layerName, visible) {
         if(visible===false){ 
             var layerInvisible=MLJ.core.Scene.getLayerByName(layerName);
@@ -318,12 +283,12 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 btn.toggle("off",event);
             }
         }
-        
-       //console.log("visibility changed"+visible);
     });
+    
     $(document).on("unToogle", function (event,mesh) {
         btn.toggle("off",event);
     });
+    
     //Prevents context menu opening
     $(document).ready(function () {
         $(this).on("contextmenu", function (e) {
@@ -333,33 +298,8 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
         });
     });
     
-    function update() {
-        var selected = MLJ.core.Scene.getSelectedLayer();
-        
-        var params = selected.overlaysParams.getByKey(_this.getName());
-        var paramWidget;
-        for (var pname in params) {
-            paramWidget = _this.getParam(pname);
-            if (paramWidget !== undefined) {
-                paramWidget._changeValue(params[pname]);
-            }
-        }
-    }
-
-    function reapply(apply, meshFile) {
-        if (apply) {
-            _this._applyTo(meshFile, false);
-            _this._applyTo(meshFile, true);
-        }
-    }
-    /*
-     * this function is used to disable the selection mode when the user change the focus between the current layer
-     * and another one
-     */
-    
-    //this function disable all tools's layers when a layer is changed, reloaded or others------
+    //this function disable all tools plugin when a layer is changed, reloaded or others------
     function disableSelection(){
-        
         var ptr = MLJ.core.Scene.getLayers().iterator();     
         while (ptr.hasNext()) {
             var layer = ptr.next();
@@ -371,7 +311,6 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
     this._setOnParamChange(function (paramProp, value) {
         var layer = MLJ.core.Scene.getSelectedLayer();
         var params = layer.overlaysParams.getByKey(_this.getName());
-
         // update parameter
         params[paramProp] = value;
               
@@ -390,27 +329,21 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                     paramProp(value, overlay, layer);
                 }
             }
-
             MLJ.core.Scene.render();
             return;
         }
-
         var overlay = layer.overlays.getByKey(_this.getName());
-
         if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value, overlay);
         }
-
         //if overlay undefined just return
         if (overlay === undefined) {
             return;
         }
-        
         //is 'bindTo' property a uniform?
         if (overlay.material && overlay.material.uniforms && overlay.material.uniforms[paramProp]) {
             overlay.material.uniforms[paramProp].value = value;
         }
-
         MLJ.core.Scene.render();
     });
 };
