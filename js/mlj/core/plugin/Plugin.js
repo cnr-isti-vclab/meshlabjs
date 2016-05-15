@@ -146,6 +146,17 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 
         return bool;
     };
+    this.Click = function (flags) {
+        var click = new MLJ.gui.Param.Click(flags);
+        component.appendContent(click._make());
+        _this.params.set(flags.bindTo, click);
+        //this function links the bindTo function, that come from a specific windget, with the onClick event of click object
+        click.onClick(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
+        return click;
+    };
     this.Choice = function (flags) {
         var choice = new MLJ.gui.Param.Choice(flags);
         component.appendContent(choice._make());
