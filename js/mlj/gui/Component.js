@@ -709,6 +709,21 @@ MLJ.gui.component.ToolBar = function () {
         }
         return this;
     };
+    /**
+     * This function works upon the tool's tool bar; while the previous method allows us to add some component appending it to the current toolbar
+     * this one allows us to remove the component added previously
+     * @returns {MLJ.gui.component.ToolBar}
+     */
+    this.remove = function() {
+        for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof MLJ.gui.component.Component) {
+                arguments[i].$.remove();
+            } else {
+                console.error("The parameter must be an instance of MLJ.gui.component.Component");
+            }
+        }
+        return this;
+    };
 
     MLJ.gui.component.Component.call(this, _html);
 };

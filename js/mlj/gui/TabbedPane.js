@@ -21,7 +21,7 @@
         var _$rendPane = $('<div/>').css({
             position: "relative"            
         });
-		var _$toolPane = $('<div/>').css({
+        var _$toolPane = $('<div/>').css({
             position: "relative"            
         });
 
@@ -69,7 +69,7 @@
             _$rendPane.outerHeight($("#tab-Rendering").height()
                     - _renderingTb.$.outerHeight());
 			
-			$("#tab-Tools").outerHeight(
+            $("#tab-Tools").outerHeight(
                     _$tabbedPane.height() - _$tabsBar.outerHeight());
 
             _$toolPane.outerHeight($("#tab-Tools").height()
@@ -141,7 +141,7 @@
             return _renderingTb;
         };
 		
-		this.getToolPane = function () {
+        this.getToolPane = function () {
             return _$toolPane;
         };
 

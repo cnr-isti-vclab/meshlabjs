@@ -5,6 +5,10 @@
     var SELECTION_VERTEX=0; //used to perform vertex selection
     var SELECTION_FACES=1; // used to perform face selection
     var fireKeyEvent; // this will be the function that will manage the key down and key up events
+    var clearButton; // this is a button on the tool's toolbar that allow us to select non on the current mesh
+    var invertButton; // this is a button on the tool's toolbar that allow us to invert a previous selection on the mesh per faces or vertices
+    var removeButton;// this one instead removes all the vertices or faces selected previously
+    
     var DEFAULTS = {
        selectionMode : 0
     };
@@ -102,8 +106,11 @@
         */
         function canMouseUp(event) {
             var meshFile=scene.getSelectedLayer();
+            
+            console.log(selectionAdd);
+            console.log(selectionSub);
             if(!selectionAdd&&!selectionSub){ //if no key is pressed before select another box will be deselect all
-                Module.SelectionNone(meshFile.ptrMesh(),true,true);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
             }
             //collection of parameters used to initialize the camera in the c++ function
             var near=scene.getCamera().near;
@@ -190,6 +197,15 @@
             scene.render();
             selection = false;
             $("#selection").hide(); //end of selection
+            //enable or disable the tool buttons (clear, remove and invert) according with if some vertex or face is selected on the mesh or not
+            var pointsCoordsPtr = Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh());
+            var numSelectedPoints = Module.getValue(pointsCoordsPtr, 'float');
+            if(numSelectedPoints>0){
+               plug._disableButtons(false,clearButton,removeButton,invertButton);//all tool buttons are enabled
+            }
+            else{
+               plug._disableButtons(true,clearButton,removeButton,invertButton);//all tool buttons are disabled
+            }
         }
         /*
          * Triggered when a mouseEnter event occurs in the render pane
@@ -299,6 +315,60 @@
         }
         if(on&&mesh.getThreeMesh().visible===true){//activating the selection tool
             enableSelection(true);
+            clearButton= new MLJ.gui.component.Button({//instantiating the clear, invert and remove tool buttons
+                tooltip: "Select none",
+                icon: "img/icons/github.png",
+                right:true
+            });
+            invertButton=new MLJ.gui.component.Button({
+                tooltip: "Invert selection",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png",
+                right:true
+            });
+            removeButton = new MLJ.gui.component.Button({
+                tooltip: "Delete selected items",
+                icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png",
+                right:true
+            });
+            clearButton.onClick(function (){//appending a specific function on "clear" button
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
+                MLJ.core.Scene.updateLayer(scene.getSelectedLayer());
+                plug._disableButtons(true,clearButton,removeButton,invertButton);
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//adding the clear button to the TOOL toolbar
+            
+            invertButton.onClick(function (){
+                if(mode.getValue()===SELECTION_VERTEX){
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection Invert").getParam().selectByValue(2);
+                }
+                else{
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection Invert").getParam().selectByValue(1);
+                }
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection Invert")._applyTo(meshFile);
+                MLJ.core.Scene.updateLayer(scene.getSelectedLayer());
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(invertButton);
+            
+            removeButton.onClick(function (){
+                if(mode.getValue()===SELECTION_VERTEX){
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Delete Selected Vertices")._applyTo(meshFile);
+                }
+                else{
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Delete Selected Faces")._applyTo(meshFile);
+                }
+                MLJ.core.Scene.updateLayer(scene.getSelectedLayer());
+                plug._disableButtons(true,clearButton,removeButton,invertButton);
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(removeButton);
+            //enable or disable the tool buttons (clear, remove and invert) according with if some vertex or face is selected on the mesh or not
+            var pointsCoordsPtr = Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh());
+            var numSelectedPoints = Module.getValue(pointsCoordsPtr, 'float');
+            if(numSelectedPoints>0){
+                plug._disableButtons(false,clearButton,removeButton,invertButton);
+            }
+            else{
+                plug._disableButtons(true,clearButton,removeButton,invertButton);
+            }
         }
         else{//deactivating the selection tool
             enableSelection(false);  
@@ -307,7 +377,11 @@
                 var btn=tool.getButton();
                 btn.toggle("off");
             }
-            
+            if (clearButton instanceof MLJ.gui.component.Component) {
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(removeButton);
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(invertButton);
+            }
         }
     };
 

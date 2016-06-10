@@ -166,6 +166,22 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
 
     var btn = this.getButton();
     MLJ.gui.disabledOnSceneEmpty(btn);
+    /**
+     * This global function can be used from every tool pane to enable or disable whatever button they use to implement some operation
+     * For example the "Moving Tool" when is activated by the user, initializes two buttons, that is "Apply" and "Clear" buttons,
+     * to apply some transformation on the current mesh or restore its original position, respectively.
+     * @param {type} bool
+     * @returns {undefined}
+     */
+    this._disableButtons= function (bool){
+        for (var i = 1; i < arguments.length; i++) {
+            if (arguments[i] instanceof MLJ.gui.component.Component) {
+                arguments[i]._disabled(bool);
+            } else {
+                console.error("The parameter must be an instance of MLJ.gui.component.Component");
+            }
+        }
+    };
 
     if (parameters.toggle === true) {
         
@@ -297,6 +313,8 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             }
         });
     });
+    
+    
     
     //this function disable all tools plugin when a layer is changed, reloaded or others------
     function disableSelection(){

@@ -128,7 +128,14 @@ MLJ.core.plugin.Filter = function (parameters) {
 
         //MLJ.widget.TabbedPane.getFiltersAccord().refresh();
     });
-
+    /**
+     * This method get available the GUIBUILDER of whatever filter we use
+     * @param {type} paramKey
+     */
+    this.getParam = function (paramKey) {
+        return filterBuilder.params.getByKey(paramKey);
+    };
+    
     this._main = function () {
         MLJ.widget.TabbedPane.getFiltersAccord().addEntry(entry);
 
