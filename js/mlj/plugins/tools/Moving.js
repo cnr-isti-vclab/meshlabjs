@@ -19,6 +19,8 @@
     var GLOBAL=3;//it means that the user is using the moving tool in global manner where the gizmo is located at the world coordinates (0,0,0)
     var BARYCENTER=4;//it means that the user is using the moving tool in barycenter manner that is the gizmo is moved at the center of the current mesh
     var SIZE_GIZMO=1;
+    var clearButton;//it is a toobar button that can be used by the user to throw away all changes he performed on the current mesh
+    var applyButton;// it is a toolbar button that can be used by the user to apply all moving he performed on the current mesh
     /**
      * @type {THREE.TransformControls} control  - this object is the gizmo that is displayed on the screen when the tool is active, this
      * kind of control has to be attached to the object the user want to move or scale, besides the gizmo will be located at the local position
@@ -45,7 +47,7 @@
         updateOnLayerAdded: false
     }, DEFAULTS);
 
-    var movMode, spaMode, changeSize, applyTra;
+    var movMode, spaMode, changeSize;
     plug._init = function (guiBuilder) {
         movMode = guiBuilder.Choice({
             label: "Mode",
@@ -105,41 +107,7 @@
                 return bindToFun;
             }())
         });
-        applyTra = guiBuilder.Click({
-            label: "Apply Transformations",
-            tooltip: "Apply translation, rotation and scaling transformations to selected layer. Switching from global to barycenter mode or viceversa fix the changes as well.",
-            icon: "img/icons/apply.png",
-            bindTo: (function() {
-                var bindToFun = function (size, overlay) {
-                    var object= scene.getSelectedLayer().getThreeMesh();
-                    var layer= scene.getSelectedLayer();
-                    if(isBarycenter===false){//Global mode is selected
-                        if(!object.position.equals(new THREE.Vector3(0,0,0))||!object.scale.equals(new THREE.Vector3(1,1,1))||
-                            !object.quaternion.equals(new THREE.Quaternion(0,0,0,1))) {//if something in the current mesh matrix is changed, we can apply these transformations
-                                applyTransform(object.matrix);
-                        }
-                        //let's reset the object matrix
-                        object.position.set(0,0,0);
-                        object.scale.set(1,1,1);
-                        object.quaternion.set(0,0,0,1);
-                        object.updateMatrix();
-                        //let's update the mesh's overlays
-                        layer.updateThreeMesh();
-                        $(document).trigger("SceneLayerUpdatedRendering",[layer]);  
-                        updateControls();
-                    }
-                    else{//Barycenter mode is selected
-                        setBarycenter(false); //fixing changes
-                        layer.updateThreeMesh();
-                        $(document).trigger("SceneLayerUpdatedRendering",[layer]);
-                        updateControls();
-                        spaMode._changeValue(GLOBAL); //after this always GLOBAL mode is selected
-                    }
-                };
-                bindToFun.toString = function () { };
-                return bindToFun;
-            }())
-        });
+        
     };
     /**
      * This function update the gizmo control position and the scene itself.
@@ -373,11 +341,59 @@
         if(on&&meshFile.getThreeMesh().visible===true){
             toolActive=true;
             toolEnabled(true);
+            clearButton= new MLJ.gui.component.Button({//instantiating the clear, apply toolbar buttons
+                tooltip: "Throw away all changes",
+                icon: "img/icons/github.png",
+                right:true
+            });
+            applyButton=new MLJ.gui.component.Button({
+                tooltip: "Apply changes",
+                icon: "img/icons/github.png",
+                right:true
+            });
+            clearButton.onClick(function (){//appending a specific function on "clear" button
+                if(isBarycenter===true) isBarycenter=false;  
+                toolEnabled(false);
+                toolEnabled(true);
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//adding the clear button to the TOOL toolbar
+            
+            applyButton.onClick(function (){
+                var object= scene.getSelectedLayer().getThreeMesh();
+                var layer= scene.getSelectedLayer();
+                if(isBarycenter===false){//Global mode is selected
+                    if(!object.position.equals(new THREE.Vector3(0,0,0))||!object.scale.equals(new THREE.Vector3(1,1,1))||
+                        !object.quaternion.equals(new THREE.Quaternion(0,0,0,1))) {//if something in the current mesh matrix is changed, we can apply these transformations
+                            applyTransform(object.matrix);
+                    }
+                    //let's reset the object matrix
+                    object.position.set(0,0,0);
+                    object.scale.set(1,1,1);
+                    object.quaternion.set(0,0,0,1);
+                    object.updateMatrix();
+                    //let's update the mesh's overlays
+                    layer.updateThreeMesh();
+                    $(document).trigger("SceneLayerUpdatedRendering",[layer]);  
+                    updateControls();
+                }
+                else{//Barycenter mode is selected
+                    setBarycenter(false); //fixing changes
+                    layer.updateThreeMesh();
+                    $(document).trigger("SceneLayerUpdatedRendering",[layer]);
+                    updateControls();
+                    spaMode._changeValue(GLOBAL); //after that always GLOBAL mode is selected
+                }
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(applyButton);
         }
         else if(toolActive===true){
             if(isBarycenter===true) isBarycenter=false;
             toolEnabled(false);
             toolActive=false;
+            if (clearButton instanceof MLJ.gui.component.Component) {//removing the toolbar buttons
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(applyButton);
+            }
         }
     };
 
