@@ -7,7 +7,7 @@
 (function (plugin, core, scene) {
     var DISTANCEPOINTS_DISABLED=0; //it means that the measure tool is disabled
     var DISTANCEPOINTS_ENABLED=1; // it means that the measure tool is enabled
-    
+    var clearButton;// this is a toolbar button that allow us to immediatly remove all measures the user performed
     var DEFAULTS = {
        distanceEnable : 1
     };
@@ -72,6 +72,7 @@
     var lineDown;
     var lineUp;
     var distance;
+    var iter=0;
     /**
      * This function performs all the operations needed to activate or deactivate, according with the active parameter, the measure tool: 
      * for example enable or disable the trackball control, substituting it with a differet cursor, attach an event listener and so on
@@ -101,14 +102,17 @@
      */
     var removeTool = function(){
         var sceneGroup = MLJ.core.Scene.getThreeJsGroup();
-        sceneGroup.remove(sceneGroup.getObjectByName("s1"));
-        sceneGroup.remove(sceneGroup.getObjectByName("s2"));
-        sceneGroup.remove(sceneGroup.getObjectByName("Linedown"));
-        sceneGroup.remove(sceneGroup.getObjectByName("Lineup"));
-        sceneGroup.remove(sceneGroup.getObjectByName("labelDist"));
-        sceneGroup.remove(sceneGroup.getObjectByName("labelP1"));
-        sceneGroup.remove(sceneGroup.getObjectByName("labelP2"));
-        scene.render();
+        for(var i=0;i<=iter;i++){
+            sceneGroup.remove(sceneGroup.getObjectByName("s1-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("s2-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("Linedown-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("Lineup-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("labelDist-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("labelP1-"+i));
+            sceneGroup.remove(sceneGroup.getObjectByName("labelP2-"+i));
+            scene.render();
+        }
+        iter=0;
     };
     /**
     * This function manages the key pressed and released events in the actual tool plugin
@@ -198,10 +202,10 @@
                     depthWrite: false,
                     depthTest: false
                 } );
-            if(sceneGroup.getObjectByName("s1") === undefined){ //if this object doesn't exist it means that the first point have to be added on the current mesh
+            if(sceneGroup.getObjectByName("s1-"+iter) === undefined){ //if this object doesn't exist it means that the first point have to be added on the current mesh
                 point1=point;
                 firstSphere = new THREE.Mesh( geometrySphere, materialSphere );
-                firstSphere.name="s1";
+                firstSphere.name="s1-"+iter;
                 firstSphere.position.x=point1.x;
                 firstSphere.position.y=point1.y;
                 firstSphere.position.z=point1.z;
@@ -209,15 +213,15 @@
                 scene.makeTextSprite(//this is a label that show the local coordinates of the first selected point on the mesh
                     "("+point1.x+","+point1.y+","+point1.z+")",
                     point1,
-                    {name:"labelP1"},
+                    {name:"labelP1-"+iter},
                     sceneGroup 
                 );
                 scene.render();
             }
-            else if(sceneGroup.getObjectByName("s2") === undefined){//if the previous if-statment fails and this object doesn't exist, it means that the second point have to be added on the current mesh
+            else if(sceneGroup.getObjectByName("s2-"+iter) === undefined){//if the previous if-statment fails and this object doesn't exist, it means that the second point have to be added on the current mesh
                 point2=point;
                 secondSphere = new THREE.Mesh( geometrySphere, materialSphere );
-                secondSphere.name="s2";
+                secondSphere.name="s2-"+iter;
                 secondSphere.position.x=point2.x;
                 secondSphere.position.y=point2.y;
                 secondSphere.position.z=point2.z;
@@ -241,30 +245,29 @@
                 );
                 geometryLine.computeLineDistances();
                 lineDown = new THREE.Line( geometryLine, materialLineDown );
-                lineDown.name="Linedown";
+                lineDown.name="Linedown-"+iter;
                 sceneGroup.add( lineDown );
                 lineUp=new THREE.Line( geometryLine, materialLineUp );
-                lineUp.name="Lineup";
+                lineUp.name="Lineup-"+iter;
                 sceneGroup.add( lineUp );
                 scene.makeTextSprite(//this is a label that show the local distance between the two points
                     distance,
                     new THREE.Vector3((point1.x+point2.x)/2,(point1.y+point2.y)/2,(point1.z+point2.z)/2),
-                    {name:"labelDist"},
+                    {name:"labelDist-"+iter},
                     sceneGroup
                 );
                 scene.makeTextSprite(//this is a label that show the local coordinates of the second selected point on the mesh
                     "("+point2.x+","+point2.y+","+point2.z+")",
                     point2,
-                    {name: "labelP2"},
+                    {name: "labelP2-"+iter},
                     sceneGroup
                 );
                 scene.render();
-            }
-            else {//if two points are selected on the screen with their distance and the user click again on the mesh then the measure tool must be resetted
-                removeTool();
+                iter++;
                 point1=undefined;
                 point2=undefined;
             }
+            
         }
     }
    
@@ -278,11 +281,23 @@
         if(on){
             distancePoints._changeValue(DISTANCEPOINTS_ENABLED);
             MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call(); // the distancePoint's bindTo function is performed
+            clearButton= new MLJ.gui.component.Button({//instantiating the clear button
+                tooltip: "Clear all meausures",
+                icon: "img/icons/github.png",
+                right:true
+            });
+            clearButton.onClick(function (){//appending a specific function on "clear" button
+                removeTool();
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//appending the clear button to the tool's toolbar
         }
         else{
             toolEnabled(false);
             distancePoints._changeValue(DISTANCEPOINTS_DISABLED);
             removeTool();
+            if (clearButton instanceof MLJ.gui.component.Component) {
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);//removing the clear button from the tool's toolbar
+            }
         }
     };
 
