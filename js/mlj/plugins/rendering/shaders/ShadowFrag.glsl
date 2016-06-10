@@ -17,9 +17,9 @@ void main(){
 //  gl_FragColor.rgba = vec4(vec3(current),1.0);
 
   if (current - 0.005 > closest){
-    gl_FragColor = vec4(0, 0, 0, 0.8);
+    gl_FragColor = vec4(0, 0, 0, 0.3);
   } else {
-    discard;
+    gl_FragColor = vec4(1, 0, 0, 0.01);
   }
 
   }

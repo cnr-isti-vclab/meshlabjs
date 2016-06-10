@@ -63,7 +63,8 @@
       let shadowMaterial = new THREE.RawShaderMaterial({
         uniforms: shadowPassUniforms,
         transparent: true,
-        blending: THREE["AdditiveBlending"],
+        opacity: 0.5,
+        blending: THREE["NormalBlending"],
         side: THREE.DoubleSide,
         vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
         fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
@@ -107,11 +108,13 @@
         sceneGraph.overrideMaterial = shadowMaterial;
         shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
         shadowPassUniforms.depthMap.value = depthMapTarget;
+
         renderer.autoClearColor = false;
         renderer.render(sceneGraph, sceneCam);
         renderer.autoClearColor = true;
-        sceneGraph.overrideMaterial = null;
+
         shadowPassUniforms.depthMap.value = null;
+        sceneGraph.overrideMaterial = null;
 
       };
     }
