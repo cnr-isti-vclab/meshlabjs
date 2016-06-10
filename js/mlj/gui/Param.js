@@ -121,23 +121,6 @@ MLJ.extend(MLJ.gui.Param.Number, MLJ.gui.Param.Integer);
  * @param {Object} flags - set of features the button and label components work with.
  * @returns {MLJ.gui.Param.Click}
  */
-MLJ.gui.Param.Click = function(flags){
-    this.button= new MLJ.gui.component.Button(flags);
-    this.label = new MLJ.gui.component.Label(flags);
-    var _this = this;
-    
-    this._make = function () {
-        return MLJ.gui.component.Grid(this.label, this.button);
-    };
-    this._disabled= function(bool){
-        return this.button._disabled(bool);
-    };
-    this.onClick = function(foo){
-        return this.button.onClick(foo);
-    }
-    MLJ.gui.Param.call(this);
-};
-MLJ.extend(MLJ.gui.Param,MLJ.gui.Param.Click);
 
 MLJ.gui.Param.Bool = function (flags) {
     this.checkbox = new MLJ.gui.component.CheckBox(flags.defval);

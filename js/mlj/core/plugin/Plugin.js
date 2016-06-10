@@ -147,14 +147,26 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         return bool;
     };
     this.Click = function (flags) {
-        var click = new MLJ.gui.Param.Click(flags);
-        component.appendContent(click._make());
+        var button= new MLJ.gui.component.Button(flags);
+        var label = new MLJ.gui.component.Label(flags);
+        
+        _make = function () {
+            return MLJ.gui.component.Grid(label, button);
+        };
+        _disabled= function(bool){
+            return button._disabled(bool);
+        };
+        onClick = function(foo){
+            return button.onClick(foo);
+        };
+        
+        var click=_make();
+        component.appendContent(click);
         _this.params.set(flags.bindTo, click);
         //this function links the bindTo function, that come from a specific windget, with the onClick event of click object
-        click.onClick(function (val) {
+        onClick(function (val) {
             _onChange(flags.bindTo, val);
         });
-
         return click;
     };
     this.Choice = function (flags) {
