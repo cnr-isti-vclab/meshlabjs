@@ -119,7 +119,7 @@
     * @param {Object} keyParam - this parameter comes from Tool.js where the listeners about these kind of events are built;
     * it conatins the event triggered and two boolean fields that specify if the event is a keydown or a keyup one.
     */
-    var fireKeyEvent= function(keyParam){
+    plug.fireKeyEvent= function(keyParam){
         if(keyParam.keyPressed===true){// a keydown event occurs
            if(keyParam.event.altKey){//if ALT is pressed the measure tool have to be disabled to restore the trackball control and allow the user to zoom in or out and move the camera
                toolEnabled(false);
@@ -271,13 +271,8 @@
         }
     }
    
-    plug._applyTo = function (meshFile, on, keyParam) {
-        if(keyParam !== undefined){// this "if" statement is run when a keydown or keyup event is triggered and this tool have to manage it
-            if(keyParam.event!== null) {
-                fireKeyEvent(keyParam);
-                return;
-            }
-        }
+    plug._applyTo = function (meshFile, on) {
+        
         if(on){
             distancePoints._changeValue(DISTANCEPOINTS_ENABLED);
             MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call(); // the distancePoint's bindTo function is performed

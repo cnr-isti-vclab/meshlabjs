@@ -806,7 +806,7 @@ MLJ.core.Scene = {};
         }
         if ( parameters === undefined ) parameters = {};
         var fontface = parameters.hasOwnProperty("fontFace") ?
-            parameters["fontFace"] : "sans-serif";
+            parameters["fontFace"] : "Segoe UI";
         var fontsize = parameters.hasOwnProperty("fontSize") ?
                 parameters["fontSize"] : 30;
         var fontweight = parameters.hasOwnProperty("fontWeight") ?

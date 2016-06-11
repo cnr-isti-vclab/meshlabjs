@@ -314,7 +314,7 @@
     * @param {Object} keyParam - this parameter comes from Tool.js where the listeners about these kind of events are built;
     * it conatins the event triggered and two boolean fields that specify if the event is a keydown or a keyup one.
     */
-    var fireKeyEvent= function(keyParam){
+    plug.fireKeyEvent= function(keyParam){
          if(keyParam.keyPressed===true){//a keydown event occurs
             if(keyParam.event.altKey){//when ALT key is pressed the moving tool is disabled and restored the trackball control
                 if(control instanceof THREE.TransformControls) control.detach();
@@ -331,13 +331,8 @@
             }
         }
     };
-    plug._applyTo = function (meshFile, on, keyParam) {
-        if(keyParam !== undefined){// this "if" statement is run when a keydown or keyup event is triggered and this tool have to manage it
-            if(keyParam.event!== null) {
-                fireKeyEvent(keyParam);
-                return;
-            }
-        }
+    plug._applyTo = function (meshFile, on) {
+        
         if(on&&meshFile.getThreeMesh().visible===true){
             toolActive=true;
             toolEnabled(true);

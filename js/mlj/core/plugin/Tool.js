@@ -237,7 +237,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             if(btn.isOn()&&!flag){
                 keyEventParam.event=event;
                 keyEventParam.keyPressed=true;
-                _this._applyTo(null, null, keyEventParam);
+                _this.fireKeyEvent(keyEventParam);
                 flag=true;
                 keyEventParam={
                     event: null,
@@ -255,7 +255,7 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
                 flag=false;
                 keyEventParam.event=event;
                 keyEventParam.keyReleased=true;
-                _this._applyTo(null, null, keyEventParam);
+                _this.fireKeyEvent(keyEventParam);
                 keyEventParam={
                     event: null,
                     keyPressed: false,

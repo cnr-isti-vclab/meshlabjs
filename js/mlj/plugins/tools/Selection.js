@@ -106,9 +106,6 @@
         */
         function canMouseUp(event) {
             var meshFile=scene.getSelectedLayer();
-            
-            console.log(selectionAdd);
-            console.log(selectionSub);
             if(!selectionAdd&&!selectionSub){ //if no key is pressed before select another box will be deselect all
                 MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
             }
@@ -265,7 +262,7 @@
          * @param {Object} keyParam - this parameter comes from Tool.js where the listeners about these kind of events are built;
          * it conatins the event triggered and two boolean fields that specify if the event is a keydown or a keyup one.
          */
-        fireKeyEvent= function(keyParam){
+        plug.fireKeyEvent= function(keyParam){
             if(keyParam.keyPressed===true){//key down event triggered
                if(keyParam.event.altKey){//if ALT is pressed it means that the tool will pause by restoring the original trackball control so we are able to zoom and move the camera
                    bindSelectionEvents(false);
@@ -305,14 +302,9 @@
         }
     };
     
-    plug._applyTo = function (meshFile, on, keyParam) {
+    plug._applyTo = function (meshFile, on) {
         var mesh=scene.getSelectedLayer();
-        if(keyParam !== undefined){// this "if" statement is run when a keydown or keyup event is triggered and this tool have to manage it
-            if(keyParam.event!== null) {
-                fireKeyEvent(keyParam);
-                return;
-            }
-        }
+        
         if(on&&mesh.getThreeMesh().visible===true){//activating the selection tool
             enableSelection(true);
             clearButton= new MLJ.gui.component.Button({//instantiating the clear, invert and remove tool buttons
