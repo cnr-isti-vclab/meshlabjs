@@ -30,6 +30,7 @@ class CppMesh
     bool hasPerFaceColor() const      { return loadmask & vcg::tri::io::Mask::IOM_FACECOLOR; }
     bool hasPerVertexQuality() const  { return loadmask & vcg::tri::io::Mask::IOM_VERTQUALITY; }
     bool hasPerFaceQuality() const    { return loadmask & vcg::tri::io::Mask::IOM_FACEQUALITY; }
+    bool hasWedgeTextureCoordinates() const    { return loadmask & vcg::tri::io::Mask::IOM_WEDGTEXCOORD; }
 
     void addPerVertexColor()     { loadmask |= vcg::tri::io::Mask::IOM_VERTCOLOR; }
     void addPerFaceColor()       { loadmask |= vcg::tri::io::Mask::IOM_FACECOLOR; }
@@ -38,7 +39,7 @@ class CppMesh
     void addPerVertexNormal()    { loadmask |= vcg::tri::io::Mask::IOM_VERTNORMAL; }
 
     
-    int openMesh(string fileName) {
+  int openMesh(string fileName) {
       m.meshName=fileName;
       int ret=vcg::tri::io::Importer<MyMesh>::Open(m,fileName.c_str(),loadmask);
       if(ret!=0) {
@@ -56,14 +57,13 @@ class CppMesh
       return ret;
   }
     
-      int saveMesh(string fileName) {
+    int saveMesh(string fileName) {
         int ret=vcg::tri::io::Exporter<MyMesh>::Save(m,fileName.c_str(), loadmask);      
         if(ret!=0) {
           printf("Error in saving file\n");
-
         }
         return ret;
-      }
+    }
 
     
 
@@ -75,7 +75,7 @@ class CppMesh
             printf("Failed creating zip archive");
             mz_zip_writer_end(&zip_archive);
             return 0;
-        }
+    }
         
          const char *pTestComment = "test comment";
         //MZ_BEST_COMPRESSION = 9
@@ -94,7 +94,7 @@ class CppMesh
         mz_zip_archive zip_archive; 
         memset(&zip_archive, 0, sizeof(zip_archive)); //Saving memory for the zip archive
         mz_zip_reader_init_file(&zip_archive, fileName.c_str(), 0); //Initializing the zip file reader
-        
+        int meshIndex = 1;
         //Iterate through each file inside the zip file
         for (int i = 0; i < (int)mz_zip_reader_get_num_files(&zip_archive); i++){
             mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
@@ -103,17 +103,37 @@ class CppMesh
             std::string fileExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);
             
             if(fileExt == "off" || fileExt == "obj" || fileExt == "ply" || fileExt == "stl"){
-                //extract and open the mehs file
-                mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
-                printf("\nExtracting %s",  meshFileName.c_str());
-                openMesh(meshFileName);
+                meshIndex = i;
+            }else {
+               mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
+               printf("\nExtracting %s",  file_stat.m_filename);
+            }
+        }
+        
+        if(meshIndex > -1){
+            mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
+            mz_zip_reader_file_stat(&zip_archive, meshIndex, &file_stat);    
+            std::string meshFileName = file_stat.m_filename; //Get the file extension
+            std::string fileExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);        
+            //extract and open the mehs file
+            mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
+            printf("\nExtracting %s",  meshFileName.c_str());
+            
+            //apro la mesh, che avrà il supporto texture (WedgeTextureCoord) da cui posso prendere la lista delle texture che utilizza
+            openMesh(meshFileName);
+            
+            for (unsigned textureIdx = 0; textureIdx < m.textures.size(); ++textureIdx)
+            {
+                printf("\nLooking for texture file: %s", m.textures[textureIdx].c_str());                
+            }            
 
-                //remove the mesh file from the emscripten file system
-                if(std::remove(meshFileName.c_str()) != 0 )
-                    printf("\nError deleting %s", meshFileName.c_str());
-                else
-                    printf("\n%s successfully deleted", meshFileName.c_str());
-            }                
+            //remove the mesh file from the emscripten file system
+            if(std::remove(meshFileName.c_str()) != 0 )
+                printf("\nError deleting %s", meshFileName.c_str());
+            else
+                printf("\n%s successfully deleted", meshFileName.c_str());
+            
+//            getWedgeTextureCoordinates();
         }
         
         mz_zip_reader_end(&zip_archive);    //Close the zip file
@@ -239,6 +259,28 @@ class CppMesh
     }
     return (uintptr_t) c;
   }
+  
+inline uintptr_t getWedgeTextureCoordinates()
+  {
+    
+   float *c = new float[m.FN()*9];
+    int k = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+      for (int j = 0; j < 3; ++j) {
+//        printf("\nTexture Coord %d: f%d %f, %f, %d ", k, j, fi->WT(j).u(), fi->WT(j).v(), 0);
+        c[k++] = fi->WT(j).u();
+        c[k++] = fi->WT(j).v();
+        c[k++] = 0;
+      }
+    }
+    return (uintptr_t) c;
+  }
+  
+  
+  inline std::string getTextureName()
+  {
+      return m.textures[0].c_str();
+  }
 
 };
 
@@ -255,6 +297,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("saveMeshZip",           &CppMesh::saveMeshZip)
     .function("VN",                    &CppMesh::VN)
     .function("FN",                    &CppMesh::FN)
+    .function("hasWedgeTextureCoordinates",     &CppMesh::hasWedgeTextureCoordinates)
     .function("hasPerVertexColor",     &CppMesh::hasPerVertexColor)
     .function("hasPerVertexQuality",   &CppMesh::hasPerVertexQuality)
     .function("hasPerVertexNormal",    &CppMesh::hasPerVertexNormal)
@@ -272,6 +315,8 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceIndex",          &CppMesh::getFaceIndex)
     .function("getVertexColors",       &CppMesh::getVertexColors)
     .function("getFaceColors",         &CppMesh::getFaceColors)
+    .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
+    .function("getTextureName",         &CppMesh::getTextureName)
     ;
 }
 #endif

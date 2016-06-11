@@ -18,10 +18,10 @@ struct MyUsedTypes : public vcg::UsedTypes<vcg::Use<MyVertex>   ::AsVertexType,
 
 class MyVertex  : public vcg::Vertex< MyUsedTypes, vcg::vertex::Coord3f,  vcg::vertex::Normal3f, vcg::vertex::Color4b,
                                                    vcg::vertex::Qualityf, vcg::vertex::VEAdj,    vcg::vertex::VFAdj,   
-                                                   vcg::vertex::Mark,     vcg::vertex::Curvaturef,
+                                                   vcg::vertex::Mark,     vcg::vertex::Curvaturef, vcg::vertex::TexCoord2f,
                                                    vcg::vertex::BitFlags > {};
 class MyFace    : public vcg::Face<   MyUsedTypes, vcg::face::FFAdj,     vcg::face::VFAdj,     vcg::face::Color4b,
-                                                   vcg::face::Normal3f,  vcg::face::VertexRef, vcg::face::Mark,
+                                                   vcg::face::Normal3f,  vcg::face::VertexRef, vcg::face::Mark, vcg::face::WedgeTexCoord2f,
                                                    vcg::face::Qualityf,  vcg::face::BitFlags > {};
 class MyEdge    : public vcg::Edge<   MyUsedTypes, vcg::edge::VertexRef, vcg::edge::VEAdj,     vcg::edge::EEAdj, 
                                                    vcg::edge::BitFlags> {};

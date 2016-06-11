@@ -85,8 +85,28 @@ MLJ.core.File = {
             console.time("Parsing Mesh Time");  
 //            console.log("File extension: " +file.name.split('.').pop());
             var resOpen = -1;
-            if(file.name.split('.').pop() === "zip")
+            if(file.name.split('.').pop() === "zip"){
                 resOpen = mf.cppMesh.openMeshZip(file.name);
+                console.log("Aprendo zip... " +resOpen);
+                
+//                console.log("Il file " +mf.cppMesh.getTextureName() +" esiste: "+ FS.isFile(mf.cppMesh.getTextureName()))
+
+                console.log("Il file " +FS.currentPath+mf.cppMesh.getTextureName() +" esiste: "+ FS.isFile(FS.currentPath+mf.cppMesh.getTextureName()))
+                console.log("Il file " +FS.currentPath+"half2.jpeg" +" esiste: "+ FS.isFile(FS.currentPath+"half2.jpeg"))
+                FS.readdir(FS.currentPath, function(err, files){
+                   console.log("Letto");
+                   for(i = 0; i < files.length; i++){
+                       console.log(files[i]);
+                   }
+               });
+//               bufferPtr = mf.cppMesh.getWedgeTextureCoordinates();
+//               bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferPtr, mf.cppMesh.FN()*9));
+//               actualIndex = 0;
+//               for(i = 0; i < bufferData.length; i++){
+//                   actualIndex++;
+//                   console.log(actualIndex+": "+bufferData[i].toFixed(6) +" "+bufferData[++i].toFixed(6)+" "+bufferData[++i].toFixed(6));
+//               }
+            }
             else
                 resOpen = mf.cppMesh.openMesh(file.name);
         
