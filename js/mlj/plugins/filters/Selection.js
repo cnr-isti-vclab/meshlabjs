@@ -76,9 +76,9 @@
 
     SelectionNoneFilter._applyTo = function (meshFile) {
         var vertFlag,faceFlag;
-        switch(SelectionAllWidget.getValue()) {
+        switch(SelectionNoneWidget.getValue()) {
             case USE_BOTH: vertFlag = true;  faceFlag = true; break;
-            case USE_FACE: vertFlag = false; faceFlag = false; break;
+            case USE_FACE: vertFlag = false; faceFlag = true; break;
             case USE_VERT: vertFlag = true;  faceFlag = false; break;
         }
         Module.SelectionNone(meshFile.ptrMesh(),vertFlag,faceFlag);
@@ -105,9 +105,9 @@
 
     SelectionInvertFilter._applyTo = function (meshFile) {
         var vertFlag,faceFlag;
-        switch(SelectionAllWidget.getValue()) {
+        switch(SelectionInvertWidget.getValue()) {
             case USE_BOTH: vertFlag = true;  faceFlag = true; break;
-            case USE_FACE: vertFlag = false; faceFlag = false; break;
+            case USE_FACE: vertFlag = false; faceFlag = true; break;
             case USE_VERT: vertFlag = true;  faceFlag = false; break;
         }
         Module.SelectionInvert(meshFile.ptrMesh(),vertFlag,faceFlag);

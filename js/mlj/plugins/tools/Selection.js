@@ -335,6 +335,9 @@
                 }
                 else{
                     MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection Invert").getParam().selectByValue(1);
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None").getParam().selectByValue(2);
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
+                    MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None").getParam().selectByValue(0);
                 }
                 MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection Invert")._applyTo(meshFile);
                 MLJ.core.Scene.updateLayer(scene.getSelectedLayer());
