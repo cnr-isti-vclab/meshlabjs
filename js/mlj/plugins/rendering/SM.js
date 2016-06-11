@@ -114,10 +114,13 @@
         // sceneGraph.overrideMaterial = new THREE.MeshDepthMaterial();
 
         	//grossi problemi qui!!!!!
-        // it's like if the renderer isn't rendering on eyeDepthMapTarget...if i render directly on
-        // canvas the cameraDepth is displayed correctly (white because perspective), while it renders
-        // correctly on lightDepthMapTarget ...why that? even if i just do the second call the eyeDepthMapTarget
-        // contains only black texels..
+        /*
+          it's like if the renderer isn't rendering on eyeDepthMapTarget...if i render directly (like in the
+           third call (commented one)) on canvas the cameraDepth is displayed correctly (white because perspective), but
+           on the eyeDepthMapTarget the result gives a black texture in the shadowPass render call (the last one).
+            Instead  it renders correctly on lightDepthMapTarget ...why that? even if i just do the call on eyeDepthMapTarget
+            the result contains only black texels..
+         */
         sceneGraph.overrideMaterial = depthMaterial;
         renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
         renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
@@ -139,7 +142,7 @@
 
         sceneGraph.overrideMaterial = shadowMaterial;
         renderer.autoClearColor = false;
-    //   renderer.render(sceneGraph, sceneCam);
+       renderer.render(sceneGraph, sceneCam);
         renderer.autoClearColor = true;
 
         shadowPassUniforms.lightViewProjection.value = null;
