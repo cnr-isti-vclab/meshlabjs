@@ -2,6 +2,8 @@
 #include "mesh_def.h"
 #include <wrap/io_trimesh/import.h>
 #include <wrap/io_trimesh/export.h>
+#include <vcg/complex/complex.h>
+#include <vcg/complex/algorithms/attribute_seam.h>
 #include "miniz/miniz.c"
 
 using namespace vcg;
@@ -133,6 +135,8 @@ class CppMesh
             else
                 printf("\n%s successfully deleted", meshFileName.c_str());
             
+            printf("\nWedgeToVertex!!");
+            wedgeToVertex();
 //            getWedgeTextureCoordinates();
         }
         
@@ -275,12 +279,59 @@ inline uintptr_t getWedgeTextureCoordinates()
     }
     return (uintptr_t) c;
   }
+
+inline uintptr_t getVertexTexCoordinates()
+  {
+    
+//   float *c = new float[m.VN()*3];
+   float *c = new float[m.VN()*2];
+    int k = 0;
+    for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+//        printf("\nTexture Coord %d: f%d %f %f %d", k, j, vi->cT().u(), vi->cT().v(), 0);
+        c[k++] = vi->cT().u();
+        c[k++] = vi->cT().v();
+//        c[k++] = 0;
+    }
+    return (uintptr_t) c;
+  }
+
   
   
   inline std::string getTextureName()
   {
       return m.textures[0].c_str();
   }
+  
+  
+  static void ExtractVertex(const MyMesh & srcMesh, const MyMesh::FaceType & f, int whichWedge, const MyMesh & dstMesh, MyMesh::VertexType & v)
+{
+  (void)srcMesh;
+  (void)dstMesh;
+  // This is done to preserve every single perVertex property
+  // perVextex Texture Coordinate is instead obtained from perWedge one.
+  v.ImportData(*f.cV(whichWedge));
+  v.T() = f.cWT(whichWedge);
+}
+  
+  
+
+static bool CompareVertex(const MyMesh & m, const MyMesh::VertexType & vA, const MyMesh::VertexType & vB)
+{
+  (void)m;
+  return (vA.cT() == vB.cT());
+}
+
+  
+inline void wedgeToVertex(){
+    printf("\nAbout to split wedges");
+        
+    if(hasWedgeTextureCoordinates()){
+        printf("\nHas Wedges");
+//        m.vert.EnableTexCoord();	
+        tri::AttributeSeam::SplitVertex(m, ExtractVertex, CompareVertex);
+        printf("\nWedges Splitted into vertex coordinates");
+    }
+}
 
 };
 
@@ -316,6 +367,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getVertexColors",       &CppMesh::getVertexColors)
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
+    .function("getVertexTexCoordinates",         &CppMesh::getVertexTexCoordinates)    
     .function("getTextureName",         &CppMesh::getTextureName)
     ;
 }
