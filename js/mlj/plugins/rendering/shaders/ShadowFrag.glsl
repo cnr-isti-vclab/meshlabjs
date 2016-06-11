@@ -1,36 +1,30 @@
 precision highp float;
 
-uniform mat4 lightViewProjection;
-uniform mat4 modelMatrix;
-uniform sampler2D colorMap;
-uniform sampler2D positionMap;
-uniform sampler2D depthMap;
+uniform sampler2D eyeDepthMap;
+uniform sampler2D lightDepthMap;
 
-varying vec2 vUv;
+varying vec4 lightFragPos;
 
-float shadowCalc(vec2 vUv){
-
-  vec4 position = texture2D(positionMap, vUv); //posizione mondo
-  vec4 lightSpacePosition =  lightViewProjection * position;
-
-  lightSpacePosition.xyz /=  lightSpacePosition.w;
-
-  lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
-
-  float closest = texture2D(depthMap, lightSpacePosition.xy).r;
-  float current = lightSpacePosition.z;
-
-  float shadow = current  - 0.005 > closest ? 1.0 : 0.0;
-
-  return shadow;
-}
 
 void main(){
-  vec4 color = texture2D(colorMap, vUv);
 
-  if (color.a == 0.0) discard;
+  float eyeClosest = texture2D(eyeDepthMap, gl_FragCoord.xy).r;
 
-  float lighting = (shadowCalc(vUv) > 0.0) ? 0.3 : 1.0;
+// if (gl_FragCoord.z > eyeClosest ) discard;
 
-  gl_FragColor = vec4(color.rgb * lighting, color.a);
-}
+  vec4 position = lightFragPos;
+  position.xyz /= position.w;
+  position.xyz = position.xyz * vec3(0.5) + vec3(0.5);
+
+  float closest = texture2D(lightDepthMap, position.xy).r;
+  float current = position.z;
+
+  //gl_FragColor.xyzw = vec4(vec3(eyeClosest), 1.0);
+  //return;
+  if (current - 0.005 > closest){
+    gl_FragColor = vec4(0, 0, 0, 0.3);
+  } else {
+    gl_FragColor = vec4(1, 0, 0, 0.002);
+  }
+
+  }
