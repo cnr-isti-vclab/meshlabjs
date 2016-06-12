@@ -86,24 +86,10 @@
                               -20,
                               1,
                               25);
-      lightCamera.position.set(0, 0, 8);
+      lightCamera.position.set(8, 0, 0);
       lightCamera.lookAt(new THREE.Vector3(0, 0, 0));
       lightCamera.updateProjectionMatrix();
       let projScreenMatrix = new THREE.Matrix4();
-
-      // let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
-      // let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
-      //   uniforms: shadowPassUniforms,
-      //   side: THREE.DoubleSide,
-      //   transparent: true,
-      //   opacity: 0.5,
-      //   blending: THREE["NormalBlending"],
-      //   vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
-      //   fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
-      // }));
-      //
-      // let shadowScene = new THREE.Scene();
-      // shadowScene.add(shadowMapMesh);
 
       /*
          receives an input buffer in Scene.js and outputs an output buffer that will
@@ -118,23 +104,13 @@
         let renderer = scene.getRenderer();
         SIZE = scene.get3DSize();
 
+        // lightCamera.position.set(new);
+        // lightCamera.lookAt(sceneCam.getWorldDirection());
+        // lightCamera.updateProjectionMatrix;
         // let dpr = renderer.getPixelRatio();
          eyeDepthMapTarget.setSize(SIZE.width , SIZE.height );
          lightDepthMapTarget.setSize(SIZE.width , SIZE.height );
 
-
-
-        	//grossi problemi qui!!!!!
-        /*
-          it's like if the renderer isn't rendering on eyeDepthMapTarget...if i render directly (like in the
-           third call (commented one)) on canvas the cameraDepth is displayed correctly (white because perspective), but
-           on the eyeDepthMapTarget the result gives a black texture in the shadowPass render call (the last one).
-            Instead  it renders correctly on lightDepthMapTarget ...why that? even if i just do the call on eyeDepthMapTarget
-            the result contains only black texels..
-         */
-
-         /* disegnando sul quad eyeDepthMapTarget funzionava bene... dopo controlla e vedi se riesci a far
-         funzionare tutto su quad.... */
         sceneGraph.overrideMaterial = depthMaterial;
         renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
         renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
@@ -146,14 +122,6 @@
         shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
         shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget;
         shadowPassUniforms.textureSize.value = new THREE.Vector2(SIZE.width, SIZE.height);
-
-      //  console.log(JSON.stringify(lightDepthMapTarget));
-      //  console.log(JSON.stringify(eyeDepthMapTarget.texture));
-        /* texture prop is not defined...but if i uncomment any or both of them the eyeDepthMap and lightDepthMap will
-         contain what seems to be the depth from the camera Pov....strange*/
-        // shadowPassUniforms.lightDepthMap.value.texture.needsUpdate = true;
-        // shadowPassUniforms.eyeDepthMap.value.texture.needsUpdate = true;
-
 
         sceneGraph.overrideMaterial = shadowMaterial;
         renderer.autoClearColor = false;
