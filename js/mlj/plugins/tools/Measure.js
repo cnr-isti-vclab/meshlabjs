@@ -5,12 +5,10 @@
  */
 
 (function (plugin, core, scene) {
-    var DISTANCEPOINTS_DISABLED=0; //it means that the measure tool is disabled
-    var DISTANCEPOINTS_ENABLED=1; // it means that the measure tool is enabled
     var clearButton;// this is a toolbar button that allow us to immediatly remove all measures the user performed
-    var DEFAULTS = {
-       distanceEnable : 1
-    };
+    var pauseButton; //this is used to temporarly suspend the tool and restore the usual trackball control
+    var toolActive;
+    var DEFAULTS = {};
 
     var plug = new plugin.Tool({
         name: "Measure Tool",
@@ -20,33 +18,8 @@
         on: false
     }, DEFAULTS);
     
-    var distancePoints;
     plug._init = function (guiBuilder) {
-        distancePoints = guiBuilder.Choice({
-            label: "Get Points Distance",
-            tooltip: "Choose two points on the current layer and get the distance between them.",
-            options: [
-                {content: "Enable", value: DISTANCEPOINTS_ENABLED, selected : true},
-                {content: "Disable", value: DISTANCEPOINTS_DISABLED}
-            ],
-            bindTo: (function() {
-                var bindToFun = function () {
-                    var selectedLayer=MLJ.core.Scene.getSelectedLayer();
-                    if(selectedLayer.getThreeMesh().visible===false){//if the selected layer is not visible we cannot use the tool
-                        distancePoints._changeValue(DISTANCEPOINTS_DISABLED); //it changes the options tab in "Disabled" 
-                        return;
-                    }
-                    if(distancePoints.getValue()===DISTANCEPOINTS_ENABLED){//if the options tab is set on "Enabled" the measure tool can be activated
-                        toolEnabled(true);
-                    }
-                    else{//when the options tab is set on "Disabled" the measure tool is deactivated
-                        toolEnabled(false);
-                    }
-                };
-                bindToFun.toString = function () {};
-                return bindToFun;
-            }())
-        });
+        
     };
     /**
      * A set of global variables the tool use to work properly
@@ -95,6 +68,7 @@
             $('#_3D').removeAttr("onmousedown");
 
         }
+        toolActive=active;
     };
     /**
      * This function is invoked when the tool have to be disabled fastly, 
@@ -123,6 +97,7 @@
         if(keyParam.keyPressed===true){// a keydown event occurs
            if(keyParam.event.altKey){//if ALT is pressed the measure tool have to be disabled to restore the trackball control and allow the user to zoom in or out and move the camera
                toolEnabled(false);
+               plug._disableButtons(true,pauseButton);
                keyParam.event.preventDefault(); 
            }
        }
@@ -130,6 +105,7 @@
            var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
            if(KeyID===18){//ALT is released so the measure tool is activated again
                toolEnabled(true);
+               plug._disableButtons(false,pauseButton);
            }
        }
     };
@@ -216,10 +192,12 @@
                     {name:"labelP1-"+iter},
                     sceneGroup 
                 );
+                console.log("You selected ("+point1.x+","+point1.y+","+point1.z+") point on the mesh!");
                 scene.render();
             }
             else if(sceneGroup.getObjectByName("s2-"+iter) === undefined){//if the previous if-statment fails and this object doesn't exist, it means that the second point have to be added on the current mesh
                 point2=point;
+                console.log("You selected ("+point2.x+","+point2.y+","+point2.z+") point on the mesh!");
                 secondSphere = new THREE.Mesh( geometrySphere, materialSphere );
                 secondSphere.name="s2-"+iter;
                 secondSphere.position.x=point2.x;
@@ -262,6 +240,7 @@
                     {name: "labelP2-"+iter},
                     sceneGroup
                 );
+                console.log("The distance between ("+point1.x+","+point1.y+","+point1.z+") and ("+point2.x+","+point2.y+","+point2.z+") is "+distance+".");
                 scene.render();
                 iter++;
                 point1=undefined;
@@ -273,25 +252,33 @@
    
     plug._applyTo = function (meshFile, on) {
         
-        if(on){
-            distancePoints._changeValue(DISTANCEPOINTS_ENABLED);
-            MLJ.core.plugin.Manager.getToolPlugins().getByKey("Measure Tool").getParam().label.flag("bindTo").call(); // the distancePoint's bindTo function is performed
+        if(on&&scene.getSelectedLayer().getThreeMesh().visible===true){
+            toolEnabled(true);
             clearButton= new MLJ.gui.component.Button({//instantiating the clear button
                 tooltip: "Clear all meausures",
+                icon: "img/icons/github.png",
+                right:true
+            });
+            pauseButton= new MLJ.gui.component.Button({//instantiating the clear button
+                tooltip: "Pause the tool and restore the original trackball control.",
                 icon: "img/icons/github.png",
                 right:true
             });
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 removeTool();
             });
+            pauseButton.onClick(function (){
+                toolEnabled(!toolActive);
+            });
+            MLJ.widget.TabbedPane.getToolsToolBar().add(pauseButton);
             MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//appending the clear button to the tool's toolbar
         }
         else{
             toolEnabled(false);
-            distancePoints._changeValue(DISTANCEPOINTS_DISABLED);
             removeTool();
             if (clearButton instanceof MLJ.gui.component.Component) {
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);//removing the clear button from the tool's toolbar
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(pauseButton);//removing the clear button from the tool's toolbar
             }
         }
     };
