@@ -97,7 +97,7 @@
         if(keyParam.keyPressed===true){// a keydown event occurs
            if(keyParam.event.altKey){//if ALT is pressed the measure tool have to be disabled to restore the trackball control and allow the user to zoom in or out and move the camera
                toolEnabled(false);
-               plug._disableButtons(true,pauseButton);
+               pauseButton.toggle('on');
                keyParam.event.preventDefault(); 
            }
        }
@@ -105,7 +105,7 @@
            var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
            if(KeyID===18){//ALT is released so the measure tool is activated again
                toolEnabled(true);
-               plug._disableButtons(false,pauseButton);
+               pauseButton.toggle('off');
            }
        }
     };
@@ -259,10 +259,12 @@
                 icon: "img/icons/github.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.Button({//instantiating the clear button
+            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
                 tooltip: "Pause the tool and restore the original trackball control.",
                 icon: "img/icons/github.png",
-                right:true
+                right:true, 
+                toggle: true,
+                on: false
             });
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 removeTool();

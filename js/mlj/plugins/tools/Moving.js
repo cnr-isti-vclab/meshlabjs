@@ -324,7 +324,7 @@
                 scene.getControls().enabled=true;
                 scene.render();
                 toolActive=false;
-                plug._disableButtons(true,pauseButton);
+                pauseButton.toggle('on');
                 keyParam.event.preventDefault(); 
             }
         }
@@ -332,7 +332,7 @@
             var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
             if(KeyID===18){//when ALT key is released the moving tool is restore to the previous state
                 toolEnabled(true);
-                plug._disableButtons(false,pauseButton);
+                pauseButton.toggle('off');
             }
         }
     };
@@ -349,10 +349,12 @@
                 icon: "img/icons/github.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.Button({//instantiating the clear button
+            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
                 tooltip: "Pause the tool and restore the original trackball control.",
                 icon: "img/icons/github.png",
-                right:true
+                right:true, 
+                toggle: true,
+                on: false
             });
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 if(isBarycenter===true) isBarycenter=false;  

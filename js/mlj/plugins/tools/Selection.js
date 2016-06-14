@@ -261,7 +261,7 @@
         if(keyParam.keyPressed===true){//key down event triggered
            if(keyParam.event.altKey){//if ALT is pressed it means that the tool will pause by restoring the original trackball control so we are able to zoom and move the camera
                bindSelectionEvents(false);
-               plug._disableButtons(true,pauseButton);
+               pauseButton.toggle('on');
                keyParam.event.preventDefault(); 
            }
            else if(keyParam.event.shiftKey){//if SHIFT key is pressed the subtractional selection mode is activated
@@ -277,7 +277,7 @@
            {
               case 18://alt
                    bindSelectionEvents(true);
-                   plug._disableButtons(false,pauseButton);
+                   pauseButton.toggle('off');
               break; 
 
               case 17://CTRL
@@ -311,10 +311,12 @@
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.Button({//instantiating the clear button
+            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
                 tooltip: "Pause the tool and restore the original trackball control.",
                 icon: "img/icons/github.png",
-                right:true
+                right:true, 
+                toggle: true,
+                on: false
             });
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
