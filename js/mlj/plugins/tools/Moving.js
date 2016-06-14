@@ -81,13 +81,13 @@
                 var bindToFun = function () {
                     if(isBarycenter===false&&toolActive===true) {//the barycenter mode is selected
                         applyTransform(scene.getSelectedLayer().getThreeMesh().matrix); //when the user switch from global to barycenter mode the transformations are fixed
-                        toolEnabled(false);
-                        toolEnabled(true);
+                        enableTool(false);
+                        enableTool(true);
                     }
                     else if(isBarycenter===true&&toolActive===true) {//the global mode is selected
                         setBarycenter(false); //when the user switch from barycenter to global mode the transformations are fixed
-                        toolEnabled(false);
-                        toolEnabled(true);
+                        enableTool(false);
+                        enableTool(true);
                     }
                     control.setSize(changeSize.getValue());
                 };
@@ -149,7 +149,7 @@
      * reset all the objects used, detach the TransformControls object and restore the trackball control.
      * @param {boolean} active - true if the function has to active the moving tool, false otherwise
      */
-    var toolEnabled = function(active){
+    var enableTool = function(active){
         var camera=scene.getCamera();
         var object=scene.getSelectedLayer().getThreeMesh();
         var meshGroup = scene.getSelectedLayer().getThreeMeshOrigin();
@@ -331,14 +331,20 @@
         if(keyParam.keyReleased===true){//a keyup event occurs
             var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
             if(KeyID===18){//when ALT key is released the moving tool is restore to the previous state
-                toolEnabled(true);
+                enableTool(true);
                 pauseButton.toggle('off');
             }
         }
     };
-    plug._applyTo = function (meshFile, on) {
-        if(on&&meshFile.getThreeMesh().visible===true){
-            toolEnabled(true);
+    /**
+     * This function is responsible to initialize the tool's option buttons and link to them a specific function that is a specific 
+     * shortcatted operation the user can access according with the tool used. If the bool is "true" the buttons are created, one function is
+     * linked to them and they are added to the tool's toolbar; if bool is false, instead, the buttons are removed from the tool's toolbar.
+     * That's usually happen when the tool is deactived.
+     * @param {type} bool
+     */
+    function enableMovingButtons(bool){
+        if(bool){
             clearButton= new MLJ.gui.component.Button({//instantiating the clear, apply toolbar buttons
                 tooltip: "Throw away all changes",
                 icon: "img/icons/github.png",
@@ -349,17 +355,11 @@
                 icon: "img/icons/github.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
-                tooltip: "Pause the tool and restore the original trackball control.",
-                icon: "img/icons/github.png",
-                right:true, 
-                toggle: true,
-                on: false
-            });
+            pauseButton= plug.pauseButton;
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 if(isBarycenter===true) isBarycenter=false;  
-                toolEnabled(false);
-                toolEnabled(true);
+                enableTool(false);
+                enableTool(true);
             });
             pauseButton.onClick(function (){
                 if(toolActive){
@@ -370,7 +370,7 @@
                     toolActive=false;
                 }
                 else{
-                    toolEnabled(true);
+                    enableTool(true);
                 }
             });
             applyButton.onClick(function (){
@@ -399,18 +399,22 @@
                     spaMode._changeValue(GLOBAL); //after that always GLOBAL mode is selected
                 }
             });
-            MLJ.widget.TabbedPane.getToolsToolBar().add(pauseButton);
-            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//adding the clear button to the TOOL toolbar
-            MLJ.widget.TabbedPane.getToolsToolBar().add(applyButton);
+            plug._addButtons(pauseButton,clearButton,applyButton);
+        }
+        else{
+            plug._rmvButtons(pauseButton, clearButton,applyButton);
+        }
+    };
+    
+    plug._applyTo = function (meshFile, on) {
+        if(on&&meshFile.getThreeMesh().visible===true){
+            enableTool(true);
+            enableMovingButtons(true);
         }
         else{
             if(isBarycenter===true) isBarycenter=false;
-            toolEnabled(false);
-            if (clearButton instanceof MLJ.gui.component.Component) {//removing the toolbar buttons
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(applyButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(pauseButton);
-            }
+            enableTool(false);
+            enableMovingButtons(false);
         }
     };
 

@@ -48,7 +48,7 @@
      * @param {boolean} active - true to change the cursor, to bind a set of events listeners and so on, false to restore the original 
      * shape of the cursor and to unbind all the listeners because the selection tool is been disabled
      */
-    var bindSelectionEvents=function(active){
+    var enableTool=function(active){
         if(active){
             scene.getControls().enabled=false;
             $('#_3D').css('cursor','crosshair');
@@ -260,7 +260,7 @@
     plug.fireKeyEvent= function(keyParam){
         if(keyParam.keyPressed===true){//key down event triggered
            if(keyParam.event.altKey){//if ALT is pressed it means that the tool will pause by restoring the original trackball control so we are able to zoom and move the camera
-               bindSelectionEvents(false);
+               enableTool(false);
                pauseButton.toggle('on');
                keyParam.event.preventDefault(); 
            }
@@ -276,7 +276,7 @@
            switch(KeyID)
            {
               case 18://alt
-                   bindSelectionEvents(true);
+                   enableTool(true);
                    pauseButton.toggle('off');
               break; 
 
@@ -290,13 +290,16 @@
            }
        }
     };
-       /**** AUXILIARY FUNCTION - END ****/
-    
-    plug._applyTo = function (meshFile, on) {
-        var mesh=scene.getSelectedLayer();
-        if(on&&mesh.getThreeMesh().visible===true){//activating the selection tool
-            bindSelectionEvents(true);
-            clearButton= new MLJ.gui.component.Button({//instantiating the clear, invert and remove tool buttons
+    /**
+     * This function is responsible to initialize the tool's option buttons and link to them a specific function that is a specific 
+     * shortcatted operation the user can access according with the tool used. If the bool is "true" the buttons are created, one function is
+     * linked to them and they are added to the tool's toolbar; if bool is false, instead, the buttons are removed from the tool's toolbar.
+     * That's usually happen when the tool is deactived.
+     * @param {type} bool
+     */
+    function enableSelectionButtons(bool){
+        if(bool){
+            clearButton=new MLJ.gui.component.Button({
                 tooltip: "Select none",
                 icon: "img/icons/github.png",
                 right:true
@@ -306,18 +309,13 @@
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0133-spinner11.png",
                 right:true
             });
-            removeButton = new MLJ.gui.component.Button({
+            removeButton=new MLJ.gui.component.Button({
                 tooltip: "Delete selected items",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
-                tooltip: "Pause the tool and restore the original trackball control.",
-                icon: "img/icons/github.png",
-                right:true, 
-                toggle: true,
-                on: false
-            });
+            pauseButton=plug.pauseButton;
+            var meshFile=scene.getSelectedLayer();
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Selection None")._applyTo(meshFile);
                 MLJ.core.Scene.updateLayer(scene.getSelectedLayer());
@@ -347,13 +345,21 @@
                 plug._disableButtons(true,clearButton,removeButton,invertButton);
             });
             pauseButton.onClick(function (){
-                bindSelectionEvents(!toolActive);
+                enableTool(!toolActive);
             });
-            MLJ.widget.TabbedPane.getToolsToolBar().add(pauseButton);
-            MLJ.widget.TabbedPane.getToolsToolBar().add(removeButton);
-            MLJ.widget.TabbedPane.getToolsToolBar().add(invertButton);
-            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//adding the clear button to the TOOL toolbar
-            
+            plug._addButtons(pauseButton, removeButton, invertButton, clearButton);
+        }
+        else{
+            plug._rmvButtons(pauseButton, removeButton, invertButton, clearButton);
+        }
+    }
+       /**** AUXILIARY FUNCTION - END ****/
+    
+    plug._applyTo = function (meshFile, on) {
+        var mesh=scene.getSelectedLayer();
+        if(on&&mesh.getThreeMesh().visible===true){//activating the selection tool
+            enableTool(true);
+            enableSelectionButtons(true);
             //enable or disable the tool buttons (clear, remove and invert) according with if some vertex or face is selected on the mesh or not
             var pointsCoordsPtr = Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh());
             var numSelectedPoints = Module.getValue(pointsCoordsPtr, 'float');
@@ -365,13 +371,8 @@
             }
         }
         else{//deactivating the selection tool
-            bindSelectionEvents(false);  
-            if (clearButton instanceof MLJ.gui.component.Component) {//removing all the buttons from the tool toolbar
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(removeButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(invertButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(pauseButton);
-            }
+            enableTool(false);  
+            enableSelectionButtons(false);
         }
     };
 

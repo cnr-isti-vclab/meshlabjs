@@ -51,7 +51,7 @@
      * for example enable or disable the trackball control, substituting it with a differet cursor, attach an event listener and so on
      * @param {boolean} active - true if the measure tool must be actived, false otherwise
      */
-    var toolEnabled=function(active){
+    var enableTool=function(active){
         if(active){
             $('#_3D').css('cursor','crosshair');
             scene.getControls().enabled=false;
@@ -96,7 +96,7 @@
     plug.fireKeyEvent= function(keyParam){
         if(keyParam.keyPressed===true){// a keydown event occurs
            if(keyParam.event.altKey){//if ALT is pressed the measure tool have to be disabled to restore the trackball control and allow the user to zoom in or out and move the camera
-               toolEnabled(false);
+               enableTool(false);
                pauseButton.toggle('on');
                keyParam.event.preventDefault(); 
            }
@@ -104,7 +104,7 @@
        if(keyParam.keyReleased===true){//a keyup event occurs
            var KeyID = (window.event) ? event.keyCode : keyParam.event.keyCode;
            if(KeyID===18){//ALT is released so the measure tool is activated again
-               toolEnabled(true);
+               enableTool(true);
                pauseButton.toggle('off');
            }
        }
@@ -249,39 +249,44 @@
             
         }
     }
-   
-    plug._applyTo = function (meshFile, on) {
-        
-        if(on&&scene.getSelectedLayer().getThreeMesh().visible===true){
-            toolEnabled(true);
+    /**
+     * This function is responsible to initialize the tool's option buttons and link to them a specific function that is a specific 
+     * shortcatted operation the user can access according with the tool used. If the bool is "true" the buttons are created, one function is
+     * linked to them and they are added to the tool's toolbar; if bool is false, instead, the buttons are removed from the tool's toolbar.
+     * That's usually happen when the tool is deactived.
+     * @param {type} bool
+     */
+    function enableMeasureButtons(bool){
+        if(bool){
             clearButton= new MLJ.gui.component.Button({//instantiating the clear button
                 tooltip: "Clear all meausures",
                 icon: "img/icons/github.png",
                 right:true
             });
-            pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
-                tooltip: "Pause the tool and restore the original trackball control.",
-                icon: "img/icons/github.png",
-                right:true, 
-                toggle: true,
-                on: false
-            });
+            pauseButton=plug.pauseButton;
             clearButton.onClick(function (){//appending a specific function on "clear" button
                 removeTool();
             });
             pauseButton.onClick(function (){
-                toolEnabled(!toolActive);
+                enableTool(!toolActive);
             });
-            MLJ.widget.TabbedPane.getToolsToolBar().add(pauseButton);
-            MLJ.widget.TabbedPane.getToolsToolBar().add(clearButton);//appending the clear button to the tool's toolbar
+            plug._addButtons(pauseButton,clearButton);
         }
         else{
-            toolEnabled(false);
+            plug._rmvButtons(pauseButton,clearButton);
+        }
+    };
+   
+    plug._applyTo = function (meshFile, on) {
+        
+        if(on&&scene.getSelectedLayer().getThreeMesh().visible===true){
+            enableTool(true);
+            enableMeasureButtons(true);
+        }
+        else{
+            enableTool(false);
             removeTool();
-            if (clearButton instanceof MLJ.gui.component.Component) {
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(clearButton);
-                MLJ.widget.TabbedPane.getToolsToolBar().remove(pauseButton);//removing the clear button from the tool's toolbar
-            }
+            enableMeasureButtons(false);
         }
     };
 

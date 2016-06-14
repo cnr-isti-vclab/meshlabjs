@@ -182,6 +182,42 @@ MLJ.core.plugin.Tool = function (parameters, defaults) {
             }
         }
     };
+    /**
+     * @type {MLJ.gui.component.ToggleButton} - this is a common button all tools share that allow the user to temporarly suspend
+     * the tool's action and restore the usual trackball control by which he can zoom in or out or turn around the mesh
+     */
+    this.pauseButton= new MLJ.gui.component.ToggleButton({//instantiating the clear button
+        tooltip: "Pause the tool and restore the original trackball control.",
+        icon: "img/icons/github.png",
+        right:true, 
+        toggle: true,
+        on: false
+    });
+    /**
+     * This function, given a certain number of MLJ.gui.component.Component elements, add them to the tool's toolbar on the right.
+     * These usually are buttons elements
+     * @returns {undefined}
+     */
+    this._addButtons = function(){
+        for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof MLJ.gui.component.Component) {
+                MLJ.widget.TabbedPane.getToolsToolBar().add(arguments[i]);
+            }
+        }
+    };
+    /**
+     * This function, given a certain number of MLJ.gui.component.Component elements, delete them from the tool's toolbar on the right.
+     * These usually are buttons elements
+     * @returns {undefined}
+     */
+    this._rmvButtons = function (){
+        for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof MLJ.gui.component.Component) {
+                MLJ.widget.TabbedPane.getToolsToolBar().remove(arguments[i]);
+            }
+        }
+    };
+    
 
     if (parameters.toggle === true) {
         
