@@ -125,6 +125,55 @@
      */
     var applyTransform =function(matrix){
         var layer=scene.getSelectedLayer();
+        //var mesh=scene.getSelectedLayer().getThreeMesh();
+        /*if(isBarycenter===false) {
+            
+            if(!mesh.scale.equals(new THREE.Vector3(1,1,1))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").xScaleWdg.setValue(mesh.scale.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").yScaleWdg.setValue(mesh.scale.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").zScaleWdg.setValue(mesh.scale.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh")._applyTo(layer);
+            }
+            if(!mesh.quaternion.equals(new THREE.Quaternion(0,0,0,1))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").xRotateWdg.setValue(-mesh.rotation.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").yRotateWdg.setValue(-mesh.rotation.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").zRotateWdg.setValue(-mesh.rotation.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh")._applyTo(layer);
+            }
+            if(!mesh.position.equals(new THREE.Vector3(0,0,0))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").xTrasWdg.setValue(mesh.position.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").yTrasWdg.setValue(mesh.position.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").zTrasWdg.setValue(mesh.position.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh")._applyTo(layer);
+            }           
+        }
+        else{*/
+            var tran=new THREE.Vector3(0,0,0);
+            var scale=new THREE.Vector3(1,1,1);
+            var quat=new THREE.Quaternion(0,0,0,1);
+            var rotation=new THREE.Euler( 0,0,0,'XYZ');//euler rotation
+            matrix.decompose(tran,quat,scale);
+            rotation.setFromQuaternion(quat,'XYZ');
+            if(!scale.equals(new THREE.Vector3(1,1,1))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").xScaleWdg.setValue(scale.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").yScaleWdg.setValue(scale.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh").zScaleWdg.setValue(scale.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Scale Mesh")._applyTo(layer);
+            }
+            if(!quat.equals(new THREE.Quaternion(0,0,0,1))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").xRotateWdg.setValue(-rotation.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").yRotateWdg.setValue(-rotation.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh").zRotateWdg.setValue(-rotation.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Rotate Mesh")._applyTo(layer);
+            }
+            if(!tran.equals(new THREE.Vector3(0,0,0))){
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").xTrasWdg.setValue(tran.x);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").yTrasWdg.setValue(tran.y);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh").zTrasWdg.setValue(tran.z);
+                MLJ.core.plugin.Manager.getFilterPlugins().getByKey("Translate Mesh")._applyTo(layer);
+            }     
+        //}
+        /*OLD VERSION - OBSOLATE
         var matrixMoving=new Float32Array(matrix.toArray());    
         var nMatrixMovBytes=matrixMoving.length*matrixMoving.BYTES_PER_ELEMENT;
         var matrixMovPtr=Module._malloc(nMatrixMovBytes);
@@ -138,8 +187,9 @@
          * @param {Object} matrixMovPtr - link to a location where is stored the matrix transformation, this form is used to allow the c++
          * function to have full access to a variable that is defined into another programming language
          */
-        Module.moveMesh(layer.ptrMesh(), matrixMovPtr);
-        Module._free(matrixMovPtr);
+        //Module.moveMesh(layer.ptrMesh(), matrixMovPtr);
+        //Module._free(matrixMovPtr);
+        
     };
     /**
      * This function is responsable of the activation and deactivation of the moving tool: in the first case, first of all, the trackball control have to be disabled

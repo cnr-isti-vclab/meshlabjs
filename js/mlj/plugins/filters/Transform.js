@@ -88,30 +88,30 @@
             arity:1
         });
 
-    var xScaleWdg,yScaleWdg,zScaleWdg,uniformScaleWdg, unitScaleWdg;
+    ScaleFilter.xScaleWdg; ScaleFilter.yScaleWdg; ScaleFilter.zScaleWdg; ScaleFilter.uniformScaleWdg; ScaleFilter.unitScaleWdg;
     ScaleFilter._init = function (builder) {
 
-        xScaleWdg = builder.Float({
+        this.xScaleWdg = builder.Float({
             step: 1, defval: 1,
             label: "X",
             tooltip: "Scaling factor X Coordinate"
         });
-        yScaleWdg = builder.Float({
+        this.yScaleWdg = builder.Float({
             step: 1, defval: 1,
             label: "Y",
             tooltip: "Scaling factor Y Coordinate"
         });
-        zScaleWdg = builder.Float({
+        this.zScaleWdg = builder.Float({
             step: 1, defval: 1,
             label: "Z",
             tooltip: "Scaling factor Z Coordinate"
         });
-        uniformScaleWdg= builder.Bool({
+        this.uniformScaleWdg= builder.Bool({
             defval: false,
             label: "Uniform Scaling",
             tooltip: "If true, the scale factor for X will be the only one considered"
         });
-        unitScaleWdg= builder.Bool({
+        this.unitScaleWdg= builder.Bool({
             defval: false,
             label: "To Unit Box",
             tooltip: "If true, the Scale Factor will be setted to fit in a unit box defined as (-1,-1,-1)-(1,1,1)"
@@ -119,8 +119,8 @@
     };
 
     ScaleFilter._applyTo = function (meshFile) {
-        Module.Scale(meshFile.ptrMesh(),xScaleWdg.getValue(),yScaleWdg.getValue(),zScaleWdg.getValue(),
-        uniformScaleWdg.getValue(),unitScaleWdg.getValue());
+        Module.Scale(meshFile.ptrMesh(),this.xScaleWdg.getValue(),this.yScaleWdg.getValue(),this.zScaleWdg.getValue(),
+        this.uniformScaleWdg.getValue(),this.unitScaleWdg.getValue());
     };
 
 /******************************************************************************/
@@ -130,20 +130,22 @@ var RotateFilter = new plugin.Filter({
             arity:1
         });
 
-    var xRotateWdg,yRotateWdg,zRotateWdg;
+    RotateFilter.xRotateWdg;
+    RotateFilter.yRotateWdg;
+    RotateFilter.zRotateWdg;
     RotateFilter._init = function (builder) {
 
-        xRotateWdg = builder.Float({
+        this.xRotateWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "X",
             tooltip: "Rotate factor X Coordinate (Euler rotation)"
         });
-        yRotateWdg = builder.Float({
+        this.yRotateWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Y",
             tooltip: "Rotate factor Y Coordinate"
         });
-        zRotateWdg = builder.Float({
+        this.zRotateWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Z",
             tooltip: "Rotate factor Z Coordinate"
@@ -152,7 +154,7 @@ var RotateFilter = new plugin.Filter({
     };
 
     RotateFilter._applyTo = function (meshFile) {
-        Module.Rotate(meshFile.ptrMesh(),xRotateWdg.getValue(),yRotateWdg.getValue(),zRotateWdg.getValue());
+        Module.Rotate(meshFile.ptrMesh(),this.xRotateWdg.getValue(),this.yRotateWdg.getValue(),this.zRotateWdg.getValue());
     };
 
 /******************************************************************************/
@@ -162,33 +164,33 @@ var RotateFilter = new plugin.Filter({
             arity:1
         });
 
-    var xTrasWdg,yTrasWdg,zTrasWdg,toOriginTransFlag;
+    TranslateFilter.xTrasWdg; TranslateFilter.yTrasWdg; TranslateFilter.zTrasWdg; TranslateFilter.toOriginTransFlag;
     TranslateFilter._init = function (builder) {
 
-       xTrasWdg = builder.Float({
+       this.xTrasWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "X",
             tooltip: "Translation on X axis"
         });
-        yTrasWdg = builder.Float({
+        this.yTrasWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Y",
             tooltip: "Translation on Y axis"
         });
-	zTrasWdg = builder.Float({
+	this.zTrasWdg = builder.Float({
             step: 0.1, defval: "0.0",
             label: "Z",
             tooltip: "Translation on Z axis"
         });
-	toOriginTransFlag = builder.Bool({
+	this.toOriginTransFlag = builder.Bool({
             defval: false,
             label: "Center to origin",
             tooltip: "If checked, the mesh will be translated so that its center coincides with the origin. Every translation factor will be ignored"
         });
     };
     TranslateFilter._applyTo = function (meshFile) {
-	Module.Translate(meshFile.ptrMesh(),xTrasWdg.getValue(),yTrasWdg.getValue(),zTrasWdg.getValue(),
-                         toOriginTransFlag.getValue());		
+	Module.Translate(meshFile.ptrMesh(),this.xTrasWdg.getValue(),this.yTrasWdg.getValue(),this.zTrasWdg.getValue(),
+                         this.toOriginTransFlag.getValue());		
     };
 
 /******************************************************************************/
