@@ -124,6 +124,38 @@
     };
 
 /******************************************************************************/
+var RotateFilter = new plugin.Filter({
+            name:"Rotate Mesh",
+            tooltip:"Rotate the mesh according to factors relative to the x,y,z coordinates.<br>",
+            arity:1
+        });
+
+    var xRotateWdg,yRotateWdg,zRotateWdg;
+    RotateFilter._init = function (builder) {
+
+        xRotateWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "X",
+            tooltip: "Rotate factor X Coordinate (Euler rotation)"
+        });
+        yRotateWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Y",
+            tooltip: "Rotate factor Y Coordinate"
+        });
+        zRotateWdg = builder.Float({
+            step: 0.1, defval: "0.0",
+            label: "Z",
+            tooltip: "Rotate factor Z Coordinate"
+        });
+        
+    };
+
+    RotateFilter._applyTo = function (meshFile) {
+        Module.Rotate(meshFile.ptrMesh(),xRotateWdg.getValue(),yRotateWdg.getValue(),zRotateWdg.getValue());
+    };
+
+/******************************************************************************/
     var TranslateFilter = new plugin.Filter({
             name:"Translate Mesh",
             tooltip:"Translate mesh along its axes; optionally move the center of the bounding box of the mesh to the origin.",
@@ -166,6 +198,7 @@
     plugin.Manager.install(RndDisplacementFilter);
     plugin.Manager.install(ScaleFilter);
     plugin.Manager.install(TranslateFilter);
+    plugin.Manager.install(RotateFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);

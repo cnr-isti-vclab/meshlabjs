@@ -50,9 +50,15 @@ void Scale(uintptr_t _m, float x,float y, float z,bool uniformFlag, bool unitbox
   m.UpdateBoxAndNormals();
 }
 
-void Rotate(uintptr_t _m)
+void Rotate(uintptr_t _m, float x, float y, float z)
 {
     MyMesh &m = *((MyMesh*) _m);
+    //Quaternion<MyMesh::ScalarType> q=new Quaternion<MyMesh::ScalarType>(x,y,z,w);
+    Matrix44<MyMesh::ScalarType> tmp;
+    //QuaternionToMatrix<MyMesh::ScalarType,MyMesh::ScalarType>(q,&tmp);
+    tmp.FromEulerAngles((MyMesh::ScalarType)x,(MyMesh::ScalarType)y,(MyMesh::ScalarType)z);
+    tri::UpdatePosition<MyMesh>::Matrix(m,tmp);
+    m.UpdateBoxAndNormals();
 }
 
 void Translate(uintptr_t _m,float x,float y, float z, bool centerToOriginFlag)
@@ -89,5 +95,6 @@ EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("RandomDisplacement", &RandomDisplacement);
     emscripten::function("Scale", &Scale);
     emscripten::function("Translate", &Translate);
+    emscripten::function("Rotate", &Rotate);
 }
 #endif
