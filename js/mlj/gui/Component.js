@@ -717,7 +717,7 @@ MLJ.gui.component.ToolBar = function () {
     this.remove = function() {
         for (var i = 0; i < arguments.length; i++) {
             if (arguments[i] instanceof MLJ.gui.component.Component) {
-                arguments[i].$.remove();
+                arguments[i].$.detach();
             } else {
                 console.error("The parameter must be an instance of MLJ.gui.component.Component");
             }
