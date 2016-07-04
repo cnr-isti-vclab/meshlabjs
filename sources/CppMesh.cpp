@@ -1,6 +1,4 @@
 #include <stdlib.h>
-#include <emscripten.h>
-#include <emscripten/bind.h>
 #include "mesh_def.h"
 #include <wrap/io_trimesh/import.h>
 #include <wrap/io_trimesh/export.h>
@@ -8,7 +6,6 @@
 
 using namespace vcg;
 using namespace std;
-using namespace emscripten;
 
 class CppMesh
 {
@@ -245,9 +242,10 @@ class CppMesh
 
 };
 
+#ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(CppMesh) {
-  class_<CppMesh>("CppMesh")
+   emscripten::class_<CppMesh>("CppMesh")
     .constructor<>()
     .function("setMeshName",           &CppMesh::setMeshName)
     .function("getMeshName",           &CppMesh::getMeshName)
@@ -276,3 +274,4 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceColors",         &CppMesh::getFaceColors)
     ;
 }
+#endif
