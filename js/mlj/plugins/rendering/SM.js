@@ -7,11 +7,12 @@
 
 (function (plugin, core, scene) {
 
-    let SIZE = {width: window.innerWidth, height: window.innerHeight};
-//    SIZE = scene.get3DSize();
+    let SIZE = { w : window.innerWidth, h : window.innerHeight};
+
     let shadowPassUniforms = {
-      lightDepthMap: { type: "t", value: null },
-      eyeDepthMap: { type: "t", value: null },
+      depthMap: { type: "t", value: null },
+      positionMap: { type: "t", value: null },
+      colorMap: { type: "t", value: null },
       lightViewProjection: { type: "m4", value: null},
     };
 
@@ -44,19 +45,19 @@
          in the render pass which draws the shadows
       */
       // non posso specificare come solo depth?? su opengl mi pare si possa
-      let eyeDepthMapTarget = new THREE.WebGLRenderTarget(SIZE.width, SIZE.height, {
+      let depthMapTarget = new THREE.WebGLRenderTarget(SIZE.w, SIZE.h, {
         type: THREE.FloatType,
         minFilter: THREE.NearestFilter,
         magFilter: THREE.NearestFilter
       });
 
 
-
-      let lightDepthMapTarget = new THREE.WebGLRenderTarget(SIZE.width, SIZE.height, {
+      let positionMapTarget = new THREE.WebGLRenderTarget(SIZE.w, SIZE.h, {
         type: THREE.FloatType,
         minFilter: THREE.NearestFilter,
         magFilter: THREE.NearestFilter
       });
+
       /*
           material containing the depth pass shaders. The original scene will be
           rendered using this shaders to produce a depth map
@@ -68,19 +69,26 @@
         fragmentShader: plug.shaders.getByKey("SMFrag.glsl")
       });
 
+      let positionMaterial = new THREE.RawShaderMaterial({
+        uniforms: {},
+        side: THREE.DoubleSide,
+        vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
+        fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
+      });
 
-      let shadowMaterial = new THREE.RawShaderMaterial({
+      /*
+        quad che disegno per il passo di defferred rendering
+      */
+      let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
+      let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
         uniforms: shadowPassUniforms,
-        transparent: true,
-        opacity: 0.5,
-        blending: THREE["NormalBlending"],
         side: THREE.DoubleSide,
         vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
         fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
-      })
+      }));
 
-
-
+      let shadowScene = new THREE.Scene();
+      shadowScene.add(shadowMapMesh);
 
       // poi costruiscilo usando bbox
       let lightCamera = new THREE.OrthographicCamera(
@@ -90,50 +98,54 @@
                               -20,
                               1,
                               25);
-      lightCamera.position.set(0, 0, 8);
-      lightCamera.lookAt(new THREE.Vector3(0, 0, 0));
-      lightCamera.updateProjectionMatrix();
-      let projScreenMatrix = new THREE.Matrix4();
 
-
+                              lightCamera.position.set(8,0,0);
+                              lightCamera.lookAt(new THREE.Vector3(0,0,0));
       /*
          receives an input buffer in Scene.js and outputs an output buffer that will
          be used as a texture for the last pass of the deferred rendering pipe.
       */
-      this.renderShadow = () => {
-        //TODO : light is on camera!!! (didn't notice it)..
-        // things should be easier then..
+      this.pass = (inBuffer, outBuffer) => {
 
         let sceneGraph = scene.getScene();
         let sceneCam = scene.getCamera();
         let renderer = scene.getRenderer();
+        //TODO : light is on camera!!! (didn't notice it)..
+        // things should be easier then..
 
-        let dpr = renderer.getPixelRatio();
-        eyeDepthMapTarget.setSize(SIZE.width * dpr, SIZE.height * dpr);
-        lightDepthMapTarget.setSize(SIZE.width * dpr, SIZE.height * dpr);
+        // forces the renderer to use the depth mapping shaders for the whole scene
+        // lightCamera.position.set(sceneCam.position.x, sceneCam.position.y, sceneCam.position.z);
+        // lightCamera.lookAt(sceneCam.getWorldDirection());
+        // lightCamera.updateProjectionMatrix();
+        //renderer.setClearColor(0xFFFFFF);
+        let projScreenMatrix = new THREE.Matrix4();
 
-        // sceneGraph.overrideMaterial = new THREE.MeshDepthMaterial();
+        lightCamera.updateProjectionMatrix();
+
         sceneGraph.overrideMaterial = depthMaterial;
-        renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
-        renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
+        renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
+        //renderer.setClearColor(clearClr.getHex());
 
-      //  renderer.render(sceneGraph,sceneCam);
-        projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
-
-        sceneGraph.overrideMaterial = shadowMaterial;
-        shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
-        shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
-        shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget.texture;
-
-        renderer.autoClearColor = false;
-        renderer.render(sceneGraph, sceneCam);
-        renderer.autoClearColor = true;
-
-        shadowPassUniforms.lightViewProjection.value = null;
-        shadowPassUniforms.lightDepthMap.value = null;
-        shadowPassUniforms.eyeDepthMap.value = null;
+        // render the position map
+        sceneGraph.overrideMaterial = positionMaterial;
+        renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
         sceneGraph.overrideMaterial = null;
 
+
+
+
+         projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
+
+        shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
+        shadowPassUniforms.depthMap.value = depthMapTarget;
+        shadowPassUniforms.positionMap.value = positionMapTarget;
+        shadowPassUniforms.colorMap.value = inBuffer;
+
+        renderer.render(shadowScene, sceneCam, outBuffer, true);
+
+
+        shadowPassUniforms.depthMap.value = null;
+        shadowPassUniforms.colorMap.value = null;
       };
     }
 
@@ -141,10 +153,10 @@
     plug._applyTo = (on) => {
         if (on) {
           context = new SMContext();
-          scene.setupShadowMapping(context);
+          scene.addPostProcessPass(plug.getName(), context.pass);
         } else {
+          scene.removePostProcessPass(plug.getName());
           context = null;
-          scene.disposeShadowMapping();
         }
 
     };

@@ -747,19 +747,6 @@ MLJ.core.Scene = {};
      * before displaying the result.
      * @memberOf MLJ.core.Scene
      */
-    this._shadowMapping = false;
-    this.shadowMappingContext = null;
-
-    this.setupShadowMapping = function (context) {
-      this._shadowMapping = true;
-      this.shadowMappingContext = context;
-    }
-
-    this.disposeShadowMapping = function () {
-       context = null
-       this._shadowMapping = false;
-    }
-
     this.render = function (fromReqAnimFrame) {
 
         if (_stats.active && !fromReqAnimFrame) {
@@ -785,9 +772,6 @@ MLJ.core.Scene = {};
             _renderer.render(quadScene, _camera2D);
         } else {
             _renderer.render(_scene, _camera);
-        }
-        if (this._shadowMapping) {
-          this.shadowMappingContext.renderShadow();
         }
 
         // render the 2D overlays

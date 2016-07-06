@@ -2,15 +2,18 @@ precision highp float;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
-uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform mat4 lightViewProjection;
 
 attribute vec3 position;
+attribute vec2 uv;
 
-varying vec4 lightFragPos;
+uniform sampler2D depthMap;
+uniform sampler2D positionMap;
+uniform sampler2D colorMap;
+
+varying vec2 vUv;
 
 void main(){
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  lightFragPos = lightViewProjection * (modelMatrix * vec4(position, 1.0));
+  gl_Position = vec4(position, 1.0);
+  vUv = uv;
 }
