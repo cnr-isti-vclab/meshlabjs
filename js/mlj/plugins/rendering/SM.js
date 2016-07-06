@@ -12,7 +12,7 @@
     let shadowPassUniforms = {
       lightDepthMap: { type: "t", value: null },
       eyeDepthMap: { type: "t", value: null },
-      textureSize: { type: "v2", value: null},
+      screenSize: { type: "v2", value: null},
       lightViewProjection: { type: "m4", value: null},
     };
 
@@ -145,7 +145,7 @@
         shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
         shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
         shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget;
-        shadowPassUniforms.textureSize.value = new THREE.Vector2(SIZE.width, SIZE.height);
+        shadowPassUniforms.screenSize.value = new THREE.Vector2(SIZE.w, SIZE.h);
 
       //  console.log(JSON.stringify(lightDepthMapTarget));
       //  console.log(JSON.stringify(eyeDepthMapTarget.texture));
