@@ -12,7 +12,6 @@
     let shadowPassUniforms = {
       lightDepthMap: { type: "t", value: null },
       eyeDepthMap: { type: "t", value: null },
-      screenSize: { type: "v2", value: null},
       lightViewProjection: { type: "m4", value: null},
     };
 
@@ -67,6 +66,7 @@
         fragmentShader: plug.shaders.getByKey("SMFrag.glsl")
       });
 
+
       let shadowMaterial = new THREE.RawShaderMaterial({
         uniforms: shadowPassUniforms,
         transparent: true,
@@ -76,6 +76,8 @@
         vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
         fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
       })
+
+
 
 
       // poi costruiscilo usando bbox
@@ -91,19 +93,6 @@
       lightCamera.updateProjectionMatrix();
       let projScreenMatrix = new THREE.Matrix4();
 
-      // let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
-      // let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
-      //   uniforms: shadowPassUniforms,
-      //   side: THREE.DoubleSide,
-      //   transparent: true,
-      //   opacity: 0.5,
-      //   blending: THREE["NormalBlending"],
-      //   vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
-      //   fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
-      // }));
-      //
-      // let shadowScene = new THREE.Scene();
-      // shadowScene.add(shadowMapMesh);
 
       /*
          receives an input buffer in Scene.js and outputs an output buffer that will
@@ -122,7 +111,7 @@
          eyeDepthMapTarget.setSize(SIZE.width , SIZE.height );
          lightDepthMapTarget.setSize(SIZE.width , SIZE.height );
 
-
+        // sceneGraph.overrideMaterial = new THREE.MeshDepthMaterial();
 
         	//grossi problemi qui!!!!!
         /*
@@ -132,12 +121,9 @@
             Instead  it renders correctly on lightDepthMapTarget ...why that? even if i just do the call on eyeDepthMapTarget
             the result contains only black texels..
          */
-
-         /* disegnando sul quad eyeDepthMapTarget funzionava bene... dopo controlla e vedi se riesci a far
-         funzionare tutto su quad.... */
         sceneGraph.overrideMaterial = depthMaterial;
-        renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
         renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
+        renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
         //renderer.render(sceneGraph, sceneCam); // if using this remember to comment the final render pass below
 
         projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
@@ -145,7 +131,6 @@
         shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
         shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
         shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget;
-        shadowPassUniforms.screenSize.value = new THREE.Vector2(SIZE.w, SIZE.h);
 
       //  console.log(JSON.stringify(lightDepthMapTarget));
       //  console.log(JSON.stringify(eyeDepthMapTarget.texture));
@@ -157,7 +142,7 @@
 
         sceneGraph.overrideMaterial = shadowMaterial;
         renderer.autoClearColor = false;
-        renderer.render(sceneGraph, sceneCam);
+       renderer.render(sceneGraph, sceneCam);
         renderer.autoClearColor = true;
 
         shadowPassUniforms.lightViewProjection.value = null;
