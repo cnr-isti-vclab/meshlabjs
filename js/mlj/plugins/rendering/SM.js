@@ -50,6 +50,8 @@
         magFilter: THREE.NearestFilter
       });
 
+
+
       let lightDepthMapTarget = new THREE.WebGLRenderTarget(SIZE.width, SIZE.height, {
         type: THREE.FloatType,
         minFilter: THREE.NearestFilter,
@@ -105,41 +107,26 @@
         let sceneGraph = scene.getScene();
         let sceneCam = scene.getCamera();
         let renderer = scene.getRenderer();
-        SIZE = scene.get3DSize();
 
-        // let dpr = renderer.getPixelRatio();
-         eyeDepthMapTarget.setSize(SIZE.width , SIZE.height );
-         lightDepthMapTarget.setSize(SIZE.width , SIZE.height );
+        let dpr = renderer.getPixelRatio();
+        eyeDepthMapTarget.setSize(SIZE.width * dpr, SIZE.height * dpr);
+        lightDepthMapTarget.setSize(SIZE.width * dpr, SIZE.height * dpr);
 
         // sceneGraph.overrideMaterial = new THREE.MeshDepthMaterial();
-
-        	//grossi problemi qui!!!!!
-        // it's like if the renderer isn't rendering on eyeDepthMapTarget...if i render directly on
-        // canvas the cameraDepth is displayed correctly (white because perspective), while it renders
-        // correctly on lightDepthMapTarget ...why that? even if i just do the second call the eyeDepthMapTarget
-        // contains only black texels..
         sceneGraph.overrideMaterial = depthMaterial;
         renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
         renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
-        //renderer.render(sceneGraph, sceneCam); // if using this remember to comment the final render pass below
 
+      //  renderer.render(sceneGraph,sceneCam);
         projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
+        sceneGraph.overrideMaterial = shadowMaterial;
         shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
         shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
-        shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget;
+        shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget.texture;
 
-      //  console.log(JSON.stringify(lightDepthMapTarget));
-      //  console.log(JSON.stringify(eyeDepthMapTarget.texture));
-        /* texture prop is not defined...but if i uncomment any or both of them the eyeDepthMap and lightDepthMap will
-         contain what seems to be the depth from the camera Pov....strange*/
-        // shadowPassUniforms.lightDepthMap.value.texture.needsUpdate = true;
-        // shadowPassUniforms.eyeDepthMap.value.texture.needsUpdate = true;
-
-
-        sceneGraph.overrideMaterial = shadowMaterial;
         renderer.autoClearColor = false;
-    //   renderer.render(sceneGraph, sceneCam);
+        renderer.render(sceneGraph, sceneCam);
         renderer.autoClearColor = true;
 
         shadowPassUniforms.lightViewProjection.value = null;
