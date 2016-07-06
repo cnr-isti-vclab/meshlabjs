@@ -17,7 +17,7 @@ void main(){
   position.xyz /= position.w;
   position.xyz = position.xyz * vec3(0.5) + vec3(0.5);
 
-//  float closest = texture2D(lightDepthMap, position.xy).r;
+  float closest = texture2D(lightDepthMap, position.xy).r;
   float current = position.z;
 
 // DEBUG...USE IT TO LOOK AT lightDepthBuffer or cameraDepthBuffer
