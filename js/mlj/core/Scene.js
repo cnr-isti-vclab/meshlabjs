@@ -786,14 +786,14 @@ MLJ.core.Scene = {};
         } else {
             _renderer.render(_scene, _camera);
         }
+        if (this._shadowMapping) {
+          this.shadowMappingContext.renderShadow();
+        }
+
         // render the 2D overlays
         _renderer.autoClear = false;
         _renderer.render(_scene2D, _camera2D);
         _renderer.autoClear = true;
-
-        if (this._shadowMapping) {
-          this.shadowMappingContext.renderShadow();
-        }
     };
 
 
