@@ -13,7 +13,8 @@
       lightDepthMap: { type: "t", value: null },
       eyeDepthMap: { type: "t", value: null },
       textureSize: { type: "v2", value: null},
-      lightViewProjection: { type: "m4", value: null},
+      lightPosition: {type: "v3", value: null},
+      lightViewProjection: { type: "m4", value: null}
     };
 
     let depthPassUniforms = {
@@ -99,6 +100,7 @@
         //TODO : light is on camera!!! (didn't notice it)..
         // things should be easier then..
 
+
         let sceneGraph = scene.getScene();
         let sceneCam = scene.getCamera();
         let renderer = scene.getRenderer();
@@ -111,6 +113,7 @@
          eyeDepthMapTarget.setSize(SIZE.width , SIZE.height );
          lightDepthMapTarget.setSize(SIZE.width , SIZE.height );
 
+
         sceneGraph.overrideMaterial = depthMaterial;
         renderer.render(sceneGraph, lightCamera, lightDepthMapTarget, true);
         renderer.render(sceneGraph, sceneCam, eyeDepthMapTarget, true);
@@ -118,10 +121,12 @@
 
         projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
+
         shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
         shadowPassUniforms.lightDepthMap.value = lightDepthMapTarget;
         shadowPassUniforms.eyeDepthMap.value = eyeDepthMapTarget;
         shadowPassUniforms.textureSize.value = new THREE.Vector2(SIZE.width, SIZE.height);
+        shadowPassUniforms.lightPosition.value = lightCamera.position;
 
         sceneGraph.overrideMaterial = shadowMaterial;
         renderer.autoClearColor = false;
@@ -131,6 +136,8 @@
         shadowPassUniforms.lightViewProjection.value = null;
         shadowPassUniforms.lightDepthMap.value = null;
         shadowPassUniforms.eyeDepthMap.value = null;
+        shadowPassUniforms.textureSize.value = null;
+        shadowPassUniforms.lightPosition.value = null;
         sceneGraph.overrideMaterial = null;
 
       };
