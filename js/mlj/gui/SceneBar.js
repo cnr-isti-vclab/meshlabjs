@@ -83,7 +83,10 @@
         // This HTML basically contains a div for the dialog, a div with a label, a textarea, 
         // a div with an invisible error label, a div with a button
          var _html = "<div id='mlj-cameraPosition-dialog'>";
+            _html += "<br/><div style='text-align: left; margin-left: 15px;> <label for='website'>Shift + C: copy current viewpoint</label></div> ";
+            _html += "<br/><div style='text-align: left; margin-left: 15px; margin-top: -15px; margin-bottom: 5px;> <label for='website'>Shift + V: load saved viewpoint</label></div> ";
             _html += "<br/><div style='text-align: center;> <label for='website'>Camera Position as JSON</label></div> ";
+          
             _html += "<textarea id='cameraJSON' style='width: 250px; height: 315px; margin-left: 10px; margin-top: 5px'>";
             _html += "</textarea>";
             _html += "<div id='errorMessageDiv' style='text-align: center;  margin-bottom: 5px; color: red; display:none>";
@@ -133,7 +136,7 @@
             
             var cameraPosition = new component.Button({
                 tooltip: "Camera position",
-                icon: "img/icons/home.png" // Needs a new icon
+                icon: "img/icons/viewpoint.png" 
             });
             
             var resetTrackball = new component.Button({

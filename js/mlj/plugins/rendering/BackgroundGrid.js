@@ -4,7 +4,7 @@
     var plug = new plugin.GlobalRendering({
         name: "BackgroundGrid",
         tooltip: "Draws a gridded background that can be used as a reference.",
-        icon: "img/icons/axis.png",
+        icon: "img/icons/background_grid.png",
         toggle: true,
         on: false,
         loadShader: ["BackgroundGridVertex.glsl", "BackgroundGridFragment.glsl"]
@@ -217,6 +217,7 @@
         var frontColor = new THREE.Color(frontGridColor.getColor());
                   
         var bbox = scene.getBBox();
+        
         
         // List of flat meshes. Initially empty
         flatMeshList = [];
