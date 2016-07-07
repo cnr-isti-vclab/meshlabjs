@@ -68,7 +68,7 @@ MLJ.ColorMode.Vertex  = 2;
             ],
             bindTo: (function() {
                 var callback = function (colorMode, overlay, layer) {
-                    layer.updateMeshColorData(colorMode);
+                    layer.updateThreeMesh(colorMode);
                 };
                 callback.toString = function () { return "mljColorMode"; };
                 return callback;

@@ -251,15 +251,29 @@ class CppMesh
     return (uintptr_t) c;
   }
 
-  inline uintptr_t getVertexColors()
+  inline uintptr_t getVertexColors(bool indexed)
   {
-    
-    float *c = new float[m.VN()*3];
-    int k = 0;
-    for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-      c[k++] = vi->cC()[0] / 255.0f;
-      c[k++] = vi->cC()[1] / 255.0f;
-      c[k++] = vi->cC()[2] / 255.0f;
+      float *c;
+      int k = 0;
+        
+    if(indexed)
+    {
+        c= new float[m.VN()*3];
+        for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+          c[k++] = vi->cC()[0] / 255.0f;
+          c[k++] = vi->cC()[1] / 255.0f;
+          c[k++] = vi->cC()[2] / 255.0f;
+        }
+    }else
+    {
+        c = new float[m.FN()*9];
+        for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+            for (int j = 0; j < 3; ++j) {
+                c[k++] = fi->V(j)->cC()[0] / 255.0f;
+                c[k++] = fi->V(j)->cC()[1] / 255.0f;
+                c[k++] = fi->V(j)->cC()[2] / 255.0f;
+            }
+        }        
     }
     return (uintptr_t) c;
   }

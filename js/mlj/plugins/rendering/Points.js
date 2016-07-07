@@ -154,7 +154,7 @@
         var params = layer.overlaysParams.getByKey(plug.getName());
 
         if (layer.cppMesh.hasPerVertexColor()) {
-            layer.color_buffer = layer.cppMesh.getVertexColors();
+            layer.color_buffer = layer.cppMesh.getVertexColors(true);
             var colorsBuffer = new Float32Array(Module.HEAPU8.buffer, layer.color_buffer, layer.VN*3);
             geometry.addAttribute('col', new THREE.BufferAttribute(colorsBuffer, 3));
         }
