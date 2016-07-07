@@ -77,17 +77,16 @@
         
         
         var _dialogCameraPosition = new component.Dialog({
-            title:"Camera position", modal:true, draggable: false, resizable:false
+            title:"Camera position", modal:true, draggable: false, resizable:false, width: 400
         });
         
         // This HTML basically contains a div for the dialog, a div with a label, a textarea, 
         // a div with an invisible error label, a div with a button
          var _html = "<div id='mlj-cameraPosition-dialog'>";
-            _html += "<br/><div style='text-align: left; margin-left: 15px;> <label for='website'>Shift + C: copy current viewpoint</label></div> ";
-            _html += "<br/><div style='text-align: left; margin-left: 15px; margin-top: -15px; margin-bottom: 5px;> <label for='website'>Shift + V: load saved viewpoint</label></div> ";
+            _html += "<br/><div style='width: 70%; margin: 0 auto; '><div style='text-align: left; margin-left: 15px;> <label for='website'>Shift + C: copy current viewpoint</label></div> ";
+            _html += "<br/><div style='text-align: left; margin-left: 15px; margin-top: -15px; margin-bottom: 5px;> <label for='website'>Shift + V: load saved viewpoint</label></div></div> ";
             _html += "<br/><div style='text-align: center;> <label for='website'>Camera Position as JSON</label></div> ";
-          
-            _html += "<textarea id='cameraJSON' style='width: 250px; height: 315px; margin-left: 10px; margin-top: 5px'>";
+            _html += "<textarea id='cameraJSON' style='width: 350px; height: 335px; margin-left: 10px; margin-top: 5px'>";
             _html += "</textarea>";
             _html += "<div id='errorMessageDiv' style='text-align: center;  margin-bottom: 5px; color: red; display:none>";
             _html += "<br/><label id='errorMessage' style='font-size: 60%; color: red;'>Wrong values or JSON not well formed</label>";

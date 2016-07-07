@@ -554,14 +554,22 @@
         uniforms.scaleFactor.value = scaleFac;
         uniforms.offset.value = offset;
         
-        // Position array (containing vertex coordinates) and index array (containing information on how the vertices are connected)
-        var pos = currentMeshGeometry.getAttribute('position').array;
-        var faces = currentMeshGeometry.getAttribute('index').array;
-
-        // Creating the new geometry and adding the arrays as attributes
+        // Position array (containing vertex coordinates) 
+        var pos = currentMeshGeometry.getAttribute('position').array;       
+        
+        // Creating the new geometry and adding the position array as attribute
         var flatMeshGeometry = new THREE.BufferGeometry();
         flatMeshGeometry.addAttribute('position', new THREE.BufferAttribute((pos), 3));
-        flatMeshGeometry.addAttribute('index', new THREE.BufferAttribute((faces), 3));
+        
+//        if(faces)
+//            flatMeshGeometry.addAttribute('index', new THREE.BufferAttribute((faces), 3));
+//        
+        // Index array
+        var indexAttribute = currentMeshGeometry.getAttribute('index');
+        
+        // If the current mesh is a point cloud, the index array isn't defined; so, I only add the indices as attributes if they are present
+        if(indexAttribute)
+            flatMeshGeometry.addAttribute('index', new THREE.BufferAttribute((indexAttribute.array), 3));
         
         // Parameters of the shader material
         var shaderParameters = {

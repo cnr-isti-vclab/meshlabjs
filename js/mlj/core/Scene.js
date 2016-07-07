@@ -223,6 +223,7 @@ MLJ.core.Scene = {};
             if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
                 event.preventDefault();
                 _this.copyCameraPositionJSON();
+                console.log("Viewpoint copied");
             }
             
             // Shift + V -> sets camera position
@@ -230,7 +231,10 @@ MLJ.core.Scene = {};
                 event.preventDefault();
                 
                 if(_cameraPositionCopy)
+                {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
+                    console.log("Viewpoint pasted");
+                }
             }
         });
         
