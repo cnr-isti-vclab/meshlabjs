@@ -560,10 +560,7 @@
         // Creating the new geometry and adding the position array as attribute
         var flatMeshGeometry = new THREE.BufferGeometry();
         flatMeshGeometry.addAttribute('position', new THREE.BufferAttribute((pos), 3));
-        
-//        if(faces)
-//            flatMeshGeometry.addAttribute('index', new THREE.BufferAttribute((faces), 3));
-//        
+ 
         // Index array
         var indexAttribute = currentMeshGeometry.getAttribute('index');
         
