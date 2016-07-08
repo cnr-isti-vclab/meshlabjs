@@ -291,23 +291,6 @@ inline uintptr_t getWedgeTextureCoordinates()
     }
     return (uintptr_t) c;
   }
-
-
-inline uintptr_t getVertexTexCoordinates()
-  {
-//    
-////   float *c = new float[m.VN()*3];
-//   float *c = new float[m.FN()*9];
-//    int k = 0;
-//    for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-////        printf("\nTexture Coord %d: f%d %f %f %d", k, j, vi->cT().u(), vi->cT().v(), 0);
-//        c[k++] = vi->cT().u();
-//        c[k++] = vi->cT().v();
-//        c[k++] = 0;
-//    }
-//    return (uintptr_t) c;
-  }
-
   
   
   inline std::string getTextureName()
@@ -380,7 +363,6 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getVertexColors",       &CppMesh::getVertexColors)
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
-    .function("getVertexTexCoordinates",         &CppMesh::getVertexTexCoordinates)    
     .function("getTextureName",         &CppMesh::getTextureName)
     ;
 }

@@ -102,7 +102,7 @@ MLJ.core.Layer = function (name, cppMesh) {
         var geometry = _this.threeMesh.geometry;
         var bufferptr, bufferData;
 
-        var positionAttrib = null, normalAttrib = null, colorAttrib = null;
+        var positionAttrib = null, normalAttrib = null, colorAttrib = null, uvsAttrib = null;
 
         if (_this.FN === 0) { // Point Cloud
             bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
@@ -129,7 +129,12 @@ MLJ.core.Layer = function (name, cppMesh) {
             bufferptr = cppMesh.getVertexNormalVector(false);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3)
+            
+            bufferptr = cppMesh.getWedgeTextureCoordinates();
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*6));
+            uvsAttrib = new THREE.BufferAttribute(bufferData, 2)
             Module._free(bufferptr);
+            
             var colorMode = _this.overlaysParams.getByKey("ColorWheel").colorMode;
             if (colorMode === MLJ.ColorMode.Face) {
                 bufferptr = cppMesh.getFaceColors();            
@@ -141,16 +146,14 @@ MLJ.core.Layer = function (name, cppMesh) {
                 bufferptr = cppMesh.getVertexColors(false);            
                 bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
                 colorAttrib =  new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr);
- 
-            }
-            
+                Module._free(bufferptr); 
+            }            
         }        
         
         if (positionAttrib !== null) geometry.addAttribute('position', positionAttrib);
         if (normalAttrib !== null) geometry.addAttribute('normal', normalAttrib);
-        geometry.addAttribute('VCGColor', colorAttrib);
-        
+        if (uvsAttrib !== null) geometry.addAttribute('uv', uvsAttrib);
+        geometry.addAttribute('VCGColor', colorAttrib);        
         
         geometry.computeBoundingBox ();        
     };

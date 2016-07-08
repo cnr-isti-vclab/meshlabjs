@@ -129,7 +129,6 @@
         if (on) {
             // take or create a geometry for a new mesh
             var geom = meshFile.getThreeMesh().geometry;
-            console.log(geom);
             // in this case, we take geometry of the layer meshFile, otherwise we can proceed this way:
                 // create geometry data in buffers (for example calling c++ modules)
                 // build BufferAttributes on the data, and associate to a new BufferGeometry
@@ -164,39 +163,20 @@
                 side: params.sides
             };
                         
-            var mat = new THREE.RawShaderMaterial(parameters);
-           
-            console.log("Texture attive: " +params.texture);
-            
             if(uniforms.texture.value === true){
-                var bufferptr = meshFile.cppMesh.getWedgeTextureCoordinates();
-                var bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN*6));
-               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
-//                var wedgeAttrib = new THREE.BufferAttribute(bufferData, 1);  //NON NECESSARIO
+               //The RawShaderMaterial cannto be used to set a map, so I chose MeshBasicMaterial with the parameters set before
+               var mat = new THREE.MeshBasicMaterial(parameters);
+               mat["map"] = THREE.ImageUtils.loadTexture( '\Bulbasaur.png', {}, function() {console.log("Texture Loaded!");});
                
-            newGeom.uvsNeedUpdate = true;
-           
-//            geometry.faceVertexUvs = []; //NON Necessario
-            newGeom.faceVertexUvs[0] = [];
-             for(var i = 0; i < meshFile.FN*6; i++){
-                newGeom.faceVertexUvs[0].push([
-                    new THREE.Vector2(bufferData[i],   bufferData[++i]),
-                    new THREE.Vector2(bufferData[++i], bufferData[++i]),
-                    new THREE.Vector2(bufferData[++i], bufferData[++i])
-                ]);
-             }
-//               geom.faceVertexUvs[0] = bufferData; //Altra possibilità, da testare
-                
-                
-             var material = new THREE.MeshBasicMaterial( {
-                 map:THREE.ImageUtils.loadTexture( '\Bulbasaur.png', {}, function() {console.log("\nTexture Loaded!!! Yay!!");}),
-                 specular: 0x555555,
-                 emissive: 0x333333});
- 
-                var filled = new THREE.Mesh(newGeom, material);  //WORKING!!
-                scene.addOverlayLayer(meshFile, plug.getName(), filled);   
+               //Create a new geometry, because the BufferGeometry does not support faceVertexUvs
+               //In order to automatically create a faceVertexUvs vector for the new geometry,
+               //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
+               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
+               var filled = new THREE.Mesh(newGeom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+               scene.addOverlayLayer(meshFile, plug.getName(), filled);  
             }
             else{
+                var mat = new THREE.RawShaderMaterial(parameters);
                 var filled = new THREE.Mesh(geom, mat);
                 scene.addOverlayLayer(meshFile, plug.getName(), filled);  
             }
