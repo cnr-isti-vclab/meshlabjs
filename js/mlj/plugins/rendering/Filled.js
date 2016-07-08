@@ -163,21 +163,20 @@
                 lights: true,
                 side: params.sides
             };
-
-            // finally: build the material
+                        
             var mat = new THREE.RawShaderMaterial(parameters);
-            var mat2 = null;
            
             console.log("Texture attive: " +params.texture);
+            
             if(uniforms.texture.value === true){
                 var bufferptr = meshFile.cppMesh.getWedgeTextureCoordinates();
                 var bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN*6));
-//                var wedgeAttrib = new THREE.BufferAttribute(bufferData, 1);
                var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
+//                var wedgeAttrib = new THREE.BufferAttribute(bufferData, 1);  //NON NECESSARIO
                
             newGeom.uvsNeedUpdate = true;
            
-//            geometry.faceVertexUvs = []; 
+//            geometry.faceVertexUvs = []; //NON Necessario
             newGeom.faceVertexUvs[0] = [];
              for(var i = 0; i < meshFile.FN*6; i++){
                 newGeom.faceVertexUvs[0].push([
@@ -186,7 +185,7 @@
                     new THREE.Vector2(bufferData[++i], bufferData[++i])
                 ]);
              }
-//               geom.faceVertexUvs[0] = bufferData;
+//               geom.faceVertexUvs[0] = bufferData; //Altra possibilità, da testare
                 
                 
              var material = new THREE.MeshBasicMaterial( {
@@ -194,13 +193,12 @@
                  specular: 0x555555,
                  emissive: 0x333333});
  
-            var filled = new THREE.Mesh(newGeom, material);  //NOT WORKING :(
-            scene.addOverlayLayer(meshFile, plug.getName(), filled);   
+                var filled = new THREE.Mesh(newGeom, material);  //WORKING!!
+                scene.addOverlayLayer(meshFile, plug.getName(), filled);   
             }
             else{
                 var filled = new THREE.Mesh(geom, mat);
-                scene.addOverlayLayer(meshFile, plug.getName(), filled);     
-                
+                scene.addOverlayLayer(meshFile, plug.getName(), filled);  
             }
 
             // build the new mesh
