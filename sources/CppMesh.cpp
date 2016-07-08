@@ -281,32 +281,31 @@ class CppMesh
 inline uintptr_t getWedgeTextureCoordinates()
   {
     
-   float *c = new float[m.FN()*9];
+   float *c = new float[m.FN()*6];
     int k = 0;
     for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
       for (int j = 0; j < 3; ++j) {
-//        printf("\nTexture Coord %d: f%d %f, %f, %d ", k, j, fi->WT(j).u(), fi->WT(j).v(), 0);
         c[k++] = fi->WT(j).u();
         c[k++] = fi->WT(j).v();
-        c[k++] = 0;
       }
     }
     return (uintptr_t) c;
   }
 
+
 inline uintptr_t getVertexTexCoordinates()
   {
-    
-//   float *c = new float[m.VN()*3];
-   float *c = new float[m.VN()*2];
-    int k = 0;
-    for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-//        printf("\nTexture Coord %d: f%d %f %f %d", k, j, vi->cT().u(), vi->cT().v(), 0);
-        c[k++] = vi->cT().u();
-        c[k++] = vi->cT().v();
+//    
+////   float *c = new float[m.VN()*3];
+//   float *c = new float[m.FN()*9];
+//    int k = 0;
+//    for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
+////        printf("\nTexture Coord %d: f%d %f %f %d", k, j, vi->cT().u(), vi->cT().v(), 0);
+//        c[k++] = vi->cT().u();
+//        c[k++] = vi->cT().v();
 //        c[k++] = 0;
-    }
-    return (uintptr_t) c;
+//    }
+//    return (uintptr_t) c;
   }
 
   

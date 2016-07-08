@@ -8,6 +8,7 @@
         emissive: new THREE.Color('#000000'),
         shininess: 15.0,
         lights: true,
+        texture: true,
         shading: THREE.FlatShading,
         sides : THREE.DoubleSide,
         mljColorMode: MLJ.ColorMode.Uniform
@@ -25,6 +26,7 @@
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
                 "lights": {type: "i", value: DEFAULTS.lights},
+                "texture": {type: "i", value: DEFAULTS.texture},
                 "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
             }
 
@@ -44,7 +46,7 @@
     // and then define _init, _applyTo functions on that object
 
     // here some variables for plugin functions state
-    var lightingWidget, shadingWidget, shininessWidget,
+    var texturingWidget, lightingWidget, shadingWidget, shininessWidget,
             specularColor, emissiveColor;
 
     // define its init function
@@ -83,13 +85,23 @@
             ],
             bindTo: "shading" // name of the parameter used to keep track of the associated value. It is linked directly to a uniform when changed
         });
+        
+        texturingWidget = guiBuilder.Choice({
+            label: "Texturing",
+            tooltip: "Enable/disable texturing",
+            options: [
+                {content: "On", value: true, selected: true},
+                {content: "Off", value: false}
+            ],
+            bindTo: "texture"
+        });
 
         lightingWidget = guiBuilder.Choice({
             label: "Lighting",
             tooltip: "Enable/disable lighting",
             options: [
-                {content: "on", value: true, selected: true},
-                {content: "off", value: false}
+                {content: "On", value: true, selected: true},
+                {content: "Off", value: false}
             ],
             bindTo: "lights"
         });
@@ -117,6 +129,7 @@
         if (on) {
             // take or create a geometry for a new mesh
             var geom = meshFile.getThreeMesh().geometry;
+            console.log(geom);
             // in this case, we take geometry of the layer meshFile, otherwise we can proceed this way:
                 // create geometry data in buffers (for example calling c++ modules)
                 // build BufferAttributes on the data, and associate to a new BufferGeometry
@@ -136,6 +149,7 @@
             uniforms.emissive.value = params.emissive;
             uniforms.specular.value = params.specular;
             uniforms.lights.value = params.lights;
+            uniforms.texture.value = params.texture;
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
             uniforms.mljColorMode.value = colorParams.mljColorMode;
@@ -152,10 +166,45 @@
 
             // finally: build the material
             var mat = new THREE.RawShaderMaterial(parameters);
+            var mat2 = null;
+           
+            console.log("Texture attive: " +params.texture);
+            if(uniforms.texture.value === true){
+                var bufferptr = meshFile.cppMesh.getWedgeTextureCoordinates();
+                var bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN*6));
+//                var wedgeAttrib = new THREE.BufferAttribute(bufferData, 1);
+               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
+               
+            newGeom.uvsNeedUpdate = true;
+           
+//            geometry.faceVertexUvs = []; 
+            newGeom.faceVertexUvs[0] = [];
+             for(var i = 0; i < meshFile.FN*6; i++){
+                newGeom.faceVertexUvs[0].push([
+                    new THREE.Vector2(bufferData[i],   bufferData[++i]),
+                    new THREE.Vector2(bufferData[++i], bufferData[++i]),
+                    new THREE.Vector2(bufferData[++i], bufferData[++i])
+                ]);
+             }
+//               geom.faceVertexUvs[0] = bufferData;
+                
+                
+             var material = new THREE.MeshBasicMaterial( {
+                 map:THREE.ImageUtils.loadTexture( '\Bulbasaur.png', {}, function() {console.log("\nTexture Loaded!!! Yay!!");}),
+                 specular: 0x555555,
+                 emissive: 0x333333});
+ 
+            var filled = new THREE.Mesh(newGeom, material);  //NOT WORKING :(
+            scene.addOverlayLayer(meshFile, plug.getName(), filled);   
+            }
+            else{
+                var filled = new THREE.Mesh(geom, mat);
+                scene.addOverlayLayer(meshFile, plug.getName(), filled);     
+                
+            }
+
             // build the new mesh
-            var filled = new THREE.Mesh(geom, mat);
-            // add it as an overlay to the layer
-            scene.addOverlayLayer(meshFile, plug.getName(), filled);            
+            // add it as an overlay to the layer       
 
         } else {
             // when plugin is deactivated we can release resources
