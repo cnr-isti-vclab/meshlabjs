@@ -135,9 +135,6 @@ class CppMesh
             else
                 printf("\n%s successfully deleted", meshFileName.c_str());
             
-            printf("\nWedgeToVertex!!");
-            wedgeToVertex();
-//            getWedgeTextureCoordinates();
         }
         
         mz_zip_reader_end(&zip_archive);    //Close the zip file
@@ -297,37 +294,6 @@ inline uintptr_t getWedgeTextureCoordinates()
   {
       return m.textures[0].c_str();
   }
-  
-  
-  static void ExtractVertex(const MyMesh & srcMesh, const MyMesh::FaceType & f, int whichWedge, const MyMesh & dstMesh, MyMesh::VertexType & v)
-{
-  (void)srcMesh;
-  (void)dstMesh;
-  // This is done to preserve every single perVertex property
-  // perVextex Texture Coordinate is instead obtained from perWedge one.
-  v.ImportData(*f.cV(whichWedge));
-  v.T() = f.cWT(whichWedge);
-}
-  
-  
-
-static bool CompareVertex(const MyMesh & m, const MyMesh::VertexType & vA, const MyMesh::VertexType & vB)
-{
-  (void)m;
-  return (vA.cT() == vB.cT());
-}
-
-  
-inline void wedgeToVertex(){
-    printf("\nAbout to split wedges");
-        
-    if(hasWedgeTextureCoordinates()){
-        printf("\nHas Wedges");
-//        m.vert.EnableTexCoord();	
-        tri::AttributeSeam::SplitVertex(m, ExtractVertex, CompareVertex);
-        printf("\nWedges Splitted into vertex coordinates");
-    }
-}
 
 };
 
