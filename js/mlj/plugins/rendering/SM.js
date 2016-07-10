@@ -26,7 +26,7 @@
     icon: "img/icons/ambientocclusion.png",
     loadShader : ["SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl", "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
   });
-   //
+  //
   //  let varianceFlag;
   //  plug._init = (guiBuilder) => {
   //    varianceFlag = guiBuilder.Bool({
@@ -89,142 +89,112 @@
     shadowScene.add(shadowMapMesh);
 
     let lightCamera;
+
+    // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
+    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    // var cube = new THREE.Mesh( geometry, material );
+    // scene.getScene().add( cube );
     //
+    // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
+    // box.update();
+    // scene.getScene().add(box);
 
-      // let setupCamera = (light) => {
-      //   let bbox = scene.getBBox();
-      //   let lookAt = new THREE.Matrix4();
-      //   let camPos = new THREE.Vector3(scene.getCamera().position.x, scene.getCamera().position.y - 0.2, scene.getCamera().position.z_);
-      //
-      //   lookAt.lookAt(camPos, scene.getCamera().getWorldDirection(), new THREE.Vector3(0,1,0));
-      //
-      //   bbox.applyMatrix4(lookAt);
-      //
-      //   light = new THREE.OrthographicCamera(
-      //     bbox.min.x,
-      //     bbox.max.x,
-      //     bbox.max.y,
-      //     bbox.min.y,
-      //     bbox.min.z,
-      //     bbox.max.z
-      //   );
-      //
-      //   light.position = camPos;
-      //   light.lookAt(scene.getCamera().getWorldDirection());
-      //   //lightCamera.position.set(sceneCam.position.x, sceneCam.position.y - 0.2, sceneCam.position.z);
-      //   //lightCamera.lookAt(new THREE.Vector3(-1,1,0));
-      //   light.updateProjectionMatrix();
-      // }
+    /*
+    receives an input buffer in Scene.js and outputs an output buffer that will
+    be used as a texture for the last pass of the deferred rendering pipe.
+    */
+    this.pass = (inBuffer, outBuffer) => {
 
-      /*
-      receives an input buffer in Scene.js and outputs an output buffer that will
-      be used as a texture for the last pass of the deferred rendering pipe.
-      */
+      let sceneGraph = scene.getScene();
+      let sceneCam = scene.getCamera();
+      let renderer = scene.getRenderer();
 
+      depthMapTarget.setSize(inBuffer.width, inBuffer.height);
+      positionMapTarget.setSize(inBuffer.width, inBuffer.height);
 
+      /////************WORK IN PROGRESS***********///////////
+      //TODO: fixa come fitti la camera della luce al bbox della scena...
+      //      per ora funzionicchia
 
-      // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-      // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-      // var cube = new THREE.Mesh( geometry, material );
-      // scene.getScene().add( cube );
-      //
-      // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
-      // box.update();
-      // scene.getScene().add(box);
+      // scene.getBBox() returns a -1-1-1 111 bbox always..
+      let bbox = new THREE.Box3().setFromObject(scene.getScene());
+      let center = bbox.center();
 
+      let lookAt = new THREE.Matrix4();
+      let camPos = new THREE.Vector3(0,0,0);
+      let viewD = new THREE.Vector3(-1,0,0);
+      lookAt.lookAt(camPos, viewD, new THREE.Vector3(0,1,0));
 
-      this.pass = (inBuffer, outBuffer) => {
+      console.log(lookAt.toArray());
+      console.log(sceneCam.position.toArray());
 
-        let sceneGraph = scene.getScene();
-        let sceneCam = scene.getCamera();
-        let renderer = scene.getRenderer();
+      bbox.applyMatrix4(lookAt);
 
-        depthMapTarget.setSize(inBuffer.width, inBuffer.height);
-        positionMapTarget.setSize(inBuffer.width, inBuffer.height);
+      let sz = bbox.size();
+      let diag = bbox.min.distanceTo(bbox.max);
 
-/////************WORK IN PROGRESS***********///////////
-//TODO: fixa come fitti la camera della luce al bbox della scena...
-//      per ora non funziona na mazza
-        let bbox = new THREE.Box3().setFromObject(scene.getScene());
-        let center = bbox.center();
-        let sz = bbox.size();
-        let diag = bbox.min.distanceTo(bbox.max);
+      console.log(bbox.min.x+ " b "+bbox.max.x);
+      console.log(bbox.min.y+ " b"+bbox.max.y);
+      console.log(bbox.min.z+ " b"+bbox.max.z);
+      console.log(diag);
 
-        let lookAt = new THREE.Matrix4();
-        //let camPos = new THREE.Vector3(scene.getCamera().position.x, scene.getCamera().position.y - 0.2, scene.getCamera().position.z_);
-        let camPos = new THREE.Vector3(8,0,0);
-        let viewD = new THREE.Vector3(0,0,0);
-        lookAt.lookAt(camPos, center, new THREE.Vector3(0,1,0));
+      let x = bbox.max.x - bbox.min.x;
+      let y = bbox.max.y - bbox.min.y;
+      let z = bbox.max.z - bbox.min.z;
+
+      console.log(sz.x);
+      lightCamera = new THREE.OrthographicCamera(
+        bbox.min.x,
+        bbox.max.x,
+        bbox.max.y,
+        bbox.min.y,
+        bbox.min.z,
+        bbox.max.z //non riesco a settarl obene
+      );
+
+      lightCamera.position.set(camPos.x, camPos.y, camPos.z);
+      lightCamera.lookAt(viewD);
+      lightCamera.updateMatrixWorld();
+      lightCamera.updateProjectionMatrix();
 
 
+      sceneGraph.overrideMaterial = depthMaterial;
+      renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
 
-        console.log(lookAt.toArray());
-        console.log(sceneCam.position.toArray());
-
-        bbox.applyMatrix4(lookAt);
-
-        console.log(bbox.min.x+ " b "+bbox.max.x);
-        console.log(bbox.min.y+ " b"+bbox.max.y);
-        console.log(bbox.min.z+ " b"+bbox.max.z);
-        console.log(diag);
-
-        let x = bbox.max.x - bbox.min.x;
-        let y = bbox.max.y - bbox.min.y;
-        let z = bbox.max.z - bbox.min.z;
-
-        console.log(sz.x);
-        lightCamera = new THREE.OrthographicCamera(
-          -(sz.x/2),
-          sz.x/2,
-          sz.y/2,
-          -(sz.y/2),
-          bbox.min.z,
-          10
-        );
-
-        lightCamera.position.set(camPos.x, camPos.y, camPos.z);
-        lightCamera.lookAt(center);
-        lightCamera.updateMatrixWorld();
-        lightCamera.updateProjectionMatrix();
+      // render the position map
+      sceneGraph.overrideMaterial = positionMaterial;
+      renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
+      sceneGraph.overrideMaterial = null;
 
 
-        sceneGraph.overrideMaterial = depthMaterial;
-        renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
+      let projScreenMatrix = new THREE.Matrix4();
+      projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
-        // render the position map
-        sceneGraph.overrideMaterial = positionMaterial;
-        renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
-        sceneGraph.overrideMaterial = null;
+      shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
+      shadowPassUniforms.depthMap.value = depthMapTarget;
+      shadowPassUniforms.positionMap.value = positionMapTarget;
+      shadowPassUniforms.colorMap.value = inBuffer;
 
+      renderer.render(shadowScene, sceneCam, outBuffer, true);
 
-        let projScreenMatrix = new THREE.Matrix4();
-        projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
+      shadowPassUniforms.depthMap.value = null;
+      shadowPassUniforms.colorMap.value = null;
+      shadowPassUniforms.positionMap.value = null;
+    };
+  }
 
-        shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
-        shadowPassUniforms.depthMap.value = depthMapTarget;
-        shadowPassUniforms.positionMap.value = positionMapTarget;
-        shadowPassUniforms.colorMap.value = inBuffer;
-
-        renderer.render(shadowScene, sceneCam, outBuffer, true);
-
-        shadowPassUniforms.depthMap.value = null;
-        shadowPassUniforms.colorMap.value = null;
-        shadowPassUniforms.positionMap.value = null;
-      };
+  let context = null;
+  plug._applyTo = (on) => {
+    if (on) {
+      context = new SMContext();
+      scene.addPostProcessPass(plug.getName(), context.pass);
+    } else {
+      scene.removePostProcessPass(plug.getName());
+      context = null;
     }
 
-    let context = null;
-    plug._applyTo = (on) => {
-      if (on) {
-        context = new SMContext();
-        scene.addPostProcessPass(plug.getName(), context.pass);
-      } else {
-        scene.removePostProcessPass(plug.getName());
-        context = null;
-      }
+  };
 
-    };
+  plugin.Manager.install(plug);
 
-    plugin.Manager.install(plug);
-
-  })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);
+})(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

@@ -20,7 +20,9 @@ float shadowCalc(vec2 vUv){
   float closest = texture2D(depthMap, lightSpacePosition.xy).r;
   float current = lightSpacePosition.z;
 
-  float shadow = current  - 0.002 > closest ? 1.0 : 0.0;
+
+
+  float shadow = current  - 0.005 > closest ? 1.0 : 0.0;
 
   return shadow;
 }
