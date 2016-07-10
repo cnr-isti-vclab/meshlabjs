@@ -106,9 +106,23 @@
             var pos = toScreenPosition(vv.array[ii],vv.array[ii+1],vv.array[ii+2]);
             labels.push(addLabel(Math.round(ii/3) + "", 'body', $('#_3D').position().left + pos.x, pos.y));
         }
+
+        updateLabels();
         
         //Binding the update function to the mouse events
-        $('canvas').bind("mousedown mousemove mousewheel", updateLabels);
+        $('canvas').bind("mousemove mousewheel", updateLabels);
+        $("canvas").bind("mousedown", startUpdating);
+        $('canvas').bind("mouseup", stopUpdating);
+
+        function startUpdating()
+        {
+            $('canvas').bind("mousemove", updateLabels);
+        }
+
+        function stopUpdating()
+        {
+            $("canvas").unbind("mousemove", updateLabels);
+        }
 
         function updateLabels()
         {
@@ -118,6 +132,13 @@
                 var lIndex = Math.round(ii/3);
                 labels[lIndex].style.top = pos.y + 'px';
                 labels[lIndex].style.left = $('#_3D').position().left + pos.x + 'px';
+
+
+                var canvas = $('canvas');
+                if(pos.x < 0 || pos.x > canvas.attr('width') || pos.y < 0 || pos.y > canvas.attr('height'))
+                    labels[lIndex].style.visibility = 'hidden';
+                else
+                    labels[lIndex].style.visibility = 'visible';
             }
         }
 
