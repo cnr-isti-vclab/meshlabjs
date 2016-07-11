@@ -5,6 +5,7 @@ uniform mat4 modelMatrix;
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
 uniform sampler2D depthMap;
+uniform float intensity;
 
 varying vec2 vUv;
 
@@ -32,7 +33,7 @@ void main(){
 
   if (color.a == 0.0) discard;
 
-  float lighting = (shadowCalc(vUv) > 0.0) ? 0.7 : 1.0;
+  float lighting = (shadowCalc(vUv) > 0.0) ? intensity : 1.0;
 
   gl_FragColor = vec4(color.rgb * lighting, color.a);
 }

@@ -5,13 +5,15 @@
 
 (function (plugin, core, scene) {
 
-  let SIZE = { w : window.innerWidth, h : window.innerHeight};
+
+  let intensity = 0.7;
 
   let shadowPassUniforms = {
-    depthMap: { type: "t", value: null },
-    positionMap: { type: "t", value: null },
-    colorMap: { type: "t", value: null },
-    lightViewProjection: { type: "m4", value: null},
+    depthMap:             { type: "t", value: null },
+    positionMap:          { type: "t", value: null },
+    colorMap:             { type: "t", value: null },
+    lightViewProjection:  { type: "m4", value: null},
+    intensity:            { type: "f", value: null}
   };
 
   let depthPassUniforms = {
@@ -28,13 +30,24 @@
   });
   //
   //  let varianceFlag;
-  //  plug._init = (guiBuilder) => {
-  //    varianceFlag = guiBuilder.Bool({
-  //      label : "Debug SM",
-  //      tooltip : "g",
-  //      defval : false,
-  //    });
-  //  };
+  let intensityRng;
+  plug._init = (guiBuilder) => {
+    intensityRng = guiBuilder.RangedFloat({
+      label : "Shadow Transparency",
+      tooltip : "Manages shadow intensity: 0 is black shadows, 1 is no shadows",
+      min: 0.0, max: 1.0, step: 0.001,
+      defval : 0.7,
+      bindTo: (function() {
+          var bindToFun = function (value) {
+            intensity = value;
+            scene.render();
+          };
+          bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
+          return bindToFun;
+      }())
+    });
+  };
+
 
   function SMContext() {
 
@@ -43,14 +56,15 @@
     in the render pass which draws the shadows
     */
     // non posso specificare come solo depth?? su opengl mi pare si possa
-    let depthMapTarget = new THREE.WebGLRenderTarget(SIZE.w, SIZE.h, {
+    // quando implementerai VSM dovresti poter usare mipmapping! ricontrolla
+    let depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter
     });
 
 
-    let positionMapTarget = new THREE.WebGLRenderTarget(SIZE.w, SIZE.h, {
+    let positionMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter
@@ -119,6 +133,7 @@
       // scene.getBBox() returns a -1-1-1 111 bbox always..
       let bbox = new THREE.Box3().setFromObject(scene.getScene());
       let center = bbox.center();
+      let diag = bbox.min.distanceTo(bbox.max);
 
       let lookAt = new THREE.Matrix4();
       let camPos = new THREE.Vector3(0,0,0);
@@ -139,13 +154,16 @@
       // console.log(bbox.min.y+ " b"+bbox.max.y);
       // console.log(bbox.min.z+ " b"+bbox.max.z);
 
+      //se uso gli estremi di bbox su certe scene (tipo toroid)
+      //parti del modello escono dal frusto e quindi finiscono in ombra
+      //con diag invece per le prove che ho fatto funziona bene
       lightCamera = new THREE.OrthographicCamera(
-        bbox.min.x,
-        bbox.max.x,
-        bbox.max.y,
-        bbox.min.y,
-        bbox.min.z,
-        bbox.max.z //non riesco a settarl obene
+        -(diag/2),
+        (diag/2),
+        (diag/2),
+        -(diag/2),
+        -(diag/2),
+        (diag/2)
       );
 
       lightCamera.position.set(camPos.x, camPos.y, camPos.z);
@@ -166,16 +184,19 @@
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
-      shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
-      shadowPassUniforms.depthMap.value = depthMapTarget;
-      shadowPassUniforms.positionMap.value = positionMapTarget;
-      shadowPassUniforms.colorMap.value = inBuffer;
+      shadowPassUniforms.lightViewProjection.value  = projScreenMatrix;
+      shadowPassUniforms.depthMap.value             = depthMapTarget;
+      shadowPassUniforms.positionMap.value          = positionMapTarget;
+      shadowPassUniforms.colorMap.value             = inBuffer;
+      shadowPassUniforms.intensity.value            = intensity;
 
       renderer.render(shadowScene, sceneCam, outBuffer, true);
 
-      shadowPassUniforms.depthMap.value = null;
-      shadowPassUniforms.colorMap.value = null;
-      shadowPassUniforms.positionMap.value = null;
+      shadowPassUniforms.lightViewProjection.value  = null;
+      shadowPassUniforms.depthMap.value             = null;
+      shadowPassUniforms.colorMap.value             = null;
+      shadowPassUniforms.positionMap.value          = null;
+      shadowPassUniforms.intensity.value            = null;
     };
   }
 
