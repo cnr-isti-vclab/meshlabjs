@@ -32,7 +32,7 @@ void main(){
 
   if (color.a == 0.0) discard;
 
-  float lighting = (shadowCalc(vUv) > 0.0) ? 0.3 : 1.0;
+  float lighting = (shadowCalc(vUv) > 0.0) ? 0.7 : 1.0;
 
   gl_FragColor = vec4(color.rgb * lighting, color.a);
 }

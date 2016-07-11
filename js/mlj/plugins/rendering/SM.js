@@ -122,27 +122,23 @@
 
       let lookAt = new THREE.Matrix4();
       let camPos = new THREE.Vector3(0,0,0);
-      let viewD = new THREE.Vector3(-1,0,0);
-      lookAt.lookAt(camPos, viewD, new THREE.Vector3(0,1,0));
+      let viewD = new THREE.Vector3(-1,0,0);  //usate per la luce fissa a dx
 
-      console.log(lookAt.toArray());
-      console.log(sceneCam.position.toArray());
+      let sceneCamPos = sceneCam.position;
+      let lightPos = new THREE.Vector3(sceneCamPos.x + 4, sceneCamPos.y - 4, sceneCamPos.z);
+      //qui c'è un errore...probabilmente prendere center...
+      let lightD = new THREE.Vector3().subVectors(center, lightPos);
+      lookAt.lookAt(camPos, lightD, new THREE.Vector3(0,1,0));
+
+      // console.log(lookAt.toArray());
+      // console.log(sceneCam.position.toArray());
 
       bbox.applyMatrix4(lookAt);
+      //
+      // console.log(bbox.min.x+ " b "+bbox.max.x);
+      // console.log(bbox.min.y+ " b"+bbox.max.y);
+      // console.log(bbox.min.z+ " b"+bbox.max.z);
 
-      let sz = bbox.size();
-      let diag = bbox.min.distanceTo(bbox.max);
-
-      console.log(bbox.min.x+ " b "+bbox.max.x);
-      console.log(bbox.min.y+ " b"+bbox.max.y);
-      console.log(bbox.min.z+ " b"+bbox.max.z);
-      console.log(diag);
-
-      let x = bbox.max.x - bbox.min.x;
-      let y = bbox.max.y - bbox.min.y;
-      let z = bbox.max.z - bbox.min.z;
-
-      console.log(sz.x);
       lightCamera = new THREE.OrthographicCamera(
         bbox.min.x,
         bbox.max.x,
@@ -153,7 +149,7 @@
       );
 
       lightCamera.position.set(camPos.x, camPos.y, camPos.z);
-      lightCamera.lookAt(viewD);
+      lightCamera.lookAt(lightD);
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
