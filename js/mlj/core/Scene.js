@@ -317,8 +317,19 @@ MLJ.core.Scene = {};
         if (_layers.size() === 0) // map to the canonical cube
             BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         else {
-            BBGlobal = new THREE.Box3();
-            BBGlobal.setFromObject(_group);
+            // Defining the starting bounding box
+            BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
+
+            var iter = _layers.iterator();
+
+            // Iterating over all the layers
+            while(iter.hasNext()) {
+               // Getting the bounding box of the current layer
+               var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
+               
+               // Applying the union of the previous bounding box to the current one
+               BBGlobal.union(bbox);
+            }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
         var offset = BBGlobal.center().negate();
