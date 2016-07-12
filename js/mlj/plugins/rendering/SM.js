@@ -26,7 +26,7 @@
     toggle: true,
     on: false,
     icon: "img/icons/ambientocclusion.png",
-    loadShader : ["SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl", "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
+    loadShader : ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl", "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl", "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
   });
   //
   //  let varianceFlag;
@@ -59,6 +59,7 @@
     // quando implementerai VSM dovresti poter usare mipmapping! ricontrolla
     let depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
+      //  minFilter: THREE.LinearMipMapLinearFilter,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter
     });
@@ -77,6 +78,7 @@
     let depthMaterial = new THREE.RawShaderMaterial({
       uniforms: {},
       side: THREE.DoubleSide,
+      derivatives: true,
       vertexShader: plug.shaders.getByKey("SMVertex.glsl"),
       fragmentShader: plug.shaders.getByKey("SMFrag.glsl")
     });
@@ -104,6 +106,7 @@
 
     let lightCamera;
 
+    // let sz = bbox.size();
     // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
     // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     // var cube = new THREE.Mesh( geometry, material );
@@ -111,7 +114,7 @@
     //
     // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
     // box.update();
-    // scene.getScene().add(box);
+    // // scene.getScene().add(box);
 
     /*
     receives an input buffer in Scene.js and outputs an output buffer that will
@@ -123,33 +126,54 @@
       let sceneCam = scene.getCamera();
       let renderer = scene.getRenderer();
 
-      depthMapTarget.setSize(inBuffer.width, inBuffer.height);
-      positionMapTarget.setSize(inBuffer.width, inBuffer.height);
-
+      // depthMapTarget.setSize(inBuffer.width, inBuffer.height);
+      // positionMapTarget.setSize(inBuffer.width, inBuffer.height);
+      depthMapTarget.setSize(2048, 2048);
+      positionMapTarget.setSize(2048, 2048);
       /////************WORK IN PROGRESS***********///////////
       //TODO: fixa come fitti la camera della luce al bbox della scena...
       //      per ora funzionicchia
 
       // scene.getBBox() returns a -1-1-1 111 bbox always..
-      let bbox = new THREE.Box3().setFromObject(scene.getScene());
+
+      // let bbox = new THREE.Box3().setFromObject(scene.getScene());
+      let bbox = scene.getBBox();
       let center = bbox.center();
-      let diag = bbox.min.distanceTo(bbox.max);
+
+      let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
+
+      let bbmax = new THREE.Vector3().copy(bbox.max);
+      let bbmin = new THREE.Vector3().copy(bbox.min);
+
+      bbmax.multiplyScalar(scale);
+      bbmin.multiplyScalar(scale);
+
+      let sceneCamPos = sceneCam.position;
 
       let lookAt = new THREE.Matrix4();
       let camPos = new THREE.Vector3(0,0,0);
       let viewD = new THREE.Vector3(-1,0,0);  //usate per la luce fissa a dx
 
-      let sceneCamPos = sceneCam.position;
       let lightPos = new THREE.Vector3(sceneCamPos.x + 4, sceneCamPos.y - 4, sceneCamPos.z);
-      //qui c'è un errore...probabilmente prendere center...
       let lightD = new THREE.Vector3().subVectors(center, lightPos);
       lookAt.lookAt(camPos, lightD, new THREE.Vector3(0,1,0));
 
-      // console.log(lookAt.toArray());
-      // console.log(sceneCam.position.toArray());
+      bbox.set(bbmin, bbmax);
+      let diag = bbox.min.distanceTo(bbox.max);
+
+      //debugging bboxes
+        // let sz = bbox.size();
+        // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
+        // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+        // var cube = new THREE.Mesh( geometry, material );
+        // scene.getScene().add( cube );
+        //
+        // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
+        // box.update();
+        // scene.getScene().add(box);
 
       bbox.applyMatrix4(lookAt);
-      //
+
       // console.log(bbox.min.x+ " b "+bbox.max.x);
       // console.log(bbox.min.y+ " b"+bbox.max.y);
       // console.log(bbox.min.z+ " b"+bbox.max.z);
@@ -159,14 +183,14 @@
       //con diag invece per le prove che ho fatto funziona bene
       lightCamera = new THREE.OrthographicCamera(
         -(diag/2),
-        (diag/2),
-        (diag/2),
+        diag/2,
+        diag/2,
         -(diag/2),
         -(diag/2),
-        (diag/2)
+        diag/2
       );
 
-      lightCamera.position.set(camPos.x, camPos.y, camPos.z);
+      lightCamera.position.set(0, 0, 0);
       lightCamera.lookAt(lightD);
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
