@@ -317,8 +317,8 @@ MLJ.core.Scene = {};
         if (_layers.size() === 0) // map to the canonical cube
             BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
         else {
-            // Defining the starting bounding box
-            BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
+            // Defining the starting bounding box as the one from the first layer
+            BBGlobal = new THREE.Box3().setFromObject(_layers.getFirst().getThreeMesh());
 
             var iter = _layers.iterator();
 
