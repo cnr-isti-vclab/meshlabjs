@@ -118,13 +118,14 @@ void main() {
 
     outgoingLight += diffuseColor.rgb * ( totalDiffuseLight + ambientLightColor ) + totalSpecularLight + emissive;
     
-    if(lights == 0)
+    if(lights == 0){
         gl_FragColor = diffuseColor;
-    else {
-           if(texBool == 1)
-                gl_FragColor = texture2D(texture, vUv) * diffuseColor;
-           else
-                gl_FragColor = vec4( outgoingLight, diffuseColor.a );
-            
+    } else {
+        if(texBool == 1){
+             gl_FragColor = texture2D(texture, vUv) * diffuseColor;
+             //gl_FragColor = vec4( outgoingLight, diffuseColor.a);
+        } else{
+             gl_FragColor = vec4( outgoingLight, diffuseColor.a);
+        }            
     }
 }

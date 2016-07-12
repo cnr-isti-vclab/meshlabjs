@@ -174,25 +174,30 @@
                 side: params.sides
             };
                         
-               //The RawShaderMaterial cannto be used to set a map, so I chose MeshBasicMaterial with the parameters set before
-               var mat = new THREE.RawShaderMaterial(parameters);
-               console.log("\n meshFile ");
-               console.log(meshFile);
-               console.log("\n Material");
-               console.log(mat);
-               
-                meshFile.texture = THREE.ImageUtils.loadTexture("/" +scene.getSelectedLayer().cppMesh.getTextureName(), {}, function() {
-                    console.log("Texture Loaded!");                
-                    mat.uniforms.texture = {type: 't', value: meshFile.texture};
-                    mat.uniforms.texture.value.needsUpdate = true;
-            });
-               
-               //Create a new geometry, because the BufferGeometry does not support faceVertexUvs
-               //In order to automatically create a faceVertexUvs vector for the new geometry,
                //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
-//               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
-               var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-               scene.addOverlayLayer(meshFile, plug.getName(), filled);  
+               var mat = new THREE.RawShaderMaterial(parameters);
+               
+               if(meshFile.cppMesh.getTextureName() != "x"){ //x is returned when no texture is bounded to the mesh
+                 console.log("\nLoading texture " +meshFile.cppMesh.getTextureName());
+                 meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
+                      mat.uniforms.texture = {type: 't', value: meshFile.texture};
+                      mat.uniforms.texture.value.needsUpdate = true;
+                      var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+                      scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+                  },
+                  function(){    
+                      console.log("\nError loading texture"); 
+                        meshFile.texture = null;
+                        var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+                        scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+                  });
+              }
+              else {
+                console.log("\nMesh without texture");
+                var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+                scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+            }
+
 
             // build the new mesh
             // add it as an overlay to the layer       
