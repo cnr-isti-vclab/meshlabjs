@@ -8,7 +8,7 @@
         emissive: new THREE.Color('#000000'),
         shininess: 15.0,
         lights: true,
-        texture: true,
+        texBool: false,
         shading: THREE.FlatShading,
         sides : THREE.DoubleSide,
         mljColorMode: MLJ.ColorMode.Uniform
@@ -26,7 +26,7 @@
                 "specular": {type: "c", value: DEFAULTS.specular},
                 "shininess": {type: "f", value: DEFAULTS.shininess},
                 "lights": {type: "i", value: DEFAULTS.lights},
-                "texture": {type: "i", value: DEFAULTS.texture},
+                "texBool": {type: "i", value: DEFAULTS.texBool},
                 "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
             }
 
@@ -90,10 +90,21 @@
             label: "Texturing",
             tooltip: "Enable/disable texturing",
             options: [
-                {content: "On", value: true, selected: true},
-                {content: "Off", value: false}
+                {content: "On" , value: true},
+                {content: "Off", value: false, selected: true}
             ],
-            bindTo: "texture"
+//            bindTo: (function() {
+//                var bindToFun = function(boolTex) {
+//                    console.log("\nTexturing: " +boolTex);
+//                console.log(scene.getSelectedLayer());
+//                    if(boolTex)
+//                        scene.getSelectedLayer().texture = THREE.ImageUtils.loadTexture("/" +scene.getSelectedLayer().cppMesh.getTextureName(), {}, function() {console.log("Texture Loaded!")});
+//                    else scene.getSelectedLayer().texture = null;
+//                };
+//                bindToFun.toString = function () { return 'texture'; };
+//                return bindToFun;
+//            }())
+            bindTo: "texBool"
         });
 
         lightingWidget = guiBuilder.Choice({
@@ -148,7 +159,7 @@
             uniforms.emissive.value = params.emissive;
             uniforms.specular.value = params.specular;
             uniforms.lights.value = params.lights;
-            uniforms.texture.value = params.texture;
+            uniforms.texBool.value = params.texBool;
             uniforms.shading.value = params.shading;
             uniforms.diffuse.value = colorParams.diffuse;
             uniforms.mljColorMode.value = colorParams.mljColorMode;
@@ -163,23 +174,25 @@
                 side: params.sides
             };
                         
-            if(uniforms.texture.value === true){
                //The RawShaderMaterial cannto be used to set a map, so I chose MeshBasicMaterial with the parameters set before
-               var mat = new THREE.MeshBasicMaterial(parameters);
-               mat["map"] = THREE.ImageUtils.loadTexture( '\Bulbasaur.png', {}, function() {console.log("Texture Loaded!");});
+               var mat = new THREE.RawShaderMaterial(parameters);
+               console.log("\n meshFile ");
+               console.log(meshFile);
+               console.log("\n Material");
+               console.log(mat);
+               
+                meshFile.texture = THREE.ImageUtils.loadTexture("/" +scene.getSelectedLayer().cppMesh.getTextureName(), {}, function() {
+                    console.log("Texture Loaded!");                
+                    mat.uniforms.texture = {type: 't', value: meshFile.texture};
+                    mat.uniforms.texture.value.needsUpdate = true;
+            });
                
                //Create a new geometry, because the BufferGeometry does not support faceVertexUvs
                //In order to automatically create a faceVertexUvs vector for the new geometry,
                //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
-               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
-               var filled = new THREE.Mesh(newGeom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+//               var newGeom = new THREE.Geometry().fromBufferGeometry(geom);
+               var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                scene.addOverlayLayer(meshFile, plug.getName(), filled);  
-            }
-            else{
-                var mat = new THREE.RawShaderMaterial(parameters);
-                var filled = new THREE.Mesh(geom, mat);
-                scene.addOverlayLayer(meshFile, plug.getName(), filled);  
-            }
 
             // build the new mesh
             // add it as an overlay to the layer       

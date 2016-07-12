@@ -20,6 +20,10 @@ uniform float opacity;
 uniform int lights;
 uniform int mljColorMode;
 
+uniform sampler2D texture;
+uniform int texBool;
+varying vec2 vUv;
+
 #define PI 3.14159
 
 vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
@@ -116,6 +120,11 @@ void main() {
     
     if(lights == 0)
         gl_FragColor = diffuseColor;
-    else
-	   gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+    else {
+           if(texBool == 1)
+                gl_FragColor = texture2D(texture, vUv) * diffuseColor;
+           else
+                gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+            
+    }
 }

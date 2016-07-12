@@ -106,12 +106,14 @@ class CppMesh
             
             if(fileExt == "off" || fileExt == "obj" || fileExt == "ply" || fileExt == "stl"){
                 meshIndex = i;
+                //Estraggo la mesh per ultima così da avere sia il filt mtl che l'immagine della texture
             }else {
                mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
                printf("\nExtracting %s",  file_stat.m_filename);
             }
         }
         
+        //Se è stata trovata una mesh valida, la apro con openMesh che leggerà i file necessarai
         if(meshIndex > -1){
             mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
             mz_zip_reader_file_stat(&zip_archive, meshIndex, &file_stat);    
@@ -122,12 +124,7 @@ class CppMesh
             printf("\nExtracting %s",  meshFileName.c_str());
             
             //apro la mesh, che avrà il supporto texture (WedgeTextureCoord) da cui posso prendere la lista delle texture che utilizza
-            openMesh(meshFileName);
-            
-            for (unsigned textureIdx = 0; textureIdx < m.textures.size(); ++textureIdx)
-            {
-                printf("\nLooking for texture file: %s", m.textures[textureIdx].c_str());                
-            }            
+            openMesh(meshFileName);            
 
             //remove the mesh file from the emscripten file system
             if(std::remove(meshFileName.c_str()) != 0 )
@@ -140,6 +137,8 @@ class CppMesh
         mz_zip_reader_end(&zip_archive);    //Close the zip file
         return 0;
     }
+    
+
     
 
   int VN() { return m.VN(); }
@@ -294,7 +293,20 @@ inline uintptr_t getWedgeTextureCoordinates()
   {
       return m.textures[0].c_str();
   }
-
+  
+  inline bool checkFile(std::string fileName)
+  {
+        printf("\n%s Esiste?: ", fileName.c_str());
+        std::ifstream ifile(fileName.c_str());
+        if(ifile.good()){              
+            printf("YYYEP\n");
+            return true;
+        }
+        else{ 
+            printf("NO SHIT\n");
+            return false;
+        }
+  }
 };
 
 #ifdef __EMSCRIPTEN__
@@ -330,6 +342,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
     .function("getTextureName",         &CppMesh::getTextureName)
+    .function("checkFile",              &CppMesh::checkFile)
     ;
 }
 #endif

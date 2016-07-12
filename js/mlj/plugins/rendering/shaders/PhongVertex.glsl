@@ -3,6 +3,7 @@
 attribute vec3 position;
 attribute vec3 normal;
 attribute vec3 VCGColor;
+attribute vec2 uv;
 
 varying vec3 vViewPosition;
 varying vec3 vNormal;
@@ -16,7 +17,10 @@ uniform int shading;
 uniform vec3 diffuse;
 uniform int mljColorMode;
 
+varying vec2 vUv;
+
 void main() {
+    vUv = uv;
     vec3 objectNormal = normal;
 
     #ifdef FLIP_SIDED
