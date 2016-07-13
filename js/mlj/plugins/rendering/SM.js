@@ -1,10 +1,6 @@
 ///GUARDA DEFERRED SHADING.....
 /// per ora mi salvo depthmap e positionmap....la depth map funziona bene...positionmap sembra anche
-/// lo shader per capire se sono in ombra non va....probabilmente sbagli position map e e trasformazione
-///devo lavorare su shadowFrag....current è sbagliato prolly
-
 (function (plugin, core, scene) {
-
 
   let intensity = 0.7;
 
@@ -20,13 +16,23 @@
     variance : { type : "i", value : 0}
   };
 
+  let shadowPassOptions = {
+    minFilter: null,
+    SMVert: null,
+    SMFrag: null,
+    ShadowFrag: null
+  }
+
+
   let plug = new plugin.GlobalRendering({
     name: "Shadow Mapping",
     tooltip: "Activate Shadow Mapping render pass",
     toggle: true,
     on: false,
     icon: "img/icons/ambientocclusion.png",
-    loadShader : ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl", "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl", "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
+    loadShader: ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl",
+              "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
+              "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
   });
   //
   //  let varianceFlag;
@@ -51,17 +57,21 @@
 
   function SMContext() {
 
+    shadowPassOptions.minFilter = THREE.NearestFilter;
+    shadowPassOptions.SMVert = plug.shaders.getByKey("SMVertex.glsl");
+    shadowPassOptions.SMFrag = plug.shaders.getByKey("SMFrag.glsl");
+    shadowPassOptions.shadowFrag = plug.shaders.getByKey("ShadowFrag.glsl");
+
     /*
     render target where the depth values will be saved, used as texture
     in the render pass which draws the shadows
     */
     // non posso specificare come solo depth?? su opengl mi pare si possa
     // quando implementerai VSM dovresti poter usare mipmapping! ricontrolla
-    let depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
+    depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
-      //  minFilter: THREE.LinearMipMapLinearFilter,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter
+      minFilter: shadowPassOptions.minFilter,
+      magFilter: shadowPassOptions.minFilter
     });
 
 
@@ -75,12 +85,12 @@
     material containing the depth pass shaders. The original scene will be
     rendered using this shaders to produce a depth map
     */
-    let depthMaterial = new THREE.RawShaderMaterial({
+    depthMaterial = new THREE.RawShaderMaterial({
       uniforms: {},
       side: THREE.DoubleSide,
       derivatives: true,
-      vertexShader: plug.shaders.getByKey("SMVertex.glsl"),
-      fragmentShader: plug.shaders.getByKey("SMFrag.glsl")
+      vertexShader: shadowPassOptions.SMVert,
+      fragmentShader: shadowPassOptions.SMFrag
     });
 
     let positionMaterial = new THREE.RawShaderMaterial({
@@ -94,28 +104,17 @@
     quad che disegno per il passo di defferred rendering
     */
     let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
-    let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
+    shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
       uniforms: shadowPassUniforms,
       side: THREE.DoubleSide,
       vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
-      fragmentShader: plug.shaders.getByKey("ShadowFrag.glsl")
+      fragmentShader: shadowPassOptions.shadowFrag
     }));
 
     let shadowScene = new THREE.Scene();
     shadowScene.add(shadowMapMesh);
 
     let lightCamera;
-
-    // let sz = bbox.size();
-    // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    // var cube = new THREE.Mesh( geometry, material );
-    // scene.getScene().add( cube );
-    //
-    // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
-    // box.update();
-    // // scene.getScene().add(box);
-
     /*
     receives an input buffer in Scene.js and outputs an output buffer that will
     be used as a texture for the last pass of the deferred rendering pipe.
@@ -154,8 +153,14 @@
       let camPos = new THREE.Vector3(0,0,0);
       let viewD = new THREE.Vector3(-1,0,0);  //usate per la luce fissa a dx
 
-      let lightPos = new THREE.Vector3(sceneCamPos.x + 4, sceneCamPos.y - 4, sceneCamPos.z);
+      let lightPos = new THREE.Vector3(
+        sceneCamPos.x + 4,
+        sceneCamPos.y - 4,
+        sceneCamPos.z
+      );
+
       let lightD = new THREE.Vector3().subVectors(center, lightPos);
+
       lookAt.lookAt(camPos, lightD, new THREE.Vector3(0,1,0));
 
       bbox.set(bbmin, bbmax);

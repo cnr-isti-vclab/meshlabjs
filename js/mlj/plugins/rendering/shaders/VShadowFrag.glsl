@@ -45,7 +45,7 @@ void main(){
   if (color.a == 0.0) discard;
 
   float chebishev = shadowCalc(vUv);
-  float shadowing = (chebishev > 0.6) ? 1.0 : (0.7 - chebishev);
+  float shadowing = (chebishev > 0.7) ? 1.0 : (0.8 - chebishev);
 
   gl_FragColor = vec4(color.rgb * (shadowing), color.a);
 }
