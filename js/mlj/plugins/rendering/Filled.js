@@ -93,17 +93,6 @@
                 {content: "On" , value: true},
                 {content: "Off", value: false, selected: true}
             ],
-//            bindTo: (function() {
-//                var bindToFun = function(boolTex) {
-//                    console.log("\nTexturing: " +boolTex);
-//                console.log(scene.getSelectedLayer());
-//                    if(boolTex)
-//                        scene.getSelectedLayer().texture = THREE.ImageUtils.loadTexture("/" +scene.getSelectedLayer().cppMesh.getTextureName(), {}, function() {console.log("Texture Loaded!")});
-//                    else scene.getSelectedLayer().texture = null;
-//                };
-//                bindToFun.toString = function () { return 'texture'; };
-//                return bindToFun;
-//            }())
             bindTo: "texBool"
         });
 
@@ -173,29 +162,31 @@
                 lights: true,
                 side: params.sides
             };
-                        
-               //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
-               var mat = new THREE.RawShaderMaterial(parameters);
-               
-               if(meshFile.cppMesh.getTextureName() != "x"){ //x is returned when no texture is bounded to the mesh
-                 console.log("\nLoading texture " +meshFile.cppMesh.getTextureName());
-                 meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
+            
+            //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
+            var mat = new THREE.RawShaderMaterial(parameters);
+
+            if(meshFile.cppMesh.getTextureName() !== "x"){ //x is returned when no texture is bounded to the mesh
+                console.log("\nLoading texture " +meshFile.cppMesh.getTextureName());
+                meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
+                      console.log("\nTexture Loaded!");          
                       mat.uniforms.texture = {type: 't', value: meshFile.texture};
-                      mat.uniforms.texture.value.needsUpdate = true;
+//                      mat.uniforms.texture.value.needsUpdate = true;
                       var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                       scene.addOverlayLayer(meshFile, plug.getName(), filled); 
-                  },
-                  function(){    
+                },
+                function(){    
                       console.log("\nError loading texture"); 
-                        meshFile.texture = null;
-                        var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-                        scene.addOverlayLayer(meshFile, plug.getName(), filled); 
-                  });
-              }
-              else {
-                console.log("\nMesh without texture");
-                var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-                scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+                      delete meshFile.texture;
+                      delete mat.uniforms.texture;
+                      var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+                      scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+                });
+            }
+            else {
+              console.log("\nMesh without texture");
+              var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+              scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
 
 
