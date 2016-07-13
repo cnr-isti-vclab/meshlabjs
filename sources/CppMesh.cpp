@@ -5,6 +5,8 @@
 #include <vcg/complex/complex.h>
 #include <vcg/complex/algorithms/attribute_seam.h>
 #include "miniz/miniz.c"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.c"
 
 using namespace vcg;
 using namespace std;
@@ -294,6 +296,18 @@ inline uintptr_t getWedgeTextureCoordinates()
       return m.textures[0].c_str();
   }
   
+   inline uintptr_t getTextureImage()
+  {
+       printf("\nGetTexImage");
+       int width = -1;
+       int height = -1;
+       int n = -1;
+       unsigned char *data = stbi_load(m.textures[0].c_str(), &width, &height, &n, 4);
+       
+       printf("\nYOLO");
+      return (uintptr_t) data;
+  }
+  
   inline bool checkFile(std::string fileName)
   {
         printf("\n%s Esiste?: ", fileName.c_str());
@@ -342,6 +356,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
     .function("getTextureName",         &CppMesh::getTextureName)
+    .function("getTextureImage",         &CppMesh::getTextureImage)
     .function("checkFile",              &CppMesh::checkFile)
     ;
 }

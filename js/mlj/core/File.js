@@ -93,7 +93,6 @@ MLJ.core.File = {
 
 //                console.log("Il file " +mf.cppMesh.getTextureName() +" esiste: "+ FS.isFile(mf.cppMesh.getTextureName()))
                 console.log("Il file Bulbasaur.png esiste: " +mf.cppMesh.checkFile("Bulbasaur.png"));
-                console.log("Leggo contenuto " + FS.readdir("/"));
             }
             else
                 resOpen = mf.cppMesh.openMesh(file.name);

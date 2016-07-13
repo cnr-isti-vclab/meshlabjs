@@ -171,38 +171,68 @@
             
             var mat = new THREE.RawShaderMaterial(parameters);
             
-//            console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
-//            
-//            
-//            //TESTING Dynamic texture creation from data received by nodejs file system, Just change meshFile.texture with texBulba
-//            var imgBuff = FS.readFile("/" + meshFile.cppMesh.getTextureName())
-//            var img = new Uint8Array(imgBuff);
-//            var texBulba = new THREE.DataTexture(imgBuff, 512, 512, THREE.RGBAFormat);
-//            texBulba.needsUpdate = true;
-//            
+          
+            //TESTING Dynamic texture creation from data received by nodejs file system, Just change meshFile.texture with texBulba
+            var imgPtr = meshFile.cppMesh.getTextureImage(); //Carico la texture restituita da c++
+            var imgBuff= new Uint8Array(Module.HEAPU8.buffer, imgPtr, 512*512*4); //La textura ha di default 4 canali (RGBA), resta da sistemare la dimensione dell'immagine e del canale
+
+            var texBulba = new THREE.DataTexture(imgBuff, 512, 512, THREE.RGBAFormat); //Avendo 4 canali il formato è RGBA
+            texBulba.needsUpdate = true;
+ //           console.log("Image buffer");
+//            console.log(imgBuff);          
 //            console.log("\nImage");
 //            console.log(texBulba);
+         
+            
+            
+            
+//            /*Data texture*/
+//            var side = 32; // power of two textures are better cause powers of two are required by some algorithms. Like ones that decide what color will pixel have if amount of pixels is less than amount of textels (see three.js console error when given non-power-of-two texture)
+//
+//            var amount = Math.pow(side, 2); // you need 4 values for every pixel in side*side plane
+//            var data = new Uint8Array(amount);
+//            /* 
+//              You can also use any js typed array or ArrayBuffer itself
+//              Most popular is Uint8Array (it can contain itegers from 0 to 255)
+//            */
+//            for (var i = 0; i < amount; i++) {
+//              data[i] = Math.random()*256; // generates random r,g,b,a values from 0 to 1
+//              /*  
+//                When using Uint8Array multiply the random value by 255 to get same results
+//                'cause in that case you use integers from 0 to 255 to represent colors
+//                which is limiting but is more widely supported (see comment below)
+//              */
+//            }
 
+
+
+
+
+            console.log("Leggo contenuto " + FS.readdir("/"));
+//            console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
+//            
             //If the mesh has a texture and this texture is present in the Emscripten file system root
             if(meshFile.cppMesh.getTextureName() !== "x" && FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName()) > -1){ //x is returned when no texture is bounded to the mesh
-                console.log("\nLoading texture " +meshFile.cppMesh.getTextureName());
+                console.log("Loading texture " +meshFile.cppMesh.getTextureName());
                 meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
-                      console.log("\nTexture Loaded!");   
-                      console.log(meshFile.texture);
-                      mat.uniforms.texture = {type: 't', value: meshFile.texture};
+                      console.log("Texture Loaded!");   
+//                      console.log(meshFile.texture);
+                      mat.uniforms.texture = {type: 't', value: texBulba}; //Just for testing
+//                      mat.uniforms.texture = {type: 't', value: meshFile.texture};
                       var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                       scene.addOverlayLayer(meshFile, plug.getName(), filled); 
                 },
                 function(){    
-                      console.log("\nError loading texture"); 
-                      delete meshFile.texture;
-                      delete mat.uniforms.texture;
+                      console.log("Error loading texture"); 
+                      mat.uniforms.texture = {type: 't', value: texBulba}; //Just for testing
+//                      delete meshFile.texture;
+//                      delete mat.uniforms.texture;
                       var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                       scene.addOverlayLayer(meshFile, plug.getName(), filled); 
                 });
             }
             else {
-              console.log("\nMesh without texture");
+              console.log("Mesh without texture");
               var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
               scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
