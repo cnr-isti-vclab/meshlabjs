@@ -163,15 +163,33 @@
                 side: params.sides
             };
             
-            //The BufferGeometry MUST have an attribute called "uv", which will be automatically used to create the faceVertexUvs
+            //The BufferGeometry MUST have an attribute called "uv", used in the PhongFragment and in PhongVertex
+            // The problem here (I guess) is that the shader is pre-compiled, so it loads the texture even when it is undefined or null
+            //hence, everytime I load a mesh, the uniforms.texture gets updated with the mesh's texture
+            //if the next texture does NOT have a texture or the texture could not be found, then the mat.uniforms.texture saved in the sader will stay the same
+            //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes
+            
             var mat = new THREE.RawShaderMaterial(parameters);
+            
+//            console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
+//            
+//            
+//            //TESTING Dynamic texture creation from data received by nodejs file system, Just change meshFile.texture with texBulba
+//            var imgBuff = FS.readFile("/" + meshFile.cppMesh.getTextureName())
+//            var img = new Uint8Array(imgBuff);
+//            var texBulba = new THREE.DataTexture(imgBuff, 512, 512, THREE.RGBAFormat);
+//            texBulba.needsUpdate = true;
+//            
+//            console.log("\nImage");
+//            console.log(texBulba);
 
-            if(meshFile.cppMesh.getTextureName() !== "x"){ //x is returned when no texture is bounded to the mesh
+            //If the mesh has a texture and this texture is present in the Emscripten file system root
+            if(meshFile.cppMesh.getTextureName() !== "x" && FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName()) > -1){ //x is returned when no texture is bounded to the mesh
                 console.log("\nLoading texture " +meshFile.cppMesh.getTextureName());
                 meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
-                      console.log("\nTexture Loaded!");          
+                      console.log("\nTexture Loaded!");   
+                      console.log(meshFile.texture);
                       mat.uniforms.texture = {type: 't', value: meshFile.texture};
-//                      mat.uniforms.texture.value.needsUpdate = true;
                       var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                       scene.addOverlayLayer(meshFile, plug.getName(), filled); 
                 },
