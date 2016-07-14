@@ -16,6 +16,7 @@ class CppMesh
   public:
     MyMesh m;
     int loadmask;
+    
     CppMesh()
     {
       loadmask =0;
@@ -93,55 +94,77 @@ class CppMesh
       }
     
    
-    int openMeshZip(string fileName){
+    int openMeshZip(string archiveFileName, string archiveFolder){
         printf("\nOpening zip file");
+        std::string meshFileName = "";
+        std::string meshExt = "";
+        std::string fileName = "";
+        std::string fileExt = "";
+        std::string mtlFileName = "";
+        
         mz_zip_archive zip_archive; 
         memset(&zip_archive, 0, sizeof(zip_archive)); //Saving memory for the zip archive
-        mz_zip_reader_init_file(&zip_archive, fileName.c_str(), 0); //Initializing the zip file reader
+        mz_zip_reader_init_file(&zip_archive, archiveFileName.c_str(), 0); //Initializing the zip file reader
         int meshIndex = 1;
         //Iterate through each file inside the zip file
+        printf("\nExtracting: ");
         for (int i = 0; i < (int)mz_zip_reader_get_num_files(&zip_archive); i++){
             mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
             mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
-            std::string meshFileName = file_stat.m_filename; //Get the file extension
-            std::string fileExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);
+            
+            fileName = file_stat.m_filename; //Get the file extension
+            fileExt = fileName.substr(fileName.find_last_of(".") + 1);
             
             if(fileExt == "off" || fileExt == "obj" || fileExt == "ply" || fileExt == "stl"){
-                meshIndex = i;
-                //Estraggo la mesh per ultima così da avere sia il filt mtl che l'immagine della texture
+                meshIndex = i; //Estraggo la mesh per ultima così da avere sia il file mtl che l'immagine della texture                
             }else {
+                //Layer folder stesting
+//               std::string dest = archiveFolder +"/"+file_stat.m_filename; 
+//               printf("\nDestination %s ", dest.c_str());
+//               mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, dest.c_str(), 0);
+                
                mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
-               printf("\nExtracting %s",  file_stat.m_filename);
-            }
+               printf("%s, ",  file_stat.m_filename);
+               
+               if(fileExt == "mtl")
+                mtlFileName = fileName;
+            }   
         }
         
         //Se è stata trovata una mesh valida, la apro con openMesh che leggerà i file necessarai
         if(meshIndex > -1){
             mz_zip_archive_file_stat file_stat; //Get the info about each file and store them into file_stat
             mz_zip_reader_file_stat(&zip_archive, meshIndex, &file_stat);    
-            std::string meshFileName = file_stat.m_filename; //Get the file extension
-            std::string fileExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);        
-            //extract and open the mehs file
+            meshFileName = file_stat.m_filename; //Get the file extension
+            meshExt = meshFileName.substr(meshFileName.find_last_of(".") + 1);  
+            
+            //extract and open the mesh file
             mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename, file_stat.m_filename, 0);
-            printf("\nExtracting %s",  meshFileName.c_str());
+            printf("%s",  meshFileName.c_str());
             
             //apro la mesh, che avrà il supporto texture (WedgeTextureCoord) da cui posso prendere la lista delle texture che utilizza
             openMesh(meshFileName);            
-
-            //remove the mesh file from the emscripten file system
-            if(std::remove(meshFileName.c_str()) != 0 )
-                printf("\nError deleting %s", meshFileName.c_str());
-            else
-                printf("\n%s successfully deleted", meshFileName.c_str());
-            
         }
         
         mz_zip_reader_end(&zip_archive);    //Close the zip file
+        
+        //remove the mesh file from the emscripten file system
+        printf("\nDeleting mesh %s from FS... ", meshFileName.c_str());
+        int res = std::remove(meshFileName.c_str());
+        if(res != 0)
+            printf("ERROR!");
+        else
+            printf("Success!");
+        
+        printf("\nDeleting material %s from FS... ", mtlFileName.c_str());
+        res = std::remove(mtlFileName.c_str());
+        if(res != 0)
+            printf("ERROR!\n\n");
+        else
+            printf("Success!\n\n");             
+        
         return 0;
-    }
-    
-
-    
+    }    
 
   int VN() { return m.VN(); }
   int FN() { return m.FN(); }
@@ -296,30 +319,17 @@ inline uintptr_t getWedgeTextureCoordinates()
       return m.textures[0].c_str();
   }
   
-   inline uintptr_t getTextureImage()
+  inline uintptr_t getTextureImage()
   {
-       printf("\nGetTexImage");
-       int width = -1;
-       int height = -1;
-       int n = -1;
-       unsigned char *data = stbi_load(m.textures[0].c_str(), &width, &height, &n, 4);
+      //texture laading
+       int textureWidth = -1;
+       int textureHeight = -1;
+       int textureComponents = -1;
+       unsigned char *data = stbi_load(m.textures[0].c_str(), &textureWidth, &textureHeight, &textureComponents, 0);       
+       int imageInfo[4] = {textureWidth, textureHeight, textureComponents, (int) data};
+       printf("\nTexture Info W: %d, H: %d, Ch: %d, TexPtr: %d", textureWidth, textureHeight, textureComponents, *data);
        
-       printf("\nYOLO");
-      return (uintptr_t) data;
-  }
-  
-  inline bool checkFile(std::string fileName)
-  {
-        printf("\n%s Esiste?: ", fileName.c_str());
-        std::ifstream ifile(fileName.c_str());
-        if(ifile.good()){              
-            printf("YYYEP\n");
-            return true;
-        }
-        else{ 
-            printf("NO SHIT\n");
-            return false;
-        }
+       return (uintptr_t) imageInfo;
   }
 };
 
@@ -356,8 +366,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
     .function("getTextureName",         &CppMesh::getTextureName)
-    .function("getTextureImage",         &CppMesh::getTextureImage)
-    .function("checkFile",              &CppMesh::checkFile)
+    .function("getTextureImage",        &CppMesh::getTextureImage)
     ;
 }
 #endif

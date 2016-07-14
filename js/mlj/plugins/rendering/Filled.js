@@ -167,76 +167,54 @@
             // The problem here (I guess) is that the shader is pre-compiled, so it loads the texture even when it is undefined or null
             //hence, everytime I load a mesh, the uniforms.texture gets updated with the mesh's texture
             //if the next texture does NOT have a texture or the texture could not be found, then the mat.uniforms.texture saved in the sader will stay the same
-            //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes
-            
-            var mat = new THREE.RawShaderMaterial(parameters);
-            
-          
-            //TESTING Dynamic texture creation from data received by nodejs file system, Just change meshFile.texture with texBulba
-            var imgPtr = meshFile.cppMesh.getTextureImage(); //Carico la texture restituita da c++
-            var imgBuff= new Uint8Array(Module.HEAPU8.buffer, imgPtr, 512*512*4); //La textura ha di default 4 canali (RGBA), resta da sistemare la dimensione dell'immagine e del canale
-
-            var texBulba = new THREE.DataTexture(imgBuff, 512, 512, THREE.RGBAFormat); //Avendo 4 canali il formato è RGBA
-            texBulba.needsUpdate = true;
- //           console.log("Image buffer");
-//            console.log(imgBuff);          
-//            console.log("\nImage");
-//            console.log(texBulba);
-         
-            
-            
-            
-//            /*Data texture*/
-//            var side = 32; // power of two textures are better cause powers of two are required by some algorithms. Like ones that decide what color will pixel have if amount of pixels is less than amount of textels (see three.js console error when given non-power-of-two texture)
-//
-//            var amount = Math.pow(side, 2); // you need 4 values for every pixel in side*side plane
-//            var data = new Uint8Array(amount);
-//            /* 
-//              You can also use any js typed array or ArrayBuffer itself
-//              Most popular is Uint8Array (it can contain itegers from 0 to 255)
-//            */
-//            for (var i = 0; i < amount; i++) {
-//              data[i] = Math.random()*256; // generates random r,g,b,a values from 0 to 1
-//              /*  
-//                When using Uint8Array multiply the random value by 255 to get same results
-//                'cause in that case you use integers from 0 to 255 to represent colors
-//                which is limiting but is more widely supported (see comment below)
-//              */
-//            }
-
-
-
-
-
-            console.log("Leggo contenuto " + FS.readdir("/"));
-//            console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
-//            
+            //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes            
+            var mat = new THREE.RawShaderMaterial(parameters);   
+                
             //If the mesh has a texture and this texture is present in the Emscripten file system root
-            if(meshFile.cppMesh.getTextureName() !== "x" && FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName()) > -1){ //x is returned when no texture is bounded to the mesh
-                console.log("Loading texture " +meshFile.cppMesh.getTextureName());
-                meshFile.texture = THREE.ImageUtils.loadTexture("/" +meshFile.cppMesh.getTextureName(), {}, function() {
-                      console.log("Texture Loaded!");   
-//                      console.log(meshFile.texture);
-                      mat.uniforms.texture = {type: 't', value: texBulba}; //Just for testing
-//                      mat.uniforms.texture = {type: 't', value: meshFile.texture};
-                      var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-                      scene.addOverlayLayer(meshFile, plug.getName(), filled); 
-                },
-                function(){    
-                      console.log("Error loading texture"); 
-                      mat.uniforms.texture = {type: 't', value: texBulba}; //Just for testing
-//                      delete meshFile.texture;
-//                      delete mat.uniforms.texture;
-                      var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-                      scene.addOverlayLayer(meshFile, plug.getName(), filled); 
-                });
+            //x is returned when no texture is bounded to the mesh
+//              console.log("Reading FS's root content " + FS.readdir("/"));
+//              console.log("Reading layer folder's content " + FS.readdir("/"+meshFile.name));
+            if(meshFile.cppMesh.getTextureName() !== "x" && FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName()) > -1){
+              console.log("Loading texture " +meshFile.cppMesh.getTextureName());
+//              console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
+          
+                //Dynamic Texture loading from the emscripten file system
+                var textureInfoPtr = meshFile.cppMesh.getTextureImage(); //This function loads the texture and give as a result an array with width, height, number of components, pointer to the image array
+                var imgBuff= new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
+                var width = imgBuff[0];
+                var height = imgBuff[1];
+                var components = imgBuff[2];
+                var imgPtr = imgBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
+                
+                //Let's recreate the array as an Uint8Array, every pixel will be encoded with a number of attribute equal to the number of components
+                //Hence, the image array full size will be numOfPixels*components, which will be width*height*components
+                //The array will be then ready for creating the DataTexture
+                var imgBuff= new Uint8Array(Module.HEAPU8.buffer, imgPtr, width*height*components);
+
+                //the most common format is the RGB format, but just in case the format is different it will be changed accordingly
+                var format = THREE.RGBFormat;
+                if(components === 1)
+                     format = THREE.LuminanceFormat; //From the stbi lib: 1 = grey
+                else if(components === 2)
+                     format = THREE.LuminanceAlphaFormat; //From the stbi lib: 2 = grey, alpha
+                else if(components === 3)
+                     format = THREE.RGBFormat; //From the stbi lib: 3 = red, green, blue (RGB)
+                else if(components === 4)
+                     format = THREE.RGBAFormat; //From the stbi lib: 4 = red, green, blue, alpha (RGBA)
+
+                var meshTexture = new THREE.DataTexture(imgBuff, width, height, format);
+                meshTexture.needsUpdate = true; //We need to update the texture
+                meshTexture.minFilter = THREE.LinearFilter; //Needed when texture is not a power of 2
+                
+                mat.uniforms.texture = {type: 't', value: meshTexture}; //Just for testing
+                var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+                scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
             else {
-              console.log("Mesh without texture");
+              console.log("No Texture found or attached");
               var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
               scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
-
 
             // build the new mesh
             // add it as an overlay to the layer       

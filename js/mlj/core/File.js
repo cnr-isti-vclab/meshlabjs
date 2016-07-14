@@ -40,7 +40,8 @@ MLJ.core.File = {
         OFF: ".off",
         OBJ: ".obj",
         PLY: ".ply",
-        STL: ".stl"
+        STL: ".stl",
+        ZIP: ".zip"
     }, 
     SupportedSketchfabExtensions: {
         OBJ: ".obj",
@@ -83,16 +84,9 @@ MLJ.core.File = {
             FS.createDataFile("/", file.name, int8buf, true, true);
             
             console.time("Parsing Mesh Time");  
-//            console.log("File extension: " +file.name.split('.').pop());
             var resOpen = -1;
             if(file.name.split('.').pop() === "zip"){
-                resOpen = mf.cppMesh.openMeshZip(file.name);
-//                console.log("Aprendo zip... " +resOpen);
-                
-//                console.log("Il file " +mf.cppMesh.getTextureName() +" esiste: "+ FS.isFile(mf.cppMesh.getTextureName()))
-
-//                console.log("Il file " +mf.cppMesh.getTextureName() +" esiste: "+ FS.isFile(mf.cppMesh.getTextureName()))
-                console.log("Il file Bulbasaur.png esiste: " +mf.cppMesh.checkFile("Bulbasaur.png"));
+                resOpen = mf.cppMesh.openMeshZip(file.name, mf.name); //extract data to a layer folder
             }
             else
                 resOpen = mf.cppMesh.openMesh(file.name);
@@ -135,7 +129,7 @@ MLJ.core.File = {
 
             //Validate file extension
             if (!isExtensionValid(extension)) {
-                console.error("MeshLabJs allows file format '.off', '.ply', '.obj' and '.stl'. \nTry again.");
+                console.error("MeshLabJs allows file format '.off', '.ply', '.obj', 'zip' and '.stl'. \nTry again.");
                 return;
             }
 
