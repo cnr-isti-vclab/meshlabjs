@@ -22,6 +22,7 @@ uniform int mljColorMode;
 
 uniform sampler2D texture;
 uniform int texBool;
+uniform int enableTexture;
 varying vec2 vUv;
 
 #define PI 3.14159
@@ -122,8 +123,10 @@ void main() {
         gl_FragColor = diffuseColor;
     } else {
         if(texBool == 1){
-             gl_FragColor = texture2D(texture, vUv) * diffuseColor;
-             //gl_FragColor = vec4( outgoingLight, diffuseColor.a);
+            if(enableTexture == 1)
+                gl_FragColor = texture2D(texture, vUv) * diffuseColor;
+            else
+                gl_FragColor = vec4( outgoingLight, diffuseColor.a);
         } else{
              gl_FragColor = vec4( outgoingLight, diffuseColor.a);
         }            

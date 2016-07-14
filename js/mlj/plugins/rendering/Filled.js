@@ -168,7 +168,8 @@
             //hence, everytime I load a mesh, the uniforms.texture gets updated with the mesh's texture
             //if the next texture does NOT have a texture or the texture could not be found, then the mat.uniforms.texture saved in the sader will stay the same
             //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes            
-            var mat = new THREE.RawShaderMaterial(parameters);   
+            var mat = new THREE.RawShaderMaterial(parameters);
+            mat.uniforms.texture = {type: 't', value: null}; //Just for testing
                 
             //If the mesh has a texture and this texture is present in the Emscripten file system root
             //x is returned when no texture is bounded to the mesh
@@ -204,16 +205,19 @@
 
                 var meshTexture = new THREE.DataTexture(imgBuff, width, height, format);
                 meshTexture.needsUpdate = true; //We need to update the texture
-                meshTexture.minFilter = THREE.LinearFilter; //Needed when texture is not a power of 2
+                meshTexture.minFilter = THREE.LinearFilter; //Needed when texture is not a power of 2    
                 
-                mat.uniforms.texture = {type: 't', value: meshTexture}; //Just for testing
+                mat.uniforms.texture.value = meshTexture;
+                mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
+               
                 var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                 scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
             else {
               console.log("No Texture found or attached");
+              mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
               var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-              scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+              scene.addOverlayLayer(meshFile, plug.getName(), filled);
             }
 
             // build the new mesh
