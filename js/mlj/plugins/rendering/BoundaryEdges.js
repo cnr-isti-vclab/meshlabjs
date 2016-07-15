@@ -2,7 +2,8 @@
 (function (plugin, core, scene) {
 
     var DEFAULTS = {
-        color : new THREE.Color('#00FF00'), // boundary edges color
+        colorBoundary : new THREE.Color('#00FF00'), // boundary edges color
+        colorTexSeam: new THREE.Color('#73adff'),
         width : 1,  // boundary edges width
         faceOpacity : 0.1,
         showBoundary: 1,
@@ -70,11 +71,26 @@
                 return bindToFun;
             }())
         });
+        
+        guiBuilder.Color({
+            label: "Color Texture Seams",
+            tooltip: "The color of texture seams",
+            color: "#" + DEFAULTS.colorTexSeam.getHexString(),
+            bindTo: (function() {
+                var bindToFun = function (color, overlay) {
+                    if (overlay.textureSeamMesh) {
+                        overlay.textureSeamMesh.edges.material.color = color;
+                    }
+                };
+                bindToFun.toString = function () { return 'colorTexSeam'; };
+                return bindToFun;
+            }())
+        });
 
         guiBuilder.Color({
             label: "Color Boundary",
             tooltip: "The color of boundary edges",
-            color: "#" + DEFAULTS.color.getHexString(),
+            color: "#" + DEFAULTS.colorBoundary.getHexString(),
             bindTo: (function() {
                 var bindToFun = function (color, overlay) {
                     if (overlay.boundaryMesh) {
@@ -82,7 +98,7 @@
                         overlay.boundaryMesh.faces.material.color = color;
                     }
                 };
-                bindToFun.toString = function () { return 'color'; };
+                bindToFun.toString = function () { return 'colorBoundary'; };
                 return bindToFun;
             }())
         });
@@ -112,6 +128,9 @@
                 var bindToFun = function (opacity, overlay) {
                     if (overlay.boundaryMesh) {
                         overlay.boundaryMesh.faces.material.opacity = opacity;
+                    }
+                    if (overlay.textureSeamMesh) {
+                        overlay.textureSeamMesh.faces.material.opacity = opacity;
                     }
                     if (overlay.nonManifVertMesh) {
                         overlay.nonManifVertMesh.faces.material.opacity = opacity;
@@ -427,11 +446,15 @@
             const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
             const NUM_BYTES_PER_EDGES = 2 * NUM_BYTES_PER_VERTEX;
             const NUM_BYTES_PER_FACE = 3 * NUM_BYTES_PER_VERTEX;
-
-            if(isTextureSeam)
+            
+            if(isTextureSeam){
                 var startBufferPtr = Module.buildTextureSeamCoordVector(meshFile.ptrMesh());
-            else
+                var color = params.colorTexSeam;
+            }
+            else{
                 var startBufferPtr = Module.buildBoundaryEdgesCoordsVec(meshFile.ptrMesh());
+                var color = params.colorBoundary;
+            }
 
             meshFile.boundaryBufferPtr = startBufferPtr;
 
@@ -460,10 +483,10 @@
             boundaryEdgesGeometry.addAttribute('position', new THREE.BufferAttribute( edgesCoordsVec, 3 ) );
 
             var material = new THREE.LineBasicMaterial();
-            material.color = params.color;
+            material.color = color;
             material.linewidth = params.width;
 
-            var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces);
+            var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces);            
 
             // now create a buffer geometry for the faces
             var boundaryFacesGeometry = new THREE.BufferGeometry();
@@ -472,20 +495,20 @@
             var facesMaterial = new THREE.MeshBasicMaterial();
 
             facesMaterial.transparent = true;
-            facesMaterial.color = params.color;
+            facesMaterial.color = color;
             facesMaterial.opacity = params.faceOpacity;
             facesMaterial.shading = THREE.FlatShading;
-            facesMaterial.side = THREE.DoubleSide;
-
+            facesMaterial.side = THREE.DoubleSide;            
+            
             // now create the mesh
-            var facesMesh = new THREE.Mesh( boundaryFacesGeometry, facesMaterial );
-
             var boundaryMesh = new THREE.Mesh();
-            boundaryMesh.add(edgesMesh);
-            boundaryMesh.add(facesMesh);
-
-            boundaryMesh.edges = edgesMesh;
+            var facesMesh = new THREE.Mesh( boundaryFacesGeometry, facesMaterial);
+            
             boundaryMesh.faces = facesMesh;
+            boundaryMesh.add(facesMesh);  
+            
+            boundaryMesh.edges = edgesMesh;   
+            boundaryMesh.add(edgesMesh);
 
             return boundaryMesh;
         }

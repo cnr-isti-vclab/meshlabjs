@@ -19,11 +19,15 @@
             textureInfos.text("Info: "+meshFile.texture.width +"x" +meshFile.texture.height +"   " +meshFile.texture.components);
             
             var ctx = $("#texGlCanvas")[0].getContext('2d');
-            var canvas = $("#texGlCanvas");
-            var axesSize = 20;
+            var axesSize = 10;
+            var yOffset = 2;
+            var txtSize = 9;
+            var tickSize = 6;
+            var stepSize = 10;
+            var xOffset = 8;
             
-            ctx.canvas.height = meshFile.texture.height+axesSize;
-            ctx.canvas.width = meshFile.texture.width+axesSize; 
+            ctx.canvas.height = meshFile.texture.height+axesSize+txtSize+yOffset+6;
+            ctx.canvas.width = meshFile.texture.width+axesSize+txtSize+tickSize+xOffset; 
             var imageData = ctx.createImageData(meshFile.texture.width, meshFile.texture.height);
             var counter = 0;
             
@@ -43,15 +47,47 @@
             }
             
 
-            ctx.putImageData(imageData, axesSize, 0, 0, 0, meshFile.texture.width, meshFile.texture.height);
+            ctx.putImageData(imageData, axesSize+xOffset+tickSize+6, yOffset, 0, 0, meshFile.texture.width, meshFile.texture.height);
             ctx.beginPath();
-            ctx.font = "5px Arial";
-            ctx.fillText("100",50,50);
-            ctx.fillStyle = "white";
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(0,0);
-            ctx.lineTo(0,meshFile.texture.height+axesSize/2);
-            ctx.lineTo(meshFile.texture.width,meshFile.texture.height+axesSize/2);
+            ctx.font = txtSize+"px Arial";
+            ctx.fillStyle = "blue";
+            
+            ctx.moveTo(axesSize+xOffset,yOffset);
+            var step = meshFile.texture.height/stepSize;
+            for(var i = 0; i <= stepSize; i++){
+                var text = (stepSize-i)/stepSize;
+                if(i > 0)
+                    ctx.fillText(text,0,step*i+txtSize/2+yOffset-1);
+                else
+                    ctx.fillText(text,0,step*i+txtSize/2+yOffset);
+                
+                ctx.lineTo(axesSize+xOffset,step*i+yOffset);
+                ctx.lineTo(axesSize+xOffset+tickSize,step*i+yOffset);
+                ctx.moveTo(axesSize+xOffset,step*i+yOffset);
+            }        
+            
+            
+            ctx.fillText("u",xOffset,meshFile.texture.height+axesSize+yOffset);
+            ctx.fillText("v",axesSize+xOffset,meshFile.texture.height+axesSize+txtSize+yOffset+1);
+            
+            ctx.lineTo(axesSize+xOffset,meshFile.texture.height+axesSize+yOffset)
+            var step = meshFile.texture.width/stepSize;
+            console.log(meshFile.texture.width+" "+step);
+            for(var i = 0; i <= stepSize; i++){
+                var text = i/stepSize;
+                if(i > 0 && i < stepSize){
+                    ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-6,meshFile.texture.height+axesSize+txtSize+yOffset+1);                    
+                } else if(i === stepSize){
+                    ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-4,meshFile.texture.height+axesSize+txtSize+yOffset+1); 
+                } else if(i === 0){
+                    ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-2,meshFile.texture.height+axesSize+txtSize+yOffset+1);   
+                }            
+                
+                ctx.lineTo(step*i+axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset); 
+                ctx.lineTo(step*i+axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset-tickSize);
+                ctx.moveTo(step*i+axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset);
+            }
+            
             ctx.stroke();
             
 //            var canvasOffset=$("#texGlCanvas").offset();
