@@ -21,6 +21,10 @@
         var _$rendPane = $('<div/>').css({
             position: "relative"            
         });
+        
+        var _$texPane = $('<div/>').css({
+            width: "100%"  
+        });
 
         //Accordion for filters pane
         var _filtersAccord = new component.Accordion({
@@ -61,10 +65,17 @@
                     - $('#mlj-search-widget').height());
 
             $("#tab-Rendering").outerHeight(
-                    _$tabbedPane.height() - _$tabsBar.outerHeight());
+                    _$tabbedPane.height() - _$tabsBar.outerHeight());            
 
             _$rendPane.outerHeight($("#tab-Rendering").height()
                     - _renderingTb.$.outerHeight());
+            
+            $("#tab-Texture").outerHeight(
+                    _$tabbedPane.height() - _$tabsBar.outerHeight());
+            
+            _$texPane.outerHeight($("#tab-Texture").height()
+                    - _renderingTb.$.outerHeight());
+            
         }
 
         function init() {
@@ -79,9 +90,13 @@
             var renderingTab = new Tab("Rendering");
             renderingTab
                     .appendContent(_renderingTb.$)
-                    .appendContent(_$rendPane);
+                    .appendContent(_$rendPane);            
+            
+            var textureTab = new Tab("Texture");
+            textureTab
+                    .appendContent(_$texPane);
 
-            _tabs.push(filterTab, renderingTab);
+            _tabs.push(filterTab, renderingTab, textureTab);
 
             _$tabbedPane.on('tabsactivate', function (event, ui) {
                 resize();
@@ -119,6 +134,10 @@
 
         this.getRenderingPane = function () {
             return _$rendPane;
+        };
+        
+        this.getTexturePane = function () {
+            return _$texPane;
         };
 
         this.getRendToolBar = function () {

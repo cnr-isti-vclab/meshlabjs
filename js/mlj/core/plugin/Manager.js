@@ -37,6 +37,7 @@ MLJ.core.plugin.Manager = {
 
     var _filters = new MLJ.util.AssociativeArray();
     var _rendering = new MLJ.util.AssociativeArray();
+    var _texture = new MLJ.util.AssociativeArray();
 
     /**
      * Installs a new plugin in MeshLabJS
@@ -61,6 +62,8 @@ MLJ.core.plugin.Manager = {
                     }
                 } else if (plugin instanceof MLJ.core.plugin.BaseRendering) {
                     _rendering.set(plugin.getName(), plugin);
+                } else if (plugin instanceof MLJ.core.plugin.TexturePanel){
+                    _texture.set(plugin.getName(), plugin);                    
                 }
             } else {
                 console.error("The parameter must be an instance of MLJ.core.Plugin");
@@ -87,6 +90,11 @@ MLJ.core.plugin.Manager = {
         }
 
         ptr = _rendering.iterator();
+        while (ptr.hasNext()) {
+            ptr.next()._main();
+        }
+        
+        ptr = _texture.iterator();
         while (ptr.hasNext()) {
             ptr.next()._main();
         }

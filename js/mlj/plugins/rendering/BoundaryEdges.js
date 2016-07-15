@@ -47,6 +47,29 @@
                 return bindToFun;
             }())
         });
+        
+        guiBuilder.Choice({
+            label: "Show Texture Boundary",
+            tooltip: "",
+            options: [
+                {content: "Off", value: 0, selected: true },
+                {content: "On", value: 1}
+            ],
+            bindTo: (function() {
+                var bindToFun = function(choice, overlay) {
+
+//                    if (overlay.texBoundary) {
+//                        if (choice === 1) {
+//                            overlay.add(overlay.texBoundary);
+//                        } else {
+//                            overlay.remove(overlay.texBoundary);
+//                        }
+//                    }
+                };
+                bindToFun.toString = function() { return 'showTexBoundary'; }
+                return bindToFun;
+            }())
+        });
 
         guiBuilder.Color({
             label: "Color Boundary",

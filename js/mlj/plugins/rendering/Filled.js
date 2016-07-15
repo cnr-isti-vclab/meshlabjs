@@ -8,7 +8,7 @@
         emissive: new THREE.Color('#000000'),
         shininess: 15.0,
         lights: true,
-        texBool: false,
+        texBool: true,
         shading: THREE.FlatShading,
         sides : THREE.DoubleSide,
         mljColorMode: MLJ.ColorMode.Uniform
@@ -90,8 +90,8 @@
             label: "Texturing",
             tooltip: "Enable/disable texturing",
             options: [
-                {content: "On" , value: true},
-                {content: "Off", value: false, selected: true}
+                {content: "On" , value: true, selected: true},
+                {content: "Off", value: false}
             ],
             bindTo: "texBool"
         });
@@ -170,46 +170,64 @@
             //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes            
             var mat = new THREE.RawShaderMaterial(parameters);
             mat.uniforms.texture = {type: 't', value: null}; //Just for testing
+            
+            var textureName = meshFile.cppMesh.getTextureName();
                 
             //If the mesh has a texture and this texture is present in the Emscripten file system root
             //x is returned when no texture is bounded to the mesh
 //              console.log("Reading FS's root content " + FS.readdir("/"));
 //              console.log("Reading layer folder's content " + FS.readdir("/"+meshFile.name));
-            if(meshFile.cppMesh.getTextureName() !== "x" && FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName()) > -1){
+            if(textureName !== "x" && FS.readdir("/").indexOf(textureName) > -1){
               console.log("Loading texture " +meshFile.cppMesh.getTextureName());
 //              console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
           
                 //Dynamic Texture loading from the emscripten file system
                 var textureInfoPtr = meshFile.cppMesh.getTextureImage(); //This function loads the texture and give as a result an array with width, height, number of components, pointer to the image array
-                var imgBuff= new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
-                var width = imgBuff[0];
-                var height = imgBuff[1];
-                var components = imgBuff[2];
-                var imgPtr = imgBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
+                var textureInfoBuff= new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
+                var texWidth = textureInfoBuff[0];
+                var texHeight = textureInfoBuff[1];
+                var texComponents = textureInfoBuff[2];
+                var texComponentsTitle;
+                var texImgPtr = textureInfoBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
                 
                 //Let's recreate the array as an Uint8Array, every pixel will be encoded with a number of attribute equal to the number of components
                 //Hence, the image array full size will be numOfPixels*components, which will be width*height*components
                 //The array will be then ready for creating the DataTexture
-                var imgBuff= new Uint8Array(Module.HEAPU8.buffer, imgPtr, width*height*components);
+                var imgBuff= new Uint8Array(Module.HEAPU8.buffer, texImgPtr, texWidth*texHeight*texComponents);
 
                 //the most common format is the RGB format, but just in case the format is different it will be changed accordingly
                 var format = THREE.RGBFormat;
-                if(components === 1)
+                if(texComponents === 1){
                      format = THREE.LuminanceFormat; //From the stbi lib: 1 = grey
-                else if(components === 2)
+                     texComponentsTitle = "Grey";
+                } else if(texComponents === 2){
                      format = THREE.LuminanceAlphaFormat; //From the stbi lib: 2 = grey, alpha
-                else if(components === 3)
+                     texComponentsTitle = "Grey, Alpha";
+                } else if(texComponents === 3){
                      format = THREE.RGBFormat; //From the stbi lib: 3 = red, green, blue (RGB)
-                else if(components === 4)
+                     texComponentsTitle = "RGB";
+                } else if(texComponents === 4){
                      format = THREE.RGBAFormat; //From the stbi lib: 4 = red, green, blue, alpha (RGBA)
-
-                var meshTexture = new THREE.DataTexture(imgBuff, width, height, format);
-                meshTexture.needsUpdate = true; //We need to update the texture
-                meshTexture.minFilter = THREE.LinearFilter; //Needed when texture is not a power of 2    
+                     texComponentsTitle = "RGBA";
+                }
                 
-                mat.uniforms.texture.value = meshTexture;
+                meshFile.texture.hasTexture = true;
+                meshFile.texture.data = new THREE.DataTexture(imgBuff, texWidth, texHeight, format);
+                meshFile.texture.data.needsUpdate = true; //We need to update the texture
+                
+                //Needed when texture is not a power of 2
+                //WebGl threw a warning about the
+                meshFile.texture.data.minFilter = THREE.LinearFilter;  
+                meshFile.texture.height = texHeight;
+                meshFile.texture.width = texWidth;
+                meshFile.texture.components = texComponentsTitle;
+                meshFile.texture.nComponents = texComponents;
+                meshFile.texture.fileName = textureName;
+                meshFile.texture.imgBuff = imgBuff;
+                                
+                mat.uniforms.texture.value = meshFile.texture.data;
                 mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
-               
+
                 var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
                 scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }

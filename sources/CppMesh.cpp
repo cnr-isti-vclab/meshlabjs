@@ -4,9 +4,9 @@
 #include <wrap/io_trimesh/export.h>
 #include <vcg/complex/complex.h>
 #include <vcg/complex/algorithms/attribute_seam.h>
-#include "miniz/miniz.c"
+#include "external/miniz.c"
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.c"
+#include "external/stb_image.c"
 
 using namespace vcg;
 using namespace std;
@@ -208,17 +208,6 @@ class CppMesh
   {
     float *n;
     int k = 0;
-
-    if (hasPerVertexNormal()) {
-          tri::Allocator<MyMesh>::CompactVertexVector(m);
-          n = new float[m.VN()*3];
-          for (MyMesh::VertexIterator vi = m.vert.begin(); vi != m.vert.end(); ++vi) {
-            n[k++] = vi->cN()[0];
-            n[k++] = vi->cN()[1];
-            n[k++] = vi->cN()[2];
-          }
-          return (uintptr_t) n;
-    }
 
     tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
     tri::UpdateNormal<MyMesh>::PerVertexFromCurrentFaceNormal(m);

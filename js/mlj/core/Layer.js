@@ -50,6 +50,17 @@ MLJ.core.Layer = function (name, cppMesh) {
     this.overlays = new MLJ.util.AssociativeArray();
     //contains overlaying mesh parameters
     this.overlaysParams = new MLJ.util.AssociativeArray();
+    
+    this.texture = {
+        hasTexture: false,
+        fileName: "",
+        height: -1,
+        width: -1,
+        nComponents: -1,
+        components: "",
+        data: null,
+        imgBuff: null
+    };
 
     var _this = this;
 
