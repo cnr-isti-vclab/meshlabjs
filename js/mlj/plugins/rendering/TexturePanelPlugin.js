@@ -46,8 +46,9 @@
             ctx.putImageData(imageData, axesSize, 0, 0, 0, meshFile.texture.width, meshFile.texture.height);
             ctx.beginPath();
             ctx.font = "5px Arial";
-            ctx.fillText("100",0,0);
-            ctx.lineWidth =0.5;
+            ctx.fillText("100",50,50);
+            ctx.fillStyle = "white";
+            ctx.lineWidth = 0.5;
             ctx.moveTo(0,0);
             ctx.lineTo(0,meshFile.texture.height+axesSize/2);
             ctx.lineTo(meshFile.texture.width,meshFile.texture.height+axesSize/2);

@@ -49,7 +49,7 @@
         });
         
         guiBuilder.Choice({
-            label: "Show Texture Boundary",
+            label: "Show Texture Seams",
             tooltip: "",
             options: [
                 {content: "Off", value: 0, selected: true },
@@ -58,15 +58,15 @@
             bindTo: (function() {
                 var bindToFun = function(choice, overlay) {
 
-//                    if (overlay.texBoundary) {
-//                        if (choice === 1) {
-//                            overlay.add(overlay.texBoundary);
-//                        } else {
-//                            overlay.remove(overlay.texBoundary);
-//                        }
-//                    }
+                    if (overlay.textureSeamMesh) {
+                        if (choice === 1) {
+                            overlay.add(overlay.textureSeamMesh);
+                        } else {
+                            overlay.remove(overlay.textureSeamMesh);
+                        }
+                    }
                 };
-                bindToFun.toString = function() { return 'showTexBoundary'; }
+                bindToFun.toString = function() { return 'showTexSeam'; }
                 return bindToFun;
             }())
         });
@@ -235,13 +235,23 @@
 
         var overlayMesh = new THREE.Mesh();
 
-        var boundaryMesh = createBoundaryMesh();
+        var boundaryMesh = createBoundaryMesh(false);
+        var textureSeamMesh = createBoundaryMesh(true);
+        
+//        var textureSeamMesh = createBoundaryMesh(true);
 
         if (boundaryMesh) {
             if (params.showBoundary === 1) {
                 overlayMesh.add(boundaryMesh);
             }
             overlayMesh.boundaryMesh = boundaryMesh;
+        }
+        
+        if(textureSeamMesh) {
+            if (params.showTexSeam === 1) {
+                overlayMesh.add(textureSeamMesh);
+            }
+            overlayMesh.textureSeamMesh = textureSeamMesh;
         }
 
         var nonManifVertMesh = createNonManifVertMesh();
@@ -411,14 +421,17 @@
         }
 
 
-        function createBoundaryMesh() {
+        function createBoundaryMesh(isTextureSeam) {
 
             const SIZEOF_FLOAT = 4;
             const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
             const NUM_BYTES_PER_EDGES = 2 * NUM_BYTES_PER_VERTEX;
             const NUM_BYTES_PER_FACE = 3 * NUM_BYTES_PER_VERTEX;
 
-            var startBufferPtr = Module.buildBoundaryEdgesCoordsVec(meshFile.ptrMesh());
+            if(isTextureSeam)
+                var startBufferPtr = Module.buildTextureSeamCoordVector(meshFile.ptrMesh());
+            else
+                var startBufferPtr = Module.buildBoundaryEdgesCoordsVec(meshFile.ptrMesh());
 
             meshFile.boundaryBufferPtr = startBufferPtr;
 

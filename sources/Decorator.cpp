@@ -659,6 +659,7 @@ EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
     emscripten::function("buildSelectedFacesCoordsVec", &buildSelectedFacesCoordsVec);
     emscripten::function("buildSelectedPointsCoordsVec", &buildSelectedPointsCoordsVec);
     emscripten::function("buildBoundaryEdgesCoordsVec", &buildBoundaryEdgesCoordsVec);
+    emscripten::function("buildTextureSeamCoordVector", &buildTextureSeamCoordVector);
     emscripten::function("buildNonManifoldVertexCoordsVec", &buildNonManifoldVertexCoordsVec);
     emscripten::function("buildNonManifoldEdgeCoordsVec", &buildNonManifoldEdgeCoordsVec);
     emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
