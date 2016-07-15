@@ -321,9 +321,9 @@ inline uintptr_t getWedgeTextureCoordinates()
        return (uintptr_t) imageInfo;
   }
   
-  inlint uintptr_t getTextParamUV()
+  inline uintptr_t getTextParamUV()
   {
-      printf("%d", m.cm.face.size());
+//      printf("%d", m.cm.face.size());
 //      for(size_t i=0;i<m.cm.face.size();++i)
 //        if(!m.cm.face[i].IsD())
 //        {
