@@ -417,6 +417,119 @@ uintptr_t buildBoundaryEdgesCoordsVec(uintptr_t _mIn) {
 	return (uintptr_t)((void *)startBuffer);
 }
 
+//uintptr_t buildTextureSeamCoordVector(uintptr_t _mIn) {
+//
+//	MyMesh &mIn = *((MyMesh*) _mIn);
+//        
+//        for(fi = m.cm.face.begin(); fi!= m.cm.face.end();++fi) if(!(*fi).IsD())
+//        {
+//            for(int i=0;i<3;++i)
+//                SaveTopoVec.push_back(std::make_pair((*fi).FFp(i),(*fi).FFi(i)));
+//        }
+//        
+//        tri::UpdateTopology<CMeshO>::FaceFaceFromTexCoord(m.cm);
+//        
+//        for(fi = m.cm.face.begin(); fi!= m.cm.face.end();++fi) if(!(*fi).IsD())
+//        {
+//          for(int i=0;i<3;++i)
+//            if(face::IsBorder(*fi,i))
+//            {
+//              BTVp->push_back((*fi).V0(i)->P());
+//              BTVp->push_back((*fi).V1(i)->P());
+//            }
+//        }
+//        vector<std::pair<CMeshO::FacePointer,int> >::iterator iii;
+//        for(fi = m.cm.face.begin(), iii=SaveTopoVec.begin(); fi!= m.cm.face.end();++fi) if(!(*fi).IsD())
+//        {
+//            for(int i=0;i<3;++i)
+//            {
+//                (*fi).FFp(i)= iii->first;
+//                (*fi).FFi(i)= iii->second;
+//            }
+//        }
+//
+//	tri::UpdateFlags<MyMesh>::FaceBorderFromNone(mIn);
+//
+//	size_t numBoundaryEdges = 0;
+//	size_t numAdjacentFaces = 0;
+//
+//	for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+//
+//		bool isB=false;
+//
+//		for(int i=0;i<3;++i) {
+//			if(fi->IsB(i))
+//			{
+//				isB = true;
+//				++numBoundaryEdges;
+//			}
+//		}
+//
+//		if(isB)
+//		{
+//			++numAdjacentFaces;
+//        }
+//
+//	}
+//
+//	size_t totalSizeInBytes = sizeof(float) * (2 + (numBoundaryEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX) +
+//							  (numAdjacentFaces * NUM_VERTICES_PER_FACE * NUM_FLOATS_PER_VERTEX));
+//
+//	float *startBuffer = (float *)malloc(totalSizeInBytes);
+//
+//	*startBuffer = (float)(numBoundaryEdges); 	// write number of boundary edges
+//	*(startBuffer + 1) = (float)(numAdjacentFaces);	// write number of adjacent faces
+//
+//	float *coordsEdgesVecPtr = startBuffer + 2;
+//	float *coordsFacesVecPtr = coordsEdgesVecPtr + (numBoundaryEdges * NUM_VERTICES_PER_EDGE * NUM_FLOATS_PER_VERTEX);
+//
+//	for(MyMesh::FaceIterator fi=mIn.face.begin(); fi!=mIn.face.end(); ++fi) {
+//
+//    		bool isB=false;
+//
+//    		for(int i=0;i<3;++i) {
+//    			if(fi->IsB(i))
+//    			{
+//    				isB = true;
+//
+//    				Point3f p0 = fi->V0(i)->P();
+//    				Point3f p1 = fi->V1(i)->P();
+//
+//    				*coordsEdgesVecPtr++ = p0[0];
+//    				*coordsEdgesVecPtr++ = p0[1];
+//    				*coordsEdgesVecPtr++ = p0[2];
+//
+//    				*coordsEdgesVecPtr++ = p1[0];
+//                    *coordsEdgesVecPtr++ = p1[1];
+//                    *coordsEdgesVecPtr++ = p1[2];
+//    			}
+//    		}
+//
+//    		if(isB)
+//    		{
+//    			Point3f p0 = fi->V(0)->P();
+//                Point3f p1 = fi->V(1)->P();
+//                Point3f p2 = fi->V(2)->P();
+//
+//    			*coordsFacesVecPtr++ = p0[0];
+//                *coordsFacesVecPtr++ = p0[1];
+//                *coordsFacesVecPtr++ = p0[2];
+//
+//                *coordsFacesVecPtr++ = p1[0];
+//                *coordsFacesVecPtr++ = p1[1];
+//                *coordsFacesVecPtr++ = p1[2];
+//
+//                *coordsFacesVecPtr++ = p2[0];
+//                *coordsFacesVecPtr++ = p2[1];
+//                *coordsFacesVecPtr++ = p2[2];
+//            }
+//
+//    }
+//
+//
+//	return (uintptr_t)((void *)startBuffer);
+//}
+
 /* buildFaceNormalsVec 
  * 
  * builds the three buffers needed for face normal rendering

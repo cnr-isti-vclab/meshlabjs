@@ -320,6 +320,22 @@ inline uintptr_t getWedgeTextureCoordinates()
        
        return (uintptr_t) imageInfo;
   }
+  
+  inlint uintptr_t getTextParamUV()
+  {
+      printf("%d", m.cm.face.size());
+//      for(size_t i=0;i<m.cm.face.size();++i)
+//        if(!m.cm.face[i].IsD())
+//        {
+////          if(faceColor) glColor(m.cm.face[i].C());
+////          glTexCoord(m.cm.face[i].WT(0).P());
+////          glVertex(m.cm.face[i].WT(0).P());
+////          glTexCoord(m.cm.face[i].WT(1).P());
+////          glVertex(m.cm.face[i].WT(1).P());
+////          glTexCoord(m.cm.face[i].WT(2).P());
+////          glVertex(m.cm.face[i].WT(2).P());
+//        }
+  }
 };
 
 #ifdef __EMSCRIPTEN__
