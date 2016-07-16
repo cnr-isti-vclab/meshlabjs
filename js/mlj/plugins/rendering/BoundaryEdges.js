@@ -58,7 +58,6 @@
             ],
             bindTo: (function() {
                 var bindToFun = function(choice, overlay) {
-
                     if (overlay.textureSeamMesh) {
                         if (choice === 1) {
                             overlay.add(overlay.textureSeamMesh);
@@ -80,6 +79,7 @@
                 var bindToFun = function (color, overlay) {
                     if (overlay.textureSeamMesh) {
                         overlay.textureSeamMesh.edges.material.color = color;
+                        overlay.textureSeamMesh.faces.material.color = color;
                     }
                 };
                 bindToFun.toString = function () { return 'colorTexSeam'; };
@@ -244,6 +244,7 @@
 
         if (on === false) {
             Module._free(meshFile.boundaryBufferPtr);
+            Module._free(meshFile.texSeamBufferPtr);
             Module._free(meshFile.nonManifVertBufferPtr);
             Module._free(meshFile.nonManifEdgeBufferPtr);
             scene.removeOverlayLayer(meshFile, plug.getName());
@@ -256,8 +257,6 @@
 
         var boundaryMesh = createBoundaryMesh(false);
         var textureSeamMesh = createBoundaryMesh(true);
-        
-//        var textureSeamMesh = createBoundaryMesh(true);
 
         if (boundaryMesh) {
             if (params.showBoundary === 1) {
@@ -449,14 +448,14 @@
             
             if(isTextureSeam){
                 var startBufferPtr = Module.buildTextureSeamCoordVector(meshFile.ptrMesh());
+                meshFile.texSeamBufferPtr = startBufferPtr;
                 var color = params.colorTexSeam;
             }
             else{
                 var startBufferPtr = Module.buildBoundaryEdgesCoordsVec(meshFile.ptrMesh());
+                meshFile.boundaryBufferPtr = startBufferPtr;
                 var color = params.colorBoundary;
             }
-
-            meshFile.boundaryBufferPtr = startBufferPtr;
 
             // read first float as the effective number of boundary edges
             var numBoundaryEdges = Module.getValue(startBufferPtr, 'float');
@@ -484,9 +483,12 @@
 
             var material = new THREE.LineBasicMaterial();
             material.color = color;
-            material.linewidth = params.width;
+            material.linewidth = params.width;            
+            material.polygonOffset = true;
+            material.polygonOffsetFactor = -1.0;
+            material.polygonOffsetUnits = -4.0;
 
-            var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces);            
+            var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces); 
 
             // now create a buffer geometry for the faces
             var boundaryFacesGeometry = new THREE.BufferGeometry();
@@ -498,7 +500,12 @@
             facesMaterial.color = color;
             facesMaterial.opacity = params.faceOpacity;
             facesMaterial.shading = THREE.FlatShading;
-            facesMaterial.side = THREE.DoubleSide;            
+            facesMaterial.side = THREE.DoubleSide;   
+            
+            //Avoid z-fighting
+            facesMaterial.polygonOffset = true;
+            facesMaterial.polygonOffsetFactor = -1.0;
+            facesMaterial.polygonOffsetUnits = -4.0;
             
             // now create the mesh
             var boundaryMesh = new THREE.Mesh();

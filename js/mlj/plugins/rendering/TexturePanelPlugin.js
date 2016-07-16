@@ -72,7 +72,6 @@
             
             ctx.lineTo(axesSize+xOffset,meshFile.texture.height+axesSize+yOffset)
             var step = meshFile.texture.width/stepSize;
-            console.log(meshFile.texture.width+" "+step);
             for(var i = 0; i <= stepSize; i++){
                 var text = i/stepSize;
                 if(i > 0 && i < stepSize){

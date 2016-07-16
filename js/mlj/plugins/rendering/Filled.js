@@ -228,15 +228,14 @@
                 mat.uniforms.texture.value = meshFile.texture.data;
                 mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
 
-                var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-                scene.addOverlayLayer(meshFile, plug.getName(), filled); 
             }
             else {
               console.log("No Texture found or attached");
               mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
-              var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-              scene.addOverlayLayer(meshFile, plug.getName(), filled);
-            }
+            }            
+            
+            var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+            scene.addOverlayLayer(meshFile, plug.getName(), filled); 
 
             // build the new mesh
             // add it as an overlay to the layer       
