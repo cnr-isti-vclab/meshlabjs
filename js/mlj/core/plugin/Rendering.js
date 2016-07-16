@@ -46,6 +46,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 //show the options pane
                 _this._showOptionsPane();                
             }
+            else 
+                _this._hideOptionsPane();
             
             //Apply rendering pass to all mesh
             if (event.ctrlKey === true) {                
