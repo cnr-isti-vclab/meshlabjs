@@ -49,7 +49,9 @@ MLJ.core.plugin.BaseRendering = function (parameters, renderingClass) {
     if (_btn instanceof MLJ.gui.component.CustomToggleButton) {
         group.addItem(_btn);
         _btn.onArrowClicked(function () {
-            _this._showOptionsPane();            
+             //Can modify rendering options ONLY when the rendering plugin is enabled, otherwise most of the objects will be undefined
+            if(_btn.isOn())
+                _this._showOptionsPane();            
         });
     }
 
@@ -64,6 +66,7 @@ MLJ.core.plugin.BaseRendering = function (parameters, renderingClass) {
             _btn.setArrowSelected(true);
         }
 
+        //let's disable every other arrow, so just one will be enabled
         for (var groupName in MLJ.gui.group) {
             var items = MLJ.gui.group[groupName].getItems();
             for (var i = 0; i < items.length; ++i) {
@@ -80,6 +83,26 @@ MLJ.core.plugin.BaseRendering = function (parameters, renderingClass) {
                 $(val).fadeOut();                
             }
         });
+    }
+    
+    /**
+     * This method hide the panel related to the rendering plugin
+     * Since we're hiding a panel, no panel is selected, hence, every arrow must be unselected.
+     * 
+     * Besides, we want to disable only this plugin
+     * 
+     * @returns {undefined}
+     */
+    this._hideOptionsPane = function () {        
+        _btn.setArrowSelected(false); //Disables the arrow of the plugin which is not enabled in the other layer
+        
+        //And here we hide the plugin
+        renderingPane.children().each(function (key, val) {
+            if ($(val).attr("id") === UID) {
+                $(val).fadeOut();      
+            }
+        });
+
     }
 
     /**

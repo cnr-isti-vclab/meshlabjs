@@ -1,13 +1,38 @@
 (function (plugin, core, scene) {
     
+    var DEFAULTS = {
+        uvParam: false
+    };
+    
     var plug = new plugin.TexturePanel({
-    });
+        name: "TexturePanel",
+        tooltip: "Show the texture image and parametrization attached to the mesh",
+        toggle: true,
+        on: true}, DEFAULTS);
+    
+    var parametrizationWidget;
     
     plug._init = function(guiBuilder){   
-        texturePane = MLJ.widget.TabbedPane.getTexturePane();
-        texturePane.append('<label for="textureName"></label> ');
-        texturePane.append('<label for="textureInfos"> </label> ');
-        texturePane.append('<div id="texCanvasWrapper" > <canvas id="texGlCanvas"> </canvas></div>');
+        
+        parametrizationWidget = guiBuilder.Choice({
+            label: "UV Parametrization",
+            tooltip: "",
+            options: [
+                {content: "Off", value: false, selected: true},
+                {content: "On", value: true}
+            ],
+            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+                var bindToFun = function (choice, overlay) {
+                    console.log(choice);
+                    console.log(overlay);
+                    overlay.material.side = sideValue;  // material update
+                };
+                bindToFun.toString = function () {console.log("YOLO"); return 'uvParam'; }; // name of the parameter used to keep track of the associated value
+                return bindToFun;
+            }())
+        });
+        
+        
     };
 
     plug._applyTo = function (meshFile, layersNum, $) {
@@ -44,10 +69,13 @@
                     imageData.data[i + 3 + counter] = 255;
                     counter++;
                 }
-            }
-            
+            }            
 
             ctx.putImageData(imageData, axesSize+xOffset+tickSize+6, yOffset, 0, 0, meshFile.texture.width, meshFile.texture.height);
+            
+            /**
+             * AXES drawing
+             */
             ctx.beginPath();
             ctx.font = txtSize+"px Arial";
             ctx.fillStyle = "blue";
@@ -92,6 +120,9 @@
             }
             
             ctx.stroke();
+            /**
+             * END of axes drawing
+             */
             
 //            var canvasOffset=$("#texGlCanvas").offset();
 //            var offsetX=512;
@@ -148,7 +179,7 @@
             ctx.canvas.width = 0; 
         }
         else {
-            texNameLabel.text("");
+            texNameLabel.text("No Layer Selected");
             textureInfos.text("");        
             var ctx = $("#texGlCanvas")[0].getContext('2d');
             ctx.canvas.height = 0;

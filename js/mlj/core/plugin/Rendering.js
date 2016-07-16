@@ -119,6 +119,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         update();
                     } else {
                         btn.toggle("off");
+                        _this._hideOptionsPane();
                         if (btn.isArrowSelected()) update();
                     }
                     
@@ -133,7 +134,6 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                             reapply(isOn,layer);                            
                         }
                     }
-
                 });
 
         $(document).on("SceneLayerUpdated", function (event, layer) {
@@ -163,18 +163,29 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             function (event, meshFile, layersNumber) {
                 _this._applyTo(meshFile, true);
                 update();
+                
+                if (parameters.toggle === true) {
+                    var val = meshFile.properties.getByKey(parameters.name);
+                    if (val === true) {
+                        btn.toggle("on");
+                    } else { //if the parameter is not enabled for the layer, hide its options
+                        btn.toggle("off");
+                        _this._hideOptionsPane();
+                    }
+                }
             });            
     }
 
     $(document).on("SceneLayerSelected", function (event, layer) {
-        update();
-
+        update();            
+        
         if (parameters.toggle === true) {
             var val = layer.properties.getByKey(parameters.name);
             if (val === true) {
                 btn.toggle("on");
-            } else {
+            } else { //if the parameter is not enabled for the layer, hide its options
                 btn.toggle("off");
+                _this._hideOptionsPane();
             }
         }
     });
