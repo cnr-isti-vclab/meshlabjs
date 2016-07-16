@@ -101,7 +101,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
             if (layer.properties.getByKey(parameters.name) === true) {
                 layer.properties.set(parameters.name, false);
-                _this._applyTo(layer, false); // Remove the pass
+                _this._applyTo(layer, false); // Remove the pass                
+                _this._hideOptionsPane();
             }
         });
         

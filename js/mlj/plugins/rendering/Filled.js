@@ -231,6 +231,11 @@
             }
             else {
               console.log("No Texture found or attached");
+              //Dummy texture to avoid binding on the shader
+              meshFile.texture.data = new THREE.DataTexture(new Uint8Array(1*1*3), 1, 1, THREE.RGBFormat);
+              meshFile.texture.data.needsUpdate = true; //We need to update the texture
+              meshFile.texture.hasTexture = false;
+              mat.uniforms.texture.value = meshFile.texture.data;
               mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
             }            
             

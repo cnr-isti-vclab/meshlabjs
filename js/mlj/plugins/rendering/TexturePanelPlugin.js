@@ -25,9 +25,8 @@
                 var bindToFun = function (choice, overlay) {
                     console.log(choice);
                     console.log(overlay);
-                    overlay.material.side = sideValue;  // material update
                 };
-                bindToFun.toString = function () {console.log("YOLO"); return 'uvParam'; }; // name of the parameter used to keep track of the associated value
+                bindToFun.toString = function () {return 'uvParam'; }; // name of the parameter used to keep track of the associated value
                 return bindToFun;
             }())
         });

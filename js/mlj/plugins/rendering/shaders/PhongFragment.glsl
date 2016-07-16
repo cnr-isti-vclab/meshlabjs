@@ -123,10 +123,12 @@ void main() {
         gl_FragColor = diffuseColor;
     } else {
         if(texBool == 1){
-            if(enableTexture == 1)
-                gl_FragColor = texture2D(texture, vUv) * diffuseColor;
-            else
+            if(enableTexture == 1){
+                vec4 totalSpecularLightComponent = vec4(totalSpecularLight, 1);
+                gl_FragColor = texture2D(texture, vUv) * diffuseColor + totalSpecularLightComponent;
+            } else {
                 gl_FragColor = vec4( outgoingLight, diffuseColor.a);
+            }
         } else{
              gl_FragColor = vec4( outgoingLight, diffuseColor.a);
         }            
