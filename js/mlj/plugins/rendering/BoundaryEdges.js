@@ -485,8 +485,8 @@
             material.color = color;
             material.linewidth = params.width;            
             material.polygonOffset = true;
-            material.polygonOffsetFactor = -3.0;
-            material.polygonOffsetUnits = -6.0;
+            material.polygonOffsetFactor = -10.0;
+            material.polygonOffsetUnits = -15.0;
 
             var edgesMesh = new THREE.Line( boundaryEdgesGeometry, material, THREE.LinePieces); 
 

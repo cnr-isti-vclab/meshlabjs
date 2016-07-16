@@ -302,6 +302,22 @@ inline uintptr_t getWedgeTextureCoordinates()
     return (uintptr_t) c;
   }
   
+
+inline uintptr_t getUvParamCoordinates()
+  {    
+   float *c = new float[m.FN()*9];
+    int k = 0;
+    int numParamFaces = 0;
+    for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
+            numParamFaces++;
+            for (int j = 0; j < 3; ++j) {
+              c[k++] = fi->WT(j).u();
+              c[k++] = fi->WT(j).v();
+              c[k++] = 0;
+            }
+    }
+    return (uintptr_t) c;
+  }
   
   inline std::string getTextureName()
   {
@@ -355,6 +371,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getVertexColors",       &CppMesh::getVertexColors)
     .function("getFaceColors",         &CppMesh::getFaceColors)
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
+    .function("getUvParamCoordinates",         &CppMesh::getUvParamCoordinates)
     .function("getTextureName",         &CppMesh::getTextureName)
     .function("getTextureImage",        &CppMesh::getTextureImage)
     ;

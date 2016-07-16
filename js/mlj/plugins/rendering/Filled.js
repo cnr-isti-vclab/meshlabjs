@@ -221,6 +221,7 @@
                 meshFile.texture.height = texHeight;
                 meshFile.texture.width = texWidth;
                 meshFile.texture.components = texComponentsTitle;
+                meshFile.texture.formats = format;
                 meshFile.texture.nComponents = texComponents;
                 meshFile.texture.fileName = textureName;
                 meshFile.texture.imgBuff = imgBuff;
