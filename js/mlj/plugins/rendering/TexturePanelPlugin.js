@@ -258,7 +258,7 @@
                 
                 //generate the mesh and position, scale it to its size and move it to the center
                 paramMesh = new THREE.Mesh( paramMesh, paramMaterial );
-                paramMesh.scale.set(texWidth,texHeight,0);
+                paramMesh.scale.set(texWidth,texHeight,1);
                 paramMesh.position.x = 0;
                 paramMesh.position.y = 0;
                 paramMesh.position.z = 0;
