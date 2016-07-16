@@ -56,10 +56,12 @@
             var step = meshFile.texture.height/stepSize;
             for(var i = 0; i <= stepSize; i++){
                 var text = (stepSize-i)/stepSize;
-                if(i > 0)
+                if(i > 0 && i < stepSize)
                     ctx.fillText(text,0,step*i+txtSize/2+yOffset-1);
+                else if(i === stepSize)
+                    ctx.fillText(text,4,step*i+txtSize/2+yOffset-8);
                 else
-                    ctx.fillText(text,0,step*i+txtSize/2+yOffset);
+                    ctx.fillText(text,0,step*i+txtSize/2+yOffset+3);
                 
                 ctx.lineTo(axesSize+xOffset,step*i+yOffset);
                 ctx.lineTo(axesSize+xOffset+tickSize,step*i+yOffset);
@@ -67,20 +69,22 @@
             }        
             
             
-            ctx.fillText("u",xOffset,meshFile.texture.height+axesSize+yOffset);
-            ctx.fillText("v",axesSize+xOffset,meshFile.texture.height+axesSize+txtSize+yOffset+1);
+            ctx.font = (txtSize+3)+"px Arial";
+            ctx.fillText("u",xOffset,meshFile.texture.height+axesSize+yOffset-1);
+            ctx.fillText("v",axesSize+xOffset,meshFile.texture.height+axesSize+txtSize+yOffset-1);
+            ctx.font = txtSize+"px Arial";
             
-            ctx.lineTo(axesSize+xOffset,meshFile.texture.height+axesSize+yOffset)
+            ctx.moveTo(axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset)
             var step = meshFile.texture.width/stepSize;
             for(var i = 0; i <= stepSize; i++){
                 var text = i/stepSize;
-                if(i > 0 && i < stepSize){
+                if(i > 0 && i < stepSize)
                     ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-6,meshFile.texture.height+axesSize+txtSize+yOffset+1);                    
-                } else if(i === stepSize){
-                    ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-4,meshFile.texture.height+axesSize+txtSize+yOffset+1); 
-                } else if(i === 0){
+                else if(i === stepSize)
+                    ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-6,meshFile.texture.height+axesSize+txtSize+yOffset+1); 
+                else
                     ctx.fillText(text,step*i+axesSize+xOffset+tickSize+6-2,meshFile.texture.height+axesSize+txtSize+yOffset+1);   
-                }            
+                          
                 
                 ctx.lineTo(step*i+axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset); 
                 ctx.lineTo(step*i+axesSize+xOffset+tickSize+6,meshFile.texture.height+axesSize+yOffset-tickSize);
