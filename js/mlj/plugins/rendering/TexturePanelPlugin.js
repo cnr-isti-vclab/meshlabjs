@@ -186,7 +186,7 @@
                 var imgBuff = meshFile.texture.imgBuff;
                 
                 //The camera is ortographic and set at the center of the scene, better than prospectic in this case
-                texCamera = new THREE.OrthographicCamera( texWidth / - 2, texWidth / 2, texHeight / 2, texHeight / - 2, 100, 500 );
+                texCamera = new THREE.OrthographicCamera( texWidth / - 2, texWidth / 2, texHeight / 2, texHeight / - 2, 1, 2000 );
                 texCamera.position.z = 500; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
 
                 texScene = new THREE.Scene();
@@ -195,88 +195,43 @@
                 var paramMaterial = new THREE.MeshBasicMaterial();
                 paramMaterial.wireframe = true;
                 paramMaterial.wireframeLinewidth = 3;
-                paramMaterial.vertexColors = THREE.VertexColors;
+                paramMaterial.color = new THREE.Color('#FFFFFF');
+                paramMaterial.side = THREE.DoubleSide;   
                 
-                var paramMesh = new THREE.Geometry(); 
+                var paramGeom = new THREE.BufferGeometry(); 
                 
                 //Let's get started with uvs, vertices and colors
                 //We're now taking an array structured as [u,v,0] for each vertex of each face, hence the 3*3*FN size
                 var bufferptr = meshFile.cppMesh.getUvParamCoordinates();
-                var uvs = new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN * 9);
+                var facesCoordsVec = new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN * 9);
                 
                 //Once I get the x,y,z values of the texture parametrization mesh
                 //I need to create the faces and for each faces I need to compute its vertices color
                 //from the texture image
-                var j = 0; //Counter for the vertex index in the face
-                for (var i = 0; i < uvs.length; i+=9) {
-                    //create the face vertices
-                    var v1 = new THREE.Vector3(uvs[i],uvs[i+1],uvs[i+2]);
-                    var v2 = new THREE.Vector3(uvs[i+3],uvs[i+4],uvs[i+5]);
-                    var v3 = new THREE.Vector3(uvs[i+6],uvs[i+7],uvs[i+8]);
-                    
-                    //Add them to the geometry vertices array
-                    paramMesh.vertices.push(v1);
-                    paramMesh.vertices.push(v2);
-                    paramMesh.vertices.push(v3);
-
-                    //generate a face with these 3 vertices and add it to the geometry faces vector
-                    var newFace = new THREE.Face3(j, j+1, j+2)      
-                    j += 3; //In this way, at the next iteration the Face will take the next 3 vertices              
-                    
-                    //Lookup the rgb values of the texture and apply the color to each vertex of the face
-                    //before adding the face to the geometry's face vector
-                    //BUG: the values are not correct in fact the parametrization shown has not the correct colors
-                    var tx = parseInt(uvs[i]*texWidth);
-                    var ty = parseInt(uvs[i+1]*texHeight);
-                    var offset = (ty * texWidth + tx) * texComponents;
-                    var r = imgBuff[offset + 0];
-                    var g = imgBuff[offset + 1];
-                    var b = imgBuff[offset + 2]; 
-//                    console.log("Color at: " +tx +" " +ty +", " +offset +" is: " +"rgb("+r +"," +g +"," +b+")");
-                    newFace.vertexColors[0] = new THREE.Color("rgb("+r +"," +g +"," +b+")");
-                    
-                    var tx = parseInt(uvs[i+3]*texWidth);
-                    var ty = parseInt(uvs[i+4]*texHeight);
-                    var offset = (ty * texWidth + tx) * texComponents;
-                    var r = imgBuff[offset + 0];
-                    var g = imgBuff[offset + 1];
-                    var b = imgBuff[offset + 2];                    
-                    newFace.vertexColors[1] = new THREE.Color("rgb("+r +"," +g +"," +b+")");
-                    
-                    var tx = parseInt(uvs[i+6]*texWidth);
-                    var ty = parseInt(uvs[i+7]*texHeight);
-                    var offset = (ty * texWidth + tx) * texComponents;
-                    var r = imgBuff[offset + 0];
-                    var g = imgBuff[offset + 1];
-                    var b = imgBuff[offset + 2];
-                    newFace.vertexColors[2] = new THREE.Color("rgb("+r +"," +g +"," +b+")");                    
-                    
-                    paramMesh.faces.push(newFace); //add the face to the geometry
-                }
+                paramGeom.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
                 
-                paramMesh.center(); //center the mesh in the scene
+                paramGeom.center(); //center the mesh in the scene
                 
                 //generate the mesh and position, scale it to its size and move it to the center
-                paramMesh = new THREE.Mesh( paramMesh, paramMaterial );
+                var paramMesh = new THREE.Mesh( paramGeom, paramMaterial );
                 paramMesh.scale.set(texWidth,texHeight,1);
                 paramMesh.position.x = 0;
                 paramMesh.position.y = 0;
-                paramMesh.position.z = 0;
-                
-                
+                paramMesh.position.z = 0;                
                 /**
                  * Plane with applied texture for testing
                  * In the future may be useful to show or hide this plane in order to show or not the parametrization
                  */
-                var planeGeometry = new THREE.PlaneGeometry(texWidth, texHeight);
+                var planeGeometry = new THREE.PlaneBufferGeometry(texWidth, texHeight);
                 planeGeometry.center();                
                 
                 var planeTexture = new THREE.DataTexture(imgBuff, texWidth, texHeight, texFormats);
                 planeTexture.needsUpdate = true;
                 planeTexture.wrapS = planeTexture.wrapT = THREE.ClampToEdgeWrapping;
+                planeTexture.minFilter = THREE.LinearFilter;
                 var planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});               
             
-                planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+                var planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
                 planeMesh.position.x = 0;
                 planeMesh.position.y = 0;
                 planeMesh.position.z = 0;
@@ -291,7 +246,29 @@
                 texRenderer = new THREE.WebGLRenderer({canvas: container, antialiasing: true});                
                 texRenderer.setPixelRatio( window.devicePixelRatio );
                 texRenderer.setSize(texWidth,texHeight);
-                texRenderer.render( texScene, texCamera );
+                texRenderer.render( texScene, texCamera );                
+                
+                var controls = new THREE.OrthographicTrackballControls ( texCamera );
+                controls.noRoll = true;
+                controls.noRotate = true;
+                controls.zoomSpeed = 0.4; //default is 1.2
+                controls.staticMoving = false;
+                controls.addEventListener( 'change', render );
+                
+                animate();
+                function animate()
+                {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                }
+
+
+                function render()
+                {
+                    texRenderer.render( texScene, texCamera );
+                }
+                
+                
             }
         } else if (layersNum > 0) {
             texNameLabel.text("No texture");
