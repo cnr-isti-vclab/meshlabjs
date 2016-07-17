@@ -7,13 +7,12 @@ MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
     this._main = function(){
         var texturePane = MLJ.widget.TabbedPane.getTexturePane();
         _this._init(guiBuilder);
+        
         pane.appendContent('<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
                                 +'<label for="textureName"></label>'
                                 +'<label for="textureInfos"></label>'
                                 +'</div>');
-        pane.appendContent('<div id="texCanvasWrapper">'
-                            +'<canvas id="texGlCanvas"></canvas>'
-                            +'</div>');
+        pane.appendContent('<div id="texCanvasWrapper"></div>'); //The webgl texture canvas wrapper
         texturePane.append(pane.$);
     };
     
