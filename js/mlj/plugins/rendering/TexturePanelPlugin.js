@@ -108,7 +108,7 @@
             texControls.reset();
             texRenderer.setSize(texWidth, texHeight);
             
-            if(DEFAULTS.uvParam)
+            if(meshFile.overlaysParams.getByKey(plug.getName()).uvParam)
                 texScene.add(paramMesh);
             else
                 texScene.add(planeMesh);

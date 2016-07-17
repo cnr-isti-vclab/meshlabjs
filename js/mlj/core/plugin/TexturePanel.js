@@ -25,21 +25,38 @@ MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
     
     this._setOnParamChange = guiBuilder.setOnParamChange;
     
-    this._setOnParamChange(function (fun, value) {
+    this._setOnParamChange(function (paramProp, value) {
         // update parameter
-//        params[fun] = value;
-        if (jQuery.isFunction(fun)) { //is 'bindTo' property a function?
-            fun(value);
+        var layer = MLJ.core.Scene.getSelectedLayer();
+        var params = layer.overlaysParams.getByKey(_this.getName());
+        // update parameter
+        params[paramProp] = value;
+        if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
+            paramProp(value);
         }        
     });
     
     $(document).on("SceneLayerSelected SceneLayerAdded", function (event, layer) {
-            _this._applyTo(layer, 1, $);
-    });
-    
+        update();
+        _this._applyTo(layer, 1, $);
+    });    
     
     $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
-            _this._applyTo(layer, layersNum, $);      
+        update();
+        _this._applyTo(layer, layersNum, $);      
     });
+    
+    
+    function update() {
+        var selected = MLJ.core.Scene.getSelectedLayer();
+        var params = selected.overlaysParams.getByKey(_this.getName());
+        var paramWidget;
+        for (var pname in params) {
+            paramWidget = _this.getParam(pname);
+            if (paramWidget !== undefined) {
+                paramWidget._changeValue(params[pname]);
+            }
+        }
+    }
 };
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.TexturePanel);
