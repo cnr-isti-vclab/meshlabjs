@@ -39,6 +39,7 @@
         
         canvasInit();        
     };
+    
 
     plug._applyTo = function (meshFile, layersNum, $) {
         var texNameLabel = $("label[for='textureName']");
@@ -56,72 +57,44 @@
             
             texNameLabel.text("Texture file name: " + meshFile.texture.fileName);
             textureInfos.text("Info: " + meshFile.texture.width + "x" + meshFile.texture.height + "   " + meshFile.texture.components);
+            
             var texWidth = meshFile.texture.width;
             var texHeight = meshFile.texture.height;
             var texComponents = meshFile.texture.nComponents;
             var texFormats = meshFile.texture.formats;
             var imgBuff = meshFile.texture.imgBuff;
 
-            //Material used to show the parametrization
-            var paramMaterial = new THREE.MeshBasicMaterial();
-            paramMaterial.wireframe = true;
-            paramMaterial.wireframeLinewidth = 3;
-            paramMaterial.color = new THREE.Color('#FFFFFF');
-            paramMaterial.side = THREE.DoubleSide;
-
-            var paramGeom = new THREE.BufferGeometry();
-
             //Let's get started with uvs, vertices and colors
             //We're now taking an array structured as [u,v,0] for each vertex of each face, hence the 3*3*FN size
             var bufferptr = meshFile.cppMesh.getUvParamCoordinates();
             var facesCoordsVec = new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN * 9);
 
-            //Once I get the x,y,z values of the texture parametrization mesh
-            //I need to create the faces and for each faces I need to compute its vertices color
-            //from the texture image                
-            var indices = new Uint16Array(meshFile.FN * 3);
-            for (var i = 0; i < indices.length; i++)
-                indices[i] = i;
-
-            paramGeom.addAttribute('index', new THREE.BufferAttribute(indices, 3));
+            //Material used to show the parametrization
+            var paramGeom = new THREE.BufferGeometry();
             paramGeom.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
-            paramGeom.center(); //center the mesh in the scene
+            paramGeom.center(); //center the mesh in the scene            
+            var paramMesh = new THREE.WireframeHelper(new THREE.Mesh(paramGeom, new THREE.LineBasicMaterial(), 0x00ff00)); //generate the mesh and position, scale it to its size and move it to the center 
+            paramMesh.position.set = (0,0,0); 
 
-            //generate the mesh and position, scale it to its size and move it to the center
-            var paramMesh = new THREE.Mesh(paramGeom, paramMaterial);
-            paramMesh.scale.set(texWidth, texHeight, 1);
-            paramMesh.position.x = 0;
-            paramMesh.position.y = 0;
-            paramMesh.position.z = 0;
-            
-            
-            
             /**
              * Plane with applied texture for testing
              * In the future may be useful to show or hide this plane in order to show or not the parametrization
-             */0,2
-            var planeGeometry = new THREE.PlaneBufferGeometry(texWidth, texHeight);
+             */
+            var planeGeometry = new THREE.PlaneBufferGeometry(1, 1);
             planeGeometry.center();
-
             var planeTexture = new THREE.DataTexture(imgBuff, texWidth, texHeight, texFormats);
             planeTexture.needsUpdate = true;
             planeTexture.wrapS = planeTexture.wrapT = THREE.ClampToEdgeWrapping;
             planeTexture.minFilter = THREE.LinearFilter;
-            var planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture});
-
-            var planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-            planeMesh.position.x = 0;
-            planeMesh.position.y = 0;
-            planeMesh.position.z = 0;
-            planeMesh.material.side = THREE.DoubleSide;
-            /**
-             * End plane Testing
-             */   
+            var planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({map: planeTexture}));
+            planeMesh.position.set = (0,0,0);
+            planeMesh.position.x = 1;
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
             texCamera.aspect = texWidth/texHeight;
             texControls.reset();
             texRenderer.setSize(texWidth, texHeight);
+            texScene.add(paramMesh);
             texScene.add(planeMesh);
             
         } else if (layersNum > 0) {
@@ -138,8 +111,8 @@
     
      function canvasInit(){
          //The camera is ortographic and set at the center of the scene, better than prospectic in this case
-        texCamera = new THREE.PerspectiveCamera(70, 512/512, 1, 5000);
-        texCamera.position.z = 500; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
+        texCamera = new THREE.PerspectiveCamera(70, 512/512, 1, 10000);
+        texCamera.position.z = 1; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
         texScene = new THREE.Scene();
         
         texControls = new THREE.TrackballControls(texCamera);
@@ -149,9 +122,8 @@
         texControls.noPan = false;
         texControls.minDistance = texCamera.near;
         texControls.maxDistance = texCamera.far;
-        texControls.zoomSpeed = 0.2; //default is 1.2
-        texControls.panSpeed = 1.; //default is 1.2
-        texControls.staticMoving = false;
+        texControls.zoomSpeed = 0.3; //default is 1.2
+        texControls.panSpeed = 3; //default is 1.2
         texControls.addEventListener('change', render);
         
         
