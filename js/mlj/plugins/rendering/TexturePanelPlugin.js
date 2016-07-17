@@ -8,12 +8,12 @@
         uvParam: false
     };
 
-
     var plug = new plugin.TexturePanel({
         name: "TexturePanel",
         tooltip: "Show the texture image and parametrization attached to the mesh",
         toggle: true,
-        on: true}, DEFAULTS);
+        on: true
+    }, DEFAULTS);
 
     var parametrizationWidget;
 
@@ -26,10 +26,19 @@
                 {content: "Off", value: false, selected: true},
                 {content: "On", value: true}
             ],
-            bindTo: (function () {  // here we define also a callback to invoke at every change of this option
-                var bindToFun = function (choice, overlay) {
-                    console.log(choice);
-                    console.log(overlay);
+            bindTo: (function () {  // here we define also a callback to invoke at every change of this option                
+                var bindToFun = function (choice) {
+                    if(choice){
+//                        texScene.remove( texScene.getObjectByName("planeMesh" ));    
+                        texScene.remove(planeMesh);  
+                        texScene.add(paramMesh);
+                    }
+                    else {   
+                        texScene.remove(paramMesh);  
+                        texScene.add(planeMesh);                        
+                    }
+        
+                    texRenderer.render(texScene, texCamera);
                 };
                 bindToFun.toString = function () {
                     return 'uvParam';
@@ -47,8 +56,8 @@
         var textureInfos = $("label[for='textureInfos']");
         
         //Always remove everything from the scene, before adding the new textures
-        $("#texCanvasWrapper").append(texRenderer.domElement);     
-            
+        $("#texCanvasWrapper").append(texRenderer.domElement);   
+        var value = $('input[name="param"]:checked').val();            
         //delete every mesh from the scene
         for( var i = texScene.children.length - 1; i >= 0; i--) {
             texScene.remove(texScene.children[i]);
@@ -75,7 +84,7 @@
             paramGeomBuff.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
             var paramGeom = new THREE.Geometry().fromBufferGeometry(paramGeomBuff);
             paramGeom.center(); //center the mesh in the scene       
-            paramMesh = new THREE.Mesh(paramGeom, new THREE.MeshBasicMaterial({wireframe: true})); //generate the mesh and position, scale it to its size and move it to the center 
+            paramMesh = new THREE.Mesh(paramGeom, new THREE.MeshBasicMaterial({wireframe: true, color: 0xFF0000})); //generate the mesh and position, scale it to its size and move it to the center 
             paramMesh.position.x = paramMesh.position.y = paramMesh.position.z = 0;
             paramMesh.scale.x = paramMesh.scale.y = 70;
 
@@ -98,8 +107,11 @@
             texCamera.position.z = 70;
             texControls.reset();
             texRenderer.setSize(texWidth, texHeight);
-            texScene.add(paramMesh);
-//            texScene.add(planeMesh);
+            
+            if(DEFAULTS.uvParam)
+                texScene.add(paramMesh);
+            else
+                texScene.add(planeMesh);
             
         } else if (layersNum > 0) {
             texNameLabel.text("No texture");
@@ -126,8 +138,8 @@
         texControls.noPan = false;
         texControls.minDistance = texCamera.near;
         texControls.maxDistance = texCamera.far;
-        texControls.zoomSpeed = 0.3; //default is 1.2
-        texControls.panSpeed = 3; //default is 1.2
+        texControls.zoomSpeed = 0.8;
+        texControls.panSpeed = 3;
         texControls.addEventListener('change', render);
         
         
@@ -150,7 +162,8 @@
     function render(){
         texRenderer.render(texScene, texCamera);
     }
-
+    
+    
     plugin.Manager.install(plug);
 
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

@@ -1,7 +1,8 @@
 MLJ.core.plugin = {
     types: {
         FILTER: 0,
-        RENDERING: 1
+        RENDERING: 1,
+        TEXTURE: 2
     }
 };
 
@@ -72,9 +73,19 @@ MLJ.core.plugin.Rendering = function (name, singleArity) {
     };
 };
 
+MLJ.core.plugin.TexturePanel = function (name) {
+    MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.TEXTURING, name);
+    var _this = this;
+
+    this._main = function () {
+        _this._init();
+    };
+};
+
 //Pseudo inheritance
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.TexturePanel);
 
 (function (widget, gui) {
 
