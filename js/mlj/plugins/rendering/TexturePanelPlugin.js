@@ -2,7 +2,8 @@
 
 
     var texCamera, texScene, texRenderer, texControls, canvas;
-
+    var paramMesh, planeMesh;
+    
     var DEFAULTS = {
         uvParam: false
     };
@@ -70,11 +71,13 @@
             var facesCoordsVec = new Float32Array(Module.HEAPU8.buffer, bufferptr, meshFile.FN * 9);
 
             //Material used to show the parametrization
-            var paramGeom = new THREE.BufferGeometry();
-            paramGeom.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
-            paramGeom.center(); //center the mesh in the scene            
-            var paramMesh = new THREE.WireframeHelper(new THREE.Mesh(paramGeom, new THREE.LineBasicMaterial(), 0x00ff00)); //generate the mesh and position, scale it to its size and move it to the center 
-            paramMesh.position.set = (0,0,0); 
+            var paramGeomBuff = new THREE.BufferGeometry();
+            paramGeomBuff.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
+            var paramGeom = new THREE.Geometry().fromBufferGeometry(paramGeomBuff);
+            paramGeom.center(); //center the mesh in the scene       
+            paramMesh = new THREE.Mesh(paramGeom, new THREE.MeshBasicMaterial({wireframe: true})); //generate the mesh and position, scale it to its size and move it to the center 
+            paramMesh.position.x = paramMesh.position.y = paramMesh.position.z = 0;
+            paramMesh.scale.x = paramMesh.scale.y = 70;
 
             /**
              * Plane with applied texture for testing
@@ -86,16 +89,17 @@
             planeTexture.needsUpdate = true;
             planeTexture.wrapS = planeTexture.wrapT = THREE.ClampToEdgeWrapping;
             planeTexture.minFilter = THREE.LinearFilter;
-            var planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({map: planeTexture}));
-            planeMesh.position.set = (0,0,0);
-            planeMesh.position.x = 1;
+            planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({map: planeTexture}));     
+            planeMesh.position.x = planeMesh.position.y = planeMesh.position.z = 0;
+            planeMesh.scale.x = planeMesh.scale.y = 70;
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
             texCamera.aspect = texWidth/texHeight;
+            texCamera.position.z = 70;
             texControls.reset();
             texRenderer.setSize(texWidth, texHeight);
             texScene.add(paramMesh);
-            texScene.add(planeMesh);
+//            texScene.add(planeMesh);
             
         } else if (layersNum > 0) {
             texNameLabel.text("No texture");
@@ -111,8 +115,8 @@
     
      function canvasInit(){
          //The camera is ortographic and set at the center of the scene, better than prospectic in this case
-        texCamera = new THREE.PerspectiveCamera(70, 512/512, 1, 10000);
-        texCamera.position.z = 1; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
+        texCamera = new THREE.PerspectiveCamera(70, 512/512, 1, 5000);
+        texCamera.position.z = 50; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
         texScene = new THREE.Scene();
         
         texControls = new THREE.TrackballControls(texCamera);
