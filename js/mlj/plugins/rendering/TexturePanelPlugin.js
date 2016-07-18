@@ -2,6 +2,7 @@
 
 
     var texCamera, texScene, texRenderer, texControls;
+    var canvasHeight;
     
     var DEFAULTS = {
         uvParam: false
@@ -53,6 +54,7 @@
         widgets.push(parametrizationWidget);
         hideWidgets();
         
+        canvasHeight = 500;
         canvasInit();        
     };
     
@@ -118,11 +120,12 @@
             }  
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
-            texCamera.aspect = texWidth / texHeight;
-            texCamera.position.z = 70;
+            var panelWidth = $("#texCanvasWrapper").parent().parent().parent().width();
+            texCamera.aspect = panelWidth / canvasHeight;
+            texCamera.position.z = 80;
             texCamera.updateProjectionMatrix();
             texControls.reset();
-            texRenderer.setSize(texWidth, texHeight);
+            texRenderer.setSize(panelWidth, canvasHeight);
             
             //In base al parametro UV attualmente selezionato, aggiungo una mesh o l'altra 
             if(meshFile.texture.texPanelParam.uvParam)
@@ -148,7 +151,7 @@
      function canvasInit(){
          //The camera is ortographic and set at the center of the scene, better than prospectic in this case
         texCamera = new THREE.PerspectiveCamera(70, 512/512, 1, 5000);
-        texCamera.position.z = 50; //500 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
+        texCamera.position.z = 80; //80 seems like the perfect value, not sure why, I think it is because of the near/fara frustum
         texScene = new THREE.Scene();
         
         texControls = new THREE.TrackballControls(texCamera);
@@ -181,22 +184,34 @@
         texRenderer.render(texScene, texCamera);
     }
     
-        function hideWidgets(){
-        //call the parent to hide the surrounding div as well
+    $(window).resize(function () {
+        resizeCanvas();
+    });    
+    
+    function resizeCanvas(){
+        if(texRenderer && texCamera && texScene){
+            var panelWidth = $("#texCanvasWrapper").parent().parent().parent().width();
+            texCamera.aspect = panelWidth / canvasHeight;
+            texCamera.updateProjectionMatrix();
+            texRenderer.setSize(panelWidth, canvasHeight);
+            texRenderer.render(texScene, texCamera);
+        }        
+    }
+    
+    function hideWidgets(){
+        //call the parent to hide the div containing both label and button set
         for(var i = 0; i < widgets.length; i++){
-            widgets[i].choice.$.parent().hide();
-            widgets[i].label.$.parent().hide();  
+            widgets[i].choice.$.parent().parent().hide(200);
         }
-        $("#texCanvasWrapper").hide();
+        $("#texCanvasWrapper").hide(200);
     }
     
     function showWidgets(){
-        //call the parent to hide the surrounding div as well
+        //call the parent to show the div containing both label and button set
         for(var i = 0; i < widgets.length; i++){
-            widgets[i].choice.$.parent().show();
-            widgets[i].label.$.parent().show();  
+            widgets[i].choice.$.parent().parent().show(200);
         }
-        $("#texCanvasWrapper").show();
+        $("#texCanvasWrapper").show(200);
     }   
     
     plugin.Manager.install(plug);

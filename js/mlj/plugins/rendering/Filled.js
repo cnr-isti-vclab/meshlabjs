@@ -315,18 +315,16 @@
     
     
     function hideTexWidgets(){
-        //call the parent to hide the surrounding div as well
+        //call the parent to hide the div containing both label and button set
         for(var i = 0; i < texturingChoiceWidgets.length; i++){
-            texturingChoiceWidgets[i].choice.$.parent().hide();
-            texturingChoiceWidgets[i].label.$.parent().hide();  
+            texturingChoiceWidgets[i].choice.$.parent().parent().hide(200);
         }
     }
     
     function showTexWidgets(){
-        //call the parent to hide the surrounding div as well
+        //call the parent to show the div containing both label and button set
         for(var i = 0; i < texturingChoiceWidgets.length; i++){
-            texturingChoiceWidgets[i].choice.$.parent().show();
-            texturingChoiceWidgets[i].label.$.parent().show();  
+            texturingChoiceWidgets[i].choice.$.parent().parent().show(200);
         }
     }
 
