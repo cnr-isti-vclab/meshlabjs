@@ -27,7 +27,8 @@
             ],
             bindTo: (function () {  // here we define also a callback to invoke at every change of this option                
                 var bindToFun = function (choice) {
-                    if(MLJ.core.Scene.getSelectedLayer().name !== null){
+                    //if there is a layer selected and that layer has a texture, let's switch meshes
+                    if(MLJ.core.Scene.getSelectedLayer().name !== null && MLJ.core.Scene.getSelectedLayer().texture.hasTexture ){
                         if(choice){
                             texScene.remove( texScene.getObjectByName("planeMesh" ));    
                             texScene.add(MLJ.core.Scene.getSelectedLayer().texture.paramMesh);
@@ -96,7 +97,8 @@
             //If a layer is added, we need to create the planar mesh with the texture for the first time, so, if it's undefined
             //We'll create it only now in order to avoid useless computation on each layer selections
             if(!meshFile.texture.planeMesh){
-                var planeGeometry = new THREE.PlaneBufferGeometry(1, 1);
+                var ratio = texWidth/texHeight; //The texture may not be squared
+                var planeGeometry = new THREE.PlaneBufferGeometry(ratio, 1);
                 planeGeometry.center();
                 var planeTexture = new THREE.DataTexture(imgBuff, texWidth, texHeight, texFormats);
                 planeTexture.needsUpdate = true;
@@ -110,8 +112,9 @@
             }  
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
-            texCamera.aspect = texWidth/texHeight;
+            texCamera.aspect = texWidth / texHeight;
             texCamera.position.z = 70;
+            texCamera.updateProjectionMatrix();
             texControls.reset();
             texRenderer.setSize(texWidth, texHeight);
             
@@ -127,7 +130,8 @@
         } else {
             texNameLabel.text("No Layer Selected");
             textureInfos.text("");
-        }            
+        }     
+        
         texRenderer.render(texScene, texCamera);   //Always render, if nothing is shown, then no layer is selected     
     };
     
