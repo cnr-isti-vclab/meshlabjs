@@ -190,7 +190,7 @@
         if(texRenderer && texCamera && texScene){
             var panelWidth = $("#mlj-tools-pane").width();
             if(panelWidth > 0)
-                panelWidth -= 48;
+                panelWidth -= 30;
             texCamera.aspect = panelWidth / canvasHeight;
             texCamera.updateProjectionMatrix();
             texRenderer.setSize(panelWidth, canvasHeight);
