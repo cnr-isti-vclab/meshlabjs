@@ -160,7 +160,7 @@
         texControls.noPan = false;
         texControls.minDistance = texCamera.near;
         texControls.maxDistance = texCamera.far;
-        texControls.zoomSpeed = 0.8;
+        texControls.zoomSpeed = 1.2;
         texControls.panSpeed = 3;
         texControls.addEventListener('change', render);        
         

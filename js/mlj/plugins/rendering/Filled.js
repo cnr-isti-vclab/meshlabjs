@@ -9,6 +9,8 @@
         shininess: 15.0,
         lights: true,
         texBool: true,
+        wrapS: THREE.ClampToEdgeWrapping,
+        wrapT: THREE.ClampToEdgeWrapping,
         shading: THREE.FlatShading,
         sides : THREE.DoubleSide,
         mljColorMode: MLJ.ColorMode.Uniform
@@ -29,7 +31,6 @@
                 "texBool": {type: "i", value: DEFAULTS.texBool},
                 "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
             }
-
         ])        
     };
 
@@ -46,9 +47,10 @@
     // and then define _init, _applyTo functions on that object
 
     // here some variables for plugin functions state
-    var texturingWidget, lightingWidget, shadingWidget, shininessWidget,
-            specularColor, emissiveColor;
-
+    var texWidget, lightingWidget, shadingWidget, shininessWidget,
+            specularColor, emissiveColor, texWrapWidgetS, texWrapWidgetT;
+            
+    var texturingChoiceWidgets = [];
     // define its init function
     plug._init = function (guiBuilder) {
 
@@ -86,7 +88,7 @@
             bindTo: "shading" // name of the parameter used to keep track of the associated value. It is linked directly to a uniform when changed
         });
         
-        texturingWidget = guiBuilder.Choice({
+        texWidget = guiBuilder.Choice({
             label: "Texturing",
             tooltip: "Enable/disable texturing",
             options: [
@@ -96,9 +98,48 @@
             bindTo: "texBool"
         });
         
-        //hide the widget at start since no layer is selected (just in case)
-        texturingWidget.choice.$.hide();
-        texturingWidget.label.$.hide();
+        texWrapWidgetS = guiBuilder.Choice({
+            label: "Tex Wrapping S",
+            tooltip: "Enable/disable texturing",
+            options: [
+                {content: "On" , value: THREE.RepeatWrapping},
+                {content: "Off", value: THREE.ClampToEdgeWrapping, selected: true}
+            ],
+            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+                var bindToFun = function (wrapValue, overlay) {
+                    if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
+                        overlay.material.uniforms.texture.value.wrapS = wrapValue;  // material update
+                        overlay.material.uniforms.texture.value.needsUpdate = true;
+                        scene.render();
+                    }
+                };
+                bindToFun.toString = function () { return 'wrapS'; }; // name of the parameter used to keep track of the associated value
+                return bindToFun;
+            }())
+        });
+        
+        texWrapWidgetT = guiBuilder.Choice({
+            label: "Tex wrapping T",
+            tooltip: "Enable/disable texturing",
+            options: [
+                {content: "On" , value: THREE.RepeatWrapping},
+                {content: "Off", value: THREE.ClampToEdgeWrapping, selected: true}
+            ],
+            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+                var bindToFun = function (wrapValue, overlay) {
+                    if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
+                        overlay.material.uniforms.texture.value.wrapT = wrapValue;  // material update
+                        overlay.material.uniforms.texture.value.needsUpdate = true; 
+                        scene.render();
+                    }
+                };
+                bindToFun.toString = function () { return 'wrapT'; }; // name of the parameter used to keep track of the associated value
+                return bindToFun;
+            }())
+        });
+        
+        texturingChoiceWidgets.push(texWidget, texWrapWidgetS, texWrapWidgetT);
+        hideTexWidgets();
 
         lightingWidget = guiBuilder.Choice({
             label: "Lighting",
@@ -164,7 +205,9 @@
                 uniforms: uniforms,
                 attributes: geom.attributes,
                 lights: true,
-                side: params.sides
+                side: params.sides,
+                wrapS: params.wrapS,
+                wrapT: params.wrapT
             };
             
             //The BufferGeometry MUST have an attribute called "uv", used in the PhongFragment and in PhongVertex
@@ -217,6 +260,8 @@
                 
                 meshFile.texture.hasTexture = true;
                 meshFile.texture.data = new THREE.DataTexture(imgBuff, texWidth, texHeight, format);
+                meshFile.texture.data.wrapS = parameters.wrapS; //standard wrapping
+                meshFile.texture.data.wrapT = parameters.wrapT; //wtandard wrapping
                 meshFile.texture.data.needsUpdate = true; //We need to update the texture
                 
                 //Needed when texture is not a power of 2
@@ -233,8 +278,7 @@
                 mat.uniforms.texture.value = meshFile.texture.data;
                 mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
                 
-                texturingWidget.choice.$.show();
-                texturingWidget.label.$.show();
+                showTexWidgets();
             }
             else {
               console.log("No Texture found or attached");
@@ -244,12 +288,12 @@
               meshFile.texture.hasTexture = false;
               mat.uniforms.texture.value = meshFile.texture.data;
               mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
-              texturingWidget.choice.$.hide();
-              texturingWidget.label.$.hide();
+              hideTexWidgets(); 
             }            
             
             var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
-            scene.addOverlayLayer(meshFile, plug.getName(), filled); 
+            scene.addOverlayLayer(meshFile, plug.getName(), filled);
+            scene.render();
 
             // build the new mesh
             // add it as an overlay to the layer       
@@ -262,18 +306,29 @@
         $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
             if(layer.texture){
                 if(layer.texture.hasTexture){                    
-                    texturingWidget.choice.$.show();
-                    texturingWidget.label.$.show();
+                    showTexWidgets();
                 }
                 else{                
-                    texturingWidget.choice.$.hide();
-                    texturingWidget.label.$.hide();                    
+                    hideTexWidgets();                   
                 }                    
             }
         });
-
-
     };
+    
+    
+    function hideTexWidgets(){
+        for(var i = 0; i < texturingChoiceWidgets.length; i++){
+            texturingChoiceWidgets[i].choice.$.hide();
+            texturingChoiceWidgets[i].label.$.hide();  
+        }
+    }
+    
+    function showTexWidgets(){
+        for(var i = 0; i < texturingChoiceWidgets.length; i++){
+            texturingChoiceWidgets[i].choice.$.show();
+            texturingChoiceWidgets[i].label.$.show();  
+        }
+    }
 
     // the plugin has been created, now we install it on the framework
     plugin.Manager.install(plug);
