@@ -62,7 +62,7 @@ MLJ.core.plugin.Manager = {
                     }
                 } else if (plugin instanceof MLJ.core.plugin.BaseRendering) {
                     _rendering.set(plugin.getName(), plugin);
-                } else if (plugin instanceof MLJ.core.plugin.TexturePanel){
+                } else if (plugin instanceof MLJ.core.plugin.Texturing){
                     _texture.set(plugin.getName(), plugin);                    
                 }
             } else {

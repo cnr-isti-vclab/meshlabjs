@@ -1,4 +1,4 @@
-MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
+MLJ.core.plugin.Texturing = function (parameters, defaults) {
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
     var _this = this;      
     MLJ.core.setDefaults(_this.getName(), defaults)
@@ -28,15 +28,26 @@ MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
     this._setOnParamChange(function (paramProp, value) {
         // update parameter
         var layer = MLJ.core.Scene.getSelectedLayer();
-        var params = layer.overlaysParams.getByKey(_this.getName());
+        var params = layer.texture.texPanelParam;
         // update parameter
         params[paramProp] = value;
         if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value);
-        }        
+        }       
     });
     
-    $(document).on("SceneLayerSelected SceneLayerAdded", function (event, layer) {
+    $(document).on("SceneLayerAdded", function (event, layer) {
+        //Let's create the texPanelparam array (cannot directly pass defaults or
+        //js will make a deep copy checking always the pointer of the defaults array
+        layer.texture.texPanelParam = [];
+        for(var name in defaults)
+            layer.texture.texPanelParam[name] = defaults[name];
+        
+        update();            
+        _this._applyTo(layer, 1, $);
+    }); 
+    
+    $(document).on("SceneLayerSelected", function (event, layer) {
         update();
         _this._applyTo(layer, 1, $);
     });    
@@ -49,7 +60,7 @@ MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
     
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
-        var params = selected.overlaysParams.getByKey(_this.getName());
+        var params = selected.texture.texPanelParam;
         var paramWidget;
         for (var pname in params) {
             paramWidget = _this.getParam(pname);
@@ -59,4 +70,4 @@ MLJ.core.plugin.TexturePanel = function (parameters, defaults) {
         }
     }
 };
-MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.TexturePanel);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Texturing);

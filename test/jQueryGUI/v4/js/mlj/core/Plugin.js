@@ -73,7 +73,7 @@ MLJ.core.plugin.Rendering = function (name, singleArity) {
     };
 };
 
-MLJ.core.plugin.TexturePanel = function (name) {
+MLJ.core.plugin.Texturing = function (name) {
     MLJ.core.plugin.Plugin.call(this, MLJ.core.plugin.types.TEXTURING, name);
     var _this = this;
 
@@ -85,7 +85,7 @@ MLJ.core.plugin.TexturePanel = function (name) {
 //Pseudo inheritance
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Filter);
 MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Rendering);
-MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.TexturePanel);
+MLJ.extend(MLJ.core.plugin.Plugin, MLJ.core.plugin.Texturing);
 
 (function (widget, gui) {
 
