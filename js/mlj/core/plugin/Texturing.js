@@ -4,10 +4,10 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
     MLJ.core.setDefaults(_this.getName(), defaults)
     var pane = new MLJ.gui.component.Pane();
     var guiBuilder = new MLJ.core.plugin.GUIBuilder(pane);
-    var UID = MLJ.gui.generateUID();    
+    var UID = MLJ.gui.generateUID();   
+    var texturePane = MLJ.widget.TabbedPane.getTexturePane(); 
     
     this._main = function(){
-        var texturePane = MLJ.widget.TabbedPane.getTexturePane();
         _this._init(guiBuilder);
         
         pane.appendContent('<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
@@ -16,6 +16,7 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
                                 +'</div>');
         pane.appendContent('<div id="texCanvasWrapper"></div>'); //The webgl texture canvas wrapper
         texturePane.append(pane.$);
+        texturePane.hide(); //hide the panel when initializing the plugin
     };
     
     
@@ -45,14 +46,25 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
         
         update();            
         _this._applyTo(layer, 1, $);
+        
+        if(layer.texture.hasTexture)                       
+            texturePane.show();
+        else texturePane.hide();
     }); 
     
     $(document).on("SceneLayerSelected", function (event, layer) {
+        if(layer.texture.hasTexture)                       
+            texturePane.show();
+        else texturePane.hide();
+        
         update();
         _this._applyTo(layer, 1, $);
     });    
     
     $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
+        if(layersNum < 1)            
+            texturePane.hide();
+        
         update();
         _this._applyTo(layer, layersNum, $);      
     });
