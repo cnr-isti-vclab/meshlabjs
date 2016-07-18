@@ -110,7 +110,6 @@
                     if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
                         overlay.material.uniforms.texture.value.wrapS = wrapValue;  // material update
                         overlay.material.uniforms.texture.value.needsUpdate = true;
-                        scene.render();
                     }
                 };
                 bindToFun.toString = function () { return 'wrapS'; }; // name of the parameter used to keep track of the associated value
@@ -130,7 +129,6 @@
                     if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
                         overlay.material.uniforms.texture.value.wrapT = wrapValue;  // material update
                         overlay.material.uniforms.texture.value.needsUpdate = true; 
-                        scene.render();
                     }
                 };
                 bindToFun.toString = function () { return 'wrapT'; }; // name of the parameter used to keep track of the associated value
@@ -317,16 +315,18 @@
     
     
     function hideTexWidgets(){
+        //call the parent to hide the surrounding div as well
         for(var i = 0; i < texturingChoiceWidgets.length; i++){
-            texturingChoiceWidgets[i].choice.$.hide();
-            texturingChoiceWidgets[i].label.$.hide();  
+            texturingChoiceWidgets[i].choice.$.parent().hide();
+            texturingChoiceWidgets[i].label.$.parent().hide();  
         }
     }
     
     function showTexWidgets(){
+        //call the parent to hide the surrounding div as well
         for(var i = 0; i < texturingChoiceWidgets.length; i++){
-            texturingChoiceWidgets[i].choice.$.show();
-            texturingChoiceWidgets[i].label.$.show();  
+            texturingChoiceWidgets[i].choice.$.parent().show();
+            texturingChoiceWidgets[i].label.$.parent().show();  
         }
     }
 

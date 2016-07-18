@@ -15,8 +15,10 @@
     }, DEFAULTS);
 
     var parametrizationWidget;
+    var widgets;
 
     plug._init = function (guiBuilder) {
+        widgets = [];
 
         parametrizationWidget = guiBuilder.Choice({
             label: "UV Parametrization",
@@ -48,8 +50,8 @@
             }())
         });
         
-        parametrizationWidget.choice.$.hide();
-        parametrizationWidget.label.$.hide();
+        widgets.push(parametrizationWidget);
+        hideWidgets();
         
         canvasInit();        
     };
@@ -67,9 +69,7 @@
         }
 
         if (meshFile.texture.hasTexture && layersNum > 0) {
-            $("#texCanvasWrapper").show();
-            parametrizationWidget.choice.$.show();
-            parametrizationWidget.label.$.show(); 
+            showWidgets();
             
             texNameLabel.text("Texture file name: " + meshFile.texture.fileName);
             textureInfos.text("Info: " + meshFile.texture.width + "x" + meshFile.texture.height + "   " + meshFile.texture.components);
@@ -131,9 +131,7 @@
                 texScene.add(meshFile.texture.planeMesh);                        
             
         } else {
-            parametrizationWidget.choice.$.hide();
-            parametrizationWidget.label.$.hide();
-            $("#texCanvasWrapper").hide();
+            hideWidgets();
             
             if(layersNum < 1)
                 texNameLabel.text("No Layer Selected");
@@ -154,14 +152,14 @@
         texScene = new THREE.Scene();
         
         texControls = new THREE.TrackballControls(texCamera);
-        texControls.staticMoving = true;
+        texControls.staticMoving = false;
         texControls.noRoll = true;
         texControls.noRotate = true;
         texControls.noPan = false;
         texControls.minDistance = texCamera.near;
         texControls.maxDistance = texCamera.far;
-        texControls.zoomSpeed = 1.2;
-        texControls.panSpeed = 3;
+        texControls.zoomSpeed = 0.8;
+        texControls.panSpeed = 1;
         texControls.addEventListener('change', render);        
         
         texRenderer = new THREE.WebGLRenderer({
@@ -182,7 +180,24 @@
     function render(){
         texRenderer.render(texScene, texCamera);
     }
-   
+    
+        function hideWidgets(){
+        //call the parent to hide the surrounding div as well
+        for(var i = 0; i < widgets.length; i++){
+            widgets[i].choice.$.parent().hide();
+            widgets[i].label.$.parent().hide();  
+        }
+        $("#texCanvasWrapper").hide();
+    }
+    
+    function showWidgets(){
+        //call the parent to hide the surrounding div as well
+        for(var i = 0; i < widgets.length; i++){
+            widgets[i].choice.$.parent().show();
+            widgets[i].label.$.parent().show();  
+        }
+        $("#texCanvasWrapper").show();
+    }   
     
     plugin.Manager.install(plug);
 
