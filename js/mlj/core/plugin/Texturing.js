@@ -16,7 +16,6 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
                                 +'</div>');
         pane.appendContent('<div id="texCanvasWrapper"></div>'); //The webgl texture canvas wrapper
         texturePane.append(pane.$);
-        texturePane.hide(); //hide the panel when initializing the plugin
     };
     
     
@@ -46,25 +45,14 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
         
         update();            
         _this._applyTo(layer, 1, $);
-        
-        if(layer.texture.hasTexture)                       
-            texturePane.show();
-        else texturePane.hide();
     }); 
     
     $(document).on("SceneLayerSelected", function (event, layer) {
-        if(layer.texture.hasTexture)                       
-            texturePane.show();
-        else texturePane.hide();
-        
         update();
         _this._applyTo(layer, 1, $);
     });    
     
     $(document).on("SceneLayerRemoved", function (event, layer, layersNum) {
-        if(layersNum < 1)            
-            texturePane.hide();
-        
         update();
         _this._applyTo(layer, layersNum, $);      
     });

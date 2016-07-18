@@ -48,6 +48,9 @@
             }())
         });
         
+        parametrizationWidget.choice.$.hide();
+        parametrizationWidget.label.$.hide();
+        
         canvasInit();        
     };
     
@@ -63,7 +66,10 @@
             texScene.remove(texScene.children[i]);
         }
 
-        if (meshFile.texture.hasTexture && layersNum > 0) { 
+        if (meshFile.texture.hasTexture && layersNum > 0) {
+            $("#texCanvasWrapper").show();
+            parametrizationWidget.choice.$.show();
+            parametrizationWidget.label.$.show(); 
             
             texNameLabel.text("Texture file name: " + meshFile.texture.fileName);
             textureInfos.text("Info: " + meshFile.texture.width + "x" + meshFile.texture.height + "   " + meshFile.texture.components);
@@ -124,11 +130,16 @@
             else
                 texScene.add(meshFile.texture.planeMesh);                        
             
-        } else if (layersNum > 0) {
-            texNameLabel.text("No texture");
-            textureInfos.text("");
         } else {
-            texNameLabel.text("No Layer Selected");
+            parametrizationWidget.choice.$.hide();
+            parametrizationWidget.label.$.hide();
+            $("#texCanvasWrapper").hide();
+            
+            if(layersNum < 1)
+                texNameLabel.text("No Layer Selected");
+            else 
+                texNameLabel.text("No texture");
+            
             textureInfos.text("");
         }     
         

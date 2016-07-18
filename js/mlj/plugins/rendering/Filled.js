@@ -95,6 +95,10 @@
             ],
             bindTo: "texBool"
         });
+        
+        //hide the widget at start since no layer is selected (just in case)
+        texturingWidget.choice.$.hide();
+        texturingWidget.label.$.hide();
 
         lightingWidget = guiBuilder.Choice({
             label: "Lighting",
@@ -228,7 +232,9 @@
                                 
                 mat.uniforms.texture.value = meshFile.texture.data;
                 mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
-
+                
+                texturingWidget.choice.$.show();
+                texturingWidget.label.$.show();
             }
             else {
               console.log("No Texture found or attached");
@@ -238,6 +244,8 @@
               meshFile.texture.hasTexture = false;
               mat.uniforms.texture.value = meshFile.texture.data;
               mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
+              texturingWidget.choice.$.hide();
+              texturingWidget.label.$.hide();
             }            
             
             var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
@@ -250,6 +258,20 @@
             // when plugin is deactivated we can release resources
             scene.removeOverlayLayer(meshFile, plug.getName());
         }
+        
+        $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
+            if(layer.texture){
+                if(layer.texture.hasTexture){                    
+                    texturingWidget.choice.$.show();
+                    texturingWidget.label.$.show();
+                }
+                else{                
+                    texturingWidget.choice.$.hide();
+                    texturingWidget.label.$.hide();                    
+                }                    
+            }
+        });
+
 
     };
 
