@@ -61,6 +61,8 @@
     shadowPassOptions.SMVert = plug.shaders.getByKey("SMVertex.glsl");
     shadowPassOptions.SMFrag = plug.shaders.getByKey("SMFrag.glsl");
     shadowPassOptions.shadowFrag = plug.shaders.getByKey("ShadowFrag.glsl");
+    shadowPassOptions.bufferWidth = 512;
+    shadowPassOptions.bufferHeight = 512;
 
     /*
     render target where the depth values will be saved, used as texture
@@ -125,10 +127,10 @@
       let sceneCam = scene.getCamera();
       let renderer = scene.getRenderer();
 
-      // depthMapTarget.setSize(inBuffer.width, inBuffer.height);
-      // positionMapTarget.setSize(inBuffer.width, inBuffer.height);
-      depthMapTarget.setSize(2048, 2048);
-      positionMapTarget.setSize(2048, 2048);
+      depthMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
+      positionMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
+      // depthMapTarget.setSize(2048, 2048);
+      // positionMapTarget.setSize(2048, 2048);
       /////************WORK IN PROGRESS***********///////////
       //TODO: fixa come fitti la camera della luce al bbox della scena...
       //      per ora funzionicchia
@@ -138,6 +140,16 @@
       // let bbox = new THREE.Box3().setFromObject(scene.getScene());
       let bbox = scene.getBBox();
       let center = bbox.center();
+
+      // let sz = bbox.size();
+      // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
+      // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+      // var cube = new THREE.Mesh( geometry, material );
+      // scene.getThreeJsGroup().add( cube );
+      //
+      // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
+      // box.update();
+      // scene.getScene().add(box);
 
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
 
@@ -167,15 +179,7 @@
       let diag = bbox.min.distanceTo(bbox.max);
 
       //debugging bboxes
-        // let sz = bbox.size();
-        // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-        // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-        // var cube = new THREE.Mesh( geometry, material );
-        // scene.getScene().add( cube );
-        //
-        // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
-        // box.update();
-        // scene.getScene().add(box);
+
 
       bbox.applyMatrix4(lookAt);
 
