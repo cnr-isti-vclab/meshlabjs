@@ -120,12 +120,8 @@
             }  
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
-            var panelWidth = $("#texCanvasWrapper").parent().parent().parent().width();
-            texCamera.aspect = panelWidth / canvasHeight;
-            texCamera.position.z = 80;
-            texCamera.updateProjectionMatrix();
+            resizeCanvas();
             texControls.reset();
-            texRenderer.setSize(panelWidth, canvasHeight);
             
             //In base al parametro UV attualmente selezionato, aggiungo una mesh o l'altra 
             if(meshFile.texture.texPanelParam.uvParam)
@@ -168,7 +164,7 @@
         texRenderer = new THREE.WebGLRenderer({
             antialiasing: true,
             preserveDrawingBuffer:true});
-        texRenderer.setPixelRatio(window.devicePixelRatio);
+        texRenderer.setPixelRatio(window.devicePixelRatio);  
         
         animate();
     }
@@ -186,15 +182,18 @@
     
     $(window).resize(function () {
         resizeCanvas();
+        if(texRenderer && texCamera && texScene)
+            texRenderer.render(texScene, texCamera);
     });    
     
     function resizeCanvas(){
         if(texRenderer && texCamera && texScene){
-            var panelWidth = $("#texCanvasWrapper").parent().parent().parent().width();
+            var panelWidth = $("#mlj-tools-pane").width();
+            if(panelWidth > 0)
+                panelWidth -= 48;
             texCamera.aspect = panelWidth / canvasHeight;
             texCamera.updateProjectionMatrix();
             texRenderer.setSize(panelWidth, canvasHeight);
-            texRenderer.render(texScene, texCamera);
         }        
     }
     
