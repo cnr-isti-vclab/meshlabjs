@@ -89,6 +89,7 @@ html,body{
     min-width: 200px;
     width: 400px;
     min-width: 400px;
+    max-width: 630px;
     height: 100%;    
     border-right: gainsboro ridge;
 }
