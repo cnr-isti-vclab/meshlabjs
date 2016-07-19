@@ -151,9 +151,7 @@
                 planeTexture.needsUpdate = true;
                 planeTexture.wrapS = planeTexture.wrapT = THREE.ClampToEdgeWrapping;
                 planeTexture.minFilter = THREE.LinearFilter;
-                var planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({map: planeTexture}));   
-                planeMesh.material.opacity = meshFile.texture.texPanelParam.planeOpacity;   
-                planeMesh.material.transparent = true;   
+                var planeMesh = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({map: planeTexture, transparent: true, opacity: meshFile.texture.texPanelParam.planeOpacity}));   
                 planeMesh.position.x = planeMesh.position.y = planeMesh.position.z = 0;
                 planeMesh.scale.x = planeMesh.scale.y = 70;
                 planeMesh.name = "planeMesh";
@@ -162,14 +160,13 @@
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
             texControls.reset();
-            resizeCanvas();
             
             //La plane mesh è sempre visibile
             texScene.add(meshFile.texture.planeMesh);  
             
             //Ma la parametrizzazione va mostrata in base alla selettore on/off
             if(meshFile.texture.texPanelParam.uvParam)
-                texScene.add(meshFile.texture.paramMesh);                      
+                texScene.add(meshFile.texture.paramMesh);   
             
         } else {
             hideWidgets();

@@ -24,6 +24,10 @@
         loadShader: ["PointsFragment.glsl", "PointsVertex.glsl"]
     }, DEFAULTS);
 
+
+var textureSeamsWidget, textureSeamsColorWidget; 
+
+
     plug._init = function (guiBuilder) {
 
         guiBuilder.Choice({
@@ -49,7 +53,7 @@
             }())
         });
         
-        guiBuilder.Choice({
+        textureSeamsWidget = guiBuilder.Choice({
             label: "Show Texture Seams",
             tooltip: "",
             options: [
@@ -71,7 +75,7 @@
             }())
         });
         
-        guiBuilder.Color({
+        textureSeamsColorWidget = guiBuilder.Color({
             label: "Color Texture Seams",
             tooltip: "The color of texture seams",
             color: "#" + DEFAULTS.colorTexSeam.getHexString(),
@@ -520,6 +524,20 @@
             return boundaryMesh;
         }
     };
+    
+        
+     $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
+            if(layer.texture && textureSeamsWidget && textureSeamsColorWidget){
+                if(layer.texture.hasTexture){
+                    textureSeamsWidget.choice.$.parent().parent().show(200);
+                    textureSeamsColorWidget.color.$.parent().parent().show(200);
+                }
+                else{                
+                    textureSeamsWidget.choice.$.parent().parent().hide(200); 
+                    textureSeamsColorWidget.color.$.parent().parent().hide(200);                
+                }                    
+            }
+        });
 
     plugin.Manager.install(plug);
 
