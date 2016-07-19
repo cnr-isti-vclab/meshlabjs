@@ -966,7 +966,7 @@ MLJ.gui.component.RangedFloat = function (flags) {
     var _$slider = $('<div>').css({width: "50%", position: "relative", left: "0px", top: "10px"});
     //create label of min max
     var _pmin = $('<p>').css({fontSize: '50%', position: "absolute", left: "0px"});
-    var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "87px"});
+    var _pmax = $('<p>').css({fontSize: '50%', position: "absolute", left: "49%"});
     //edit text node
     var _$editText = $('<input>')
             .css({width: "30%", position: "relative", textAlign: "right", left: "58%", bottom: "8px"});        
