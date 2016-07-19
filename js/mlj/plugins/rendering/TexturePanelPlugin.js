@@ -161,8 +161,8 @@
             }  
 
             //Add the mesh to the scene, now is paramMesh, but can be switched with planeMesh
-            resizeCanvas();
             texControls.reset();
+            resizeCanvas();
             
             //La plane mesh è sempre visibile
             texScene.add(meshFile.texture.planeMesh);  
@@ -198,8 +198,7 @@
         texRenderer.setPixelRatio(window.devicePixelRatio);  
         texRenderer.setClearColor(0XDBDBDB, 1 ); //Webgl canvas background color
         
-        texControls = new THREE.TrackballControls(texCamera); //with this, controls work fine but outside of it wheel and right click are catched
-//        texControls = new THREE.TrackballControls(texCamera, texRenderer.domElement); //with this, controls are limited to the canvas but right click does not work
+        texControls = new THREE.TrackballControls(texCamera, texRenderer.domElement); //with this, controls are limited to the canvas but right click does not work
         texControls.staticMoving = false;
         texControls.noRoll = true;
         texControls.noRotate = true;
@@ -207,8 +206,8 @@
         texControls.minDistance = texCamera.near;
         texControls.maxDistance = texCamera.far;
         texControls.zoomSpeed = 0.8;
-        texControls.panSpeed = 1;
-        texControls.addEventListener('change', render); 
+        texControls.panSpeed = 0.6;
+        texControls.addEventListener('change', render);
         
         animate();
     }
@@ -228,13 +227,32 @@
         resizeCanvas();
         if(texRenderer && texCamera && texScene)
             texRenderer.render(texScene, texCamera);
+    });
+    
+    
+    //NEEDED TO MAKE the CONTROLS WORKING AS SOON AS THE TEXTURE TAB IS OPENED!!
+    //Apparently when the canvas goes from hidden to shown, it's necessary to "update" controls in order
+    //to make them work correctly
+    //The mouse click won't work otherwise, unless texControls.handleResized() is called
+    //Since it may be possible that the panel has been resized, better call resizeCanvas and be sure that
+    //camera, controls and aspect are correct. If the tab opened is not the texture tab better resizing it
+    $(window).on('tabsactivate', function (event, ui) {
+            if(ui.newPanel.attr('id') === MLJ.widget.TabbedPane.getTexturePane().parent().attr('id')){
+                resizeCanvas();
+                if(texRenderer && texCamera && texScene)
+                    texRenderer.render(texScene, texCamera);
+            }
+            else $(window).trigger('resize'); //This one is needed to reset the size (since it is impossible to resize the canvas back
     });    
     
     function resizeCanvas(){
         if(texRenderer && texCamera && texScene){
             var panelWidth = $("#mlj-tools-pane").width();
+            
             if(panelWidth > 0)
                 panelWidth -= 30;
+            
+            texControls.handleResize();
             texCamera.aspect = panelWidth / canvasHeight;
             texCamera.updateProjectionMatrix();
             texRenderer.setSize(panelWidth, canvasHeight);
