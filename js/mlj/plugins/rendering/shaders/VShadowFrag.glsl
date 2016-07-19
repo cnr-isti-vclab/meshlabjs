@@ -2,9 +2,13 @@ precision highp float;
 
 uniform mat4 lightViewProjection;
 uniform mat4 modelMatrix;
+
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
 uniform sampler2D depthMap;
+uniform sampler2D vBlurMap;
+uniform sampler2D hBlurMap;
+
 uniform float intensity;
 
 varying vec2 vUv;
@@ -33,7 +37,8 @@ float shadowCalc(vec2 vUv){
 
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
-  vec2 moments = texture2D(depthMap, lightSpacePosition.xy).xy;
+  vec2 moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
+                        texture2D(hBlurMap, lightSpacePosition.xy).xy, 0.5);
   float lightDepth = lightSpacePosition.z;
 
   return shadowContribution(moments, lightDepth);

@@ -5,6 +5,8 @@
   let intensity = 0.7;
 
   let shadowPassUniforms = {
+    vBlurMap:             { type: "t", value: null },
+    hBlurMap:             { type: "t", value: null },
     depthMap:             { type: "t", value: null },
     positionMap:          { type: "t", value: null },
     colorMap:             { type: "t", value: null },
@@ -32,7 +34,8 @@
     icon: "img/icons/ambientocclusion.png",
     loadShader: ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl",
               "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
-              "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl"]
+              "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl",
+            "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"]
   });
   //
   //  let varianceFlag;
@@ -57,42 +60,79 @@
 
   function SMContext() {
 
-    shadowPassOptions.minFilter = THREE.NearestFilter;
-    shadowPassOptions.SMVert = plug.shaders.getByKey("SMVertex.glsl");
-    shadowPassOptions.SMFrag = plug.shaders.getByKey("SMFrag.glsl");
-    shadowPassOptions.shadowFrag = plug.shaders.getByKey("ShadowFrag.glsl");
+    shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
+
+    shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
+    shadowPassOptions.SMFrag = plug.shaders.getByKey("VSMFrag.glsl");
+    shadowPassOptions.shadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
+
+    shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
+    shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
+    shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
+
     shadowPassOptions.bufferWidth = 512;
     shadowPassOptions.bufferHeight = 512;
 
+     let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
+                      0.02328, 0.01083, 0.00441, 0.00157];
+     let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
+                      10.41281, 12.39664, 14.38070, 16.36501];
+    shadowPassOptions.gaussWeights = gWeights;
+    shadowPassOptions.gaussOffsets = gOffsets;
     /*
     render target where the depth values will be saved, used as texture
     in the render pass which draws the shadows
     */
     // non posso specificare come solo depth?? su opengl mi pare si possa
     // quando implementerai VSM dovresti poter usare mipmapping! ricontrolla
-    depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
+    let depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
-      magFilter: shadowPassOptions.minFilter
+      magFilter: THREE.Linear
     });
 
+    let horBlurTarget = new THREE.WebGLRenderTarget(0, 0, {
+      type: THREE.FloatType,
+      minFilter: shadowPassOptions.minFilter,
+      magFilter: THREE.Linear
+    });
+
+    let verBlurTarget = new THREE.WebGLRenderTarget(0, 0, {
+      type: THREE.FloatType,
+      minFilter: shadowPassOptions.minFilter,
+      magFilter: THREE.Linear
+    });
 
     let positionMapTarget = new THREE.WebGLRenderTarget(0, 0, {
       type: THREE.FloatType,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter
+      minFilter: shadowPassOptions.minFilter,
+      magFilter: THREE.Linear
     });
 
     /*
     material containing the depth pass shaders. The original scene will be
     rendered using this shaders to produce a depth map
     */
-    depthMaterial = new THREE.RawShaderMaterial({
+    let depthMaterial = new THREE.RawShaderMaterial({
       uniforms: {},
       side: THREE.DoubleSide,
       derivatives: true,
       vertexShader: shadowPassOptions.SMVert,
       fragmentShader: shadowPassOptions.SMFrag
+    });
+
+    let horBlurMaterial = new THREE.RawShaderMaterial({
+      uniforms: {},
+      side: THREE.DoubleSide,
+      vertexShader: shadowPassOptions.blurVert,
+      fragmentShader: shadowPassOptions.horBlurFrag
+    });
+
+    let verBlurMaterial = new THREE.RawShaderMaterial({
+      uniforms: {},
+      side: THREE.DoubleSide,
+      vertexShader: shadowPassOptions.blurVert,
+      fragmentShader: shadowPassOptions.verBlurFrag
     });
 
     let positionMaterial = new THREE.RawShaderMaterial({
@@ -106,12 +146,21 @@
     quad che disegno per il passo di defferred rendering
     */
     let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
-    shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
+    let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
       uniforms: shadowPassUniforms,
       side: THREE.DoubleSide,
       vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
       fragmentShader: shadowPassOptions.shadowFrag
     }));
+
+    let horBlurMesh = new THREE.Mesh(quad, horBlurMaterial);
+    let verBlurMesh = new THREE.Mesh(quad, verBlurMaterial);
+
+    let horBlurScene = new THREE.Scene();
+    horBlurScene.add(horBlurMesh);
+
+    let verBlurScene = new THREE.Scene();
+    verBlurScene.add(verBlurMesh);
 
     let shadowScene = new THREE.Scene();
     shadowScene.add(shadowMapMesh);
@@ -129,15 +178,10 @@
 
       depthMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
       positionMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
-      // depthMapTarget.setSize(2048, 2048);
-      // positionMapTarget.setSize(2048, 2048);
-      /////************WORK IN PROGRESS***********///////////
-      //TODO: fixa come fitti la camera della luce al bbox della scena...
-      //      per ora funzionicchia
 
-      // scene.getBBox() returns a -1-1-1 111 bbox always..
+      horBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
+      verBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
 
-      // let bbox = new THREE.Box3().setFromObject(scene.getScene());
       let bbox = scene.getBBox();
       let center = bbox.center();
 
@@ -207,6 +251,20 @@
 
       sceneGraph.overrideMaterial = depthMaterial;
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
+      sceneGraph.overrideMaterial = null;
+
+      //TODO: -> here place code to do the horBlur and verBlur using the
+      // shadow map and the prepared render targets! ...try 7x7 or 15x15 kernels
+      // no gtg....finish later...
+      horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
+      horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
+      horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
+      renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
+
+      verBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
+      verBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
+      verBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
+      renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
 
       // render the position map
       sceneGraph.overrideMaterial = positionMaterial;
@@ -221,6 +279,8 @@
       shadowPassUniforms.depthMap.value             = depthMapTarget;
       shadowPassUniforms.positionMap.value          = positionMapTarget;
       shadowPassUniforms.colorMap.value             = inBuffer;
+      shadowPassUniforms.vBlurMap.value             = verBlurTarget;
+      shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
 
       renderer.render(shadowScene, sceneCam, outBuffer, true);
@@ -229,6 +289,8 @@
       shadowPassUniforms.depthMap.value             = null;
       shadowPassUniforms.colorMap.value             = null;
       shadowPassUniforms.positionMap.value          = null;
+      shadowPassUniforms.vBlurMap.value             = null;
+      shadowPassUniforms.hBlurMap.value             = null;
       shadowPassUniforms.intensity.value            = null;
     };
   }
