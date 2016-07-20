@@ -2,7 +2,6 @@
 
 
     var texCamera, texScene, texRenderer, texControls;
-    var canvasHeight;
     
     var DEFAULTS = {
         uvParam: false,
@@ -90,9 +89,7 @@
         });      
         
         widgets.push(parametrizationWidget, opacityPlaneWidget, paramColorWidget);
-        hideWidgets();
-        
-        canvasHeight = 500;
+        hideWidgets();        
         canvasInit();        
     };
     
@@ -179,6 +176,7 @@
             textureInfos.text("");
         }     
         
+        resizeCanvas();
         texRenderer.render(texScene, texCamera);   //Always render, if nothing is shown, then no layer is selected     
     };
     
@@ -244,15 +242,14 @@
     
     function resizeCanvas(){
         if(texRenderer && texCamera && texScene){
-            var panelWidth = $("#mlj-tools-pane").width();
-            
-            if(panelWidth > 0)
-                panelWidth -= 30;
+            //92.5% of the tab width, higher value makes it bigger, lower values makes schrinking impossible/slow
+            var panelWidth = $("#tab-Texture").width() * 0.925; 
+            var panelHeight = $("#tab-Texture").height() * 0.785; //78.5% of the tab height
             
             texControls.handleResize();
-            texCamera.aspect = panelWidth / canvasHeight;
+            texCamera.aspect = panelWidth / panelHeight;
             texCamera.updateProjectionMatrix();
-            texRenderer.setSize(panelWidth, canvasHeight);
+            texRenderer.setSize(panelWidth, panelHeight);
         }        
     }
     
