@@ -317,6 +317,7 @@
         selectMenu.val(meshFile.selectedTexture);
         selectMenu.selectmenu('refresh', true); //NEEDED TO UPDATE THE MENU
         
+        textureSelectionWidget.choice.$.parent().parent().parent().attr('id', 'textureChoiceContainer');
         textureSelectionWidget.choice.$.parent().parent().parent().prependTo(MLJ.widget.TabbedPane.getTexturePane().find("div")[0]);
     }
 

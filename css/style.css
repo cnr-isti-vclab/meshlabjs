@@ -449,6 +449,10 @@ html,body{
     margin-bottom: 5px;
 }
 
+#textureChoiceContainer{
+    margin-top: 3px;
+}
+
 label[for='textureInfos'], label[for='textureName']{
     color: blue;
     font-weight: bold;
