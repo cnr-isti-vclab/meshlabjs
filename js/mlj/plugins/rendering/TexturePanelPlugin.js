@@ -177,7 +177,7 @@
                     var paramGeomBuff = new THREE.BufferGeometry();
                     paramGeomBuff.addAttribute('position', new THREE.BufferAttribute(facesCoordsVec, 3));
                     var paramGeom = new THREE.Geometry().fromBufferGeometry(paramGeomBuff);
-                    paramGeom.center(); //center the mesh in the scene       
+                    paramGeom.center(); //center the mesh in the scene  
                     var paramMesh = new THREE.Mesh(paramGeom, new THREE.MeshBasicMaterial({wireframe: true, color: meshFile.texture[i].texPanelParam.paramColorWidget})); //generate the mesh and position, scale it to its size and move it to the center 
                     paramMesh.position.x = paramMesh.position.y = 0;
                     paramMesh.position.z = 0.2; //sta un pò sopra la planeMesh
@@ -227,8 +227,6 @@
                 texNameLabel.text("No texture");
             
             texNameLabel.addClass("error");
-
-            textureInfos.text("");
         }
 
         resizeCanvas();
@@ -319,7 +317,7 @@
         selectMenu.val(meshFile.selectedTexture);
         selectMenu.selectmenu('refresh', true); //NEEDED TO UPDATE THE MENU
         
-        textureSelectionWidget.choice.$.parent().parent().prependTo(MLJ.widget.TabbedPane.getTexturePane().find("div")[0]);
+        textureSelectionWidget.choice.$.parent().parent().parent().prependTo(MLJ.widget.TabbedPane.getTexturePane().find("div")[0]);
     }
 
 
