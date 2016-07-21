@@ -38,10 +38,11 @@ float shadowCalc(vec2 vUv){
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
   vec2 moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
-                        texture2D(hBlurMap, lightSpacePosition.xy).xy, 0.5);
-  float lightDepth = lightSpacePosition.z;
+                        texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
 
-  return shadowContribution(moments, lightDepth);
+  float fragDepth = lightSpacePosition.z;
+
+  return shadowContribution(moments, fragDepth);
 }
 
 void main(){
@@ -50,7 +51,7 @@ void main(){
   if (color.a == 0.0) discard;
 
   float chebishev = shadowCalc(vUv);
-  float shadowing = (chebishev > 0.7) ? 1.0 : (0.8 - chebishev);
+  float shadowing = (chebishev > 0.4) ? 1.0 : (0.6 + chebishev);
 
   gl_FragColor = vec4(color.rgb * (shadowing), color.a);
 }
