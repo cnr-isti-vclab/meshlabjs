@@ -8,14 +8,31 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
     var texturePane = MLJ.widget.TabbedPane.getTexturePane(); 
     
     this._main = function(){    
-        pane.appendContent('<div style="display: table; width: 100%; padding: 4px; margin-top: 5px;">'
-                                +'<label for="textureName">No Layer Selected</label>'
-                                +'<label for="textureInfos"></label>'
-                                +'</div>');    
+        pane.appendContent('<div id="texNameContainer" style="display: table; width: 100%; margin-top: 5px; margin-bottom: 5px;">'
+                                +'<div style="display: table-row;">'
+                                    +'<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
+                                        +'<label>Texture Name: </label>'
+                                    +'</div>'
+                                    +'<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
+                                        +'<label for="textureName">No Layer Selected</label>'
+                                    +'</div>'
+                                +'</div>' 
+                            +'</div>'
+                            +'<div id="texInfoContainer" style="display: table; width: 100%; margin-top: 5px; margin-bottom: 5px;">'
+                                +'<div style="display: table-row;">'
+                                    +'<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
+                                        +'<label>Texture Infos: </label>'
+                                    +'</div>'
+                                    +'<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
+                                        +'<label for="textureInfos"></label>'
+                                    +'</div>'
+                                +'</div>'    
+                            +'</div>');    
+                    
         _this._init(guiBuilder);
         pane.appendContent('<div id="texCanvasWrapper"></div>'); //The webgl texture canvas wrapper
         texturePane.append(pane.$);
-//        pane.$.hide();
+        pane.$.hide();
     };
     
     

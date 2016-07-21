@@ -449,12 +449,11 @@ html,body{
     margin-bottom: 5px;
 }
 
-label[for='textureInfos']{
-    display: block;
-    margin-top: 10px;
-    margin-bottom: 10px;
+label[for='textureInfos'], label[for='textureName']{
+    color: blue;
+    font-weight: bold;
 }
 
-label[for='textureName']{
-    margin-top: 5px;    
+label[for='textureName'].error{
+    color: red;
 }

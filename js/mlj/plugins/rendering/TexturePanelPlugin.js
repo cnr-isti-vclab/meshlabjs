@@ -54,8 +54,8 @@
                         parametrizationWidget.choice.selectByValue(layer.texture[value].texPanelParam.uvParam);
                         
                         if(textureInfos && texNameLabel){
-                            texNameLabel.text("Texture file name: " + layer.texture[value].fileName);
-                            textureInfos.text("Info: " + layer.texture[value].width + "x" + layer.texture[value].height + "   " + layer.texture[value].components);
+                            texNameLabel.text(layer.texture[value].fileName);
+                            textureInfos.text(layer.texture[value].width + "x" + layer.texture[value].height + "   " + layer.texture[value].components);
                         }
                     }
                 };
@@ -214,8 +214,9 @@
                 texScene.add(meshFile.texture[meshFile.selectedTexture].paramMesh);
             
             
-            texNameLabel.text("Texture file name: " + meshFile.texture[meshFile.selectedTexture].fileName);
-            textureInfos.text("Info: " + meshFile.texture[meshFile.selectedTexture].width + "x" + meshFile.texture[meshFile.selectedTexture].height + "   " + meshFile.texture[meshFile.selectedTexture].components);
+            texNameLabel.text(meshFile.texture[meshFile.selectedTexture].fileName);
+            texNameLabel.removeClass("error");
+            textureInfos.text(meshFile.texture[meshFile.selectedTexture].width + "x" + meshFile.texture[meshFile.selectedTexture].height + "   " + meshFile.texture[meshFile.selectedTexture].components);
 
         } else {
             hideWidgets();
@@ -224,6 +225,8 @@
                 texNameLabel.text("No Layer Selected");
             else
                 texNameLabel.text("No texture");
+            
+            texNameLabel.addClass("error");
 
             textureInfos.text("");
         }
@@ -334,6 +337,7 @@
         if (textureSelectionWidget)
             textureSelectionWidget.choice.$.parent().parent().hide(200);
         $("#texCanvasWrapper").hide(200);
+        $("#texInfoContainer").hide(200);
     }
 
     function showWidgets() {
@@ -350,6 +354,7 @@
         if (textureSelectionWidget)
             textureSelectionWidget.choice.$.parent().parent().show(200);
         $("#texCanvasWrapper").show(200);
+        $("#texInfoContainer").show(200);
     }
 
 
