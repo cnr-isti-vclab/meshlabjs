@@ -527,16 +527,13 @@ var textureSeamsWidget, textureSeamsColorWidget;
     
         
      $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
-            if(layer.texture && textureSeamsWidget && textureSeamsColorWidget){
-                if(layer.texture.hasTexture){
-                    textureSeamsWidget.choice.$.parent().parent().show(200);
-                    textureSeamsColorWidget.color.$.parent().parent().show(200);
-                }
-                else{                
-                    textureSeamsWidget.choice.$.parent().parent().hide(200); 
-                    textureSeamsColorWidget.color.$.parent().parent().hide(200);                
-                }                    
-            }
+            if(layer.texturesNum > 0 && textureSeamsWidget && textureSeamsColorWidget){
+                textureSeamsWidget.choice.$.parent().parent().show(200);
+                textureSeamsColorWidget.color.$.parent().parent().show(200);
+            } else{                
+                textureSeamsWidget.choice.$.parent().parent().hide(200); 
+                textureSeamsColorWidget.color.$.parent().parent().hide(200);                
+            }        
         });
 
     plugin.Manager.install(plug);

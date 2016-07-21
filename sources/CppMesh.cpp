@@ -156,12 +156,14 @@ class CppMesh
         else
             printf("Success!");
         
-        printf("\nDeleting material %s from FS... ", mtlFileName.c_str());
-        res = std::remove(mtlFileName.c_str());
-        if(res != 0)
-            printf("ERROR!\n\n");
-        else
-            printf("Success!\n\n");             
+        if(mtlFileName != ""){
+            printf("\nDeleting material %s from FS... ", mtlFileName.c_str());
+            res = std::remove(mtlFileName.c_str());
+            if(res != 0)
+                printf("ERROR!\n\n");
+            else
+                printf("Success!\n\n");   
+        }
         
         return 0;
     }    
@@ -288,49 +290,57 @@ class CppMesh
     return (uintptr_t) c;
   }
   
-inline uintptr_t getWedgeTextureCoordinates()
+inline uintptr_t getWedgeTextureCoordinates(int textureIndex)
   {
     
    float *c = new float[m.FN()*6];
     int k = 0;
     for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
       for (int j = 0; j < 3; ++j) {
-        c[k++] = fi->WT(j).u();
-        c[k++] = fi->WT(j).v();
+            if(fi->WT(j).N() == textureIndex){ //useful for future multiple texture implementation
+                c[k++] = fi->WT(j).u();
+                c[k++] = fi->WT(j).v();
+//                printf("\nTx %d:   %f, %f",fi->WT(j).N(), fi->WT(j).u(), fi->WT(j).v());
+            }
       }
     }
     return (uintptr_t) c;
   }
   
 
-inline uintptr_t getUvParamCoordinates()
+inline uintptr_t getUvParamCoordinates(int textureIndex)
   {    
    float *c = new float[m.FN()*9];
     int k = 0;
-    int numParamFaces = 0;
     for (MyMesh::FaceIterator fi = m.face.begin(); fi != m.face.end(); ++fi) {
-            numParamFaces++;
             for (int j = 0; j < 3; ++j) {
-              c[k++] = fi->WT(j).u();
-              c[k++] = fi->WT(j).v();
-              c[k++] = 0;
+                if(fi->WT(j).N() == textureIndex){ //useful for future multiple texture implementation
+                    c[k++] = fi->WT(j).u();
+                    c[k++] = fi->WT(j).v();
+                    c[k++] = 0;
+                }
             }
     }
     return (uintptr_t) c;
   }
   
-  inline std::string getTextureName()
+  inline std::string getTextureName(int textureIndex)
   {
-      return m.textures[0].c_str();
+      return m.textures[textureIndex].c_str();
   }
   
-  inline uintptr_t getTextureImage()
+ int getTextureNumber()
+  {
+      return m.textures.size();
+  }
+  
+  inline uintptr_t getTextureImage(int textureIndex)
   {
       //texture laading
        int textureWidth = -1;
        int textureHeight = -1;
        int textureComponents = -1;
-       unsigned char *data = stbi_load(m.textures[0].c_str(), &textureWidth, &textureHeight, &textureComponents, 0);       
+       unsigned char *data = stbi_load(m.textures[textureIndex].c_str(), &textureWidth, &textureHeight, &textureComponents, 0);       
        int imageInfo[4] = {textureWidth, textureHeight, textureComponents, (int) data};
        printf("\nTexture Info W: %d, H: %d, Ch: %d, TexPtr: %d", textureWidth, textureHeight, textureComponents, *data);
        
@@ -373,6 +383,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
     .function("getWedgeTextureCoordinates",         &CppMesh::getWedgeTextureCoordinates)
     .function("getUvParamCoordinates",         &CppMesh::getUvParamCoordinates)
     .function("getTextureName",         &CppMesh::getTextureName)
+    .function("getTextureNumber",         &CppMesh::getTextureNumber)
     .function("getTextureImage",        &CppMesh::getTextureImage)
     ;
 }

@@ -40,6 +40,7 @@ MLJ.core.Layer = function (name, cppMesh) {
      * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string
      */
     this.fileName = "";
+    this.selectedTexture = 0;
 
     this.cppMesh = cppMesh;
     this.cppMesh.setMeshName(name);
@@ -50,17 +51,6 @@ MLJ.core.Layer = function (name, cppMesh) {
     this.overlays = new MLJ.util.AssociativeArray();
     //contains overlaying mesh parameters
     this.overlaysParams = new MLJ.util.AssociativeArray();
-    
-    this.texture = {
-        hasTexture: false,
-        fileName: "",
-        height: -1,
-        width: -1,
-        nComponents: -1,
-        components: "",
-        data: null,
-        imgBuff: null
-    };
 
     var _this = this;
 
@@ -141,7 +131,7 @@ MLJ.core.Layer = function (name, cppMesh) {
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3)
             
-            bufferptr = cppMesh.getWedgeTextureCoordinates();
+            bufferptr = cppMesh.getWedgeTextureCoordinates(0);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*6));
             uvsAttrib = new THREE.BufferAttribute(bufferData, 2)
             Module._free(bufferptr);

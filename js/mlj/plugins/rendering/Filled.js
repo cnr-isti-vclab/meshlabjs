@@ -12,7 +12,7 @@
         wrapS: THREE.ClampToEdgeWrapping,
         wrapT: THREE.ClampToEdgeWrapping,
         shading: THREE.FlatShading,
-        sides : THREE.DoubleSide,
+        sides: THREE.DoubleSide,
         mljColorMode: MLJ.ColorMode.Uniform
     };
 
@@ -31,7 +31,7 @@
                 "texBool": {type: "i", value: DEFAULTS.texBool},
                 "mljColorMode": {type: "i", value: DEFAULTS.mljColorMode}
             }
-        ])        
+        ])
     };
 
     // Ok, now first build the object that represents the plugin
@@ -41,7 +41,7 @@
         icon: "img/icons/flat.png",
         toggle: true,
         on: true,
-        loadShader: ["PhongFragment.glsl","PhongVertex.glsl"]
+        loadShader: ["PhongFragment.glsl", "PhongVertex.glsl"]
     }, DEFAULTS);
 
     // and then define _init, _applyTo functions on that object
@@ -49,7 +49,7 @@
     // here some variables for plugin functions state
     var texWidget, lightingWidget, shadingWidget, shininessWidget,
             specularColor, emissiveColor, texWrapWidgetS, texWrapWidgetT;
-            
+
     var texturingChoiceWidgets = [];
     // define its init function
     plug._init = function (guiBuilder) {
@@ -87,55 +87,63 @@
             ],
             bindTo: "shading" // name of the parameter used to keep track of the associated value. It is linked directly to a uniform when changed
         });
-        
+
         texWidget = guiBuilder.Choice({
             label: "Texturing",
             tooltip: "Enable/disable texturing",
             options: [
-                {content: "On" , value: true, selected: true},
+                {content: "On", value: true, selected: true},
                 {content: "Off", value: false}
             ],
             bindTo: "texBool"
         });
-        
+
         texWrapWidgetS = guiBuilder.Choice({
             label: "Tex Wrapping S",
             tooltip: "Enable/disable texturing",
             options: [
-                {content: "On" , value: THREE.RepeatWrapping},
+                {content: "On", value: THREE.RepeatWrapping},
                 {content: "Off", value: THREE.ClampToEdgeWrapping, selected: true}
             ],
-            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+            bindTo: (function () {  // here we define also a callback to invoke at every change of this option
                 var bindToFun = function (wrapValue, overlay) {
-                    if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
-                        overlay.material.uniforms.texture.value.wrapS = wrapValue;  // material update
-                        overlay.material.uniforms.texture.value.needsUpdate = true;
+                    if (MLJ.core.Scene.getSelectedLayer().texturesNum > 0) {
+                        for (var i = 0; i < MLJ.core.Scene.getSelectedLayer().texturesNum; i++) {
+                            overlay.material.uniforms.texture.value.wrapS = wrapValue;  // material update
+                            overlay.material.uniforms.texture.value.needsUpdate = true;
+                        }
                     }
                 };
-                bindToFun.toString = function () { return 'wrapS'; }; // name of the parameter used to keep track of the associated value
+                bindToFun.toString = function () {
+                    return 'wrapS';
+                }; // name of the parameter used to keep track of the associated value
                 return bindToFun;
             }())
         });
-        
+
         texWrapWidgetT = guiBuilder.Choice({
             label: "Tex wrapping T",
             tooltip: "Enable/disable texturing",
             options: [
-                {content: "On" , value: THREE.RepeatWrapping},
+                {content: "On", value: THREE.RepeatWrapping},
                 {content: "Off", value: THREE.ClampToEdgeWrapping, selected: true}
             ],
-            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+            bindTo: (function () {  // here we define also a callback to invoke at every change of this option
                 var bindToFun = function (wrapValue, overlay) {
-                    if(MLJ.core.Scene.getSelectedLayer().texture.hasTexture){
-                        overlay.material.uniforms.texture.value.wrapT = wrapValue;  // material update
-                        overlay.material.uniforms.texture.value.needsUpdate = true; 
+                    if (MLJ.core.Scene.getSelectedLayer().texturesNum > 0) {
+                        for (var i = 0; i < MLJ.core.Scene.getSelectedLayer().texturesNum; i++) {
+                            overlay.material.uniforms.texture.value.wrapT = wrapValue;  // material update
+                            overlay.material.uniforms.texture.value.needsUpdate = true;
+                        }
                     }
                 };
-                bindToFun.toString = function () { return 'wrapT'; }; // name of the parameter used to keep track of the associated value
+                bindToFun.toString = function () {
+                    return 'wrapT';
+                }; // name of the parameter used to keep track of the associated value
                 return bindToFun;
             }())
         });
-        
+
         texturingChoiceWidgets.push(texWidget, texWrapWidgetS, texWrapWidgetT);
         hideTexWidgets();
 
@@ -154,13 +162,15 @@
             tooltip: "Activate/Deactivate Back Face Culling",
             options: [
                 {content: "Off", value: THREE.DoubleSide, selected: true},
-                {content: "On", value: THREE.FrontSide }
+                {content: "On", value: THREE.FrontSide}
             ],
-            bindTo: (function() {  // here we define also a callback to invoke at every change of this option
+            bindTo: (function () {  // here we define also a callback to invoke at every change of this option
                 var bindToFun = function (sideValue, overlay) {
                     overlay.material.side = sideValue;  // material update
                 };
-                bindToFun.toString = function () { return 'sides'; }; // name of the parameter used to keep track of the associated value
+                bindToFun.toString = function () {
+                    return 'sides';
+                }; // name of the parameter used to keep track of the associated value
                 return bindToFun;
             }())
         });
@@ -173,8 +183,8 @@
             // take or create a geometry for a new mesh
             var geom = meshFile.getThreeMesh().geometry;
             // in this case, we take geometry of the layer meshFile, otherwise we can proceed this way:
-                // create geometry data in buffers (for example calling c++ modules)
-                // build BufferAttributes on the data, and associate to a new BufferGeometry
+            // create geometry data in buffers (for example calling c++ modules)
+            // build BufferAttributes on the data, and associate to a new BufferGeometry
 
             //geom.computeFaceNormals();
             //geom.computeVertexNormals();
@@ -207,123 +217,124 @@
                 wrapS: params.wrapS,
                 wrapT: params.wrapT
             };
-            
+
             //The BufferGeometry MUST have an attribute called "uv", used in the PhongFragment and in PhongVertex
             // The problem here (I guess) is that the shader is pre-compiled, so it loads the texture even when it is undefined or null
             //hence, everytime I load a mesh, the uniforms.texture gets updated with the mesh's texture
             //if the next texture does NOT have a texture or the texture could not be found, then the mat.uniforms.texture saved in the sader will stay the same
             //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes            
             var mat = new THREE.RawShaderMaterial(parameters);
-            mat.uniforms.texture = {type: 't', value: null}; //Just for testing
-            
-            var textureName = meshFile.cppMesh.getTextureName();
-                
+            mat.uniforms.texture = {type: 't', value: null}; //Just for testing         
+
             //If the mesh has a texture and this texture is present in the Emscripten file system root
             //x is returned when no texture is bounded to the mesh
 //              console.log("Reading FS's root content " + FS.readdir("/"));
 //              console.log("Reading layer folder's content " + FS.readdir("/"+meshFile.name));
-            if(textureName !== "x" && FS.readdir("/").indexOf(textureName) > -1){
-              console.log("Loading texture " +meshFile.cppMesh.getTextureName());
-//              console.log("\n Texture presente " +meshFile.cppMesh.getTextureName() +": " +(FS.readdir("/").indexOf(meshFile.cppMesh.getTextureName())));
-          
-                //Dynamic Texture loading from the emscripten file system
-                var textureInfoPtr = meshFile.cppMesh.getTextureImage(); //This function loads the texture and give as a result an array with width, height, number of components, pointer to the image array
-                var textureInfoBuff= new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
-                var texWidth = textureInfoBuff[0];
-                var texHeight = textureInfoBuff[1];
-                var texComponents = textureInfoBuff[2];
-                var texComponentsTitle;
-                var texImgPtr = textureInfoBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
-                
-                //Let's recreate the array as an Uint8Array, every pixel will be encoded with a number of attribute equal to the number of components
-                //Hence, the image array full size will be numOfPixels*components, which will be width*height*components
-                //The array will be then ready for creating the DataTexture
-                var imgBuff= new Uint8Array(Module.HEAPU8.buffer, texImgPtr, texWidth*texHeight*texComponents);
+            var textureName = meshFile.cppMesh.getTextureName(0); //We'll check if the mesh has at least a texture attached and if this texture is present in the FS
+            if (textureName !== "x" && FS.readdir("/").indexOf(textureName) > -1) {
+                var texturesNumber = meshFile.cppMesh.getTextureNumber(); //we are going to load all of the textures attached to the mesh
+                meshFile.texture = []; //let's create the layer-dependent texture array
+                meshFile.texturesNum = texturesNumber; //we'll need this to know if the mesh has texture and how many
+                var mat = new THREE.RawShaderMaterial(parameters); //material creation **TODO: may be useful to actually apply and show multiple texture with multiple materials
+                for (var i = 0; i < texturesNumber; i++) { //iterate through all the mesh textures
+                    
+                    var textureName = meshFile.cppMesh.getTextureName(i);
+                    var textureInfoPtr = meshFile.cppMesh.getTextureImage(i); //This function loads the texture and give as a result an array with width, height, number of components, pointer to the image array
+                    var textureInfoBuff = new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
+                    var texWidth = textureInfoBuff[0];
+                    var texHeight = textureInfoBuff[1];
+                    var texComponents = textureInfoBuff[2];
+                    var texImgPtr = textureInfoBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
+                    console.log("Loading texture " + i + " " +textureName +" " + texWidth +" " + texHeight +" " + texComponents);
 
-                //the most common format is the RGB format, but just in case the format is different it will be changed accordingly
-                var format = THREE.RGBFormat;
-                if(texComponents === 1){
-                     format = THREE.LuminanceFormat; //From the stbi lib: 1 = grey
-                     texComponentsTitle = "Grey";
-                } else if(texComponents === 2){
-                     format = THREE.LuminanceAlphaFormat; //From the stbi lib: 2 = grey, alpha
-                     texComponentsTitle = "Grey, Alpha";
-                } else if(texComponents === 3){
-                     format = THREE.RGBFormat; //From the stbi lib: 3 = red, green, blue (RGB)
-                     texComponentsTitle = "RGB";
-                } else if(texComponents === 4){
-                     format = THREE.RGBAFormat; //From the stbi lib: 4 = red, green, blue, alpha (RGBA)
-                     texComponentsTitle = "RGBA";
+                    //Let's recreate the array as an Uint8Array, every pixel will be encoded with a number of attribute equal to the number of components
+                    //Hence, the image array full size will be numOfPixels*components, which will be width*height*components
+                    //The array will be then ready for creating the DataTexture
+                    var imgBuff = new Uint8Array(Module.HEAPU8.buffer, texImgPtr, texWidth * texHeight * texComponents);
+
+                    //the most common format is the RGB format, but just in case the format is different it will be changed accordingly
+                    var format = THREE.RGBFormat;
+                    var texComponentsTitle;
+                    if (texComponents === 1) {
+                        format = THREE.LuminanceFormat; //From the stbi lib: 1 = grey
+                        texComponentsTitle = "Grey";
+                    } else if (texComponents === 2) {
+                        format = THREE.LuminanceAlphaFormat; //From the stbi lib: 2 = grey, alpha
+                        texComponentsTitle = "Grey, Alpha";
+                    } else if (texComponents === 3) {
+                        format = THREE.RGBFormat; //From the stbi lib: 3 = red, green, blue (RGB)
+                        texComponentsTitle = "RGB";
+                    } else if (texComponents === 4) {
+                        format = THREE.RGBAFormat; //From the stbi lib: 4 = red, green, blue, alpha (RGBA)
+                        texComponentsTitle = "RGBA";
+                    }
+
+                    //We're going to create the texture object
+                    var texture = new THREE.DataTexture(imgBuff, texWidth, texHeight, format);
+                    texture.wrapS = parameters.wrapS; //standard wrapping
+                    texture.wrapT = parameters.wrapT; //standard wrapping
+                    texture.needsUpdate = true; //We need to update the texture
+                    texture.minFilter = THREE.LinearFilter;   //Needed when texture is not a power of 2
+
+                    //Let's create the texture object in order to store the texture options
+                    meshFile.texture[i] = {
+                        fileName: textureName,
+                        height: texHeight,
+                        width: texWidth,
+                        nComponents: texComponents,
+                        components: texComponentsTitle,
+                        format: format,
+                        data: texture,
+                        imgBuff: imgBuff
+                    };
                 }
-                
-                meshFile.texture.hasTexture = true;
-                meshFile.texture.data = new THREE.DataTexture(imgBuff, texWidth, texHeight, format);
-                meshFile.texture.data.wrapS = parameters.wrapS; //standard wrapping
-                meshFile.texture.data.wrapT = parameters.wrapT; //wtandard wrapping
-                meshFile.texture.data.needsUpdate = true; //We need to update the texture
-                
-                //Needed when texture is not a power of 2
-                //WebGl threw a warning about the
-                meshFile.texture.data.minFilter = THREE.LinearFilter;  
-                meshFile.texture.height = texHeight;
-                meshFile.texture.width = texWidth;
-                meshFile.texture.components = texComponentsTitle;
-                meshFile.texture.formats = format;
-                meshFile.texture.nComponents = texComponents;
-                meshFile.texture.fileName = textureName;
-                meshFile.texture.imgBuff = imgBuff;
-                                
-                mat.uniforms.texture.value = meshFile.texture.data;
+                //After the for cycle we'll show ONLY THE FIRST TEXTURE (TODO in the future), and actually enable the textures in the shaders
+                mat.uniforms.texture.value = meshFile.texture[0].data;
                 mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
-                
+
                 showTexWidgets();
+            } else {
+                //if no texture are found we'll attach a dummy texture to the shader in order to avoid useless warnings
+                console.log("No Texture found or attached");
+                meshFile.texture = [];
+                meshFile.texture[0] = {data: null}; //We need to create the object
+                meshFile.texture[0].data = new THREE.DataTexture(new Uint8Array(1 * 1 * 3), 1, 1, THREE.RGBFormat);
+                meshFile.texture[0].data.needsUpdate = true; //We need to update the texture to avoid the warning
+                meshFile.texturesNum = 0; //there are no textures
+                mat.uniforms.texture.value = meshFile.texture[0].data; //attach the dummy texture to the uniform
+                mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
+                hideTexWidgets();
             }
-            else {
-              console.log("No Texture found or attached");
-              //Dummy texture to avoid binding on the shader
-              meshFile.texture.data = new THREE.DataTexture(new Uint8Array(1*1*3), 1, 1, THREE.RGBFormat);
-              meshFile.texture.data.needsUpdate = true; //We need to update the texture
-              meshFile.texture.hasTexture = false;
-              mat.uniforms.texture.value = meshFile.texture.data;
-              mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
-              hideTexWidgets(); 
-            }            
-            
+
+            //let's build the mesh and create the overlay layer
             var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
             scene.addOverlayLayer(meshFile, plug.getName(), filled);
-            scene.render();
-
-            // build the new mesh
-            // add it as an overlay to the layer       
-
+            scene.render(); 
         } else {
             // when plugin is deactivated we can release resources
             scene.removeOverlayLayer(meshFile, plug.getName());
         }
-        
+
         $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
-            if(layer.texture){
-                if(layer.texture.hasTexture){                    
-                    showTexWidgets();
-                }
-                else{                
-                    hideTexWidgets();                   
-                }                    
+            if (layer.texturesNum > 0) {
+                showTexWidgets();
+            } else {
+                hideTexWidgets();
             }
         });
     };
-    
-    
-    function hideTexWidgets(){
+
+
+    function hideTexWidgets() {
         //call the parent to hide the div containing both label and button set
-        for(var i = 0; i < texturingChoiceWidgets.length; i++){
+        for (var i = 0; i < texturingChoiceWidgets.length; i++) {
             texturingChoiceWidgets[i].choice.$.parent().parent().hide(200);
         }
     }
-    
-    function showTexWidgets(){
+
+    function showTexWidgets() {
         //call the parent to show the div containing both label and button set
-        for(var i = 0; i < texturingChoiceWidgets.length; i++){
+        for (var i = 0; i < texturingChoiceWidgets.length; i++) {
             texturingChoiceWidgets[i].choice.$.parent().parent().show(200);
         }
     }

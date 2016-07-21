@@ -8,14 +8,14 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
     var texturePane = MLJ.widget.TabbedPane.getTexturePane(); 
     
     this._main = function(){    
-        pane.appendContent('<div style="display: table-cell; width: 50%; padding: 4px; vertical-align: middle;">'
+        pane.appendContent('<div style="display: table; width: 100%; padding: 4px; margin-top: 5px;">'
                                 +'<label for="textureName">No Layer Selected</label>'
                                 +'<label for="textureInfos"></label>'
                                 +'</div>');    
         _this._init(guiBuilder);
         pane.appendContent('<div id="texCanvasWrapper"></div>'); //The webgl texture canvas wrapper
         texturePane.append(pane.$);
-        pane.$.hide();
+//        pane.$.hide();
     };
     
     
@@ -30,10 +30,17 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
         var layer = MLJ.core.Scene.getSelectedLayer();
         if(layer === undefined)
             return;
-        
-        var params = layer.texture.texPanelParam;
-        // update parameter
-        params[paramProp] = value;
+                
+        //the selectedTexture param is layer-dependent and not texture-dependent
+        if(paramProp === "selectedTexture"){
+            if(value <= layer.texturesNum) //Fix in case the other texture had more texture than the new one
+                layer.selectedTexture = value;
+            else layer.selectedTexture = 0;
+        }
+        else{
+            var params = layer.texture[layer.selectedTexture].texPanelParam;            
+            params[paramProp] = value; // update parameter
+        }
         if (jQuery.isFunction(paramProp)) { //is 'bindTo' property a function?
             paramProp(value);
         }       
@@ -46,10 +53,12 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
             pane.$.show();
         
         //Let's create the texPanelparam array (cannot directly pass defaults or
-        //js will make a deep copy checking always the pointer of the defaults array  
-        layer.texture.texPanelParam = [];
-        for(var name in defaults)
-            layer.texture.texPanelParam[name] = defaults[name];
+        //js will make a deep copy checking always the pointer of the defaults array
+        for(var i = 0; i < layer.texturesNum; i++){
+            layer.texture[i].texPanelParam = [];
+            for(var name in defaults)
+                layer.texture[i].texPanelParam[name] = defaults[name];
+        }
         
         update();            
         _this._applyTo(layer, 1, $);
@@ -68,7 +77,7 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
     
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
-        var params = selected.texture.texPanelParam;
+        var params = selected.texture[selected.selectedTexture].texPanelParam;
         var paramWidget;
         for (var pname in params) {
             paramWidget = _this.getParam(pname);
