@@ -229,7 +229,7 @@
             texNameLabel.addClass("error");
         }
 
-        resizeCanvas();
+        $(window).trigger('resize'); //This will resize the windows properly and trigger the resizeCanvas function
         texRenderer.render(texScene, texCamera);   //Always render, if nothing is shown, then no layer is selected     
     };
 
