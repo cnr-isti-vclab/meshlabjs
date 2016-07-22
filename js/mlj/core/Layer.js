@@ -55,9 +55,9 @@ MLJ.core.Layer = function (name, cppMesh) {
     var _this = this;
 
     this.initializeRenderingAttributes = function () {
-        for(var pname in MLJ.core.defaults) {
+        for (var pname in MLJ.core.defaults) {
             _this.overlaysParams.set(pname,
-                jQuery.extend(true, {}, MLJ.core.defaults[pname]));                        
+                    jQuery.extend(true, {}, MLJ.core.defaults[pname]));
         }
 
         // Select the appropriate color mode
@@ -77,9 +77,9 @@ MLJ.core.Layer = function (name, cppMesh) {
         // So for example point overlay will use/refer the geometry buffers here defined
         // The node itself will never been rendered (material has the visibile flag == false).
         //  
-        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({visible: false}));
+        _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({visible: false}));
         _this.updateMeshBufferData();
-        
+
         console.timeEnd("Time to create mesh: ");
 
         // If the mesh is a point cloud, enable the "Points" rendering mode
@@ -94,7 +94,7 @@ MLJ.core.Layer = function (name, cppMesh) {
     // Normal is duplicated and the buffers store the per vertex smooth normal. 
     // Per face normal is not kept but the fill rendering overlay compute it by using on screen derivatives.
     // For point clouds we obviously keep everything per vertex.
-    
+
     this.updateMeshBufferData = function () {
 
         _this.VN = cppMesh.VN();
@@ -107,56 +107,59 @@ MLJ.core.Layer = function (name, cppMesh) {
 
         if (_this.FN === 0) { // Point Cloud
             bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
             positionAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
 
             bufferptr = cppMesh.getVertexNormalVector(true);
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
-            
+
             bufferptr = cppMesh.getVertexColors(true);
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN*3));
-            colorAttrib =  new THREE.BufferAttribute(bufferData, 3);
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
+            colorAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
-            
+
         } else { // Always Load as disconnected triangles
             bufferptr = cppMesh.getVertexVector(false);
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
             positionAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
 
             bufferptr = cppMesh.getVertexNormalVector(false);
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3)
-            
+
             bufferptr = cppMesh.getWedgeTextureCoordinates(0);
-            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*6));
+            bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 6));
             uvsAttrib = new THREE.BufferAttribute(bufferData, 2)
             Module._free(bufferptr);
-            
+
             var colorMode = _this.overlaysParams.getByKey("ColorWheel").colorMode;
             if (colorMode === MLJ.ColorMode.Face) {
-                bufferptr = cppMesh.getFaceColors();            
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
-                colorAttrib =  new THREE.BufferAttribute(bufferData, 3);
+                bufferptr = cppMesh.getFaceColors();
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
+                colorAttrib = new THREE.BufferAttribute(bufferData, 3);
                 Module._free(bufferptr);
             } else
             {
-                bufferptr = cppMesh.getVertexColors(false);            
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN*9));
-                colorAttrib =  new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr); 
-            }            
-        }        
-        
-        if (positionAttrib !== null) geometry.addAttribute('position', positionAttrib);
-        if (normalAttrib !== null) geometry.addAttribute('normal', normalAttrib);
-        if (uvsAttrib !== null) geometry.addAttribute('uv', uvsAttrib);
-        geometry.addAttribute('VCGColor', colorAttrib);        
-        
-        geometry.computeBoundingBox ();        
+                bufferptr = cppMesh.getVertexColors(false);
+                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
+                colorAttrib = new THREE.BufferAttribute(bufferData, 3);
+                Module._free(bufferptr);
+            }
+        }
+
+        if (positionAttrib !== null)
+            geometry.addAttribute('position', positionAttrib);
+        if (normalAttrib !== null)
+            geometry.addAttribute('normal', normalAttrib);
+        if (uvsAttrib !== null)
+            geometry.addAttribute('uv', uvsAttrib);
+        geometry.addAttribute('VCGColor', colorAttrib);
+
+        geometry.computeBoundingBox();
     };
 
 
@@ -167,7 +170,7 @@ MLJ.core.Layer = function (name, cppMesh) {
     this.updateThreeMesh = function () {
         this.updateMeshBufferData();
     };
-        
+
     /**
      * Returns this THREE.Mesh object
      * @returns {THREE.Mesh} this THREE.Mesh object
@@ -184,38 +187,38 @@ MLJ.core.Layer = function (name, cppMesh) {
     this.ptrMesh = function () {
         return _this.cppMesh.getMeshPtr();
     };
-    
+
     /**
      * Removes the object from memory
      * @author Stefano Gabriele     
      */
     this.dispose = function () {
-               
+
         var iter = _this.overlays.iterator();
         var mesh;
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             mesh = iter.next();
             mesh.geometry.dispose();
             mesh.material.dispose();
-            
+
             if (mesh.texture) {
-                mesh.texture.dispose();            
+                mesh.texture.dispose();
                 mesh.texture = null;
             }
         }
-        
+
         _this.threeMesh.geometry.dispose();
         _this.threeMesh.material.dispose();
-        
+
         if (_this.threeMesh.texture) {
-            _this.threeMesh.texture.dispose();            
+            _this.threeMesh.texture.dispose();
             _this.threeMesh.texture = null;
         }
-        
+
         _this.cppMesh.delete();
-        
+
         _this.name = _this.VN = _this.FN =
-        _this.threeMesh = _this.properties = _this.overlays = 
-        _this.overlaysParams =  _this = null;       
+                _this.threeMesh = _this.properties = _this.overlays =
+                _this.overlaysParams = _this = null;
     };
 }

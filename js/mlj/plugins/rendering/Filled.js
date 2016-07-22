@@ -176,6 +176,7 @@
         });
     };
 
+
     // define its _applyTo function. This is called at plugin activation/deactivation
     plug._applyTo = function (meshFile, on) {
 
@@ -218,26 +219,24 @@
                 wrapT: params.wrapT
             };
 
-            //The BufferGeometry MUST have an attribute called "uv", used in the PhongFragment and in PhongVertex
-            // The problem here (I guess) is that the shader is pre-compiled, so it loads the texture even when it is undefined or null
-            //hence, everytime I load a mesh, the uniforms.texture gets updated with the mesh's texture
-            //if the next texture does NOT have a texture or the texture could not be found, then the mat.uniforms.texture saved in the sader will stay the same
-            //IN FACT loading two differents meshes with two different textures will properly show both different textures since mat.uniforms.texture changes            
+            //The BufferGeometry MUST have an attribute called "uv", used in the PhongFragment and in PhongVertex          
             var mat = new THREE.RawShaderMaterial(parameters);
-            mat.uniforms.texture = {type: 't', value: null}; //Just for testing         
 
-            //If the mesh has a texture and this texture is present in the Emscripten file system root
-            //x is returned when no texture is bounded to the mesh
-//              console.log("Reading FS's root content " + FS.readdir("/"));
-//              console.log("Reading layer folder's content " + FS.readdir("/"+meshFile.name));
-            var textureName = meshFile.cppMesh.getTextureName(0); //We'll check if the mesh has at least a texture attached and if this texture is present in the FS
-            if (textureName !== "x" && FS.readdir("/").indexOf(textureName) > -1) {
-                var texturesNumber = meshFile.cppMesh.getTextureNumber(); //we are going to load all of the textures attached to the mesh
-                meshFile.texture = []; //let's create the layer-dependent texture array
-                meshFile.texturesNum = texturesNumber; //we'll need this to know if the mesh has texture and how many
-                var mat = new THREE.RawShaderMaterial(parameters); //material creation **TODO: may be useful to actually apply and show multiple texture with multiple materials
-                for (var i = 0; i < texturesNumber; i++) { //iterate through all the mesh textures
-                    
+//            console.log("Reading FS's root content " + FS.readdir("/"));
+//            console.log("Reading layer folder's content " + FS.readdir("/"+meshFile.name));
+            var texturesNumber = meshFile.cppMesh.getTextureNumber(); //we are going to try and load all of the texture attached to the mesh
+            var textureIndex = 0;
+            meshFile.texture = []; //let's create the layer-dependent texture array
+
+            for (var i = 0; i < texturesNumber; i++) { //iterate through all the mesh texture and try to load them from the FS               
+                var textureName = meshFile.cppMesh.getTextureName(i); //let's save the texture name 
+
+                //If the mesh has a texture and this texture is present in the Emscripten file system root
+                //x is returned when no texture is bounded to the mesh
+                if (textureName !== "x" && FS.readdir("/").indexOf(textureName) > -1) {
+                    var mat = new THREE.RawShaderMaterial(parameters); //material creation **TODO: may be useful to actually apply and show multiple texture with multiple materials
+
+                    //We're using the i index and not the textureIndex since in c++ the meshes name are all stored even if not present in the File System
                     var textureName = meshFile.cppMesh.getTextureName(i);
                     var textureInfoPtr = meshFile.cppMesh.getTextureImage(i); //This function loads the texture and give as a result an array with width, height, number of components, pointer to the image array
                     var textureInfoBuff = new Int32Array(Module.HEAPU8.buffer, textureInfoPtr, 4);   //let's load the image informations and store them
@@ -245,7 +244,6 @@
                     var texHeight = textureInfoBuff[1];
                     var texComponents = textureInfoBuff[2];
                     var texImgPtr = textureInfoBuff[3]; //this is the pointer to the image, which is encoded as an array with a length of width*height*nComponents
-                    console.log("Loading texture " + i + " " +textureName +" " + texWidth +" " + texHeight +" " + texComponents);
 
                     //Let's recreate the array as an Uint8Array, every pixel will be encoded with a number of attribute equal to the number of components
                     //Hence, the image array full size will be numOfPixels*components, which will be width*height*components
@@ -277,7 +275,7 @@
                     texture.minFilter = THREE.LinearFilter;   //Needed when texture is not a power of 2
 
                     //Let's create the texture object in order to store the texture options
-                    meshFile.texture[i] = {
+                    meshFile.texture[textureIndex] = {
                         fileName: textureName,
                         height: texHeight,
                         width: texWidth,
@@ -287,42 +285,49 @@
                         data: texture,
                         imgBuff: imgBuff
                     };
-                }
-                //After the for cycle we'll show ONLY THE FIRST TEXTURE (TODO in the future), and actually enable the textures in the shaders
-                mat.uniforms.texture.value = meshFile.texture[0].data;
-                mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
 
+                    textureIndex++;
+                    console.log("Loading texture " + i + " " + textureName + " " + texWidth + "x" + texHeight + " " + texComponents);
+                } else {
+                    console.warn("Could not load texture " + i + " " + textureName);
+                }
+            }
+
+            //if the array has been defined then there was at least a texture, for now, we are gonna show ONLY the first one
+            if (meshFile.texture.length > 0) {
+                //After the for cycle we'll show ONLY THE FIRST TEXTURE (TODO in the future), and actually enable the textures in the shaders
+                mat.uniforms.texture = {type: 't', value: meshFile.texture[0].data}; //Attach the texture   
+                mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
+                meshFile.texturesNum = textureIndex; //we'll need this to know if the mesh has texture and how many
                 showTexWidgets();
             } else {
-                //if no texture are found we'll attach a dummy texture to the shader in order to avoid useless warnings
-                console.log("No Texture found or attached");
-                meshFile.texture = [];
-                meshFile.texture[0] = {data: null}; //We need to create the object
-                meshFile.texture[0].data = new THREE.DataTexture(new Uint8Array(1 * 1 * 3), 1, 1, THREE.RGBFormat);
+                //if no texture are found we'll attach a dummy texture to the shader in order to avoid annpying warnings
+                console.warn("No Texture found or attached");
+                meshFile.texture[0] = {data: new THREE.DataTexture(new Uint8Array(1 * 1 * 3), 1, 1, THREE.RGBFormat)}; //We need to create the object
                 meshFile.texture[0].data.needsUpdate = true; //We need to update the texture to avoid the warning
                 meshFile.texturesNum = 0; //there are no textures
-                mat.uniforms.texture.value = meshFile.texture[0].data; //attach the dummy texture to the uniform
+                mat.uniforms.texture = {type: 't', value: meshFile.texture[0].data}; //Attach the dummy texture  
                 mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
                 hideTexWidgets();
             }
 
             //let's build the mesh and create the overlay layer
-            var filled = new THREE.Mesh(geom, mat);  //WORKING!! This create the new mesh to be added as an overlay layer
+            var filled = new THREE.Mesh(geom, mat);
             scene.addOverlayLayer(meshFile, plug.getName(), filled);
-            scene.render(); 
+            scene.render();
         } else {
-            // when plugin is deactivated we can release resources
-            scene.removeOverlayLayer(meshFile, plug.getName());
+            scene.removeOverlayLayer(meshFile, plug.getName()); // when plugin is deactivated we can release resources
         }
-
-        $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
-            if (layer.texturesNum > 0) {
-                showTexWidgets();
-            } else {
-                hideTexWidgets();
-            }
-        });
     };
+
+
+    $(document).on("SceneLayerAdded SceneLayerSelected SceneLayerRemoved", function (event, layer) {
+        if (layer.texturesNum > 0) {
+            showTexWidgets();
+        } else {
+            hideTexWidgets();
+        }
+    });
 
 
     function hideTexWidgets() {
