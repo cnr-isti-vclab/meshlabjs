@@ -342,6 +342,7 @@ inline uintptr_t getUvParamCoordinates(int textureIndex)
        int textureComponents = -1;
        unsigned char *data = stbi_load(m.textures[textureIndex].c_str(), &textureWidth, &textureHeight, &textureComponents, 0);       
        int imageInfo[4] = {textureWidth, textureHeight, textureComponents, (int) data};
+       //No kidding, removing this printing actually break the code, no idea why, if I remove it, the returned parameters will be wrong
        printf("\nTexture Info W: %d, H: %d, Ch: %d, TexPtr: %d", textureWidth, textureHeight, textureComponents, *data);
        
        return (uintptr_t) imageInfo;

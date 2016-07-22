@@ -287,7 +287,7 @@
                     };
 
                     textureIndex++;
-                    console.log("Loading texture " + i + " " + textureName + " " + texWidth + "x" + texHeight + " " + texComponents);
+                    console.log("Loading texture " + i + " " + textureName + " " + texWidth + "x" + texHeight + " " + texComponentsTitle);
                 } else {
                     console.warn("Could not load texture " + i + " " + textureName);
                 }
