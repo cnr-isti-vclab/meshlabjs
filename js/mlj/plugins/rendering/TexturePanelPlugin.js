@@ -27,11 +27,9 @@
         textureSelectionWidget = guiBuilder.Choice({
             label: "Texture:",
             tooltip: "",
-            options: [{content: "dummy1", value: 1, selected: true}, //I'm gonna put 4 dummy value in order to trigger the selection menu creation
-                {content: "dummy2", value: 2},
-                {content: "dummy3", value: 3},
-                {content: "dummy4", value: 4}
-            ],
+            combobox: true,
+            options: [{content: "dummy0", value: 0, selected: true}], //I'm gonna put 4 dummy value in order to trigger the selection menu creation
+            
             bindTo: (function () {  // here we define also a callback to invoke at every change of this option                
                 var bindToFun = function (value) {
                     var layer = MLJ.core.Scene.getSelectedLayer();

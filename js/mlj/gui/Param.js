@@ -149,7 +149,7 @@ MLJ.gui.Param.Bool = function (flags) {
 MLJ.extend(MLJ.gui.Param, MLJ.gui.Param.Bool);
 
 MLJ.gui.Param.Choice = function (flags) {
-    this.choice = flags.options.length > 3
+    this.choice = (flags.combobox || flags.options.length > 3)
             ? new MLJ.gui.component.ComboBox(flags)
             : new MLJ.gui.component.ButtonSet(flags);
     this.label = new MLJ.gui.component.Label(flags);
