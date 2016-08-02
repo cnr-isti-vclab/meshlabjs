@@ -2,6 +2,24 @@
 /// per ora mi salvo depthmap e positionmap....la depth map funziona bene...positionmap sembra anche
 (function (plugin, core, scene) {
 
+  /*******************************************************************
+  *                                                                  *
+  ******************************DEBUG*********************************
+  *                                                                  *
+  *******************************************************************/
+  let debugBox = (bbox) => {
+    let sz = bbox.size();
+    var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
+    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    var cube = new THREE.Mesh( geometry, material );
+    scene.getThreeJsGroup().add( cube );
+
+    let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
+    box.update();
+    scene.getScene().add(box);
+  }
+  /*******************************************************************/
+
   let intensity = 0.7;
 
   let shadowPassUniforms = {
@@ -77,6 +95,7 @@
                       0.02328, 0.01083, 0.00441, 0.00157];
      let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
                       10.41281, 12.39664, 14.38070, 16.36501];
+
     shadowPassOptions.gaussWeights = gWeights;
     shadowPassOptions.gaussOffsets = gOffsets;
     /*
@@ -185,16 +204,6 @@
       let bbox = scene.getBBox();
       let center = bbox.center();
 
-      // let sz = bbox.size();
-      // var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-      // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-      // var cube = new THREE.Mesh( geometry, material );
-      // scene.getThreeJsGroup().add( cube );
-      //
-      // let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
-      // box.update();
-      // scene.getScene().add(box);
-
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
 
       let bbmax = new THREE.Vector3().copy(bbox.max);
@@ -207,11 +216,10 @@
 
       let lookAt = new THREE.Matrix4();
       let camPos = new THREE.Vector3(0,0,0);
-      let viewD = new THREE.Vector3(-1,0,0);  //usate per la luce fissa a dx
 
       let lightPos = new THREE.Vector3(
-        sceneCamPos.x + 4,
-        sceneCamPos.y - 4,
+        sceneCamPos.x + 2,
+        sceneCamPos.y - 2,
         sceneCamPos.z
       );
 
@@ -222,14 +230,7 @@
       bbox.set(bbmin, bbmax);
       let diag = bbox.min.distanceTo(bbox.max);
 
-      //debugging bboxes
-
-
       bbox.applyMatrix4(lookAt);
-
-      // console.log(bbox.min.x+ " b "+bbox.max.x);
-      // console.log(bbox.min.y+ " b"+bbox.max.y);
-      // console.log(bbox.min.z+ " b"+bbox.max.z);
 
       //se uso gli estremi di bbox su certe scene (tipo toroid)
       //parti del modello escono dal frusto e quindi finiscono in ombra
@@ -248,14 +249,12 @@
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
-
+      /********************PREPATE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
       sceneGraph.overrideMaterial = null;
 
-      //TODO: -> here place code to do the horBlur and verBlur using the
-      // shadow map and the prepared render targets! ...try 7x7 or 15x15 kernels
-      // no gtg....finish later...
+      /*****************PREPARE BLUR MAPS**********************/
       horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
@@ -266,7 +265,7 @@
       verBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
       renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
 
-      // render the position map
+      /******************PREPARE POSITION MAP********************/
       sceneGraph.overrideMaterial = positionMaterial;
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
       sceneGraph.overrideMaterial = null;
