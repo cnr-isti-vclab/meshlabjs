@@ -1,5 +1,23 @@
 
 (function (plugin, core, scene) {
+  // TODO:
+  // aggiungere uno switch per vsm o sm
+  // aggiungere un controllo sulla dimensione del buffer di shadowmap (done..check)
+  // fare modo che vsm e sm vadano per point - based  (studia)
+  // investigare bug su mesh particolari  (studia)
+  //
+
+  // IDEA: dovrei prendere qualche misura su light bleed?
+
+  // IDEA:
+  // possibile bug? -> se prendo una mesh piena, abilito points, disabilito
+  // filled, riabilito filled, diabilito filled => scompaiono anche i Points e
+  // anche gli assi se ci sono o altri leyers...
+  // se la stessa cosa la faccio mentre c'è wireframe allora non scompaiono i
+  // Points
+  //
+  // problema: ad ogni modo se tolgo filled ma tengo points o wire dal punto
+  // di vista delle omvre è come se fosse visibile la mesh piena
 
   /*******************************************************************
   *                                                                  *
@@ -19,7 +37,7 @@
   }
   /*******************************************************************/
 
-  let intensity = 0.7;
+  let intensity = 1.0;
 
   let shadowPassUniforms = {
     vBlurMap:             { type: "t", value: null },
@@ -31,15 +49,17 @@
     intensity:            { type: "f", value: null}
   };
 
-  let depthPassUniforms = {
-    variance : { type : "i", value : 0}
-  };
+  // let depthPassUniforms = {
+  //   variance : { type : "i", value : 0}
+  // };
 
   let shadowPassOptions = {
     minFilter: null,
     SMVert: null,
     SMFrag: null,
-    ShadowFrag: null
+    ShadowFrag: null,
+    bufferWidth: 512,
+    bufferHeight: 512
   }
 
 
@@ -62,7 +82,7 @@
       label : "Shadow Transparency",
       tooltip : "Manages shadow intensity: 0 is black shadows, 1 is no shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval : 0.7,
+      defval : 1.0,
       bindTo: (function() {
           var bindToFun = function (value) {
             intensity = value;
@@ -70,6 +90,30 @@
           };
           bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
           return bindToFun;
+      }())
+    });
+
+    bufferWidth = guiBuilder.Choice({
+      label : `Shadow Buffer Width`,
+      tooltip : `Manages the shadow buffer width, it allows only powers of 2
+      to guarantee the creation of mipmaps`,
+      options: [
+        {content: "128", value: 128},
+        {content: "256", value: 256},
+        {content: "512", value: 512, selected: true},
+        {content: "1024", value: 1024},
+        {content: "2048", value: 2048},
+        {content: "4096", value: 4096}
+      ],
+      bindTo: (function() {
+          var callback = function (bufferWidth) {
+            plug._applyTo(false);
+            shadowPassOptions.bufferWidth = bufferWidth;
+            shadowPassOptions.bufferHeight = bufferWidth;
+            plug._applyTo(true);
+          };
+          callback.toString = function () { return "MLJ_SM_BufferWidth"; };
+          return callback;
       }())
     });
   };
@@ -86,9 +130,6 @@
     shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
-
-    shadowPassOptions.bufferWidth = 512;
-    shadowPassOptions.bufferHeight = 512;
 
      let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
                       0.02328, 0.01083, 0.00441, 0.00157];
@@ -196,12 +237,10 @@
 
       depthMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
       positionMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
-
       horBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
       verBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
 
       let bbox = scene.getBBox();
-      let center = bbox.center();
 
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
 
@@ -210,6 +249,8 @@
 
       bbmax.multiplyScalar(scale);
       bbmin.multiplyScalar(scale);
+
+      bbox.set(bbmin, bbmax);
 
       let sceneCamPos = sceneCam.position;
 
@@ -222,14 +263,11 @@
         sceneCamPos.z
       );
 
-      let lightD = new THREE.Vector3().subVectors(center, lightPos);
-
+      let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
       lookAt.lookAt(camPos, lightD, new THREE.Vector3(0,1,0));
 
-      bbox.set(bbmin, bbmax);
       let diag = bbox.min.distanceTo(bbox.max);
-
-      bbox.applyMatrix4(lookAt);
+      // bbox.applyMatrix4(lookAt);
 
       //se uso gli estremi di bbox su certe scene (tipo toroid)
       //parti del modello escono dal frusto e quindi finiscono in ombra
