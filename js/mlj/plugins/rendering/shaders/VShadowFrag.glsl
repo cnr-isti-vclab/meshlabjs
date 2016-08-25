@@ -33,10 +33,13 @@ float shadowCalc(vec2 vUv){
   vec4 position = texture2D(positionMap, vUv); //posizione mondo
   vec4 lightSpacePosition =  lightViewProjection * position;
 
+  //perspective devide
   lightSpacePosition.xyz /=  lightSpacePosition.w;
 
+  //linearize in [0..1]
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
+  //sample texture 
   vec2 moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
                         texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
 
