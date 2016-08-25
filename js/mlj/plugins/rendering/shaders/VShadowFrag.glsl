@@ -20,7 +20,7 @@ float shadowContribution(vec2 moments, float t) {
   float m1_2 = moments.x * moments.x;
   float variance = moments.y - m1_2; // var = E(x^2) - E(x)^2;
 
-  variance = max(variance, 0.0002);
+  variance = max(variance, 0.000001);
 
   float d = t - moments.x;
   float pmax = variance / (variance + (d*d));
@@ -51,7 +51,21 @@ void main(){
   if (color.a == 0.0) discard;
 
   float chebishev = shadowCalc(vUv);
-  float shadowing = (chebishev > 0.4) ? 1.0 : (0.6 + chebishev);
+  /* se probabilità di essere in luce >= 50% allora sono in luce */
+  /* ==> shadowing prende : 0.6; 0.7; 0.8; 0.9; 1.0 */
+  /* per supportare intensity voglio andare da 0 a 1, ossia se sono in ombra
+      ma trasparenza a 1 => voglio shadowing = 1.0 */
 
-  gl_FragColor = vec4(color.rgb * (shadowing), color.a);
+
+//  float shadowing = (chebishev > 0.4) ? 1.0 : (0.6 + chebishev);
+
+  if (chebishev > 0.4)
+    gl_FragColor = vec4(color.rgb, color.a);
+  else {
+    float shadowing = (0.6 + chebishev) * intensity;
+    gl_FragColor = vec4(color.rgb * (shadowing), color.a);
+
+  }
+
+
 }

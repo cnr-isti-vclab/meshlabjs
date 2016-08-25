@@ -26,7 +26,5 @@ vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
  }
 
 void main() {
-
   gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(0.0, 1.0 / 512.0)), 1.0);
-
 }

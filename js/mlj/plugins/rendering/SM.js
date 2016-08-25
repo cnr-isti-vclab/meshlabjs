@@ -1,5 +1,4 @@
-///GUARDA DEFERRED SHADING.....
-/// per ora mi salvo depthmap e positionmap....la depth map funziona bene...positionmap sembra anche
+
 (function (plugin, core, scene) {
 
   /*******************************************************************
@@ -249,7 +248,7 @@
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
-      /********************PREPATE DEPTH MAP*******************/
+      /********************PREPARE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
       sceneGraph.overrideMaterial = null;
