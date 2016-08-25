@@ -248,7 +248,7 @@
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
-      /********************PREPARE DEPTH MAP*******************/
+      /* Hide layers that should not be shadowed */
       sceneGraph.traverse(function (obj) {
           if (obj.visible && obj.geometry) {
               if (!(obj instanceof THREE.Mesh) ||
@@ -259,16 +259,16 @@
               }
           }
       });
-
+      /********************PREPARE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
       sceneGraph.overrideMaterial = null;
-
       /******************PREPARE POSITION MAP********************/
       sceneGraph.overrideMaterial = positionMaterial;
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
       sceneGraph.overrideMaterial = null;
 
+      /* Make hidden layers visible again */
       sceneGraph.traverse(function (obj) {
           if (obj.__mlj_smplugin_sweep_flag === true) {
               obj.visible = true;
@@ -276,16 +276,18 @@
           }
       });
       /*****************PREPARE BLUR MAPS**********************/
+      /* horizontal blur map */
       horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
       renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
-
+      /* vertical blur map */
       verBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       verBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       verBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
       renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
 
+      /*******************FINAL RENDER PASS********************/
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
@@ -316,6 +318,7 @@
       scene.addPostProcessPass(plug.getName(), context.pass);
     } else {
       scene.removePostProcessPass(plug.getName());
+      /* add disposing of objects */
       context = null;
     }
 
