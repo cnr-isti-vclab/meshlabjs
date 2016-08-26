@@ -50,7 +50,7 @@ void main()
     float c = noiseData.y;
     mat3 Rz = mat3(c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0);
 
-    mat3 sampleTransform = frame * Rz;   
+    mat3 sampleTransform = frame * Rz;
 
     // compute ambient occlusion
     float ambientOcclusion = 0.0;

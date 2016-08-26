@@ -13,6 +13,14 @@ uniform float intensity;
 
 varying vec2 vUv;
 
+float linearStep(float min, float max, float v) {
+  return clamp((v-min)/(max-min), 0.0, 1.0);
+}
+
+float containBleed(float cheb, float thresh) {
+  return linearStep(thresh, 1.0, cheb);
+}
+
 float shadowContribution(vec2 moments, float t) {
 
   if (t <= moments.x) return 1.0;//bound della funzione di Chebyshev
@@ -26,15 +34,16 @@ float shadowContribution(vec2 moments, float t) {
   float pmax = variance / (variance + (d*d));
 
   return pmax;
+//  return containBleed(pmax, 0.2);
 }
 
-float shadowCalc(vec2 vUv){
+float shadowCalc(vec4 position){
 
-  vec4 position = texture2D(positionMap, vUv); //posizione mondo
+//  vec4 position = texture2D(positionMap, vUv); //posizione mondo
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
-  lightSpacePosition.xyz /=  lightSpacePosition.w;
+  //lightSpacePosition.xyz /=  lightSpacePosition.w;
 
   //linearize in [0..1]
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
@@ -50,25 +59,20 @@ float shadowCalc(vec2 vUv){
 
 void main(){
   vec4 color = texture2D(colorMap, vUv);
+  //if(color.a == 0.0) discard;
 
-  if (color.a == 0.0) discard;
+  //anticipating position sampling, in order to fast discard
+  vec4 posSample = texture2D(positionMap, vUv);
+  if(posSample.a == 0.0){ gl_FragColor = color; return;}
 
-  float chebishev = shadowCalc(vUv);
-  /* se probabilità di essere in luce >= 50% allora sono in luce */
-  /* ==> shadowing prende : 0.6; 0.7; 0.8; 0.9; 1.0 */
-  /* per supportare intensity voglio andare da 0 a 1, ossia se sono in ombra
-      ma trasparenza a 1 => voglio shadowing = 1.0 */
-
+  float chebishev = shadowCalc(posSample);
 
 //  float shadowing = (chebishev > 0.4) ? 1.0 : (0.6 + chebishev);
 
-  if (chebishev > 0.6)
+  if (chebishev > 0.4)
     gl_FragColor = vec4(color.rgb, color.a);
   else {
-    float shadowing = clamp(0.4 + chebishev, 0.7, 1.0) * intensity;
+    float shadowing = clamp(0.6 + chebishev, 0.7, 1.0) * intensity;
     gl_FragColor = vec4(color.rgb * (shadowing), color.a);
-
   }
-
-
 }

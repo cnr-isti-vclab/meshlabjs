@@ -4,7 +4,8 @@ precision highp float;
 varying vec4 worldPoint;
 
 void main() {
-  float d = worldPoint.z;   //posizione ndc [-1..1]
+  //qui probabilmente non serve più worldpoint
+  float d = worldPoint.z / worldPoint.w;   //posizione ndc [-1..1]
   d = d * 0.5 + 0.5;        //scalo su [0..1]
 
   float dx = dFdx(d);

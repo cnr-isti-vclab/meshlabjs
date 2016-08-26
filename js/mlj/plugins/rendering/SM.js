@@ -85,7 +85,7 @@
   plug._init = (guiBuilder) => {
     intensityRng = guiBuilder.RangedFloat({
       label : "Shadow Transparency",
-      tooltip : "Manages shadow intensity: 0 is black shadows, 1 is no shadows",
+      tooltip : "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
       min: 0.0, max: 1.0, step: 0.001,
       defval : 1.0,
       bindTo: (function() {
