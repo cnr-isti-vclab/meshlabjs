@@ -263,29 +263,15 @@
 
       let bbox = scene.getBBox();
 
-       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
-       let bbmax = new THREE.Vector3().copy(bbox.max);
-       let bbmin = new THREE.Vector3().copy(bbox.min);
+      let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
+      let bbmax = new THREE.Vector3().copy(bbox.max);
+      let bbmin = new THREE.Vector3().copy(bbox.min);
 
-            // let offset = bbox.center().negate().multiplyScalar(scale);
-            // console.log("offset+ "+offset.toArray());
-            // //  console.log("off"+offset.toArray());
-            // let trans = new THREE.Matrix4();
-            // trans.makeTranslation(offset.x, offset.y, offset.z);
-            //
-            // bbmax.applyMatrix4(trans);
-            // bbmin.applyMatrix4(trans);
+      bbmax.multiplyScalar(scale);
+      bbmin.multiplyScalar(scale);
 
+      bbox.set(bbmin, bbmax);
 
-
-       bbmax.multiplyScalar(scale);
-       bbmin.multiplyScalar(scale);
-
-       bbox.set(bbmin, bbmax);
-            //  debugBox(bbox);
-      //  bbox.translate(offset);
-      //  bbox.expandByScalar(scale / 2);
-      //  debugBox(bbox);
       let sceneCamPos = sceneCam.position;
 
       if(!fixedLight) {
@@ -298,7 +284,7 @@
 
 
       // let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
-            let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
+      let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
 
       let lookAt = new THREE.Matrix4().lookAt(new THREE.Vector3(0,0,0), lightD.negate(), new THREE.Vector3(0,1,0));
 
