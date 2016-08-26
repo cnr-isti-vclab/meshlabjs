@@ -4,20 +4,19 @@
   // aggiungere uno switch per vsm o sm
   // aggiungere un controllo sulla dimensione del buffer di shadowmap (done..check)
   // fare modo che vsm e sm vadano per point - based  (studia)
-  // investigare bug su mesh particolari  (studia)
-  //
 
-  // IDEA: dovrei prendere qualche misura su light bleed?
 
-  // IDEA:
-  // possibile bug? -> se prendo una mesh piena, abilito points, disabilito
-  // filled, riabilito filled, diabilito filled => scompaiono anche i Points e
-  // anche gli assi se ci sono o altri leyers...
-  // se la stessa cosa la faccio mentre c'è wireframe allora non scompaiono i
-  // Points
-  //
-  // problema: ad ogni modo se tolgo filled ma tengo points o wire dal punto
-  // di vista delle omvre è come se fosse visibile la mesh piena
+  // investigare bug su mesh particolari  (done in parte...approfondisci su laurana e mano)
+  // IDEA:penso di aver individuato l'errore:
+  // per adesso correggere la direzione di luce ha fixato tutto tranne laurana e mano,
+  // questo perché entrambi presentano la stessa caratteristica:
+  //  il bbox che calcolo per loro, si trova "di fronte" alla mesh, e non sotto/sopra/alcentro/intornoperbene
+  //  e quindi siccome la direzione della luce va da ~camera a bbox.center, in quei casi
+  //  lo spostamento della camera rispetto la mesh non rispecchia lo spostamento rispetto
+  //  il bbox...
+  //  TODO: cerca di risolvere sta cosa del bbox...
+
+  // TODO : pensa alla cosa del point-based..
 
   /*******************************************************************
   *                                                                  *
@@ -241,9 +240,7 @@
       verBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
 
       let bbox = scene.getBBox();
-
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
-
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
 
@@ -251,20 +248,18 @@
       bbmin.multiplyScalar(scale);
 
       bbox.set(bbmin, bbmax);
-
+      debugBox(bbox);
       let sceneCamPos = sceneCam.position;
-
-      let lookAt = new THREE.Matrix4();
-      let camPos = new THREE.Vector3(0,0,0);
-
       let lightPos = new THREE.Vector3(
         sceneCamPos.x + 2,
-        sceneCamPos.y - 2,
+        sceneCamPos.y,
         sceneCamPos.z
       );
 
       let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
-      lookAt.lookAt(camPos, lightD, new THREE.Vector3(0,1,0));
+
+      let lookAt = new THREE.Matrix4();
+      lookAt.lookAt(new THREE.Vector3(0,0,0), lightD, new THREE.Vector3(0,1,0));
 
       let diag = bbox.min.distanceTo(bbox.max);
       // bbox.applyMatrix4(lookAt);
@@ -337,7 +332,7 @@
       shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
 
-      renderer.render(shadowScene, sceneCam, outBuffer, true);
+       renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
       shadowPassUniforms.depthMap.value             = null;
