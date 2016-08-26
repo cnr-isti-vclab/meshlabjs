@@ -324,7 +324,7 @@ MLJ.core.Scene = {};
             while(iter.hasNext()) {
                // Getting the bounding box of the current layer
                var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
-               
+
                // Applying the union of the previous bounding box to the current one
                BBGlobal.union(bbox);
             }
@@ -909,7 +909,7 @@ MLJ.core.Scene = {};
         return success;
     }
 
-    
+
     this.resetTrackball = function() {
         _controls.reset();
     };

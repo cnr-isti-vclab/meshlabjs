@@ -25,13 +25,16 @@
   *******************************************************************/
   let debugBox = (bbox) => {
     let sz = bbox.size();
+
     var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
     var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     var cube = new THREE.Mesh( geometry, material );
-    scene.getThreeJsGroup().add( cube );
+
+    // scene.getThreeJsGroup().add( cube );
 
     let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
     box.update();
+    console.log("bboxdiag: "+box.box.min.distanceTo(box.box.max) + " min: "+box.box.min.toArray()+ "max: "+box.box.max.toArray()+ "center: "+box.box.center().toArray());
     scene.getScene().add(box);
   }
   /*******************************************************************/
@@ -58,7 +61,8 @@
     SMFrag: null,
     ShadowFrag: null,
     bufferWidth: 512,
-    bufferHeight: 512
+    bufferHeight: 512,
+    lightPos: null
   }
 
 
@@ -76,6 +80,8 @@
   //
   //  let varianceFlag;
   let intensityRng;
+  let fixedLight = false;
+
   plug._init = (guiBuilder) => {
     intensityRng = guiBuilder.RangedFloat({
       label : "Shadow Transparency",
@@ -114,6 +120,22 @@
           callback.toString = function () { return "MLJ_SM_BufferWidth"; };
           return callback;
       }())
+    });
+
+    guiBuilder.Choice({
+        label: "Fix Light",
+        tooltip: "Fix light in current position, unbinding it from camera",
+        options: [
+            {content: "Off", value: false, selected: true},
+            {content: "On", value: true }
+        ],
+        bindTo: (function() {
+            var bindToFun = function (value) {
+                fixedLight = value
+            };
+            bindToFun.toString = function () { return 'MLJ_SM_FixedLight'; };
+            return bindToFun;
+        }())
     });
   };
 
@@ -240,40 +262,59 @@
       verBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
 
       let bbox = scene.getBBox();
-      let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
-      let bbmax = new THREE.Vector3().copy(bbox.max);
-      let bbmin = new THREE.Vector3().copy(bbox.min);
 
-      bbmax.multiplyScalar(scale);
-      bbmin.multiplyScalar(scale);
+       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
+       let bbmax = new THREE.Vector3().copy(bbox.max);
+       let bbmin = new THREE.Vector3().copy(bbox.min);
 
-      bbox.set(bbmin, bbmax);
-      debugBox(bbox);
+            // let offset = bbox.center().negate().multiplyScalar(scale);
+            // console.log("offset+ "+offset.toArray());
+            // //  console.log("off"+offset.toArray());
+            // let trans = new THREE.Matrix4();
+            // trans.makeTranslation(offset.x, offset.y, offset.z);
+            //
+            // bbmax.applyMatrix4(trans);
+            // bbmin.applyMatrix4(trans);
+
+
+
+       bbmax.multiplyScalar(scale);
+       bbmin.multiplyScalar(scale);
+
+       bbox.set(bbmin, bbmax);
+            //  debugBox(bbox);
+      //  bbox.translate(offset);
+      //  bbox.expandByScalar(scale / 2);
+      //  debugBox(bbox);
       let sceneCamPos = sceneCam.position;
-      let lightPos = new THREE.Vector3(
-        sceneCamPos.x + 2,
-        sceneCamPos.y,
-        sceneCamPos.z
-      );
 
-      let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
+      if(!fixedLight) {
+        shadowPassOptions.lightPos = new THREE.Vector3(
+          sceneCamPos.x + 4,
+          sceneCamPos.y - 1,
+          sceneCamPos.z
+        );
+      }
 
-      let lookAt = new THREE.Matrix4();
-      lookAt.lookAt(new THREE.Vector3(0,0,0), lightD, new THREE.Vector3(0,1,0));
+
+      // let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
+            let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
+
+      let lookAt = new THREE.Matrix4().lookAt(new THREE.Vector3(0,0,0), lightD.negate(), new THREE.Vector3(0,1,0));
 
       let diag = bbox.min.distanceTo(bbox.max);
-      // bbox.applyMatrix4(lookAt);
+      // console.log("diag: "+ diag + " min: "+bbox.min.toArray()+ "max: "+bbox.max.toArray()+"center"+bbox.center().toArray()  );
 
       //se uso gli estremi di bbox su certe scene (tipo toroid)
       //parti del modello escono dal frusto e quindi finiscono in ombra
       //con diag invece per le prove che ho fatto funziona bene
       lightCamera = new THREE.OrthographicCamera(
-        -(diag/2),
-        diag/2,
-        diag/2,
-        -(diag/2),
-        -(diag/2),
-        diag/2
+        -(diag) / 2,
+        diag / 2,
+        diag / 2,
+        -(diag / 2),
+        -(diag / 2),
+        diag / 2
       );
 
       lightCamera.position.set(0, 0, 0);
