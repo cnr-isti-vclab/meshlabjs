@@ -51,14 +51,22 @@
             _$searchTool.append(_$input);
             var select;
             _$input.keyup(function () {
-                var matcher = new RegExp("(^)" + $.ui.autocomplete.escapeRegex($(this).val()), "i");
+
+                var splitted = $(this).val().split(" ");
+                var regString = "^";
+                for(var i = 0; i < splitted.length; i++)
+                {
+                    if(splitted[i] != "")
+                        regString += "(?=.*" + splitted[i] + ".*)";
+                }
+                regString += ".*";//^(?=.*word1.*)(?=.*word2.*)(?=.*wordN.*).*
+
+                var matcher = new RegExp(regString, "i");
                 select = $.grep(_elements, function (item) {
-                    return matcher.test(item);
+                        return matcher.test(item);
                 });
-
-                refresh(select);
-            });       
-
+             refresh(select);       
+            }); 
             return _$searchTool;
         };
 
@@ -69,9 +77,9 @@
         this.addItem = function (tag) {
             //Replace special characters with a whitespace
             var cleanedTag = tag.replace(/[^\w\s]/gi," ");
-            var split = cleanedTag.split(" ");
+            //var split = cleanedTag.split(" ");
             // Merge both arrays and get unique items
-            _elements = MLJ.util.arrayUnique(_elements.concat(split));
+            _elements = MLJ.util.arrayUnique(_elements.concat(cleanedTag));
             return this;
         };
         
