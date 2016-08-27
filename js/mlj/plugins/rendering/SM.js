@@ -4,9 +4,28 @@
   // aggiungere uno switch per vsm o sm
   // aggiungere un controllo sulla dimensione del buffer di shadowmap (done..check)
   // fare modo che vsm e sm vadano per point - based  (studia)
+  // -> ma si può fare?
+  //  dubbio1: ne' rs ne ssao lo fanno e non si fa nemmeno in meshlab
+  //  dubbio2: come distinguere mesh point based da mesh poligonali? io non ho un controllo cosi granulare
+  //  dubbio3: come distinguere mesh point based (senza normali) da altre mesh senza normali che davvero non
+  //             voglio disegnare
+  //  dubbio4: i punti noi li mettiamo come overlaylayer del layer che contiene la mesh, ossia aggiungiamo
+  //            la pointscloud alla mesh del nostro layer...quando tiro su una mesh point-based il layer cos'è??
+  //            a fare un po' di test sembra roba continua, che contiene tutti i punti...quindi non li vedo a part i punti
+  //            come fo a distinguere cosa voglio fare?
+  //  dubbio5: noi usiamo pointscloud, il cui rendering, e presumo anche settare GL_POINTS come render mode
+  //          è gestito da three....usando gli shaders di threee pare ci sia verso fare le ombre dei punti,
+  //          ma noi, usando shaders interamente nostri ce la facciamo?
+  //
+//    dubbio6: in effetti three (almeno nella versione corrente) per le pointscloud setta isPoints = true
+//             questo sarà usato in renderbufferdirect per settare GL_POINTS come render mode,
+//================> REVIEW: ok...settando gl_pointsize riesco a disegnare i points nella shadowmap...il problema ora è
+//                    che disegna anche la mesh....anche nel caso di shoulau che in teoria sono solo points...
+//                  devo investigare in mlj loadmesh e in threejs....mmm però funziona solo per i punti della mesh
+//                  la pointcloud che disegno sembra non funzionare...
 
+//    dubbio7: in render() sembra che shadowmap.render sia sempre chiamato
 
-  // investigare bug su mesh particolari  (done in parte...approfondisci su laurana e mano)
   // IDEA:penso di aver individuato l'errore:
   // per adesso correggere la direzione di luce ha fixato tutto tranne laurana e mano,
   // questo perché entrambi presentano la stessa caratteristica:
@@ -14,7 +33,7 @@
   //  e quindi siccome la direzione della luce va da ~camera a bbox.center, in quei casi
   //  lo spostamento della camera rispetto la mesh non rispecchia lo spostamento rispetto
   //  il bbox...
-  //  TODO: cerca di risolvere sta cosa del bbox...
+  //  TODO: cerca di risolvere sta cosa del bbox... (DONE)
 
   // TODO : pensa alla cosa del point-based..
 
@@ -26,9 +45,9 @@
   let debugBox = (bbox) => {
     let sz = bbox.size();
 
-    var geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    var cube = new THREE.Mesh( geometry, material );
+    let geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
+    let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    let cube = new THREE.Mesh( geometry, material );
 
     // scene.getThreeJsGroup().add( cube );
 
@@ -141,9 +160,36 @@
 
 
   function SMContext() {
-
+    /**************************************************************
+    var particles, geometry, materials = [], parameters, i, h, color, size;
+        geometry = new THREE.Geometry();
+    for ( i = 0; i < 20000; i ++ ) {
+      var vertex = new THREE.Vector3();
+      vertex.x = Math.random() * 2000 - 1000;
+      vertex.y = Math.random() * 2000 - 1000;
+      vertex.z = Math.random() * 2000 - 1000;
+      geometry.vertices.push( vertex );
+    }
+    parameters = [
+      [ [1, 1, 0.5], 5 ],
+      [ [0.95, 1, 0.5], 4 ],
+      [ [0.90, 1, 0.5], 3 ],
+      [ [0.85, 1, 0.5], 2 ],
+      [ [0.80, 1, 0.5], 1 ]
+    ];
+    for ( i = 0; i < parameters.length; i ++ ) {
+      color = parameters[i][0];
+      size  = parameters[i][1];
+      //materials[i] = new THREE.PointsMaterial( { size: size } );
+      particles = new THREE.PointCloud( geometry);//, materials[i] );
+      particles.rotation.x = Math.random() * 6;
+      particles.rotation.y = Math.random() * 6;
+      particles.rotation.z = Math.random() * 6;
+      scene.getScene().add( particles );
+    }
+    **************************************************************/
     shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
-
+    // shaders
     shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
     shadowPassOptions.SMFrag = plug.shaders.getByKey("VSMFrag.glsl");
     shadowPassOptions.shadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
@@ -151,7 +197,8 @@
     shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
-
+    
+    // pesi e offset per la distribuzione gaussiana
      let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
                       0.02328, 0.01083, 0.00441, 0.00157];
      let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
@@ -309,16 +356,16 @@
       lightCamera.updateProjectionMatrix();
 
       /* Hide layers that should not be shadowed */
-      sceneGraph.traverse(function (obj) {
-          if (obj.visible && obj.geometry) {
-              if (!(obj instanceof THREE.Mesh) ||
-                          (obj.geometry.type === "BufferGeometry" &&
-                                  obj.geometry.getAttribute('normal') === undefined)) {
-                  obj.visible = false;
-                  obj.__mlj_smplugin_sweep_flag = true;
-              }
-          }
-      });
+      // sceneGraph.traverse(function (obj) {
+      //     if (obj.visible && obj.geometry) {
+      //         if (!(obj instanceof THREE.Mesh) ||
+      //                     (obj.geometry.type === "BufferGeometry" &&
+      //                             obj.geometry.getAttribute('normal') === undefined)) {
+      //             obj.visible = false;
+      //             obj.__mlj_smplugin_sweep_flag = true;
+      //         }
+      //     }
+      // });
       /********************PREPARE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
@@ -359,7 +406,7 @@
       shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
 
-       renderer.render(shadowScene, sceneCam, outBuffer, true);
+      renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
       shadowPassUniforms.depthMap.value             = null;
