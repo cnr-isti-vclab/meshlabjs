@@ -10,6 +10,7 @@ uniform sampler2D depthMap;
 #define stepCount 9 //35x35 kernel
 uniform float gWeights[stepCount];
 uniform float gOffsets[stepCount];
+uniform float texSize;
 
 varying vec2 vUv;
 
@@ -26,8 +27,8 @@ vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
  }
 
 void main() {
-  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(1.0 / 512.0, 0.0)), 0.5);
+  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(1.0 / texSize, 0.0)), 0.5);
   // pixelOffset = 1.0 / 512.0 ossia 1 = max u,v coord diviso 512 = grandezza texture..
-  // TODO: usare una uniform per la grandezza texture
+
 
 }

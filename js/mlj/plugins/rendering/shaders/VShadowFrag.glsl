@@ -28,7 +28,7 @@ float shadowContribution(vec2 moments, float t) {
   float m1_2 = moments.x * moments.x;
   float variance = moments.y - m1_2; // var = E(x^2) - E(x)^2;
 
-  variance = max(variance, 0.000001);
+  variance = max(variance, 0.00002);
 
   float d = t - moments.x;
   float pmax = variance / (variance + (d*d));
@@ -39,7 +39,6 @@ float shadowContribution(vec2 moments, float t) {
 
 float shadowCalc(vec4 position){
 
-//  vec4 position = texture2D(positionMap, vUv); //posizione mondo
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
@@ -59,7 +58,6 @@ float shadowCalc(vec4 position){
 
 void main(){
   vec4 color = texture2D(colorMap, vUv);
-  //if(color.a == 0.0) discard;
 
   //anticipating position sampling, in order to fast discard
   vec4 posSample = texture2D(positionMap, vUv);
@@ -67,12 +65,11 @@ void main(){
 
   float chebishev = shadowCalc(posSample);
 
-//  float shadowing = (chebishev > 0.4) ? 1.0 : (0.6 + chebishev);
-
   if (chebishev > 0.4)
     gl_FragColor = vec4(color.rgb, color.a);
   else {
-    float shadowing = clamp(0.6 + chebishev, 0.7, 1.0) * intensity;
+    //float shadowing = clamp(0.6 + chebishev, 0.7, 1.0) * intensity;
+    float shadowing = (chebishev + 0.6) * intensity;
     gl_FragColor = vec4(color.rgb * (shadowing), color.a);
   }
 }

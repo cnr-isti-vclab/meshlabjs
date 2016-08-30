@@ -10,6 +10,7 @@ uniform sampler2D depthMap;
 #define stepCount 9 //35x35 kernel
 uniform float gWeights[stepCount];
 uniform float gOffsets[stepCount];
+uniform float texSize;
 
 varying vec2 vUv;
 
@@ -26,5 +27,5 @@ vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
  }
 
 void main() {
-  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(0.0, 1.0 / 512.0)), 1.0);
+  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(0.0, 1.0 / texSize)), 1.0);
 }

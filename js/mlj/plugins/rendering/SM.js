@@ -1,8 +1,10 @@
 
 (function (plugin, core, scene) {
+  //REVIEW : bug in meshlab..se traslo mesh le ombre non vanno
+  // TODO: refactoring---commenting---memorycleanupondispose---icon
   // TODO:
   // aggiungere uno switch per vsm o sm
-  // aggiungere un controllo sulla dimensione del buffer di shadowmap (done..check)
+  // aggiungere un controllo sulla dimensione del buffer di shadowmap (done)
   // fare modo che vsm e sm vadano per point - based  (studia)
   // -> ma si può fare?
   //  dubbio1: ne' rs ne ssao lo fanno e non si fa nemmeno in meshlab
@@ -26,7 +28,7 @@
 
 //    dubbio7: in render() sembra che shadowmap.render sia sempre chiamato
 
-  // IDEA:penso di aver individuato l'errore:
+  // IDEA:penso di aver individuato l'errore: (risolto)
   // per adesso correggere la direzione di luce ha fixato tutto tranne laurana e mano,
   // questo perché entrambi presentano la stessa caratteristica:
   //  il bbox che calcolo per loro, si trova "di fronte" alla mesh, e non sotto/sopra/alcentro/intornoperbene
@@ -36,6 +38,14 @@
   //  TODO: cerca di risolvere sta cosa del bbox... (DONE)
 
   // TODO : pensa alla cosa del point-based..
+
+  // REVIEW: ho tentato di eliminare il passo di rendering della positionmap, ricostruendo coordinates
+  //        mondo a partire dalle coordinate vUV => NDC => world ma vUv non è sufficiente...avrei bisogno di
+  //           conoscere la profondità di quel pixel.... ------> semmai ripensaci un po'
+  //      --> mi sa che è un gran bel NAH
+
+  //  IDEA una cosa che potrei fare e ottimizzare leggermente è salvare dentro position map direttamente
+  //      coordinate in spazio luce....ora le salvo in mondo, ma le uso solo in spazio luce poi...le usavo per debug mi sa
 
   /*******************************************************************
   *                                                                  *
@@ -59,6 +69,8 @@
   /*******************************************************************/
 
   let intensity = 1.0;
+  let fixedLight = false;
+  let debug = false;
 
   let shadowPassUniforms = {
     vBlurMap:             { type: "t", value: null },
@@ -99,7 +111,6 @@
   //
   //  let varianceFlag;
   let intensityRng;
-  let fixedLight = false;
 
   plug._init = (guiBuilder) => {
     intensityRng = guiBuilder.RangedFloat({
@@ -150,9 +161,25 @@
         ],
         bindTo: (function() {
             var bindToFun = function (value) {
-                fixedLight = value
+                fixedLight = value;
             };
             bindToFun.toString = function () { return 'MLJ_SM_FixedLight'; };
+            return bindToFun;
+        }())
+    });
+
+    guiBuilder.Choice({
+        label: "Debug MODE",
+        tooltip: "Use me sometimes",
+        options: [
+            {content: "Off", value: false, selected: true},
+            {content: "On", value: true }
+        ],
+        bindTo: (function() {
+            var bindToFun = function (value) {
+                debug = value;
+            };
+            bindToFun.toString = function () { return 'MLJ_SM_DEBUG'; };
             return bindToFun;
         }())
     });
@@ -197,7 +224,7 @@
     shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
-    
+
     // pesi e offset per la distribuzione gaussiana
      let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
                       0.02328, 0.01083, 0.00441, 0.00157];
@@ -248,6 +275,13 @@
       fragmentShader: shadowPassOptions.SMFrag
     });
 
+    let positionMaterial = new THREE.RawShaderMaterial({
+      uniforms: {},
+      side: THREE.DoubleSide,
+      vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
+      fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
+    });
+
     let horBlurMaterial = new THREE.RawShaderMaterial({
       uniforms: {},
       side: THREE.DoubleSide,
@@ -261,14 +295,6 @@
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.verBlurFrag
     });
-
-    let positionMaterial = new THREE.RawShaderMaterial({
-      uniforms: {},
-      side: THREE.DoubleSide,
-      vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
-      fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
-    });
-
     /*
     quad che disegno per il passo di defferred rendering
     */
@@ -329,11 +355,7 @@
         );
       }
 
-
-      // let lightD = new THREE.Vector3().subVectors(bbox.center(), lightPos);
-      let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
-
-      let lookAt = new THREE.Matrix4().lookAt(new THREE.Vector3(0,0,0), lightD.negate(), new THREE.Vector3(0,1,0));
+      //let lookAt = new THREE.Matrix4().lookAt(new THREE.Vector3(0,0,0), lightD.negate(), new THREE.Vector3(0,1,0));
 
       let diag = bbox.min.distanceTo(bbox.max);
       // console.log("diag: "+ diag + " min: "+bbox.min.toArray()+ "max: "+bbox.max.toArray()+"center"+bbox.center().toArray()  );
@@ -350,24 +372,32 @@
         diag / 2
       );
 
+      let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
+
       lightCamera.position.set(0, 0, 0);
-      lightCamera.lookAt(lightD);
+      lightCamera.lookAt(lightD.negate());
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
       /* Hide layers that should not be shadowed */
-      // sceneGraph.traverse(function (obj) {
-      //     if (obj.visible && obj.geometry) {
-      //         if (!(obj instanceof THREE.Mesh) ||
-      //                     (obj.geometry.type === "BufferGeometry" &&
-      //                             obj.geometry.getAttribute('normal') === undefined)) {
-      //             obj.visible = false;
-      //             obj.__mlj_smplugin_sweep_flag = true;
-      //         }
-      //     }
-      // });
+      if (!debug) {
+        sceneGraph.traverse(function (obj) {
+            if (obj.visible && obj.geometry) {
+                if (!(obj instanceof THREE.Mesh) ||
+                            (obj.geometry.type === "BufferGeometry" &&
+                                    obj.geometry.getAttribute('normal') === undefined)) {
+                    obj.visible = false;
+                    obj.__mlj_smplugin_sweep_flag = true;
+                }
+            }
+        });
+      }
+      /******************debug**************/
+      let buf = depthMapTarget;
+      if (debug) buf = outBuffer;
       /********************PREPARE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
+      // renderer.render(sceneGraph, lightCamera, buf, true);
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
       sceneGraph.overrideMaterial = null;
       /******************PREPARE POSITION MAP********************/
@@ -387,11 +417,14 @@
       horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
+      horBlurMaterial.uniforms.texSize  = {type: "f", value: shadowPassOptions.bufferWidth};
+      // renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
       renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
       /* vertical blur map */
       verBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       verBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       verBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
+      verBlurMaterial.uniforms.texSize  = {type: "f", value: shadowPassOptions.bufferWidth};
       renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
 
       /*******************FINAL RENDER PASS********************/
@@ -406,7 +439,7 @@
       shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
 
-      renderer.render(shadowScene, sceneCam, outBuffer, true);
+       renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
       shadowPassUniforms.depthMap.value             = null;
