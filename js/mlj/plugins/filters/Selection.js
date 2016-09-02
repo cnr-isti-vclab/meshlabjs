@@ -243,6 +243,35 @@
         scene.addLayer(newmeshFile);
     };
 /******************************************************************************/
+    var SelectionPointOutlier = new plugin.Filter({
+        name: "Selection by Point Outlier",
+        tooltip: "Select all the vertex of the mesh with an outlier probability above the input threshold. ",
+        arity: 1
+    });
+
+    var SPONearestWidget, SPOThresholdWidget;
+
+    SelectionPointOutlier._init = function (builder) 
+    {  
+        SPONearestWidget = builder.RangedFloat({
+            max: 100, min: 0, step: 1, defval: 10,
+            label: "Nearest vertex",
+            tooltip: "Number of nearest vertices of each vertex" 
+        });
+        SPOThresholdWidget = builder.RangedFloat({
+            max: 1, min: 0, step: 0.1, defval: 0.5,
+            label: "Threshold",
+            tooltip: "Outlier probability above wich a vertex is selected"
+        });
+    };
+
+    SelectionPointOutlier._applyTo = function (meshFile) {
+       Module.SelectionByPointOutlier(meshFile.ptrMesh(), SPONearestWidget.getValue(), SPOThresholdWidget.getValue());
+    };
+
+
+
+/******************************************************************************/
     plugin.Manager.install(SelectionDilateFilter);
     plugin.Manager.install(SelectionErodeFilter);
     plugin.Manager.install(SelectionAllFilter);
@@ -254,5 +283,6 @@
     plugin.Manager.install(SelectionDeleteVertex);
     plugin.Manager.install(SelectionMoveToNewLayer);
     plugin.Manager.install(SelectionByConnectedComponentSizeFilter);
+    plugin.Manager.install(SelectionPointOutlier);
 
 })(MLJ.core.plugin, MLJ.core.Scene);

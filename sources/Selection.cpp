@@ -173,6 +173,17 @@ void QualitybyPointOutlier(uintptr_t _baseM, int kNearestNum)
   
 }
 
+void SelectionByPointOutlier(uintptr_t meshptr, int kNearest, float threshold)
+{
+	MyMesh &mesh = *((MyMesh*) meshptr);
+	
+	VertexConstDataWrapper<MyMesh> ww(mesh);
+	KdTree<float> kdTree(ww);
+	
+	tri::UpdateSelection<MyMesh>::Clear(mesh);
+	OutlierRemoval<MyMesh>::SelectLoOPOutliers(mesh, kdTree, kNearest, threshold);
+}
+
 void SelectionPluginTEST()
 {
 
@@ -192,6 +203,7 @@ EMSCRIPTEN_BINDINGS(MLRandomPlugin) {
     emscripten::function("SelectionMoveToNewLayer",   &SelectionMoveToNewLayer);
     emscripten::function("SelectionByQuality",   &SelectionByQuality);
     emscripten::function("SelectionByConnectedComponentSize",   &SelectionByConnectedComponentSize);
-    emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);    
+    emscripten::function("QualitybyPointOutlier", &QualitybyPointOutlier);   
+	emscripten::function("SelectionByPointOutlier", &SelectionByPointOutlier); 	
 }
 #endif
