@@ -180,7 +180,6 @@ MLJ.core.plugin.Filter = function (parameters) {
             MLJ.gui.disabledOnSceneEmpty(apply);
         }
 
-
         _this._init(filterBuilder);
 
     };
