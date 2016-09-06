@@ -33,8 +33,8 @@ float shadowContribution(vec2 moments, float t) {
   float d = t - moments.x;
   float pmax = variance / (variance + (d*d));
 
-  return pmax;
-//  return containBleed(pmax, 0.2);
+//  return pmax;
+  return containBleed(pmax, 0.2);
 }
 
 float shadowCalc(vec4 position){

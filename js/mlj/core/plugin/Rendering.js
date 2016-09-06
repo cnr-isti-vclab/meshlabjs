@@ -1,24 +1,24 @@
 /**
  * MLJLib
  * MeshLabJS Library
- * 
+ *
  * Copyright(C) 2015
- * Paolo Cignoni 
+ * Paolo Cignoni
  * Visual Computing Lab
  * ISTI - CNR
- * 
+ *
  * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License
  * (http://www.gnu.org/licenses/gpl.txt) for more details.
- * 
+ *
  */
 
 /**
@@ -31,34 +31,34 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
     MLJ.core.plugin.BaseRendering.call(this, parameters, renderingClass);
 
     var _this = this;
-    
+
     MLJ.core.setDefaults(_this.getName(), defaults);
 
     var btn = this.getButton();
     MLJ.gui.disabledOnSceneEmpty(btn);
 
     if (parameters.toggle === true) {
-        
+
         //Click on button
         btn.onToggle(function (on, event) {
-            
+
             if (on) {
                 //show the options pane
-                _this._showOptionsPane();                
+                _this._showOptionsPane();
             }
-            
+
             //Apply rendering pass to all mesh
-            if (event.ctrlKey === true) {                
+            if (event.ctrlKey === true) {
                 var passName = parameters.name;
-                var ptr = MLJ.core.Scene.getLayers().iterator();                
+                var ptr = MLJ.core.Scene.getLayers().iterator();
                 //get selected layer
-                var selLayer = MLJ.core.Scene.getSelectedLayer();                
+                var selLayer = MLJ.core.Scene.getSelectedLayer();
                 //get this rendering pass paramters of selected layer
                 var selParams = selLayer.overlaysParams.getByKey(passName);
-                var layer;             
+                var layer;
                 //apply rendering pass with 'selParams' to all layers
                 while (ptr.hasNext()) {
-                    layer = ptr.next();    
+                    layer = ptr.next();
                     if (layer.getThreeMesh().visible) {
                         var lParams = layer.overlaysParams.getByKey(passName);
                         for (var opName in selParams) { // each layer gets it's own copy
@@ -73,14 +73,14 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         layer.properties.set(passName, on);
                     }
                 }
-                
+
             } else { //Apply rendering pass to selected layer
                 var selected = MLJ.core.Scene.getSelectedLayer();
                 if (selected !== undefined) {
                     _this._applyTo(selected, on);
                     selected.properties.set(parameters.name, on);
                 }
-            }                        
+            }
         });
 
         //Clicked with mouse right button
@@ -102,7 +102,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 _this._applyTo(layer, false); // Remove the pass
             }
         });
-        
+
         $(document).on("SceneLayerAdded SceneLayerReloaded",
                 function (event, meshFile, layersNumber) {
                     if (event.type === "SceneLayerReloaded") {
@@ -111,7 +111,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         }
                     }
                     //Check if the rendering feature is enabled
-                    if (!(meshFile.properties.getByKey(parameters.name) === false) && 
+                    if (!(meshFile.properties.getByKey(parameters.name) === false) &&
                             (parameters.on || meshFile.properties.getByKey(parameters.name) === true) ) {
                         btn.toggle("on");
                         _this._applyTo(meshFile, btn.isOn());
@@ -121,8 +121,8 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         btn.toggle("off");
                         if (btn.isArrowSelected()) update();
                     }
-                    
-                    //if the rendering pass need to be updated when a 
+
+                    //if the rendering pass need to be updated when a
                     //new layer is added
                     if (parameters.updateOnLayerAdded) {
                         var ptr = MLJ.core.Scene.getLayers().iterator();
@@ -130,16 +130,16 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                         while (ptr.hasNext()) {
                             layer = ptr.next();
                             isOn = layer.properties.getByKey(parameters.name) === true;
-                            reapply(isOn,layer);                            
+                            reapply(isOn,layer);
                         }
                     }
 
                 });
 
         $(document).on("SceneLayerUpdated", function (event, layer) {
-            reapply(layer.properties.getByKey(_this.getName())===true, layer);                    
+            reapply(layer.properties.getByKey(_this.getName())===true, layer);
         });
-        
+
         if (parameters.applyOnEvent !== undefined) {
             $(window).ready(function() {
                 $($('canvas')[0]).on(parameters.applyOnEvent, function() {
@@ -153,17 +153,17 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
                 });
             });
         }
-        
+
     } else {
         btn.onClick(function () {
             _this._showOptionsPane();
         });
-        
+
         $(document).on("SceneLayerAdded SceneLayerReloaded",
             function (event, meshFile, layersNumber) {
                 _this._applyTo(meshFile, true);
                 update();
-            });            
+            });
     }
 
     $(document).on("SceneLayerSelected", function (event, layer) {
@@ -213,7 +213,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
 
         // update parameter
         params[paramProp] = value;
-              
+
         if (parameters.global === true) {
             var iter = layer.overlays.iterator();
             var overlay;
@@ -244,7 +244,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         if (overlay === undefined) {
             return;
         }
-        
+
         //is 'bindTo' property a uniform?
         if (overlay.material && overlay.material.uniforms && overlay.material.uniforms[paramProp]) {
             overlay.material.uniforms[paramProp].value = value;

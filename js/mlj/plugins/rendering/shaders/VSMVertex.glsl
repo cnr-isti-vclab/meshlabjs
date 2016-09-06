@@ -9,6 +9,6 @@ varying vec4 worldPoint;
 
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = 0.00005;
+  gl_PointSize = 3.00005;
   worldPoint = gl_Position; //posizione mondo dal punto di vista luce
 }

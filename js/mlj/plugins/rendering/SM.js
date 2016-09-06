@@ -1,9 +1,12 @@
 
 (function (plugin, core, scene) {
-  //REVIEW : bug in meshlab..se traslo mesh le ombre non vanno
+  // REVIEW: quindi: fixato assi oscurati su vsm e ssao, fixato problemi con certe mesh, riflettuto su point-based e tirato fuori
+  //                un po' di problemi, riflettuto su luce spostabile, aggiunto selezione dimensione buffer
+
+  
   // TODO: refactoring---commenting---memorycleanupondispose---icon
   // TODO:
-  // aggiungere uno switch per vsm o sm
+  // aggiungere uno switch per vsm o sm   (lascialo da fare in fondo)
   // aggiungere un controllo sulla dimensione del buffer di shadowmap (done)
   // fare modo che vsm e sm vadano per point - based  (studia)
   // -> ma si può fare?
@@ -19,6 +22,9 @@
   //          è gestito da three....usando gli shaders di threee pare ci sia verso fare le ombre dei punti,
   //          ma noi, usando shaders interamente nostri ce la facciamo?
   //
+  //REVIEW : forse ho capito perche nella shadowmap disegna sempre il filled...potrebbe essere a causa del
+  //        overrideMaterial, che sovrascive il basimaterial associato al layer di base (che specifica visible = false)
+
 //    dubbio6: in effetti three (almeno nella versione corrente) per le pointscloud setta isPoints = true
 //             questo sarà usato in renderbufferdirect per settare GL_POINTS come render mode,
 //================> REVIEW: ok...settando gl_pointsize riesco a disegnare i points nella shadowmap...il problema ora è
@@ -26,7 +32,7 @@
 //                  devo investigare in mlj loadmesh e in threejs....mmm però funziona solo per i punti della mesh
 //                  la pointcloud che disegno sembra non funzionare...
 
-//    dubbio7: in render() sembra che shadowmap.render sia sempre chiamato
+//
 
   // IDEA:penso di aver individuato l'errore: (risolto)
   // per adesso correggere la direzione di luce ha fixato tutto tranne laurana e mano,
@@ -81,10 +87,6 @@
     lightViewProjection:  { type: "m4", value: null},
     intensity:            { type: "f", value: null}
   };
-
-  // let depthPassUniforms = {
-  //   variance : { type : "i", value : 0}
-  // };
 
   let shadowPassOptions = {
     minFilter: null,
@@ -318,6 +320,7 @@
     let shadowScene = new THREE.Scene();
     shadowScene.add(shadowMapMesh);
 
+
     let lightCamera;
     /*
     receives an input buffer in Scene.js and outputs an output buffer that will
@@ -355,8 +358,6 @@
         );
       }
 
-      //let lookAt = new THREE.Matrix4().lookAt(new THREE.Vector3(0,0,0), lightD.negate(), new THREE.Vector3(0,1,0));
-
       let diag = bbox.min.distanceTo(bbox.max);
       // console.log("diag: "+ diag + " min: "+bbox.min.toArray()+ "max: "+bbox.max.toArray()+"center"+bbox.center().toArray()  );
 
@@ -392,9 +393,33 @@
             }
         });
       }
+      ///////////////////////////
+      //REVIEW: senti prof: credo di aver individuato il problema relativo al fatto che la mesh si vede nella shadowmpa
+      // anche quando filled è disattivato...dovrebbe essere dovuto al fatto che io uso overrideMaterial...
+      // un hot fix che ho provato è questo...ossia disattivare il baselayer di ogni mesh se filled è false (cosa che poi
+      // potrebbe anche non funzionare dato che threejs funziona con strutture gerarchiche, quindi magari settando visible
+      // a false per il baselayer, poi non mostra nemmeno i layer che attacho...)
+      // cmq l'hotfix non funziona per adesso, perché non riesco a capire quando un plugin è attivo o no...
+      // REVIEW: per farlo funzionare ho dovuto fixare una linea di codice in Plugin.js in cui c'era un typo!
+
+      //HACK:
+      //console.log(MLJ.core.plugin.Manager.getRenderingPlugins().getByKey('Filled').getParameters().on)
+      if(!MLJ.core.plugin.Manager.getRenderingPlugins().getByKey('Filled').getParameters().on){
+
+        let iter = scene.getLayers().iterator();
+
+        while (iter.hasNext()) {
+          let mesh = iter.next().getThreeMesh();
+          mesh.visible = false;
+          mesh.__mlj_smplugin_sweep_flag = true;
+          console.log('elimino');
+        }
+      }
+      /////////////////////////////
       /******************debug**************/
-      let buf = depthMapTarget;
+      let buf;
       if (debug) buf = outBuffer;
+      else buf = horBlurTarget;
       /********************PREPARE DEPTH MAP*******************/
       sceneGraph.overrideMaterial = depthMaterial;
       // renderer.render(sceneGraph, lightCamera, buf, true);
@@ -413,13 +438,14 @@
           }
       });
       /*****************PREPARE BLUR MAPS**********************/
+      //NOTE: puoi spostare questi assegnamenti a uniforms più su....
       /* horizontal blur map */
       horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
       horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
       horBlurMaterial.uniforms.texSize  = {type: "f", value: shadowPassOptions.bufferWidth};
+      renderer.render(horBlurScene, sceneCam, buf, true);
       // renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
-      renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
       /* vertical blur map */
       verBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
       verBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
@@ -439,6 +465,7 @@
       shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
 
+      if(!debug)
        renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
