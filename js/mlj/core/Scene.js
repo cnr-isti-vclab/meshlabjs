@@ -91,6 +91,11 @@ MLJ.core.Scene = {};
      */
     var _group;
 
+    var _layersGroup;
+
+    var _decoratorsGroup;
+
+
     var _camera;
 
     var _cameraPosition;
@@ -174,6 +179,11 @@ MLJ.core.Scene = {};
         _camera.position.z = 15;
         _group = new THREE.Object3D();
         _scene.add(_group);
+
+        _layersGroup = new THREE.Object3D();
+        _group.add(_layersGroup);
+        _decoratorsGroup = new THREE.Object3D();
+        _group.add(_decoratorsGroup);
 
         _scene2D = new THREE.Scene();
         _camera2D = new THREE.OrthographicCamera(0 , _3DSize.width / _3DSize.height, 1, 0, -1, 1);
@@ -362,6 +372,14 @@ MLJ.core.Scene = {};
         return _group;
     }
 
+    this.getLayersGroup = function () {
+      return _layersGroup;
+    }
+
+    this.getDecoratorsGroup = function () {
+      return _decoratorsGroup;
+    }
+
     /**
      * Selects the layer with the name <code>layerName</code>
      * @param {String} layerName The name of the layer
@@ -427,9 +445,10 @@ MLJ.core.Scene = {};
 
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
-        _group.add(layer.getThreeMesh());
+        _layersGroup.add(layer.getThreeMesh());
 
         //Add new mesh to associative array _layers
+
         _layers.set(layer.name, layer);
         _selectedLayer = layer;
 
@@ -462,6 +481,7 @@ MLJ.core.Scene = {};
         }
 
         layer.overlays.set(name,mesh);
+        mesh.name = name;
 
         mesh.visible = layer.getThreeMesh().visible;
         if (overlay2D) {
@@ -611,7 +631,7 @@ MLJ.core.Scene = {};
         if (layer !== undefined) {
             //remove layer from list
             _layers.remove(name);
-            _group.remove(layer.getThreeMesh());
+            _layersGroup.remove(layer.getThreeMesh());
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
 
             layer.dispose();
@@ -645,7 +665,7 @@ MLJ.core.Scene = {};
         }
 
         _decorators.set(name, decorator)
-        _group.add(decorator);
+        _decoratorsGroup.add(decorator);
 
         _this.render();
     };
@@ -660,7 +680,7 @@ MLJ.core.Scene = {};
 
         if (decorator !== undefined) {
             var mesh = _decorators.remove(name);
-            _group.remove(decorator);
+            _decoratorsGroup.remove(decorator);
 
             mesh.traverse(disposeObject);
             disposeObject(mesh);
@@ -691,6 +711,10 @@ MLJ.core.Scene = {};
     this.getLayers = function () {
         return _layers;
     };
+
+    this.getDecorators = function () {
+      return _decorators;
+    }
 
     this.get3DSize = function() { return get3DSize(); };
     this.getRenderer = function() { return _renderer; };

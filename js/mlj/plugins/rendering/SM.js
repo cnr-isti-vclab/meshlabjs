@@ -3,7 +3,14 @@
   // REVIEW: quindi: fixato assi oscurati su vsm e ssao, fixato problemi con certe mesh, riflettuto su point-based e tirato fuori
   //                un po' di problemi, riflettuto su luce spostabile, aggiunto selezione dimensione buffer
 
-  
+  //TODO: usando decorators e layers associative arrays puoi evitare il discorso di due gruppi separati
+
+  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normalsBuffer
+  //TODO: togli doubleside su filled e lo shader suo!!
+  //IDEA + TODO: in scene si possono separeare due groups: uno per le geometrie effettive (overlaylayer) e uno per i decorators
+  // => scorri tra i layers visibili, per ognuno estrai overlay 'Points' setta il material della geometria con shadowmapping e dopo restora tutto
+
+
   // TODO: refactoring---commenting---memorycleanupondispose---icon
   // TODO:
   // aggiungere uno switch per vsm o sm   (lascialo da fare in fondo)
@@ -74,6 +81,7 @@
   }
   /*******************************************************************/
 
+
   let intensity = 1.0;
   let fixedLight = false;
   let debug = false;
@@ -97,7 +105,6 @@
     bufferHeight: 512,
     lightPos: null
   }
-
 
   let plug = new plugin.GlobalRendering({
     name: "Shadow Mapping",
@@ -189,34 +196,7 @@
 
 
   function SMContext() {
-    /**************************************************************
-    var particles, geometry, materials = [], parameters, i, h, color, size;
-        geometry = new THREE.Geometry();
-    for ( i = 0; i < 20000; i ++ ) {
-      var vertex = new THREE.Vector3();
-      vertex.x = Math.random() * 2000 - 1000;
-      vertex.y = Math.random() * 2000 - 1000;
-      vertex.z = Math.random() * 2000 - 1000;
-      geometry.vertices.push( vertex );
-    }
-    parameters = [
-      [ [1, 1, 0.5], 5 ],
-      [ [0.95, 1, 0.5], 4 ],
-      [ [0.90, 1, 0.5], 3 ],
-      [ [0.85, 1, 0.5], 2 ],
-      [ [0.80, 1, 0.5], 1 ]
-    ];
-    for ( i = 0; i < parameters.length; i ++ ) {
-      color = parameters[i][0];
-      size  = parameters[i][1];
-      //materials[i] = new THREE.PointsMaterial( { size: size } );
-      particles = new THREE.PointCloud( geometry);//, materials[i] );
-      particles.rotation.x = Math.random() * 6;
-      particles.rotation.y = Math.random() * 6;
-      particles.rotation.z = Math.random() * 6;
-      scene.getScene().add( particles );
-    }
-    **************************************************************/
+
     shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
     // shaders
     shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
@@ -269,20 +249,25 @@
     material containing the depth pass shaders. The original scene will be
     rendered using this shaders to produce a depth map
     */
-    let depthMaterial = new THREE.RawShaderMaterial({
-      uniforms: {},
-      side: THREE.DoubleSide,
-      derivatives: true,
-      vertexShader: shadowPassOptions.SMVert,
-      fragmentShader: shadowPassOptions.SMFrag
-    });
-
-    let positionMaterial = new THREE.RawShaderMaterial({
-      uniforms: {},
-      side: THREE.DoubleSide,
-      vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
-      fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
-    });
+    let prepareDepthMaterial = (size) => {
+      let mat = new THREE.RawShaderMaterial({
+        uniforms: { pointSize: {type: 'f', value: size } },
+        side: THREE.DoubleSide,
+        derivatives: true,
+        vertexShader: shadowPassOptions.SMVert,
+        fragmentShader: shadowPassOptions.SMFrag
+      });
+      return mat;
+    }
+    let preparePositionMaterial = (size) => {
+      let mat = new THREE.RawShaderMaterial({
+        uniforms: { pointSize: {type: 'f', value: size } },
+        side: THREE.DoubleSide,
+        vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
+        fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
+      });
+      return mat;
+    }
 
     let horBlurMaterial = new THREE.RawShaderMaterial({
       uniforms: {},
@@ -359,11 +344,7 @@
       }
 
       let diag = bbox.min.distanceTo(bbox.max);
-      // console.log("diag: "+ diag + " min: "+bbox.min.toArray()+ "max: "+bbox.max.toArray()+"center"+bbox.center().toArray()  );
 
-      //se uso gli estremi di bbox su certe scene (tipo toroid)
-      //parti del modello escono dal frusto e quindi finiscono in ombra
-      //con diag invece per le prove che ho fatto funziona bene
       lightCamera = new THREE.OrthographicCamera(
         -(diag) / 2,
         diag / 2,
@@ -380,63 +361,91 @@
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
-      /* Hide layers that should not be shadowed */
-      if (!debug) {
-        sceneGraph.traverse(function (obj) {
-            if (obj.visible && obj.geometry) {
-                if (!(obj instanceof THREE.Mesh) ||
-                            (obj.geometry.type === "BufferGeometry" &&
-                                    obj.geometry.getAttribute('normal') === undefined)) {
-                    obj.visible = false;
-                    obj.__mlj_smplugin_sweep_flag = true;
-                }
-            }
-        });
-      }
-      ///////////////////////////
-      //REVIEW: senti prof: credo di aver individuato il problema relativo al fatto che la mesh si vede nella shadowmpa
-      // anche quando filled è disattivato...dovrebbe essere dovuto al fatto che io uso overrideMaterial...
-      // un hot fix che ho provato è questo...ossia disattivare il baselayer di ogni mesh se filled è false (cosa che poi
-      // potrebbe anche non funzionare dato che threejs funziona con strutture gerarchiche, quindi magari settando visible
-      // a false per il baselayer, poi non mostra nemmeno i layer che attacho...)
-      // cmq l'hotfix non funziona per adesso, perché non riesco a capire quando un plugin è attivo o no...
-      // REVIEW: per farlo funzionare ho dovuto fixare una linea di codice in Plugin.js in cui c'era un typo!
-
-      //HACK:
-      //console.log(MLJ.core.plugin.Manager.getRenderingPlugins().getByKey('Filled').getParameters().on)
-      if(!MLJ.core.plugin.Manager.getRenderingPlugins().getByKey('Filled').getParameters().on){
-
-        let iter = scene.getLayers().iterator();
-
-        while (iter.hasNext()) {
-          let mesh = iter.next().getThreeMesh();
-          mesh.visible = false;
-          mesh.__mlj_smplugin_sweep_flag = true;
-          console.log('elimino');
-        }
-      }
-      /////////////////////////////
       /******************debug**************/
       let buf;
       if (debug) buf = outBuffer;
       else buf = horBlurTarget;
+
+      let decos = scene.getDecoratorsGroup();
+      let layers = scene.getLayersGroup();
+
+
+      /* Hide decorators  (that should not be shadowed) */
+      let hidden = [];
+      let materialChanged = [];
+      // let decosIterator = scene.getDecorators().iterator();
+      // while(decosIterator.hasNext()) {
+      //   let deco = decosIterator.next();
+      //   // console.log(JSON.stringify(deco));
+      //   if (deco.visible && deco.geometry) {
+      //     deco.visible = false;
+      //     hidden.push(deco);
+      //   }
+      // }
+      decos.traverse(function (deco) {
+        if (deco.visible && deco.geometry) {
+          deco.visible = false;
+          hidden.push(deco);
+        }
+      });
+
+      //probabilmente puoi fare anche le ombre del wireframe...usando una uniform..pensaci su
+      /*********** SELECTIVELY ATTACH SHADOWMAP MATERIAL*************************/
+      let layersIterator = scene.getLayers().iterator();
+      while (layersIterator.hasNext()) {
+
+        let layer = layersIterator.next();
+        let overlaysIterator = layer.overlays.iterator();
+        /* if layers is drawn as filled, i don't consider points in shadowmap */
+        let pointSz = layer.overlaysParams.getByKey('Points').size;
+        if (layer.overlays.getByKey('Filled')) {
+          pointSz = 0.0;
+        }
+
+        while (overlaysIterator.hasNext()) {
+          let overlay = overlaysIterator.next();
+          if (overlay.name == 'Points' || overlay.name == 'Filled') {
+              overlay.__mlj_smplugin_material = overlay.material;
+              overlay.material = prepareDepthMaterial(pointSz);
+              overlay.__mlj_smplugin_pointSize = pointSz;
+              materialChanged.push(overlay);
+          } else if (overlay.visible && overlay.geometry) {
+            overlay.visible = false;
+            hidden.push(overlay);
+          }
+        }
+      }
+      // layers.traverse(function (mesh) {
+      //   if (mesh.name == 'Points' || mesh.name == 'Filled') {
+      //     mesh.__mlj_smplugin_material = mesh.material;
+      //     mesh.material = depthMaterial;
+      //     materialChanged.push(mesh);
+      //   } else if (mesh.name && mesh.visible && mesh.geometry) { //HACK: gli overlay hanno nome, mentre il fake node no
+      //     mesh.visible = false;
+      //     hidden.push(mesh);
+      //   }
+      // });
       /********************PREPARE DEPTH MAP*******************/
-      sceneGraph.overrideMaterial = depthMaterial;
-      // renderer.render(sceneGraph, lightCamera, buf, true);
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
-      sceneGraph.overrideMaterial = null;
+
+      /*****************SELECTIVELY ATTACH POSITIONMAP MATERIAL*********************/
+      for (let mesh in materialChanged) {
+        materialChanged[mesh].material = preparePositionMaterial(materialChanged[mesh].__mlj_smplugin_pointSize);
+      }
       /******************PREPARE POSITION MAP********************/
-      sceneGraph.overrideMaterial = positionMaterial;
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
-      sceneGraph.overrideMaterial = null;
 
       /* Make hidden layers visible again */
-      sceneGraph.traverse(function (obj) {
-          if (obj.__mlj_smplugin_sweep_flag === true) {
-              obj.visible = true;
-              delete obj.__mlj_smplugin_sweep_flag;
-          }
-      });
+      for(let mesh in hidden) {
+        hidden[mesh].visible = true;
+      }
+      /* restore geometry materials */
+      for (let mesh in materialChanged) {
+        materialChanged[mesh].material = materialChanged[mesh].__mlj_smplugin_material;
+        delete materialChanged[mesh].__mlj_smplugin_material;
+        delete materialChanged[mesh].__mlj_smplugin_pointSize;
+      }
+
       /*****************PREPARE BLUR MAPS**********************/
       //NOTE: puoi spostare questi assegnamenti a uniforms più su....
       /* horizontal blur map */
