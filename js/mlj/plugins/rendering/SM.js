@@ -328,13 +328,13 @@
       while (layersIterator.hasNext()) {
 
         let layer = layersIterator.next();
+        /* if layer is drawn as filled, i don't consider points in shadowmap */
+        let pointSz = (layer.overlays.getByKey('Filled')) ? 0.0 : layer.overlaysParams.getByKey('Points').size;
+        // let pointSz = layer.overlaysParams.getByKey('Points').size;
+        // if (layer.overlays.getByKey('Filled'))
+        //   pointSz = 0.0;
+        //
         let overlaysIterator = layer.overlays.iterator();
-        /* if layers is drawn as filled, i don't consider points in shadowmap */
-        let pointSz = layer.overlaysParams.getByKey('Points').size;
-        if (layer.overlays.getByKey('Filled')) {
-          pointSz = 0.0;
-        }
-
         while (overlaysIterator.hasNext()) {
           let overlay = overlaysIterator.next();
           if (overlay.name == 'Points' || overlay.name == 'Filled') {
