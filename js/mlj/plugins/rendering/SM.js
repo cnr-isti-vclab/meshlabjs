@@ -1,87 +1,17 @@
 
 (function (plugin, core, scene) {
-  // REVIEW: quindi: fixato assi oscurati su vsm e ssao, fixato problemi con certe mesh, riflettuto su point-based e tirato fuori
-  //                un po' di problemi, riflettuto su luce spostabile, aggiunto selezione dimensione buffer
 
   //TODO: usando decorators e layers associative arrays puoi evitare il discorso di due gruppi separati
 
-  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normalsBuffer
+  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normale
   //TODO: togli doubleside su filled e lo shader suo!!
   //IDEA + TODO: in scene si possono separeare due groups: uno per le geometrie effettive (overlaylayer) e uno per i decorators
   // => scorri tra i layers visibili, per ognuno estrai overlay 'Points' setta il material della geometria con shadowmapping e dopo restora tutto
 
 
   // TODO: refactoring---commenting---memorycleanupondispose---icon
-  // TODO:
-  // aggiungere uno switch per vsm o sm   (lascialo da fare in fondo)
-  // aggiungere un controllo sulla dimensione del buffer di shadowmap (done)
-  // fare modo che vsm e sm vadano per point - based  (studia)
-  // -> ma si può fare?
-  //  dubbio1: ne' rs ne ssao lo fanno e non si fa nemmeno in meshlab
-  //  dubbio2: come distinguere mesh point based da mesh poligonali? io non ho un controllo cosi granulare
-  //  dubbio3: come distinguere mesh point based (senza normali) da altre mesh senza normali che davvero non
-  //             voglio disegnare
-  //  dubbio4: i punti noi li mettiamo come overlaylayer del layer che contiene la mesh, ossia aggiungiamo
-  //            la pointscloud alla mesh del nostro layer...quando tiro su una mesh point-based il layer cos'è??
-  //            a fare un po' di test sembra roba continua, che contiene tutti i punti...quindi non li vedo a part i punti
-  //            come fo a distinguere cosa voglio fare?
-  //  dubbio5: noi usiamo pointscloud, il cui rendering, e presumo anche settare GL_POINTS come render mode
-  //          è gestito da three....usando gli shaders di threee pare ci sia verso fare le ombre dei punti,
-  //          ma noi, usando shaders interamente nostri ce la facciamo?
-  //
-  //REVIEW : forse ho capito perche nella shadowmap disegna sempre il filled...potrebbe essere a causa del
-  //        overrideMaterial, che sovrascive il basimaterial associato al layer di base (che specifica visible = false)
 
-//    dubbio6: in effetti three (almeno nella versione corrente) per le pointscloud setta isPoints = true
-//             questo sarà usato in renderbufferdirect per settare GL_POINTS come render mode,
-//================> REVIEW: ok...settando gl_pointsize riesco a disegnare i points nella shadowmap...il problema ora è
-//                    che disegna anche la mesh....anche nel caso di shoulau che in teoria sono solo points...
-//                  devo investigare in mlj loadmesh e in threejs....mmm però funziona solo per i punti della mesh
-//                  la pointcloud che disegno sembra non funzionare...
-
-//
-
-  // IDEA:penso di aver individuato l'errore: (risolto)
-  // per adesso correggere la direzione di luce ha fixato tutto tranne laurana e mano,
-  // questo perché entrambi presentano la stessa caratteristica:
-  //  il bbox che calcolo per loro, si trova "di fronte" alla mesh, e non sotto/sopra/alcentro/intornoperbene
-  //  e quindi siccome la direzione della luce va da ~camera a bbox.center, in quei casi
-  //  lo spostamento della camera rispetto la mesh non rispecchia lo spostamento rispetto
-  //  il bbox...
-  //  TODO: cerca di risolvere sta cosa del bbox... (DONE)
-
-  // TODO : pensa alla cosa del point-based..
-
-  // REVIEW: ho tentato di eliminare il passo di rendering della positionmap, ricostruendo coordinates
-  //        mondo a partire dalle coordinate vUV => NDC => world ma vUv non è sufficiente...avrei bisogno di
-  //           conoscere la profondità di quel pixel.... ------> semmai ripensaci un po'
-  //      --> mi sa che è un gran bel NAH
-
-  //  IDEA una cosa che potrei fare e ottimizzare leggermente è salvare dentro position map direttamente
-  //      coordinate in spazio luce....ora le salvo in mondo, ma le uso solo in spazio luce poi...le usavo per debug mi sa
-
-  /*******************************************************************
-  *                                                                  *
-  ******************************DEBUG*********************************
-  *                                                                  *
-  *******************************************************************/
-  let debugBox = (bbox) => {
-    let sz = bbox.size();
-
-    let geometry = new THREE.BoxGeometry( sz.x, sz.y, sz.z );
-    let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    let cube = new THREE.Mesh( geometry, material );
-
-    // scene.getThreeJsGroup().add( cube );
-
-    let box = new THREE.BoundingBoxHelper(scene.getScene(), 0x888888);
-    box.update();
-    console.log("bboxdiag: "+box.box.min.distanceTo(box.box.max) + " min: "+box.box.min.toArray()+ "max: "+box.box.max.toArray()+ "center: "+box.box.center().toArray());
-    scene.getScene().add(box);
-  }
-  /*******************************************************************/
-
-
+  /* variables for ui interaction */
   let intensity = 1.0;
   let fixedLight = false;
   let debug = false;
@@ -93,7 +23,8 @@
     positionMap:          { type: "t", value: null },
     colorMap:             { type: "t", value: null },
     lightViewProjection:  { type: "m4", value: null},
-    intensity:            { type: "f", value: null}
+    intensity:            { type: "f", value: null },
+    lightDir:             { type: 'v3', value: null}
   };
 
   let shadowPassOptions = {
@@ -215,31 +146,26 @@
 
     shadowPassOptions.gaussWeights = gWeights;
     shadowPassOptions.gaussOffsets = gOffsets;
-    /*
-    render target where the depth values will be saved, used as texture
-    in the render pass which draws the shadows
-    */
-    // non posso specificare come solo depth?? su opengl mi pare si possa
-    // quando implementerai VSM dovresti poter usare mipmapping! ricontrolla
-    let depthMapTarget = new THREE.WebGLRenderTarget(0, 0, {
+
+    let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
     });
 
-    let horBlurTarget = new THREE.WebGLRenderTarget(0, 0, {
+    let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
     });
 
-    let verBlurTarget = new THREE.WebGLRenderTarget(0, 0, {
+    let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
     });
 
-    let positionMapTarget = new THREE.WebGLRenderTarget(0, 0, {
+    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
@@ -269,15 +195,22 @@
       return mat;
     }
 
+    let blurUniforms = {
+      depthMap: {type: "t", value: depthMapTarget},
+      gWeights: {type: "1fv", value: shadowPassOptions.gaussWeights},
+      gOffsets: {type: "1fv", value: shadowPassOptions.gaussOffsets},
+      texSize: {type: "f", value: shadowPassOptions.bufferWidth}
+    };
+
     let horBlurMaterial = new THREE.RawShaderMaterial({
-      uniforms: {},
+      uniforms: blurUniforms,
       side: THREE.DoubleSide,
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.horBlurFrag
     });
 
     let verBlurMaterial = new THREE.RawShaderMaterial({
-      uniforms: {},
+      uniforms: blurUniforms,
       side: THREE.DoubleSide,
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.verBlurFrag
@@ -317,13 +250,8 @@
       let sceneCam = scene.getCamera();
       let renderer = scene.getRenderer();
 
-      depthMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
-      positionMapTarget.setSize(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight);
-      horBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
-      verBlurTarget.setSize(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2);
-
+      /* Get bbox and scale it */
       let bbox = scene.getBBox();
-
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
@@ -333,18 +261,8 @@
 
       bbox.set(bbmin, bbmax);
 
-      let sceneCamPos = sceneCam.position;
-
-      if(!fixedLight) {
-        shadowPassOptions.lightPos = new THREE.Vector3(
-          sceneCamPos.x + 4,
-          sceneCamPos.y - 1,
-          sceneCamPos.z
-        );
-      }
-
+      /* Prepare light view camera frustum (orthographic for directional lights) */
       let diag = bbox.min.distanceTo(bbox.max);
-
       lightCamera = new THREE.OrthographicCamera(
         -(diag) / 2,
         diag / 2,
@@ -354,8 +272,17 @@
         diag / 2
       );
 
+      /* Prepare light position, based on current camera position */
+      let sceneCamPos = sceneCam.position;
+      if(!fixedLight) {
+        shadowPassOptions.lightPos = new THREE.Vector3(
+          sceneCamPos.x + 4,
+          sceneCamPos.y - 1,
+          sceneCamPos.z
+        );
+      }
       let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
-
+      /* LightCamera setup */
       lightCamera.position.set(0, 0, 0);
       lightCamera.lookAt(lightD.negate());
       lightCamera.updateMatrixWorld();
@@ -365,6 +292,7 @@
       let buf;
       if (debug) buf = outBuffer;
       else buf = horBlurTarget;
+      /*************************************/
 
       let decos = scene.getDecoratorsGroup();
       let layers = scene.getLayersGroup();
@@ -388,9 +316,9 @@
           hidden.push(deco);
         }
       });
-
       //probabilmente puoi fare anche le ombre del wireframe...usando una uniform..pensaci su
-      /*********** SELECTIVELY ATTACH SHADOWMAP MATERIAL*************************/
+      /********************PREPARE DEPTH MAP*******************/
+      /*Selectively attach depth map material */
       let layersIterator = scene.getLayers().iterator();
       while (layersIterator.hasNext()) {
 
@@ -425,21 +353,19 @@
       //     hidden.push(mesh);
       //   }
       // });
-      /********************PREPARE DEPTH MAP*******************/
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
 
-      /*****************SELECTIVELY ATTACH POSITIONMAP MATERIAL*********************/
+      /******************PREPARE POSITION MAP********************/
+      /*Selectively attach position map material */
       for (let mesh in materialChanged) {
         materialChanged[mesh].material = preparePositionMaterial(materialChanged[mesh].__mlj_smplugin_pointSize);
       }
-      /******************PREPARE POSITION MAP********************/
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
 
-      /* Make hidden layers visible again */
+      /* Make hidden layers visible again  &  restore geometry materials */
       for(let mesh in hidden) {
         hidden[mesh].visible = true;
       }
-      /* restore geometry materials */
       for (let mesh in materialChanged) {
         materialChanged[mesh].material = materialChanged[mesh].__mlj_smplugin_material;
         delete materialChanged[mesh].__mlj_smplugin_material;
@@ -447,21 +373,8 @@
       }
 
       /*****************PREPARE BLUR MAPS**********************/
-      //NOTE: puoi spostare questi assegnamenti a uniforms più su....
-      /* horizontal blur map */
-      horBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
-      horBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
-      horBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
-      horBlurMaterial.uniforms.texSize  = {type: "f", value: shadowPassOptions.bufferWidth};
       renderer.render(horBlurScene, sceneCam, buf, true);
-      // renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
-      /* vertical blur map */
-      verBlurMaterial.uniforms.depthMap = {type: "t", value: depthMapTarget};
-      verBlurMaterial.uniforms.gWeights = {type: "1fv", value: shadowPassOptions.gaussWeights};
-      verBlurMaterial.uniforms.gOffsets = {type: "1fv", value: shadowPassOptions.gaussOffsets};
-      verBlurMaterial.uniforms.texSize  = {type: "f", value: shadowPassOptions.bufferWidth};
       renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
-
       /*******************FINAL RENDER PASS********************/
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
@@ -473,6 +386,7 @@
       shadowPassUniforms.vBlurMap.value             = verBlurTarget;
       shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
+      shadowPassUniforms.lightDir.value             = lightD;
 
       if(!debug)
        renderer.render(shadowScene, sceneCam, outBuffer, true);
@@ -484,6 +398,7 @@
       shadowPassUniforms.vBlurMap.value             = null;
       shadowPassUniforms.hBlurMap.value             = null;
       shadowPassUniforms.intensity.value            = null;
+      shadowPassUniforms.lightDir.value             = null;
     };
   }
 

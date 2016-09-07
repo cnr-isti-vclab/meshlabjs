@@ -1,7 +1,11 @@
+#extension GL_OES_standard_derivatives : enable
 precision highp float;
 
 uniform mat4 lightViewProjection;
 uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+
+uniform vec3 lightDir;
 
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
@@ -34,7 +38,7 @@ float shadowContribution(vec2 moments, float t) {
   float pmax = variance / (variance + (d*d));
 
 //  return pmax;
-  return containBleed(pmax, 0.2);
+  return containBleed(pmax, 0.4);
 }
 
 float shadowCalc(vec4 position){
@@ -52,6 +56,14 @@ float shadowCalc(vec4 position){
                         texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
 
   float fragDepth = lightSpacePosition.z;
+
+/*
+  vec3 v1 = dFdx(position.xyz);
+  vec3 v2 = dFdy(position.xyz);
+  vec3 vn = normalize(cross(v1, v2));
+  float p = dot(vn, -lightDir);
+  if (p <= -1.0) return 0.0;
+*/
 
   return shadowContribution(moments, fragDepth);
 }
