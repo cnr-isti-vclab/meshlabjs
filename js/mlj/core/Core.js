@@ -122,6 +122,7 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  * @author Stefano Gabriele
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
+    // var _camera = camera;
     var _on = true;
     var _light = new THREE.DirectionalLight("#ffffff",0.5);
     _light.position.set( 0, -1, 0 );
@@ -135,9 +136,9 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      */
     this.setOn = function (on) {
         if (on) {
-            camera.add(_light);
+            scene.add(_light);
         } else {
-            camera.remove(_light);
+            scene.remove(_light);
         }
         renderer.render(scene, camera);
     };
@@ -145,8 +146,19 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     //Init
     this.setOn(_on);
 
+    // this.setCamera = function (cam) {
+    //   _camera.remove(_light);
+    //   cam.add(_light);
+    //   renderer.render(scene, )
+    // }
+    this.setPosition = function (pos) {
+      _light.position.set(pos.x, pos.y, pos.z);
+    }
     this.getPosition = function () {
-      return new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z)
+      return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
+    }
+    this.getLight = function () {
+      return _light;
     }
 
 };

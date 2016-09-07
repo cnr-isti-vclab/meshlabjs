@@ -98,6 +98,9 @@ MLJ.core.Scene = {};
 
     var _camera;
 
+    var _camera1;
+    var _customLight;
+
     var _cameraPosition;
 
     var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
@@ -176,7 +179,11 @@ MLJ.core.Scene = {};
 
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+        _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+
         _camera.position.z = 15;
+        _camera1.position.z = 15;
+
         _group = new THREE.Object3D();
         _scene.add(_group);
 
@@ -202,6 +209,7 @@ MLJ.core.Scene = {};
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
+        _scene.add(_camera1);
 
         _stats = initStats();
         /*
@@ -209,6 +217,9 @@ MLJ.core.Scene = {};
                                 _stats.update();
                                 requestAnimationFrame(updateStats); });
         */
+        //INIT LIGHTS
+        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -222,7 +233,35 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        _customLight = false;
+        var _lightPressed = false;
+
+        var _lightHelper = new THREE.DirectionalLightHelper(_this.lights.Headlight.getLight());
+
+        $(document).keyup(function (event) {
+            if(event.ctrlKey || event.shiftKey || event.altKey) {
+              event.preventDefault();
+              _controls.object = _camera;
+              _scene.remove(_lightHelper);
+            }
+        });
         $(document).keydown(function(event) {
+            if(event.ctrlKey && event.shiftKey && event.altKey) {
+              if(_lightPressed) return;
+              event.preventDefault();
+              _controls.object = _camera1;
+              _scene.add(_lightHelper);
+              _customLight = true;
+            }
+
+            if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
+              event.preventDefault();
+              _customLight = false;
+              _controls.object = _camera;
+              _this.render();
+              return;
+            }
+
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
@@ -246,10 +285,6 @@ MLJ.core.Scene = {};
                 }
             }
         });
-
-        //INIT LIGHTS
-        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
@@ -806,6 +841,11 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      */
     this.render = function (fromReqAnimFrame) {
+
+        if(_customLight)
+          _this.lights.Headlight.setPosition(_camera1.position);
+        else
+          _this.lights.Headlight.setPosition(_controls.object.position);
 
         if (_stats.active && !fromReqAnimFrame) {
             return;
