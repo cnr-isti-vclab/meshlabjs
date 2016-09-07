@@ -5,9 +5,15 @@
 
   // IDEA : prova a limitare di più il bleeding, magari con un test sulla normale
   //TODO: togli doubleside su filled e lo shader suo!!
-  //IDEA + TODO: in scene si possono separeare due groups: uno per le geometrie effettive (overlaylayer) e uno per i decorators
-  // => scorri tra i layers visibili, per ognuno estrai overlay 'Points' setta il material della geometria con shadowmapping e dopo restora tutto
 
+  //IDEA: Per permettere la scelta della direzione di luce dovrei:
+  //      1- in core.js dovrei probabilmente 'slegare' la luce dalla camera (niente più camera.add(_light))
+  //      2- applicare le trasformazioni della camera alla luce (così che segua la camera di default)
+  //            (interessa la trackball (o semplicemente scene.render dove posso fasre light.position = camera.position.copy))
+  //      3- avere un trigger che sleghi la luce dai movimenti della camera (tramite tasti) (magari in scene come eventlistener)
+  //            3.1- questo trigger dovrà bloccare la camera fintanto che tengo i tasti e applicare i move solo alla luce
+  //      4- rilasciati i tasti la camera si sblocca, ma la luce non è più legata al suo movimento
+  //      5- definire un comando - bottone per ribindare la luce alla camera
 
   // TODO: refactoring---commenting---memorycleanupondispose---icon
 
@@ -129,16 +135,15 @@
   function SMContext() {
 
     shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
-    // shaders
+    /* shaders */
     shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
     shadowPassOptions.SMFrag = plug.shaders.getByKey("VSMFrag.glsl");
     shadowPassOptions.shadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
-
     shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
 
-    // pesi e offset per la distribuzione gaussiana
+    /* weights and offset of the gaussian distrib (for a 35x35 kernel) */
      let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
                       0.02328, 0.01083, 0.00441, 0.00157];
      let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
@@ -273,12 +278,12 @@
       );
 
       /* Prepare light position, based on current camera position */
-      let sceneCamPos = sceneCam.position;
+      let lightPos = scene.lights.Headlight.getPosition();
       if(!fixedLight) {
         shadowPassOptions.lightPos = new THREE.Vector3(
-          sceneCamPos.x + 4,
-          sceneCamPos.y - 1,
-          sceneCamPos.z
+          lightPos.x + 4,
+          lightPos.y - 1,
+          lightPos.z
         );
       }
       let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
