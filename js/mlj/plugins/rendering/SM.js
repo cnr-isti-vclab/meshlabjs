@@ -7,12 +7,19 @@
   //TODO: togli doubleside su filled e lo shader suo!!
 
   //IDEA: Per permettere la scelta della direzione di luce dovrei:
+  //      0- capisci bene TrackballControls.js che anche li ci dovrai mettere le mani prolly? ( o forse no...leggilo)
+  //
   //      1- in core.js dovrei probabilmente 'slegare' la luce dalla camera (niente più camera.add(_light))
-  //      2- applicare le trasformazioni della camera alla luce (così che segua la camera di default)
+  //                      FORSE Però posso attaccarla a scene
+  //            1.1- se ho capito bene non posso slegare la luce dalla camera (perché nei vari filled ecc.. agli shader le luci vengono passate tramite la camera)
+  //            1.2- quindi dovrei tipo appendere delle trasformazioni a light nel momento in cui ne cambio la direzione..
+  //                  in questo modo la luce resta attaccata alla camera, ma aggiungo trasformazioni.
+  //   (DEPRECATO FORSE)   2- applicare le trasformazioni della camera alla luce (così che segua la camera di default)
   //            (interessa la trackball (o semplicemente scene.render dove posso fasre light.position = camera.position.copy))
-  //      3- avere un trigger che sleghi la luce dai movimenti della camera (tramite tasti) (magari in scene come eventlistener)
-  //            3.1- questo trigger dovrà bloccare la camera fintanto che tengo i tasti e applicare i move solo alla luce
+  //   (DEPRECATO FORSE)   3- avere un trigger che sleghi la luce dai movimenti della camera (tramite tasti) (magari in scene come eventlistener)
+  //            3.1- questo trigger dovrà bloccare la camera fintanto che tengo i tasti e applicare i move solo alla luce(basta questo)
   //      4- rilasciati i tasti la camera si sblocca, ma la luce non è più legata al suo movimento
+  //          4.1- PROBLEMA QUI...se lascio la luce sulla camera poi è un casino gestirla.... -.-
   //      5- definire un comando - bottone per ribindare la luce alla camera
 
   // TODO: refactoring---commenting---memorycleanupondispose---icon
@@ -131,9 +138,7 @@
     });
   };
 
-
   function SMContext() {
-
     shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
     /* shaders */
     shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
