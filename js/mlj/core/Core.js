@@ -157,8 +157,8 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     this.getPosition = function () {
       return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
     }
-    this.getLight = function () {
-      return _light;
-    }
+    // this.getLight = function () {
+    //   return _light;
+    // }
 
 };

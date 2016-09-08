@@ -25,9 +25,9 @@
   // TODO: refactoring---commenting---memorycleanupondispose---icon
 
   /* variables for ui interaction */
-  let intensity = 1.0;
-  let fixedLight = false;
-  let debug = false;
+  let intensity   = 1.0;
+  let fixedLight  = false;
+  let debug       = false;
 
   let shadowPassUniforms = {
     vBlurMap:             { type: "t", value: null },
@@ -41,13 +41,13 @@
   };
 
   let shadowPassOptions = {
-    minFilter: null,
-    SMVert: null,
-    SMFrag: null,
-    ShadowFrag: null,
-    bufferWidth: 512,
+    minFilter:    null,
+    SMVert:       null,
+    SMFrag:       null,
+    ShadowFrag:   null,
+    bufferWidth:  512,
     bufferHeight: 512,
-    lightPos: null
+    lightPos:     null
   }
 
   let plug = new plugin.GlobalRendering({
@@ -158,7 +158,7 @@
     shadowPassOptions.gaussOffsets = gOffsets;
 
     let renderTargetParams = {
-      type: THREE.FloatType,
+      type:      THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
     };
@@ -200,7 +200,7 @@
       depthMap: {type: "t", value: depthMapTarget},
       gWeights: {type: "1fv", value: shadowPassOptions.gaussWeights},
       gOffsets: {type: "1fv", value: shadowPassOptions.gaussOffsets},
-      texSize: {type: "f", value: shadowPassOptions.bufferWidth}
+      texSize:  {type: "f", value: shadowPassOptions.bufferWidth}
     };
 
     let horBlurMaterial = new THREE.RawShaderMaterial({
@@ -244,8 +244,8 @@
     */
     this.pass = (inBuffer, outBuffer) => {
       let sceneGraph = scene.getScene();
-      let sceneCam = scene.getCamera();
-      let renderer = scene.getRenderer();
+      let sceneCam   = scene.getCamera();
+      let renderer   = scene.getRenderer();
 
       /* Get bbox and scale it */
       let bbox = scene.getBBox();
