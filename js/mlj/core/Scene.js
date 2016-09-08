@@ -179,7 +179,8 @@ MLJ.core.Scene = {};
 
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-        _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+        // _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+        _camera1 = new THREE.OrthographicCamera(-50, 50,50,-50, 1, 1000);
 
         _camera.position.z = 15;
         _camera1.position.z = 15;
@@ -236,30 +237,33 @@ MLJ.core.Scene = {};
         _customLight = false;
         var _lightPressed = false;
 
-        var _lightHelper = new THREE.DirectionalLightHelper(_this.lights.Headlight.getLight());
+        var _lightHelper = new THREE.CameraHelper(_camera1);
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
+              _lightPressed = false;
               _controls.object = _camera;
               _scene.remove(_lightHelper);
             }
         });
         $(document).keydown(function(event) {
+          
+          if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
+            event.preventDefault();
+            _customLight = false;
+            _controls.object = _camera;
+            _this.render();
+            return;
+          }
+
             if(event.ctrlKey && event.shiftKey && event.altKey) {
               if(_lightPressed) return;
+              _lightPressed = true;
               event.preventDefault();
               _controls.object = _camera1;
               _scene.add(_lightHelper);
               _customLight = true;
-            }
-
-            if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
-              event.preventDefault();
-              _customLight = false;
-              _controls.object = _camera;
-              _this.render();
-              return;
             }
 
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {

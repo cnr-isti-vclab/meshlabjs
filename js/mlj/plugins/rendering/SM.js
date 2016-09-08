@@ -157,30 +157,21 @@
     shadowPassOptions.gaussWeights = gWeights;
     shadowPassOptions.gaussOffsets = gOffsets;
 
-    let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, {
+    let renderTargetParams = {
       type: THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
-    });
+    };
 
-    let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, {
-      type: THREE.FloatType,
-      minFilter: shadowPassOptions.minFilter,
-      magFilter: THREE.Linear
-    });
+    let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
+    let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
+    let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
+    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
 
-    let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, {
-      type: THREE.FloatType,
-      minFilter: shadowPassOptions.minFilter,
-      magFilter: THREE.Linear
-    });
-
-    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, {
-      type: THREE.FloatType,
-      minFilter: shadowPassOptions.minFilter,
-      magFilter: THREE.Linear
-    });
-
+    shadowPassUniforms.depthMap.value     = depthMapTarget;
+    shadowPassUniforms.positionMap.value  = positionMapTarget;
+    shadowPassUniforms.vBlurMap.value     = verBlurTarget;
+    shadowPassUniforms.hBlurMap.value     = horBlurTarget;
     /*
     material containing the depth pass shaders. The original scene will be
     rendered using this shaders to produce a depth map
@@ -241,13 +232,10 @@
 
     let horBlurScene = new THREE.Scene();
     horBlurScene.add(horBlurMesh);
-
     let verBlurScene = new THREE.Scene();
     verBlurScene.add(verBlurMesh);
-
     let shadowScene = new THREE.Scene();
     shadowScene.add(shadowMapMesh);
-
 
     let lightCamera;
     /*
@@ -255,7 +243,6 @@
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
-
       let sceneGraph = scene.getScene();
       let sceneCam = scene.getCamera();
       let renderer = scene.getRenderer();
@@ -265,10 +252,8 @@
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
-
       bbmax.multiplyScalar(scale);
       bbmin.multiplyScalar(scale);
-
       bbox.set(bbmin, bbmax);
 
       /* Prepare light view camera frustum (orthographic for directional lights) */
@@ -281,7 +266,6 @@
         -(diag / 2),
         diag / 2
       );
-
       /* Prepare light position, based on current camera position */
       let lightPos = scene.lights.Headlight.getPosition();
       if(!fixedLight) {
@@ -306,8 +290,6 @@
 
       let decos = scene.getDecoratorsGroup();
       let layers = scene.getLayersGroup();
-
-
       /* Hide decorators  (that should not be shadowed) */
       let hidden = [];
       let materialChanged = [];
@@ -326,7 +308,6 @@
           hidden.push(deco);
         }
       });
-      //probabilmente puoi fare anche le ombre del wireframe...usando una uniform..pensaci su
       /********************PREPARE DEPTH MAP*******************/
       /*Selectively attach depth map material */
       let layersIterator = scene.getLayers().iterator();
@@ -335,10 +316,7 @@
         let layer = layersIterator.next();
         /* if layer is drawn as filled, i don't consider points in shadowmap */
         let pointSz = (layer.overlays.getByKey('Filled')) ? 0.0 : layer.overlaysParams.getByKey('Points').size;
-        // let pointSz = layer.overlaysParams.getByKey('Points').size;
-        // if (layer.overlays.getByKey('Filled'))
-        //   pointSz = 0.0;
-        //
+
         let overlaysIterator = layer.overlays.iterator();
         while (overlaysIterator.hasNext()) {
           let overlay = overlaysIterator.next();
@@ -390,11 +368,7 @@
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
       shadowPassUniforms.lightViewProjection.value  = projScreenMatrix;
-      shadowPassUniforms.depthMap.value             = depthMapTarget;
-      shadowPassUniforms.positionMap.value          = positionMapTarget;
       shadowPassUniforms.colorMap.value             = inBuffer;
-      shadowPassUniforms.vBlurMap.value             = verBlurTarget;
-      shadowPassUniforms.hBlurMap.value             = horBlurTarget;
       shadowPassUniforms.intensity.value            = intensity;
       shadowPassUniforms.lightDir.value             = lightD;
 
@@ -402,11 +376,7 @@
        renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
-      shadowPassUniforms.depthMap.value             = null;
       shadowPassUniforms.colorMap.value             = null;
-      shadowPassUniforms.positionMap.value          = null;
-      shadowPassUniforms.vBlurMap.value             = null;
-      shadowPassUniforms.hBlurMap.value             = null;
       shadowPassUniforms.intensity.value            = null;
       shadowPassUniforms.lightDir.value             = null;
     };
