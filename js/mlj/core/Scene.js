@@ -98,7 +98,7 @@ MLJ.core.Scene = {};
 
     var _camera;
 
-    var _camera1;
+    // var _camera1;
     var _customLight;
 
     var _cameraPosition;
@@ -118,6 +118,8 @@ MLJ.core.Scene = {};
 
     var _stats;
     var _controls;
+
+    var _lightControl;
 
     /// @type {Object}
     var _renderer;
@@ -179,11 +181,10 @@ MLJ.core.Scene = {};
 
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-        // _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-        _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
+        // _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
 
         _camera.position.z = 15;
-        _camera1.position.z = 15;
+        // _camera1.position.z = 15;
 
         _group = new THREE.Object3D();
         _scene.add(_group);
@@ -210,7 +211,7 @@ MLJ.core.Scene = {};
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
-        _scene.add(_camera1);
+        // _scene.add(_camera1);
 
         _stats = initStats();
         /*
@@ -221,6 +222,7 @@ MLJ.core.Scene = {};
         //INIT LIGHTS
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+        _this.lights.Headlight.setPosition(_camera.position);
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -234,17 +236,29 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        _lightControl = new THREE.TransformControls(_camera, container);
+        _lightControl.setMode('scale');
+        _lightControl.setSize(1);
+        _lightControl.setSpace('local');
+        _lightControl.name = 'lightControls';
+        _lightControl.addEventListener( 'change', function () {
+          _lightControl.update();
+          _this.render();
+        });
+        //_lightControl.attach(_this.lights.Headlight.getLight()); //in realtà voglio appiccicarci la mesh
+
         _customLight = false;
         var _lightPressed = false;
 
-        var _lightHelper = new THREE.CameraHelper(_camera1);
+      //   var _lightHelper = new THREE.CameraHelper(_camera1);
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
               _lightPressed = false;
-              _controls.object = _camera;
-              _scene.remove(_lightHelper);
+              // _controls.object = _camera;
+              // _scene.remove(_lightControl);
+              // _scene.remove(_lightHelper);
             }
         });
         $(document).keydown(function(event) {
@@ -261,8 +275,15 @@ MLJ.core.Scene = {};
               if(_lightPressed) return;
               _lightPressed = true;
               event.preventDefault();
-              _controls.object = _camera1;
-              _scene.add(_lightHelper);
+              // _controls.object = _camera1;
+              // _scene.add(_lightControl);
+              // _scene.add(_lightHelper);
+
+              _lightControl.attach(_group);
+              _controls.enabled = false;
+              _scene.add(_lightControl);
+              _lightControl.update();
+              _this.render();
               _customLight = true;
             }
 
@@ -298,6 +319,13 @@ MLJ.core.Scene = {};
         $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false ); // firefox
 
         _controls.addEventListener('change', function () {
+            _this.lights.Headlight.setPosition(_camera.position);
+
+            // if(_customLight)
+            //   _this.lights.Headlight.setPosition(_camera1.position);
+            // else
+            //   _this.lights.Headlight.setPosition(_controls.object.position);
+
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -845,11 +873,6 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      */
     this.render = function (fromReqAnimFrame) {
-
-        if(_customLight)
-          _this.lights.Headlight.setPosition(_camera1.position);
-        else
-          _this.lights.Headlight.setPosition(_controls.object.position);
 
         if (_stats.active && !fromReqAnimFrame) {
             return;

@@ -6,7 +6,7 @@ uniform float pointSize;
 varying vec4 worldPoint;
 
 void main() {
-  //qui probabilmente non serve più worldpoint
+
   if (pointSize != 0.0) {
     float u = 2.0*gl_PointCoord.x-1.0;
     float v = 2.0*gl_PointCoord.y-1.0;
