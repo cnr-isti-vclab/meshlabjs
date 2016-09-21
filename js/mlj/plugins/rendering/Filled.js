@@ -297,17 +297,16 @@
             if (meshFile.texture.length > 0) {
                 //After the for cycle we'll show ONLY THE FIRST TEXTURE (TODO in the future), and actually enable the textures in the shaders
                 mat.uniforms.texture = {type: 't', value: meshFile.texture[0].data}; //Attach the texture   
-                mat.uniforms.enableTexture = {type: 'i', value: 1}; //turn on the texture-checking in the fragment shader
                 meshFile.texturesNum = textureIndex; //we'll need this to know if the mesh has texture and how many
                 showTexWidgets();
             } else {
                 //if no texture are found we'll attach a dummy texture to the shader in order to avoid annpying warnings
                 console.warn("No Texture found or attached");
+                mat.uniforms.texBool.value=0;
                 meshFile.texture[0] = {data: new THREE.DataTexture(new Uint8Array(1 * 1 * 3), 1, 1, THREE.RGBFormat)}; //We need to create the object
                 meshFile.texture[0].data.needsUpdate = true; //We need to update the texture to avoid the warning
                 meshFile.texturesNum = 0; //there are no textures
                 mat.uniforms.texture = {type: 't', value: meshFile.texture[0].data}; //Attach the dummy texture  
-                mat.uniforms.enableTexture = {type: 'i', value: 0}; //turn off the texture-checking in the fragment shader
                 hideTexWidgets();
             }
 

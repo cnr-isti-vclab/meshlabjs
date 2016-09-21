@@ -22,7 +22,6 @@ uniform int mljColorMode;
 
 uniform sampler2D texture;
 uniform int texBool;
-uniform int enableTexture;
 varying vec2 vUv;
 
 #define PI 3.14159
@@ -119,18 +118,11 @@ void main() {
 
     outgoingLight += diffuseColor.rgb * ( totalDiffuseLight + ambientLightColor ) + totalSpecularLight + emissive;
     
-    if(lights == 0){
-        gl_FragColor = diffuseColor;
-    } else {
-        if(texBool == 1){
-            if(enableTexture == 1){
-                vec4 totalSpecularLightComponent = vec4(totalSpecularLight, 1);
-                gl_FragColor = texture2D(texture, vUv) * diffuseColor + totalSpecularLightComponent;
-            } else {
-                gl_FragColor = vec4( outgoingLight, diffuseColor.a);
-            }
-        } else{
-             gl_FragColor = vec4( outgoingLight, diffuseColor.a);
-        }            
+    if(lights == 0 && texBool == 0) gl_FragColor = diffuseColor;
+    if(lights == 1 && texBool == 0) gl_FragColor = vec4( outgoingLight, diffuseColor.a);
+    if(lights == 0 && texBool == 1) gl_FragColor = texture2D(texture, vUv) * diffuseColor;
+    if(lights == 1 && texBool == 1) {
+        vec4 totalSpecularLightComponent = vec4(totalSpecularLight, 1);
+        gl_FragColor = texture2D(texture, vUv) * diffuseColor + totalSpecularLightComponent;
     }
 }
