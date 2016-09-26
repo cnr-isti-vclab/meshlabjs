@@ -37,8 +37,8 @@ float shadowContribution(vec2 moments, float t) {
   float d = t - moments.x;
   float pmax = variance / (variance + (d*d));
 
-  return pmax;
-//  return containBleed(pmax, 0.2);
+//  return pmax;
+  return containBleed(pmax, 0.4);
 }
 
 float shadowCalc(vec4 position){
@@ -57,14 +57,12 @@ float shadowCalc(vec4 position){
 
   float fragDepth = lightSpacePosition.z;
 
-/* Il problema è che così calcolo la normale per faccia..quindi viene a blocchi */
-/* Potrei fare anche una normal map, ma così aggiungo un passo di render */
 /*
   vec3 v1 = dFdx(position.xyz);
   vec3 v2 = dFdy(position.xyz);
   vec3 vn = normalize(cross(v1, v2));
-  float p = dot(vn, (-lightDir));
-  if (p <= -0.0) return 0.0;
+  float p = dot(vn, -lightDir);
+  if (p <= -1.0) return 0.0;
 */
 
   return shadowContribution(moments, fragDepth);

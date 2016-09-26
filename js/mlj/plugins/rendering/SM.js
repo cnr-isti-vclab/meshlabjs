@@ -1,7 +1,5 @@
 
 (function (plugin, core, scene) {
-  //NOTE : Controlla frontside/backside in depthmap
-
 
   //TODO: usando decorators e layers associative arrays puoi evitare il discorso di due gruppi separati
 
