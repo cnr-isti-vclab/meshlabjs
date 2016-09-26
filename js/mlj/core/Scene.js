@@ -181,7 +181,12 @@ MLJ.core.Scene = {};
 
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+<<<<<<< HEAD
         // _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
+=======
+        // _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+        _camera1 = new THREE.OrthographicCamera(-50, 50,50,-50, 1, 1000);
+>>>>>>> parent of c8e3159... cleanup
 
         _camera.position.z = 15;
         // _camera1.position.z = 15;
@@ -262,7 +267,7 @@ MLJ.core.Scene = {};
             }
         });
         $(document).keydown(function(event) {
-
+          
           if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
             event.preventDefault();
             _customLight = false;
