@@ -98,7 +98,9 @@ MLJ.core.Scene = {};
 
     var _camera;
 
-    var _camera1;
+    // var _camera1;
+    var _lightControls;
+    var _dummyObj;
     var _customLight;
 
     var _cameraPosition;
@@ -180,14 +182,13 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         
-        _camera1 = new THREE.OrthographicCamera(-50, 50,50,-50, 1, 1000);
-
+        // _camera1 = new THREE.OrthographicCamera(-50, 50,50,-50, 1, 1000);
         // _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-  //      _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
+        // _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
 
 
         _camera.position.z = 15;
-        _camera1.position.z = 15;
+        // _camera1.position.z = 15;
 
         _group = new THREE.Object3D();
         _scene.add(_group);
@@ -214,7 +215,7 @@ MLJ.core.Scene = {};
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
-        _scene.add(_camera1);
+        // _scene.add(_camera1);
 
         _stats = initStats();
         /*
@@ -238,17 +239,29 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        _lightControls = new THREE.TransformControls(_camera, container);
+        _lightControls.setMode('rotate');
+        _lightControls.setSize(1);
+        _lightControls.name = 'lightControls';
+
+        _lightControls.addEventListener('change', () => {
+            _lightControls.update();
+            _this.render();
+        });
+
+
         _customLight = false;
         var _lightPressed = false;
-
-        var _lightHelper = new THREE.CameraHelper(_camera1);
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
               _lightPressed = false;
               _controls.object = _camera;
-              _scene.remove(_lightHelper);
+            _lightControls.detach(_this.lights.Headlight.getMesh());
+              _scene.remove(_lightControls);
+              _controls.enabled = true;
+              _this.render();
             }
         });
         $(document).keydown(function(event) {
@@ -265,8 +278,16 @@ MLJ.core.Scene = {};
               if(_lightPressed) return;
               _lightPressed = true;
               event.preventDefault();
-              _controls.object = _camera1;
-              _scene.add(_lightHelper);
+
+              _controls.enabled = false;
+
+             _scene.add(_lightControls);
+            _lightControls.attach(_this.lights.Headlight.getMesh());
+
+            _lightControls.update();
+            _this.render();
+
+
               _customLight = true;
             }
 
@@ -302,6 +323,9 @@ MLJ.core.Scene = {};
         $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false ); // firefox
 
         _controls.addEventListener('change', function () {
+
+            _this.lights.Headlight.setPosition(_controls.object.position);
+
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -350,6 +374,7 @@ MLJ.core.Scene = {};
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
+    
 
     /* Compute global bounding box and translate and scale every object in proportion
      * of global bounding box. First translate every object into original position,
@@ -849,11 +874,6 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      */
     this.render = function (fromReqAnimFrame) {
-
-        if(_customLight)
-          _this.lights.Headlight.setPosition(_camera1.position);
-        else
-          _this.lights.Headlight.setPosition(_controls.object.position);
 
         if (_stats.active && !fromReqAnimFrame) {
             return;

@@ -7,21 +7,24 @@
   //TODO: togli doubleside su filled e lo shader suo!!
 
   //IDEA: Per permettere la scelta della direzione di luce dovrei:
-  //      0- capisci bene TrackballControls.js che anche li ci dovrai mettere le mani prolly? ( o forse no...leggilo)
-  //
-  //      1- in core.js dovrei probabilmente 'slegare' la luce dalla camera (niente più camera.add(_light))
-  //                      FORSE Però posso attaccarla a scene
-  //            1.1- se ho capito bene non posso slegare la luce dalla camera (perché nei vari filled ecc.. agli shader le luci vengono passate tramite la camera)
-  //            1.2- quindi dovrei tipo appendere delle trasformazioni a light nel momento in cui ne cambio la direzione..
-  //                  in questo modo la luce resta attaccata alla camera, ma aggiungo trasformazioni.
-  //   (DEPRECATO FORSE)   2- applicare le trasformazioni della camera alla luce (così che segua la camera di default)
-  //            (interessa la trackball (o semplicemente scene.render dove posso fasre light.position = camera.position.copy))
-  //   (DEPRECATO FORSE)   3- avere un trigger che sleghi la luce dai movimenti della camera (tramite tasti) (magari in scene come eventlistener)
-  //            3.1- questo trigger dovrà bloccare la camera fintanto che tengo i tasti e applicare i move solo alla luce(basta questo)
-  //      4- rilasciati i tasti la camera si sblocca, ma la luce non è più legata al suo movimento
-  //          4.1- PROBLEMA QUI...se lascio la luce sulla camera poi è un casino gestirla.... -.-
-  //      5- definire un comando - bottone per ribindare la luce alla camera
+  /*
+      ===> integrare transformControls.... :
 
+            -- dovrei attacchare il control alla luce, ma la luce non ha matrici di trasformazione (cerca un modo) 
+              (tinkera un po per vedere se riesci a fare il modo (alla fine è object3d))
+
+            -- altrimenti attacchalo a un oggetto e poi applica la trasformazione alla posizione dell'oggeto 
+              (questa più facile ma sa di hack)
+
+            => in Scene.js: 
+              - 
+              -
+              -
+            => in un plugin (Global.js forse?):
+              -
+              -
+              -
+  */
   // TODO: refactoring---commenting---memorycleanupondispose---icon
 
   /* variables for ui interaction */
@@ -293,15 +296,7 @@
       /* Hide decorators  (that should not be shadowed) */
       let hidden = [];
       let materialChanged = [];
-      // let decosIterator = scene.getDecorators().iterator();
-      // while(decosIterator.hasNext()) {
-      //   let deco = decosIterator.next();
-      //   // console.log(JSON.stringify(deco));
-      //   if (deco.visible && deco.geometry) {
-      //     deco.visible = false;
-      //     hidden.push(deco);
-      //   }
-      // }
+
       decos.traverse(function (deco) {
         if (deco.visible && deco.geometry) {
           deco.visible = false;
@@ -331,16 +326,6 @@
           }
         }
       }
-      // layers.traverse(function (mesh) {
-      //   if (mesh.name == 'Points' || mesh.name == 'Filled') {
-      //     mesh.__mlj_smplugin_material = mesh.material;
-      //     mesh.material = depthMaterial;
-      //     materialChanged.push(mesh);
-      //   } else if (mesh.name && mesh.visible && mesh.geometry) { //HACK: gli overlay hanno nome, mentre il fake node no
-      //     mesh.visible = false;
-      //     hidden.push(mesh);
-      //   }
-      // });
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
 
       /******************PREPARE POSITION MAP********************/

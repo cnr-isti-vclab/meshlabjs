@@ -125,7 +125,13 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     // var _camera = camera;
     var _on = true;
     var _light = new THREE.DirectionalLight("#ffffff",0.5);
-    _light.position.set( 0, -1, 0 );
+
+    var _lightMesh = new THREE.Object3D();
+
+    _lightMesh.position.set(0, -1, 0);
+    _lightMesh.add(_light);
+    
+    // _light.position.set( 0, -1, 0 );
 
 
     /**
@@ -136,9 +142,9 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      */
     this.setOn = function (on) {
         if (on) {
-            scene.add(_light);
+            scene.add(_lightMesh);
         } else {
-            scene.remove(_light);
+            scene.remove(_lightMesh);
         }
         renderer.render(scene, camera);
     };
@@ -146,19 +152,13 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     //Init
     this.setOn(_on);
 
-    // this.setCamera = function (cam) {
-    //   _camera.remove(_light);
-    //   cam.add(_light);
-    //   renderer.render(scene, )
-    // }
     this.setPosition = function (pos) {
-      _light.position.set(pos.x, pos.y, pos.z);
+      _lightMesh.position.set(pos.x, pos.y, pos.z);
     }
     this.getPosition = function () {
-      return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
+      return new THREE.Vector3(_lightMesh.position.x, _lightMesh.position.y, _lightMesh.position.z);
     }
-    // this.getLight = function () {
-    //   return _light;
-    // }
-
+    this.getMesh = function () {
+        return _lightMesh;
+    }
 };
