@@ -125,15 +125,14 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     // var _camera = camera;
     var _on = true;
     var _light = new THREE.DirectionalLight("#ffffff",0.5);
+    _light.position.set(0, -1, 0);
 
     var _lightMesh = new THREE.Object3D();
 
-    _lightMesh.position.set(0, -1, 0);
+    // _lightMesh.position.set(camera.position.x, camera.position.y, camera.position.z);
+    _lightMesh.position.set(0, 0 ,0);
     _lightMesh.add(_light);
     
-    // _light.position.set( 0, -1, 0 );
-
-
     /**
      * Sets this headlight on/off
      * @param {Boolean} on If <code>true</code>, this headlight is enabled;
@@ -153,12 +152,15 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     this.setOn(_on);
 
     this.setPosition = function (pos) {
-      _lightMesh.position.set(pos.x, pos.y, pos.z);
+      _light.position.set(pos.x, pos.y, pos.z);
     }
     this.getPosition = function () {
-      return new THREE.Vector3(_lightMesh.position.x, _lightMesh.position.y, _lightMesh.position.z);
+      return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
     }
     this.getMesh = function () {
         return _lightMesh;
+    }
+    this.getLight = () => {
+        return _light;
     }
 };

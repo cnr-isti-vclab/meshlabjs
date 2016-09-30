@@ -100,7 +100,6 @@ MLJ.core.Scene = {};
 
     // var _camera1;
     var _lightControls;
-    var _dummyObj;
     var _customLight;
 
     var _cameraPosition;
@@ -227,6 +226,8 @@ MLJ.core.Scene = {};
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
+        //_this.lights.Headlight.setPosition(_camera.position);
+
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
         _controls = new THREE.TrackballControls(_camera, container);
@@ -249,16 +250,16 @@ MLJ.core.Scene = {};
             _this.render();
         });
 
-
-        _customLight = false;
+        /* PROva disattivando smpostamento con camera quando si custom e resettando q1uando resetti */
+        /* allafine sembra sia la camerache rompe le palle */
         var _lightPressed = false;
+        _customLight = false;
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
               _lightPressed = false;
-              _controls.object = _camera;
-            _lightControls.detach(_this.lights.Headlight.getMesh());
+              _lightControls.detach();
               _scene.remove(_lightControls);
               _controls.enabled = true;
               _this.render();
@@ -269,26 +270,22 @@ MLJ.core.Scene = {};
           if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
             event.preventDefault();
             _customLight = false;
-            _controls.object = _camera;
             _this.render();
             return;
           }
 
             if(event.ctrlKey && event.shiftKey && event.altKey) {
               if(_lightPressed) return;
+
               _lightPressed = true;
               event.preventDefault();
-
-              _controls.enabled = false;
-
-             _scene.add(_lightControls);
-            _lightControls.attach(_this.lights.Headlight.getMesh());
-
-            _lightControls.update();
-            _this.render();
-
-
               _customLight = true;
+              _controls.enabled = false;
+              _scene.add(_lightControls);
+              _lightControls.attach(_this.lights.Headlight.getMesh());
+
+              _this.render();
+
             }
 
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
@@ -324,7 +321,8 @@ MLJ.core.Scene = {};
 
         _controls.addEventListener('change', function () {
 
-            _this.lights.Headlight.setPosition(_controls.object.position);
+            if(!_customLight)
+                _this.lights.Headlight.setPosition(_camera.position);
 
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
