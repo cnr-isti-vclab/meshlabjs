@@ -155,7 +155,11 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
       _light.position.set(pos.x, pos.y, pos.z);
     }
     this.getPosition = function () {
-      return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
+    // questa ritorna la posizione in coordinate locali del sistema lightMesh (origine) e light.
+   //   return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
+
+   // questa ritorna la posizione in "coordinate scena"
+        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z).applyMatrix4(_light.matrixWorld);
     }
     this.getMesh = function () {
         return _lightMesh;

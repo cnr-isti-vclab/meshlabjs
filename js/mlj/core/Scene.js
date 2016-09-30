@@ -260,7 +260,7 @@ MLJ.core.Scene = {};
               event.preventDefault();
               _lightPressed = false;
               _lightControls.detach();
-              _scene.remove(_lightControls);
+              _this.removeSceneDecorator(_lightControls.name);
               _controls.enabled = true;
               _this.render();
             }
@@ -281,9 +281,9 @@ MLJ.core.Scene = {};
               event.preventDefault();
               _customLight = true;
               _controls.enabled = false;
-              _scene.add(_lightControls);
-              _lightControls.attach(_this.lights.Headlight.getMesh());
-
+               _lightControls.attach(_this.lights.Headlight.getMesh());
+              _this.addSceneDecorator(_lightControls.name, _lightControls);
+             
               _this.render();
 
             }

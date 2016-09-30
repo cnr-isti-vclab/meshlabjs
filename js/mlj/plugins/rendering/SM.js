@@ -271,6 +271,8 @@
       );
       /* Prepare light position, based on current camera position */
       let lightPos = scene.lights.Headlight.getPosition();
+      // qui pensaci: per risolvere bug attuale devi trasformare la pos con la rotazione della mesh associata
+      //              però prolly ti spacca quando invece sei a cose normali (anzi no)
       if(!fixedLight) {
         shadowPassOptions.lightPos = new THREE.Vector3(
           lightPos.x + 4,
