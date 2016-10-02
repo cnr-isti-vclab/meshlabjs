@@ -240,12 +240,13 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        var ___bbox = new THREE.BoundingBoxHelper( _group, 0x0000FF );
 
         let prepareLightControls = () => {
             _lightControls = new THREE.TransformControls(_camera, container);
             _lightControls.setMode('rotate');
             // _lightControls.setSpace('local');
-            _lightControls.setSize(1);
+            _lightControls.setSize(4);
             _lightControls.name = 'lightControls';
 
             _lightControls.addEventListener('change', () => {
@@ -255,20 +256,24 @@ MLJ.core.Scene = {};
 
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
-            _scene.add(_lightControls);
-            //_this.addSceneDecorator(_lightControls.name, _lightControls);
+            
+            var dummyOrigin = new THREE.Object3D();
+            dummyOrigin.add(_lightControls);
 
-            // var bbox = _this.getBBox();
-            //  var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
-            // var offset = bbox.center();//.negate();
-            // //    offset.multiplyScalar(scaleFac);
-            // //   _this.lights.Headlight.getMesh().scale.set(scaleFac,scaleFac,scaleFac);
-            // console.log('Mi sposto di: '+JSON.stringify(offset));
-            // _this.lights.Headlight.getMesh().position.set(offset.x,offset.y,offset.z);
+            _this.addSceneDecorator(_lightControls.name, dummyOrigin);
+            /**debug ** */
+            ___bbox.update();
+            _scene.add( ___bbox );
+            /********** */
+            var bbox = _this.getBBox();
+            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
+            var offset = bbox.center();//.negate();
 
-            _this.lights.Headlight.getMesh().updateMatrix();
-            _this.lights.Headlight.getMesh().updateMatrixWorld(true);
+            dummyOrigin.position.set(offset.x,offset.y,offset.z);
+            dummyOrigin.updateMatrix();
+            dummyOrigin.updateMatrixWorld(true);
 
+            console.log('Mi sposto di: '+JSON.stringify(offset));
             // console.log('center at '+JSON.stringify(_this.lights.Headlight.getMesh().position));
             
 
@@ -277,7 +282,7 @@ MLJ.core.Scene = {};
         /* allafine sembra sia la camerache rompe le palle */
         var _lightPressed = false;
         _customLight = false;
-        var bbox = new THREE.BoundingBoxHelper( _group, 0x0000FF );
+
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
@@ -285,8 +290,8 @@ MLJ.core.Scene = {};
               if (_lightPressed) {
                 _lightPressed = false;
                 _lightControls.detach();
-                // _this.removeSceneDecorator(_lightControls.name);
-                  _scene.remove(_lightControls);
+                _this.removeSceneDecorator(_lightControls.name);
+                // _scene.remove(_lightControls);
                 _controls.enabled = true;
                 _scene.remove(bbox);
                 _this.render();
@@ -324,11 +329,6 @@ MLJ.core.Scene = {};
               _controls.enabled = false;
 
               prepareLightControls();
-
-              
-
-                bbox.update();
-                // _scene.add( bbox );
                
             //  _scene.add(_lightControls);
               _this.render();

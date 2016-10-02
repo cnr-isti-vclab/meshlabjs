@@ -8,22 +8,47 @@
 
   //IDEA: Per permettere la scelta della direzione di luce dovrei:
   /*
-      ===> integrare transformControls.... :
 
-            -- dovrei attacchare il control alla luce, ma la luce non ha matrici di trasformazione (cerca un modo) 
-              (tinkera un po per vedere se riesci a fare il modo (alla fine è object3d))
+PER ORA IMPLEMENTO TUTTO IN SCENE.JS E PICCOLA MODIFICA A CORE.JS => SCENE.JS AL MOMENTO È SPORCO (tanto codice di debug e vecchio)
+Se ho capito bene in moving.js antnic fa:
+	- Sposto meshgroup (il dummy object3d per tenere centrato il moving tool)
+		In posizione centrale
+	- Sposto l'oggetto targettato di una quantità opposta, cosi ho il tool al centro e
+		L'oggetto non si è mosso in realtà..
 
-            -- altrimenti attacchalo a un oggetto e poi applica la trasformazione alla posizione dell'oggeto 
-              (questa più facile ma sa di hack)
 
-            => in Scene.js: 
-              - 
-              -
-              -
-            => in un plugin (Global.js forse?):
-              -
-              -
-              -
+Per fare una cosa simile io dovrei: 
+	- Usare group come il dummy object3d di antnic (antnic applica solo ad un layer, io dovrei applicare all'intera scena)
+	- Applicare la traslazione al _group  e l'inversa a tutti gli altri oggetti nella scena
+
+In questo modo il transformControl, che è aggiunto come un decorator ( e quindi la gerarchia è _group-> _decoratorsGroup -> transformControls ) si trova al centro della scena (0,0,0) e le mesh  sono ancora centrate come prima (avendo applicato la traslazione inversa)…
+
+IIDEA: scrivere serve eheh, visto che transformControls è figlio di _decoGroup => se io applico la trasformazione per centrare il _decoGroup allora transformControls è centrato!
+Ora il problema qui è che I vari decoratori non si comportano in modo uniforme, ossia, gli assi sono centrati nell'origine di _decosGroup, e quindi di _group a cose normali, e quindi sono decentrati rispetto alla scena in sostanza (ricorda la trasformazione applicata alla scena)…
+Mentre il gridDecorator è costruito applicando la trasformazione per centrarlo sull bbox della scena
+
+====> se io applico la trasformazione a _decosGroup gli assi saranno centrati, il transformControls sarà centrato, ma il gridDeco sarà decentrato e male
+
+====> una soluzione sarebbe rivedere axes e grid per comportarsi in modo consistente e applicare di conseguenza a transformControls
+
+
+Un secondo problema è la gestione della dimensione del transformControls, che se ho capito bene è settabile con valori assoluti, quindi dovrei trovare una formulazione che mi permetta di 
+Trovare la dimensione giusta in base alla dimensione del bbox della scena.
+
+
+In alternativa c'è l'implementazione , più raffinata, nello stile come avevo fatto all'inizio, che risolve il problema dlela dimensione di sicuro, ma resta il fatto del decorator prolly.
+
+
+
+Ho fixato! Ora resta da decidere cosa fare per axes e grid…. E trovare un modo di avere la size parametrica che funzioni!
+
+Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, solo che è nascosto dal fatto che l'ombra è molto più nera…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
+
+
+INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSERE RIFATTORIZZATI UN PO' IN MODO CHE SIANO DEFINITI COME 
+DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
+
+
   */
   // TODO: refactoring---commenting---memorycleanupondispose---icon
 
