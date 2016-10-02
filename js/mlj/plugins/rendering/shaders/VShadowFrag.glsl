@@ -6,6 +6,7 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 
 uniform vec3 lightDir;
+uniform vec3 cameraPosition;
 
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;

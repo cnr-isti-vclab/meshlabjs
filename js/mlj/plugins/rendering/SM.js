@@ -270,7 +270,7 @@
         diag / 2
       );
       /* Prepare light position, based on current camera position */
-      let lightPos = scene.lights.Headlight.getPosition();
+      let lightPos = scene.lights.Headlight.getWorldPosition();
       // qui pensaci: per risolvere bug attuale devi trasformare la pos con la rotazione della mesh associata
       //              però prolly ti spacca quando invece sei a cose normali (anzi no)
       if(!fixedLight) {

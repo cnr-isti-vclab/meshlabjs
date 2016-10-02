@@ -226,7 +226,7 @@ MLJ.core.Scene = {};
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
-        //_this.lights.Headlight.setPosition(_camera.position);
+        _this.lights.Headlight.setPosition(_camera.position);
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -240,50 +240,97 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
-        _lightControls = new THREE.TransformControls(_camera, container);
-        _lightControls.setMode('rotate');
-        _lightControls.setSize(1);
-        _lightControls.name = 'lightControls';
 
-        _lightControls.addEventListener('change', () => {
+        let prepareLightControls = () => {
+            _lightControls = new THREE.TransformControls(_camera, container);
+            _lightControls.setMode('rotate');
+            // _lightControls.setSpace('local');
+            _lightControls.setSize(1);
+            _lightControls.name = 'lightControls';
+
+            _lightControls.addEventListener('change', () => {
+                _lightControls.update();
+                _this.render();
+            });
+
+            _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
-            _this.render();
-        });
+            _scene.add(_lightControls);
+            //_this.addSceneDecorator(_lightControls.name, _lightControls);
 
+            // var bbox = _this.getBBox();
+            //  var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
+            // var offset = bbox.center();//.negate();
+            // //    offset.multiplyScalar(scaleFac);
+            // //   _this.lights.Headlight.getMesh().scale.set(scaleFac,scaleFac,scaleFac);
+            // console.log('Mi sposto di: '+JSON.stringify(offset));
+            // _this.lights.Headlight.getMesh().position.set(offset.x,offset.y,offset.z);
+
+            _this.lights.Headlight.getMesh().updateMatrix();
+            _this.lights.Headlight.getMesh().updateMatrixWorld(true);
+
+            // console.log('center at '+JSON.stringify(_this.lights.Headlight.getMesh().position));
+            
+
+        }
         /* PROva disattivando smpostamento con camera quando si custom e resettando q1uando resetti */
         /* allafine sembra sia la camerache rompe le palle */
         var _lightPressed = false;
         _customLight = false;
+        var bbox = new THREE.BoundingBoxHelper( _group, 0x0000FF );
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
-              _lightPressed = false;
-              _lightControls.detach();
-              _this.removeSceneDecorator(_lightControls.name);
-              _controls.enabled = true;
-              _this.render();
+              if (_lightPressed) {
+                _lightPressed = false;
+                _lightControls.detach();
+                // _this.removeSceneDecorator(_lightControls.name);
+                  _scene.remove(_lightControls);
+                _controls.enabled = true;
+                _scene.remove(bbox);
+                _this.render();
+              }
             }
         });
         $(document).keydown(function(event) {
 
-          if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
-            event.preventDefault();
-            _customLight = false;
-            _this.render();
-            return;
-          }
+            if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
+                event.preventDefault();
+                _customLight = false;
 
+                // azzzero le trasformazioni applicate su lightmesh
+                _this.lights.Headlight.getMesh().position.set(0,0,0);
+                _this.lights.Headlight.getMesh().scale.set(1,1,1);
+                _this.lights.Headlight.getMesh().quaternion.set(0,0,0,1);
+                _this.lights.Headlight.getMesh().updateMatrix();
+                
+                _this.lights.Headlight.setPosition(_camera.position);
+                
+                // console.log('center at '+JSON.stringify(_this.lights.Headlight.getMesh().position));
+                // console.log('light at '+JSON.stringify(_this.lights.Headlight.getWorldPosition()));
+                // console.log('camera at '+JSON.stringify(_camera.position));
+                _this.render();
+                return;
+            }
+            // CON addSceneDecorator non va...con scene.add() va tutto
             if(event.ctrlKey && event.shiftKey && event.altKey) {
+
               if(_lightPressed) return;
 
               _lightPressed = true;
               event.preventDefault();
               _customLight = true;
               _controls.enabled = false;
-               _lightControls.attach(_this.lights.Headlight.getMesh());
-              _this.addSceneDecorator(_lightControls.name, _lightControls);
-             
+
+              prepareLightControls();
+
+              
+
+                bbox.update();
+                // _scene.add( bbox );
+               
+            //  _scene.add(_lightControls);
               _this.render();
 
             }
@@ -321,9 +368,16 @@ MLJ.core.Scene = {};
 
         _controls.addEventListener('change', function () {
 
-            if(!_customLight)
-                _this.lights.Headlight.setPosition(_camera.position);
+            if(!_customLight) {
+                //debug
+                var p = _camera.position.clone();
 
+                // p.setZ = p.z / 2;
+               // p.setLength(10);
+                _this.lights.Headlight.setPosition(p);
+                // console.log('UPDATE light at '+JSON.stringify(_this.lights.Headlight.getWorldPosition()));
+                // console.log('UPDATE camera at '+JSON.stringify(_camera.position));
+            }
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });

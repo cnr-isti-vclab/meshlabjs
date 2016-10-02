@@ -123,11 +123,20 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
     // var _camera = camera;
+    /***************debug****************** */
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    var cube1 = new THREE.Mesh( geometry, material );
+    var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
+    var cube2 = new THREE.Mesh( geometry, material1 );
+
     var _on = true;
     var _light = new THREE.DirectionalLight("#ffffff",0.5);
-    _light.position.set(0, -1, 0);
 
     var _lightMesh = new THREE.Object3D();
+
+    _lightMesh.add(cube1);
+    _light.add(cube2);
 
     // _lightMesh.position.set(camera.position.x, camera.position.y, camera.position.z);
     _lightMesh.position.set(0, 0 ,0);
@@ -154,12 +163,11 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     this.setPosition = function (pos) {
       _light.position.set(pos.x, pos.y, pos.z);
     }
-    this.getPosition = function () {
-    // questa ritorna la posizione in coordinate locali del sistema lightMesh (origine) e light.
-   //   return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
-
-   // questa ritorna la posizione in "coordinate scena"
-        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z).applyMatrix4(_light.matrixWorld);
+    this.getWorldPosition = function () {
+        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z).applyMatrix4(_lightMesh.matrixWorld);
+    }
+    this.getLocalPosition = function () {
+        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
     }
     this.getMesh = function () {
         return _lightMesh;
