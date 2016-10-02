@@ -122,23 +122,24 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  * @author Stefano Gabriele
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
-    // var _camera = camera;
     /***************debug****************** */
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
     var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     var cube1 = new THREE.Mesh( geometry, material );
     var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
     var cube2 = new THREE.Mesh( geometry, material1 );
+    /*************************************** */
 
     var _on = true;
-    var _light = new THREE.DirectionalLight("#ffffff",0.5);
 
+    var _light = new THREE.DirectionalLight("#ffffff",0.5);
     var _lightMesh = new THREE.Object3D();
 
+    /***********DEBUG ************ */
     _lightMesh.add(cube1);
     _light.add(cube2);
+    /************************* */
 
-    // _lightMesh.position.set(camera.position.x, camera.position.y, camera.position.z);
     _lightMesh.position.set(0, 0 ,0);
     _lightMesh.add(_light);
     
@@ -172,7 +173,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     this.getMesh = function () {
         return _lightMesh;
     }
-    this.getLight = () => {
+    this.getLight = function () {
         return _light;
     }
 };

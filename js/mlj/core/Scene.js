@@ -90,16 +90,14 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      */
     var _group;
-
     var _layersGroup;
-
     var _decoratorsGroup;
-
 
     var _camera;
 
-    // var _camera1;
     var _lightControls;
+    var _customLight;
+    var _lightPressed;
     var _customLight;
 
     var _cameraPosition;
@@ -181,13 +179,7 @@ MLJ.core.Scene = {};
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
         
-        // _camera1 = new THREE.OrthographicCamera(-50, 50,50,-50, 1, 1000);
-        // _camera1 = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
-        // _camera1 = new THREE.OrthographicCamera(-3, 3,3,-3, 1, 40);
-
-
         _camera.position.z = 15;
-        // _camera1.position.z = 15;
 
         _group = new THREE.Object3D();
         _scene.add(_group);
@@ -214,7 +206,6 @@ MLJ.core.Scene = {};
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
-        // _scene.add(_camera1);
 
         _stats = initStats();
         /*
@@ -228,6 +219,9 @@ MLJ.core.Scene = {};
 
         _this.lights.Headlight.setPosition(_camera.position);
 
+        _lightPressed = false;
+        _customLight = false;
+
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
         _controls = new THREE.TrackballControls(_camera, container);
@@ -240,13 +234,25 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        /************debug******** */
         var ___bbox = new THREE.BoundingBoxHelper( _group, 0x0000FF );
+        /************************* */
 
         let prepareLightControls = () => {
+
+            var bbox = _this.getBBox();
+            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
+            var offset = bbox.center();//.negate();
+            console.log('scaleFac: '+scaleFac);
+            console.log('bbox sz: '+(bbox.min.distanceTo(bbox.max)));
+            console.log('controls sz: '+ (bbox.min.distanceTo(bbox.max)) / 15.0);
+            var dummyOrigin = new THREE.Object3D();
+            dummyOrigin.position.set(offset.x,offset.y,offset.z);
+
             _lightControls = new THREE.TransformControls(_camera, container);
             _lightControls.setMode('rotate');
-            // _lightControls.setSpace('local');
-            _lightControls.setSize(4);
+            _lightControls.setSpace('local');
+            _lightControls.setSize((bbox.min.distanceTo(bbox.max)) / 15.0);
             _lightControls.name = 'lightControls';
 
             _lightControls.addEventListener('change', () => {
@@ -257,32 +263,19 @@ MLJ.core.Scene = {};
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
             
-            var dummyOrigin = new THREE.Object3D();
+            
             dummyOrigin.add(_lightControls);
+            dummyOrigin.updateMatrix();
+            dummyOrigin.updateMatrixWorld(true);
 
             _this.addSceneDecorator(_lightControls.name, dummyOrigin);
+
             /**debug ** */
             ___bbox.update();
             _scene.add( ___bbox );
             /********** */
-            var bbox = _this.getBBox();
-            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
-            var offset = bbox.center();//.negate();
-
-            dummyOrigin.position.set(offset.x,offset.y,offset.z);
-            dummyOrigin.updateMatrix();
-            dummyOrigin.updateMatrixWorld(true);
-
-            console.log('Mi sposto di: '+JSON.stringify(offset));
-            // console.log('center at '+JSON.stringify(_this.lights.Headlight.getMesh().position));
-            
-
+            // console.log('Mi sposto di: '+JSON.stringify(offset));
         }
-        /* PROva disattivando smpostamento con camera quando si custom e resettando q1uando resetti */
-        /* allafine sembra sia la camerache rompe le palle */
-        var _lightPressed = false;
-        _customLight = false;
-
 
         $(document).keyup(function (event) {
             if(event.ctrlKey || event.shiftKey || event.altKey) {
@@ -291,34 +284,32 @@ MLJ.core.Scene = {};
                 _lightPressed = false;
                 _lightControls.detach();
                 _this.removeSceneDecorator(_lightControls.name);
-                // _scene.remove(_lightControls);
                 _controls.enabled = true;
+                /*******debug****** */
                 _scene.remove(bbox);
+                /******************* */
                 _this.render();
               }
             }
         });
-        $(document).keydown(function(event) {
 
+        $(document).keydown(function(event) {
+            /* CTRL+ALT+SHIFT+H => reset */
             if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
                 event.preventDefault();
                 _customLight = false;
-
                 // azzzero le trasformazioni applicate su lightmesh
                 _this.lights.Headlight.getMesh().position.set(0,0,0);
                 _this.lights.Headlight.getMesh().scale.set(1,1,1);
                 _this.lights.Headlight.getMesh().quaternion.set(0,0,0,1);
                 _this.lights.Headlight.getMesh().updateMatrix();
-                
+                // centro luce sulla posizione attuale della camera
                 _this.lights.Headlight.setPosition(_camera.position);
-                
-                // console.log('center at '+JSON.stringify(_this.lights.Headlight.getMesh().position));
-                // console.log('light at '+JSON.stringify(_this.lights.Headlight.getWorldPosition()));
-                // console.log('camera at '+JSON.stringify(_camera.position));
+                // disegno scena
                 _this.render();
                 return;
             }
-            // CON addSceneDecorator non va...con scene.add() va tutto
+            /* CTRL+ALT+SHIFT (keep pressed) => light moving */
             if(event.ctrlKey && event.shiftKey && event.altKey) {
 
               if(_lightPressed) return;
@@ -330,7 +321,6 @@ MLJ.core.Scene = {};
 
               prepareLightControls();
                
-            //  _scene.add(_lightControls);
               _this.render();
 
             }
@@ -366,18 +356,15 @@ MLJ.core.Scene = {};
         $canvas.addEventListener('mousewheel', _controls.update.bind(_controls), false);
         $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false ); // firefox
 
+        /* 
+            Light is now bound to the scene (not the camera) so I have to update its location
+            every time the camera move, if the light is not locked up by user
+        */
         _controls.addEventListener('change', function () {
-
-            if(!_customLight) {
-                //debug
-                var p = _camera.position.clone();
-
-                // p.setZ = p.z / 2;
-               // p.setLength(10);
-                _this.lights.Headlight.setPosition(p);
-                // console.log('UPDATE light at '+JSON.stringify(_this.lights.Headlight.getWorldPosition()));
-                // console.log('UPDATE camera at '+JSON.stringify(_camera.position));
-            }
+        
+            if(!_customLight) 
+                _this.lights.Headlight.setPosition(_camera.position);
+            
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });

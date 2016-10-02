@@ -58,7 +58,8 @@ float shadowCalc(vec4 position){
 
   float fragDepth = lightSpacePosition.z;
 
-/*
+/* 
+  //Per face normals make way too blocky shadows obviuosly
   vec3 v1 = dFdx(position.xyz);
   vec3 v2 = dFdy(position.xyz);
   vec3 vn = normalize(cross(v1, v2));
