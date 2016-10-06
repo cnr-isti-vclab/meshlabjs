@@ -146,38 +146,33 @@ MLJ.core.plugin.Filter = function (parameters) {
             var t0 = performance.now();
             // Creation filters and filters that works on all layers ignore the current layer
             // so we do not pass it
-            
-            MLJ.widget.Log.append("Apply: " + MLJ.core.Scene.timeStamp );
+            var type=undefined;
+            var layer = MLJ.core.Scene.getSelectedLayer();
             switch(_this.parameters.arity)
             {
                 case 0:
                 case 3:
                     _this._applyTo();
-                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Creation));
+                    type=MLJ.core.ChangeType.Creation;
+                    layer = MLJ.core.Scene.getSelectedLayer();
                     break;
                 case -1:
-                    var layer = MLJ.core.Scene.getSelectedLayer();
                     _this._applyTo(layer);
-                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Deletion));
+                    type=MLJ.core.ChangeType.Deletion;
                     break;
                 case 1:
-                    var layer = MLJ.core.Scene.getSelectedLayer();
                     _this._applyTo(layer);
-                    MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(MLJ.core.Scene.getSelectedLayer().id,MLJ.core.ChangeType.Modification)); 
+                    type=MLJ.core.ChangeType.Modification; 
                     break;
                 case 2:
-                //da fare
+                    //da fare
                     break;
                 default:
                     alert("Error filter");
             }
             var t1 = performance.now();
-            
-            var layer = MLJ.core.Scene.getSelectedLayer();
-            ++MLJ.core.Scene.timeStamp;
-            layer.meshH.pushState(MLJ.core.Scene.timeStamp,layer.ptrMesh());
+            MLJ.core.Scene.pushState(layer,type);
             MLJ.core.Scene.updateLayer(layer);
-            
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
             MLJ.core.Scene.history.closeSC();
         });

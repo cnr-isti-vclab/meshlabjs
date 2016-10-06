@@ -73,27 +73,27 @@
 
         _html += "</select>";
         _html += "<div id='button-wrapper'><button id='mlj-upload-dialog-button'>Upload</button></div></div>";
-        _dialogUpload.appendContent(_html);        
-        
-        
+        _dialogUpload.appendContent(_html);
+
+
         var _dialogCameraPosition = new component.Dialog({
-            title:"Camera position", modal:true, draggable: false, resizable:false, width: 400
+            title: "Camera position", modal: true, draggable: false, resizable: false, width: 400
         });
-        
+
         // This HTML basically contains a div for the dialog, a div with a label, a textarea, 
         // a div with an invisible error label, a div with a button
-         var _html = "<div id='mlj-cameraPosition-dialog'>";
-            _html += "<br/><div style='width: 70%; margin: 0 auto; '><div style='text-align: left; margin-left: 15px;> <label for='website'>Shift + C: copy current viewpoint</label></div> ";
-            _html += "<br/><div style='text-align: left; margin-left: 15px; margin-top: -15px; margin-bottom: 5px;> <label for='website'>Shift + V: load saved viewpoint</label></div></div> ";
-            _html += "<br/><div style='text-align: center;> <label for='website'>Camera Position as JSON</label></div> ";
-            _html += "<textarea id='cameraJSON' style='width: 350px; height: 335px; margin-left: 10px; margin-top: 5px'>";
-            _html += "</textarea>";
-            _html += "<div id='errorMessageDiv' style='text-align: center;  margin-bottom: 5px; color: red; display:none>";
-            _html += "<br/><label id='errorMessage' style='font-size: 60%; color: red;'>Wrong values or JSON not well formed</label>";
-            _html += "</div>";
-            _html += "<div id='button-wrapper' style='text-align: center; margin-top: 5px;'><button id='mlj-cameraPosition-dialog-button'>Confirm</button></div></div>";
-        _dialogCameraPosition.appendContent(_html);        
-        
+        var _html = "<div id='mlj-cameraPosition-dialog'>";
+        _html += "<br/><div style='width: 70%; margin: 0 auto; '><div style='text-align: left; margin-left: 15px;> <label for='website'>Shift + C: copy current viewpoint</label></div> ";
+        _html += "<br/><div style='text-align: left; margin-left: 15px; margin-top: -15px; margin-bottom: 5px;> <label for='website'>Shift + V: load saved viewpoint</label></div></div> ";
+        _html += "<br/><div style='text-align: center;> <label for='website'>Camera Position as JSON</label></div> ";
+        _html += "<textarea id='cameraJSON' style='width: 350px; height: 335px; margin-left: 10px; margin-top: 5px'>";
+        _html += "</textarea>";
+        _html += "<div id='errorMessageDiv' style='text-align: center;  margin-bottom: 5px; color: red; display:none>";
+        _html += "<br/><label id='errorMessage' style='font-size: 60%; color: red;'>Wrong values or JSON not well formed</label>";
+        _html += "</div>";
+        _html += "<div id='button-wrapper' style='text-align: center; margin-top: 5px;'><button id='mlj-cameraPosition-dialog-button'>Confirm</button></div></div>";
+        _dialogCameraPosition.appendContent(_html);
+
 
         function init() {
 
@@ -132,12 +132,12 @@
                 tooltip: "Delete current layer",
                 icon: "img/icons/IcoMoon-Free-master/PNG/48px/0173-bin.png"
             });
-            
+
             var cameraPosition = new component.Button({
                 tooltip: "Camera position",
-                icon: "img/icons/viewpoint.png" 
+                icon: "img/icons/viewpoint.png"
             });
-            
+
             var resetTrackball = new component.Button({
                 tooltip: "Reset trackball",
                 icon: "img/icons/home.png"
@@ -173,17 +173,21 @@
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
-            
-            _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
-			_toolBar.add(doc,git);
+            MLJ.gui.disabledOnSceneEmpty(unDo);
+            MLJ.gui.disabledOnSceneEmpty(reDo);
+            MLJ.gui.disableOnNoHistory(unDo);
 
-            _toolBar.add(open, save, uploadToWebsite, reload, resetTrackball, snapshot, deleteLayer);
+            /********** QUI DISABILITARE QUANDO NON C'è HISTORY / CREARE EVENTO *****************/
+
+            _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
             _toolBar.add(doc, git);
             _toolBar.add(unDo, reDo);
             // SCENE BAR EVENT HANDLERS
             open.onChange(function (input) {
                 MLJ.core.File.openMeshFile(input.files);
+                
             });
+            
             doc.onClick(function () {
                 var win = window.open("./doc/html/", '_blank');
                 win.focus();
@@ -194,19 +198,29 @@
             });
             unDo.onClick(function ()
             {
-                if (MLJ.core.Scene.timeStamp > 0)
-                {
-                    MLJ.widget.Log.append("\n\nUndo in progress");
-                    var layers = MLJ.core.Scene.getLayers();
-                    var it = layers.iterator();
+                if (MLJ.core.Scene.timeStamp > 0) {
                     
-                    while (it.hasNext())
+                    var toUndo = MLJ.core.Scene.changeLayerList.pop();
+                    
+                    var layer=toUndo.getLayer();
+                    var type=toUndo.getType();
+                    if(type==MLJ.core.ChangeType.Creation)
                     {
-                        var layer = it.next();
+                        MLJ.core.Scene.removeLayerByName(layer.name);
+                    }
+                    else if(type==MLJ.core.ChangeType.Deletion)
+                    {
+                        //da revisionare: trovare un modo per ripristinare il livello con la mesh
+                        //idea: fare un pushstate sul livello prima e dopo la delete
+                    }
+                    else
+                    {
+                        MLJ.widget.Log.append("\n\nUndo in progress at time " + (MLJ.core.Scene.timeStamp) + " on layer " + layer.name);
                         layer.meshH.restoreState(MLJ.core.Scene.timeStamp, layer.ptrMesh());
                         MLJ.core.Scene.updateLayer(layer);
                     }
                     MLJ.core.Scene.timeStamp--;
+                    $(document).trigger("Undo", MLJ.core.Scene.timeStamp);
                 }
             });
             reDo.onClick(function ()
@@ -250,14 +264,14 @@
             deleteLayer.onClick(function () {
                 MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
             })
-            
-            cameraPosition.onClick(function() {
+
+            cameraPosition.onClick(function () {
                 // Takes the camera position as JSON
                 var cameraJSON = MLJ.core.Scene.takeCameraPositionJSON();
-                
+
                 // Shows the dialog
                 _dialogCameraPosition.show();
-                
+
                 // Hides the error message
                 $('#errorMessageDiv').hide();
 
@@ -265,15 +279,15 @@
                 $('#cameraJSON').val(cameraJSON);
 
                 // If button is clicked...
-                $('#mlj-cameraPosition-dialog-button').click(function() {        
+                $('#mlj-cameraPosition-dialog-button').click(function () {
                     // Takes the JSON as string
                     var cameraJSON = $('#cameraJSON').val();
-                    
+
                     // Sets the new camera position
                     var success = MLJ.core.Scene.setCameraPositionJSON(cameraJSON);
-                    
+
                     // If everything goes ok, close the dialog
-                    if(success)
+                    if (success)
                     {
                         _dialogCameraPosition.destroy();
                         $(this).off();
@@ -283,9 +297,9 @@
                         $('#errorMessageDiv').show();
                 });
             });
-            
-            
-            resetTrackball.onClick(function() {
+
+
+            resetTrackball.onClick(function () {
                 MLJ.core.Scene.resetTrackball();
             })
 

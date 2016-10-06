@@ -31,6 +31,7 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
     var listSceneChange = new Array();
     var tmpSC; //temporary object to store the actual scene changes
 
+    
     this.openSC = function () //creates a new SceneChange object to store LayerChanges
     {
         tmpSC = new MLJ.core.SceneChange();
@@ -107,12 +108,28 @@ MLJ.core.ChangeType = //ChangeType is structured like an enumerator which map ev
  * @author Stefano Gabriele
  *
  */
-
+MLJ.core.Undoable = function(layer, type)
+{
+    var uLayer=layer;
+    var uType=type;
+    this.getLayer=function()
+    {
+        return uLayer;
+    }
+    this.getType=function()
+    {
+        return uType;
+    }
+    this.toString = function ()
+    {
+        return "Undoable: " + uLayer.name + " " + uType;
+    }
+};
 MLJ.core.Scene = {};
 MLJ.core.Scene.history = new MLJ.core.SceneHistory();
-MLJ.core.Scene.timeStamp=0;
+MLJ.core.Scene.timeStamp = 0;
+MLJ.core.Scene.changeLayerList=new Array();
 (function () {
-
     /**
      * Associative Array that contains all the meshes in the scene 
      * @type MLJ.util.AssociativeArray
@@ -162,9 +179,9 @@ MLJ.core.Scene.timeStamp=0;
     var _group;
 
     var _camera;
-    
+
     var _cameraPosition;
-    
+
     var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
 
     /**
@@ -282,25 +299,25 @@ MLJ.core.Scene.timeStamp=0;
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
-        
-        $(document).keydown(function(event) {           
-            if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
+
+        $(document).keydown(function (event) {
+            if ((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
             }
-            
+
             // Shift + C -> copies camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
                 event.preventDefault();
                 _this.copyCameraPositionJSON();
                 console.log("Viewpoint copied");
             }
-            
+
             // Shift + V -> sets camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
                 event.preventDefault();
-                
-                if(_cameraPositionCopy)
+
+                if (_cameraPositionCopy)
                 {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
                     console.log("Viewpoint pasted");
@@ -368,8 +385,8 @@ MLJ.core.Scene.timeStamp=0;
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
-    
-    
+
+
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
@@ -393,12 +410,12 @@ MLJ.core.Scene.timeStamp=0;
             var iter = _layers.iterator();
 
             // Iterating over all the layers
-            while(iter.hasNext()) {
-               // Getting the bounding box of the current layer
-               var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
-               
-               // Applying the union of the previous bounding box to the current one
-               BBGlobal.union(bbox);
+            while (iter.hasNext()) {
+                // Getting the bounding box of the current layer
+                var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
+
+                // Applying the union of the previous bounding box to the current one
+                BBGlobal.union(bbox);
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
@@ -433,13 +450,20 @@ MLJ.core.Scene.timeStamp=0;
     this.getThreeJsGroup = function () {
         return _group;
     }
-
+    this.pushState= function (layer,type)
+    {
+        this.changeLayerList.push(new MLJ.core.Undoable(layer,type));
+        
+        this.history.addLC(new MLJ.core.LayerChange(layer.id,type));
+        layer.meshH.pushState(++this.timeStamp,layer.ptrMesh());
+    };
     /**
      * Selects the layer with the name <code>layerName</code>
      * @param {String} layerName The name of the layer
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele
      */
+    
     this.selectLayerByName = function (layerName) {
         _selectedLayer = _layers.getByKey(layerName);
         /**
@@ -456,7 +480,7 @@ MLJ.core.Scene.timeStamp=0;
          *  );
          */
         $(document).trigger("SceneLayerSelected", [_selectedLayer]);
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(_selectedLayer.id, MLJ.core.ChangeType.Selection));
+        this.history.addLC(new MLJ.core.LayerChange(_selectedLayer.id, MLJ.core.ChangeType.Selection));
     };
 
     /**
@@ -671,7 +695,6 @@ MLJ.core.Scene.timeStamp=0;
     this.createLayer = function (name) {
         var layerName = disambiguateName(name);
         var layer = new MLJ.core.Layer(lastID++, layerName, new Module.CppMesh());
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Creation));
         return layer;
     };
 
@@ -698,7 +721,6 @@ MLJ.core.Scene.timeStamp=0;
                 _this._selectedLayer = undefined;
             }
             _computeGlobalBBbox();
-            MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Deletion));
             MLJ.core.Scene.render();
         }
     };
@@ -792,7 +814,7 @@ MLJ.core.Scene.timeStamp=0;
      * {@link MLJ.core.Scene}. 
      *
      * @param {String} name - The name of the pass
-     * @param {Object} pass - The callable (function) object that will apply the pass
+     * @param {Object} pass - The callable (function) object that will applypu the pass
      * @memberOf MLJ.core.Scene
      */
     this.addPostProcessPass = function (name, pass) {
@@ -903,9 +925,9 @@ MLJ.core.Scene.timeStamp=0;
             saveAs(blob, "snapshot.png");
         });
     };
-    
 
-    this.takeCameraPositionJSON = function() {
+
+    this.takeCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPosition = {
             camera: _controls.object.position.clone(),
@@ -917,9 +939,9 @@ MLJ.core.Scene.timeStamp=0;
         // We stringify the object; the other parameters define the spacing between the elements
         return JSON.stringify(_cameraPosition, null, 4);
     };
-    
+
     // This function behaves like the function above, only it saves the values in a different variable and doesn't stringify the object
-    this.copyCameraPositionJSON = function() {
+    this.copyCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPositionCopy = {
             camera: _controls.object.position.clone(),
@@ -928,11 +950,11 @@ MLJ.core.Scene.timeStamp=0;
             target: _controls.target.clone()
         };
     };
-    
-    
+
+
     this.setCameraPosition = function (cameraPos, target, up, fov) {
         // Changing the parameters
-        _controls.target.copy(target );
+        _controls.target.copy(target);
         _controls.object.position.copy(cameraPos);
         _controls.object.up.copy(up);
         _controls.object.fov = fov;
@@ -941,56 +963,55 @@ MLJ.core.Scene.timeStamp=0;
         _controls.object.updateProjectionMatrix();
 
         // Changing the view direction
-        _controls.object.lookAt( _controls.target );
-        
+        _controls.object.lookAt(_controls.target);
+
         // Event taken from the TrackballControls class
-        var changeEvent = { type: 'change' }
-        
+        var changeEvent = {type: 'change'}
+
         // Notifying the controls object of the event and updating 
-        _controls.dispatchEvent( changeEvent);
+        _controls.dispatchEvent(changeEvent);
         _controls.update();
     };
-    
-    this.setCameraPositionJSON = function(cameraJSON) {
+
+    this.setCameraPositionJSON = function (cameraJSON) {
         var success = true;
-                
+
         try {
             var parsedJSON = JSON.parse(cameraJSON);
-            
+
             // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
             if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
-                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
-                parsedJSON.target.x === undefined|| parsedJSON.target.y === undefined || parsedJSON.target.z === undefined ||  parsedJSON.fov === undefined)
+                    parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                    parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined)
             {
                 success = false;
-            }   
+            }
             // If the "up" vector is the zero vector, it's not valid
-            else if(!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z) 
+            else if (!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
                 success = false;
             // If the fov is below 1, throw an error
-            else if(parsedJSON.fov < 1) 
+            else if (parsedJSON.fov < 1)
                 success = false;
             // Otherwise, we're good to go
             else
             {
                 // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
                 // just set the z value to be a little more than 0
-                if(!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
+                if (!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
                     parsedJSON.camera.z = 0.1;
-                
+
                 // Now that we have all parameters, we can change the viewpoint
                 _this.setCameraPosition(parsedJSON.camera, parsedJSON.target, parsedJSON.up, parsedJSON.fov);
             }
-        }
-        catch(e) {
+        } catch (e) {
             success = false;
         }
-        
+
         return success;
     }
 
-    
-    this.resetTrackball = function() {
+
+    this.resetTrackball = function () {
         _controls.reset();
     };
 
