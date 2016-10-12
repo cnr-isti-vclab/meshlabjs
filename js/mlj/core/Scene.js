@@ -98,7 +98,6 @@ MLJ.core.Scene = {};
     var _lightControls;
     var _customLight;
     var _lightPressed;
-    var _customLight;
 
     var _cameraPosition;
 
@@ -234,19 +233,13 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
-        /************debug******** */
-        var ___bbox = new THREE.BoundingBoxHelper( _group, 0x0000FF );
-        /************************* */
-
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
-            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max));
+            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
             var offset = bbox.center();//.negate();
-            console.log('scaleFac: '+scaleFac);
-            console.log('bbox sz: '+(bbox.min.distanceTo(bbox.max)));
-            console.log('controls sz: '+ (bbox.min.distanceTo(bbox.max)) / 15.0);
-            var dummyOrigin = new THREE.Object3D();
+
+            var dummyOrigin = new THREE.Object3D();                 //check if u can use lightMesh() //
             dummyOrigin.position.set(offset.x,offset.y,offset.z);
 
             _lightControls = new THREE.TransformControls(_camera, container);
@@ -262,7 +255,19 @@ MLJ.core.Scene = {};
 
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
-            
+
+            // var material = new THREE.LineBasicMaterial({
+            //     color: 0xFF0000
+            // });
+            // var lightp = _this.lights.Headlight.getWorldPosition();
+            // var geometry = new THREE.Geometry();
+            // geometry.vertices.push(
+            //     lightp,
+            //     lightp.clone().negate()
+            // );
+
+            // var line = new THREE.Line( geometry, material );
+            // _this.lights.Headlight.getMesh().add( line );
             
             dummyOrigin.add(_lightControls);
             dummyOrigin.updateMatrix();
@@ -270,10 +275,6 @@ MLJ.core.Scene = {};
 
             _this.addSceneDecorator(_lightControls.name, dummyOrigin);
 
-            /**debug ** */
-            ___bbox.update();
-            _scene.add( ___bbox );
-            /********** */
             // console.log('Mi sposto di: '+JSON.stringify(offset));
         }
 
@@ -285,9 +286,6 @@ MLJ.core.Scene = {};
                 _lightControls.detach();
                 _this.removeSceneDecorator(_lightControls.name);
                 _controls.enabled = true;
-                /*******debug****** */
-                _scene.remove(bbox);
-                /******************* */
                 _this.render();
               }
             }
@@ -320,7 +318,7 @@ MLJ.core.Scene = {};
               _controls.enabled = false;
 
               prepareLightControls();
-               
+              
               _this.render();
 
             }
