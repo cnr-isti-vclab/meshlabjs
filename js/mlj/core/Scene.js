@@ -96,6 +96,7 @@ MLJ.core.Scene = {};
     var _camera;
 
     var _lightControls;
+    var _dummyOrigin;
     var _customLight;
     var _lightPressed;
 
@@ -236,18 +237,21 @@ MLJ.core.Scene = {};
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
-            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
+            // var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
             var offset = bbox.center();//.negate();
 
-            var dummyOrigin = new THREE.Object3D();                 //check if u can use lightMesh() //
-            dummyOrigin.position.set(offset.x,offset.y,offset.z);
+            /* uso dummyorigin, dato che la headlight è già figlia di scene (da architettura) */
+            _dummyOrigin = new THREE.Object3D();               
+            _dummyOrigin.position.set(offset.x,offset.y,offset.z);
 
             _lightControls = new THREE.TransformControls(_camera, container);
             _lightControls.setMode('rotate');
             _lightControls.setSpace('local');
             _lightControls.setSize((bbox.min.distanceTo(bbox.max)) / 15.0);
             _lightControls.name = 'lightControls';
-
+    //            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    // var cube1 = new THREE.Mesh( geometry, material );
             _lightControls.addEventListener('change', () => {
                 _lightControls.update();
                 _this.render();
@@ -256,25 +260,27 @@ MLJ.core.Scene = {};
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
 
-            // var material = new THREE.LineBasicMaterial({
-            //     color: 0xFF0000
-            // });
-            // var lightp = _this.lights.Headlight.getWorldPosition();
-            // var geometry = new THREE.Geometry();
-            // geometry.vertices.push(
-            //     lightp,
-            //     lightp.clone().negate()
-            // );
+            var material = new THREE.LineBasicMaterial({
+                color: 0xFF0000
+            });
+            var lightp = _this.lights.Headlight.getWorldPosition();
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(
+                lightp,
+                lightp.clone().negate()
+            );
 
-            // var line = new THREE.Line( geometry, material );
-            // _this.lights.Headlight.getMesh().add( line );
+            var line = new THREE.Line( geometry, material );
             
-            dummyOrigin.add(_lightControls);
-            dummyOrigin.updateMatrix();
-            dummyOrigin.updateMatrixWorld(true);
+            /* aggiungo lightControls a dummyorigin, così saranno sempre centrati */
+ 
+            _dummyOrigin.add(_lightControls);
+            // _dummyOrigin.add(cube1);
+            _dummyOrigin.add(line);
+            _dummyOrigin.updateMatrix();
+            _dummyOrigin.updateMatrixWorld(true);
 
-            _this.addSceneDecorator(_lightControls.name, dummyOrigin);
-
+            _this.addSceneDecorator(_lightControls.name, _dummyOrigin);
             // console.log('Mi sposto di: '+JSON.stringify(offset));
         }
 
@@ -285,6 +291,7 @@ MLJ.core.Scene = {};
                 _lightPressed = false;
                 _lightControls.detach();
                 _this.removeSceneDecorator(_lightControls.name);
+                // _this.removeSceneDecorator('lightHelper');
                 _controls.enabled = true;
                 _this.render();
               }
@@ -362,6 +369,7 @@ MLJ.core.Scene = {};
         
             if(!_customLight) 
                 _this.lights.Headlight.setPosition(_camera.position);
+
             
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
