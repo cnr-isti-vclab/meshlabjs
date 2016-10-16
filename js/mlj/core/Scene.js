@@ -96,7 +96,6 @@ MLJ.core.Scene = {};
     var _camera;
 
     var _lightControls;
-    var _dummyOrigin;
     var _customLight;
     var _lightPressed;
 
@@ -241,21 +240,14 @@ MLJ.core.Scene = {};
             var offset = bbox.center();//.negate();
 
             /* uso dummyorigin, dato che la headlight è già figlia di scene (da architettura) */
-            _dummyOrigin = new THREE.Object3D();               
-            _dummyOrigin.position.set(offset.x,offset.y,offset.z);
+            dummyOrigin = new THREE.Object3D();               
+            dummyOrigin.position.set(offset.x,offset.y,offset.z);
 
             _lightControls = new THREE.TransformControls(_camera, container);
             _lightControls.setMode('rotate');
             _lightControls.setSpace('local');
             _lightControls.setSize((bbox.min.distanceTo(bbox.max)) / 15.0);
             _lightControls.name = 'lightControls';
-    //            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    // var cube1 = new THREE.Mesh( geometry, material );
-            _lightControls.addEventListener('change', () => {
-                _lightControls.update();
-                _this.render();
-            });
 
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
@@ -263,7 +255,7 @@ MLJ.core.Scene = {};
             var material = new THREE.LineBasicMaterial({
                 color: 0xFF0000
             });
-            var lightp = _this.lights.Headlight.getWorldPosition();
+            var lightp = _this.lights.Headlight.getLocalPosition();
             var geometry = new THREE.Geometry();
             geometry.vertices.push(
                 lightp,
@@ -272,15 +264,23 @@ MLJ.core.Scene = {};
 
             var line = new THREE.Line( geometry, material );
             
+            line.quaternion.copy( _this.lights.Headlight.getMesh().quaternion);
+            
+            _lightControls.addEventListener('change', () => {
+                _lightControls.update();
+                line.quaternion.copy( _this.lights.Headlight.getMesh().quaternion);
+                // line.updateMatrix();
+                _this.render();
+            });
             /* aggiungo lightControls a dummyorigin, così saranno sempre centrati */
  
-            _dummyOrigin.add(_lightControls);
-            // _dummyOrigin.add(cube1);
-            _dummyOrigin.add(line);
-            _dummyOrigin.updateMatrix();
-            _dummyOrigin.updateMatrixWorld(true);
+            dummyOrigin.add(_lightControls);
+            // dummyOrigin.add(cube1);
+            dummyOrigin.add(line);
+            dummyOrigin.updateMatrix();
+            dummyOrigin.updateMatrixWorld(true);
 
-            _this.addSceneDecorator(_lightControls.name, _dummyOrigin);
+            _this.addSceneDecorator(_lightControls.name, dummyOrigin);
             // console.log('Mi sposto di: '+JSON.stringify(offset));
         }
 
