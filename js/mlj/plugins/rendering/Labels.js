@@ -7,6 +7,7 @@
         textSize : 1,
         bgColor : new THREE.Color('#FFFFFF'),
         bgOpacity : 1,
+        showOn : 0
     };
 
     var plug = new plugin.Rendering({
@@ -18,6 +19,7 @@
     }, DEFAULTS);
 
     var labels = [];
+    var meshFiles = [];
     //var updateLabels = false;
     var my3D = null;
     var myCanvas = null;
@@ -38,6 +40,28 @@
                                 labels[key][i].style.color = '#' + color.getHexString();
                         };
                         bindToFun.toString = function () { return 'textColor'; }
+                        return bindToFun;
+                }())
+        });
+
+        guiBuilder.Choice({
+            label: "Labels on:",
+            tooltip: "Show labels on all vertices or only on selected ones",
+            options: [
+                {content: "All", value: 0, selected: true },
+                {content: "Selected", value: 1}
+            ],
+            bindTo: (function() {
+                    var bindToFun = function (selection, overlay) 
+                        {
+                            var key = overlay.name;
+                            var params = meshFiles[key].overlaysParams.getByKey(plug.getName());
+                            params.showOn = selection;
+                            plug._applyTo(meshFiles[key], false);
+                            plug._applyTo(meshFiles[key], true);    
+                        };
+
+                        bindToFun.toString = function () { return '"showOn"'; }
                         return bindToFun;
                 }())
         });
@@ -98,7 +122,39 @@
             var params = meshFile.overlaysParams.getByKey(plug.getName());
 
             //Getting the mesh vertices
-            var vv = meshFile.threeMesh.geometry.getAttribute('position');
+            var vv = {};
+            if(params.showOn == 0)
+                vv = meshFile.threeMesh.geometry.getAttribute('position');
+            else
+            {
+                
+                const SIZEOF_FLOAT = 4;
+                const NUM_BYTES_PER_VERTEX = 3 * SIZEOF_FLOAT;
+
+                // call the c++ function which should fill the points coords array from mesh data
+                var pointsCoordsPtr = Module.buildSelectedPointsCoordsVec(meshFile.ptrMesh());
+
+                // store a reference in mesh object for deallocation when the user deactivate this plugin
+                meshFile.pointsCoordsPtr = pointsCoordsPtr;
+
+                // read first float as the effective number of selected points
+                var numSelectedPoints = Module.getValue(pointsCoordsPtr, 'float');
+
+                if (numSelectedPoints === 0) {
+                    vv.length = 0;
+                }
+                else
+                {
+                    // compute correct number of bytes of useful data
+                    var numBytesUsefulData = numSelectedPoints * NUM_BYTES_PER_VERTEX;
+
+                    // get a float-wise view on the points coords byte array
+                    vv.length = numBytesUsefulData / SIZEOF_FLOAT;
+                    vv.array = new Float32Array(Module.HEAPU8.buffer, pointsCoordsPtr + SIZEOF_FLOAT, numBytesUsefulData / SIZEOF_FLOAT);
+                }
+
+            }
+
 
             my3D = $('#_3D');
             myCanvas = $('canvas');
@@ -107,7 +163,7 @@
             //var labels = [];
             var name = meshFile.name.replace(/ /g, '') + "_label";
             var myMeshFile = meshFile;
-
+            meshFiles[name] = myMeshFile;
             //Creating label, one for vertex   
             labels[name] = [];     
             for(var ii = 0; ii < vv.length; ii+=3)
