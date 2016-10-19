@@ -237,6 +237,7 @@ MLJ.core.Scene = {};
 
             var bbox = _this.getBBox();
             // var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
+            var distance = bbox.min.distanceTo(bbox.max);
             var offset = bbox.center();//.negate();
 
             /* uso dummyorigin, dato che la headlight è già figlia di scene (da architettura) */
@@ -255,28 +256,41 @@ MLJ.core.Scene = {};
             var material = new THREE.LineBasicMaterial({
                 color: 0xFF0000
             });
-            var lightp = _this.lights.Headlight.getLocalPosition();
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push(
-                lightp,
-                lightp.clone().negate()
+
+            var lightp = new THREE.Vector3().copy(_this.lights.Headlight.getLocalPosition());
+                        
+            var geo5 = new THREE.Geometry();
+            geo5.vertices.push(
+                // new THREE.Vector3(lightp.x, lightp.y, distance),
+                // new THREE.Vector3(-lightp.x, -lightp.y, -distance)
+                new THREE.Vector3(lightp.x, lightp.y, lightp.z).multiplyScalar(1/10),
+                new THREE.Vector3(-lightp.x, -lightp.y, -lightp.z).multiplyScalar(1/10)
+                // lightp.multiplyScalar(distance),
+                // lightp.clone().negate().multiplyScalar(distance)
             );
 
-            var line = new THREE.Line( geometry, material );
-            
-            line.quaternion.copy( _this.lights.Headlight.getMesh().quaternion);
-            
+            var line = new THREE.Line(geo5, material);
+            var line1 =  line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
+            var scale = new THREE.Matrix4().makeScale(1/10, 1/10, 1/10);
+
+            line1.translateX( distance / 4); line1.scale = scale;
+            line2.translateX(-distance / 4); line2.scale = scale;
+            line3.translateY( distance / 4); line3.scale = scale;
+            line4.translateY(-distance / 4); line4.scale = scale;
+
+            var lines = new THREE.Object3D();
+            lines.add(line); lines.add(line1); lines.add(line2); lines.add(line3); lines.add(line4); 
+
+            lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
             _lightControls.addEventListener('change', () => {
                 _lightControls.update();
-                line.quaternion.copy( _this.lights.Headlight.getMesh().quaternion);
-                // line.updateMatrix();
+                lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
                 _this.render();
             });
+
             /* aggiungo lightControls a dummyorigin, così saranno sempre centrati */
- 
             dummyOrigin.add(_lightControls);
-            // dummyOrigin.add(cube1);
-            dummyOrigin.add(line);
+            dummyOrigin.add(lines);
             dummyOrigin.updateMatrix();
             dummyOrigin.updateMatrixWorld(true);
 
@@ -288,10 +302,9 @@ MLJ.core.Scene = {};
             if(event.ctrlKey || event.shiftKey || event.altKey) {
               event.preventDefault();
               if (_lightPressed) {
-                _lightPressed = false;
-                _lightControls.detach();
                 _this.removeSceneDecorator(_lightControls.name);
-                // _this.removeSceneDecorator('lightHelper');
+                _lightControls.detach();
+                _lightPressed = false;
                 _controls.enabled = true;
                 _this.render();
               }
@@ -308,6 +321,7 @@ MLJ.core.Scene = {};
                 _this.lights.Headlight.getMesh().scale.set(1,1,1);
                 _this.lights.Headlight.getMesh().quaternion.set(0,0,0,1);
                 _this.lights.Headlight.getMesh().updateMatrix();
+                _this.lights.Headlight.getMesh().updateMatrixWorld(true);
                 // centro luce sulla posizione attuale della camera
                 _this.lights.Headlight.setPosition(_camera.position);
                 // disegno scena
@@ -316,18 +330,13 @@ MLJ.core.Scene = {};
             }
             /* CTRL+ALT+SHIFT (keep pressed) => light moving */
             if(event.ctrlKey && event.shiftKey && event.altKey) {
-
               if(_lightPressed) return;
-
               _lightPressed = true;
               event.preventDefault();
               _customLight = true;
               _controls.enabled = false;
-
-              prepareLightControls();
-              
+              prepareLightControls();     
               _this.render();
-
             }
 
             if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
@@ -365,12 +374,10 @@ MLJ.core.Scene = {};
             Light is now bound to the scene (not the camera) so I have to update its location
             every time the camera move, if the light is not locked up by user
         */
-        _controls.addEventListener('change', function () {
-        
+        _controls.addEventListener('change', function () {       
             if(!_customLight) 
                 _this.lights.Headlight.setPosition(_camera.position);
-
-            
+        
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });

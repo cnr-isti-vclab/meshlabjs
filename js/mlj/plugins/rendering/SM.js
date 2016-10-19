@@ -247,7 +247,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     /*
     quad che disegno per il passo di defferred rendering
     */
-    let quad = new THREE.PlaneBufferGeometry(2,2, 1, 1);
+    let quad = new THREE.PlaneBufferGeometry(2, 2, 1, 1);
     let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
       uniforms: shadowPassUniforms,
       side: THREE.DoubleSide,
@@ -258,12 +258,9 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     let horBlurMesh = new THREE.Mesh(quad, horBlurMaterial);
     let verBlurMesh = new THREE.Mesh(quad, verBlurMaterial);
 
-    let horBlurScene = new THREE.Scene();
-    horBlurScene.add(horBlurMesh);
-    let verBlurScene = new THREE.Scene();
-    verBlurScene.add(verBlurMesh);
-    let shadowScene = new THREE.Scene();
-    shadowScene.add(shadowMapMesh);
+    let horBlurScene = new THREE.Scene(); horBlurScene.add(horBlurMesh);
+    let verBlurScene = new THREE.Scene(); verBlurScene.add(verBlurMesh);
+    let shadowScene = new THREE.Scene();  shadowScene.add(shadowMapMesh);
 
     let lightCamera;
     /*
@@ -271,19 +268,18 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
-      let sceneGraph = scene.getScene();
-      let sceneCam = scene.getCamera();
-      let renderer = scene.getRenderer();
+      let sceneGraph  = scene.getScene();
+      let sceneCam    = scene.getCamera();
+      let renderer    = scene.getRenderer();
 
       /* Get bbox and scale it */
-      let bbox = scene.getBBox();
+      let bbox  = scene.getBBox();
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
       bbmax.multiplyScalar(scale);
       bbmin.multiplyScalar(scale);
       bbox.set(bbmin, bbmax);
-
       /* Prepare light view camera frustum (orthographic for directional lights) */
       let diag = bbox.min.distanceTo(bbox.max);
       lightCamera = new THREE.OrthographicCamera(
@@ -296,8 +292,6 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       );
       /* Prepare light position, based on current camera position */
       let lightPos = scene.lights.Headlight.getWorldPosition();
-      // qui pensaci: per risolvere bug attuale devi trasformare la pos con la rotazione della mesh associata
-      //              però prolly ti spacca quando invece sei a cose normali (anzi no)
       if(!fixedLight) {
         shadowPassOptions.lightPos = new THREE.Vector3(
           lightPos.x + 4,
@@ -353,6 +347,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
           }
         }
       }
+      /* render depth map */
       renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
 
       /******************PREPARE POSITION MAP********************/
@@ -360,6 +355,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       for (let mesh in materialChanged) {
         materialChanged[mesh].material = preparePositionMaterial(materialChanged[mesh].__mlj_smplugin_pointSize);
       }
+      /* render position map */
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
 
       /* Make hidden layers visible again  &  restore geometry materials */

@@ -133,6 +133,17 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     var _on = true;
 
     var _light = new THREE.DirectionalLight("#ffffff",0.5);
+
+
+    /**
+     * It represents the origin of the system onto which the 
+     * light is anchored, all the trasformations used to rotate
+     * the light are applyed to this mesh, the headlight is a child of
+     * this mesh.
+     * 
+     * @type THREE.Object3D
+     * @memberOf MLJ.core.Headlight
+     */
     var _lightMesh = new THREE.Object3D();
 
     /***********DEBUG ************ */
@@ -161,18 +172,55 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     //Init
     this.setOn(_on);
 
+    /**
+     * Sets the position of this headlight (relative to the origiMesh)
+     * @param {THREE.Vector3}
+     * 
+     * @author Thomas Alderighi
+     */
     this.setPosition = function (pos) {
-      _light.position.set(pos.x, pos.y, pos.z);
+    //   _light.quaternion.set(0,0,0,1);
+    //   _light.updateMatrixWorld(true);
+        // _lightMesh.lookAt(pos);
+        // _light.position.set(1 , -1, 15);
+      _light.position.set(pos.x + 1, pos.y-1, pos.z);
     }
+
+    /**
+     * Gets the world position of this headlight 
+     * 
+     * @author Thomas Alderighi
+     */
     this.getWorldPosition = function () {
+        _lightMesh.updateMatrixWorld(true);
         return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z).applyMatrix4(_lightMesh.matrixWorld);
     }
+
+     /**
+     * Gets the local position of this headlight (relative to the originMesh)
+     * 
+     * @author Thomas Alderighi
+     */
     this.getLocalPosition = function () {
         return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
     }
+
+    /**
+     * Gets a reference to the originMesh of this headlight,
+     * the originMesh is needed to apply transformations via the
+     * transform control, to control the light movement
+     * 
+     * @author Thomas Alderighi
+     */
     this.getMesh = function () {
         return _lightMesh;
     }
+
+     /**
+     * Gets a reference to this headlight,
+     * 
+     * @author Thomas Alderighi
+     */   
     this.getLight = function () {
         return _light;
     }
