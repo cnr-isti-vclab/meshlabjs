@@ -123,11 +123,11 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
     /***************debug****************** */
-    // var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    // var cube1 = new THREE.Mesh( geometry, material );
-    // var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
-    // var cube2 = new THREE.Mesh( geometry, material1 );
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    var cube1 = new THREE.Mesh( geometry, material );
+    var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
+    var cube2 = new THREE.Mesh( geometry, material1 );
     /*************************************** */
 
     var _on = true;

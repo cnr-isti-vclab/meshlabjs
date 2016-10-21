@@ -236,7 +236,7 @@ MLJ.core.Scene = {};
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
-            // var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
+            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
             var distance = bbox.min.distanceTo(bbox.max);
             var offset = bbox.center();//.negate();
 
@@ -261,25 +261,27 @@ MLJ.core.Scene = {};
                         
             var geo5 = new THREE.Geometry();
             geo5.vertices.push(
-                // new THREE.Vector3(lightp.x, lightp.y, distance),
-                // new THREE.Vector3(-lightp.x, -lightp.y, -distance)
-                new THREE.Vector3(lightp.x, lightp.y, lightp.z).multiplyScalar(1/10),
-                new THREE.Vector3(-lightp.x, -lightp.y, -lightp.z).multiplyScalar(1/10)
-                // lightp.multiplyScalar(distance),
-                // lightp.clone().negate().multiplyScalar(distance)
+                new THREE.Vector3(lightp.x, lightp.y, lightp.z).multiplyScalar(distance / 25),
+                new THREE.Vector3(-lightp.x, -lightp.y, -lightp.z).multiplyScalar(distance / 25)
             );
 
             var line = new THREE.Line(geo5, material);
-            var line1 =  line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
-            var scale = new THREE.Matrix4().makeScale(1/10, 1/10, 1/10);
+            var line1 = line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
+            var line5 = line.clone(), line6 = line.clone(), line7 = line.clone(), line8 = line.clone();
+            //var scale = new THREE.Matrix4().makeScale(1, 1, 1);
 
-            line1.translateX( distance / 4); line1.scale = scale;
-            line2.translateX(-distance / 4); line2.scale = scale;
-            line3.translateY( distance / 4); line3.scale = scale;
-            line4.translateY(-distance / 4); line4.scale = scale;
+            line1.translateX( distance / 4); //line1.scale = scale;
+            line2.translateX(-distance / 4); //line2.scale = scale;
+            line3.translateY( distance / 4); //line3.scale = scale;
+            line4.translateY(-distance / 4); //line4.scale = scale;
+            line5.translateX( distance / 4); line5.translateY( distance / 4); //line5.scale = scale;
+            line6.translateX(-distance / 4); line6.translateY( distance / 4); //line6.scale = scale;
+            line7.translateX(-distance / 4); line7.translateY(-distance / 4); //line7.scale = scale;
+            line8.translateX( distance / 4); line8.translateY(-distance / 4); //line8.scale = scale;
 
             var lines = new THREE.Object3D();
             lines.add(line); lines.add(line1); lines.add(line2); lines.add(line3); lines.add(line4); 
+            lines.add(line5); lines.add(line6); lines.add(line7); lines.add(line8);
 
             lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
             _lightControls.addEventListener('change', () => {
