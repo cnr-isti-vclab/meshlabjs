@@ -7,7 +7,8 @@
         textSize : 1,
         bgColor : new THREE.Color('#FFFFFF'),
         bgOpacity : 1,
-        showOn : 0
+        showOn : 0,
+        maxLabelsCount: 20
     };
 
     var plug = new plugin.Rendering({
@@ -111,6 +112,36 @@
                 }())
         });
 
+        guiBuilder.RangedFloat({
+            label: "Max # of Labels",
+            tooltip: "The max numeber of visualized labels",
+            min: 1, max: 60, step: 1,
+            defval: DEFAULTS.maxLabelsCount,
+            bindTo: (function() {
+                    var bindToFun = function (size, overlay) 
+                        {
+                            var key = overlay.name;
+                            var asize = labels[key].length;
+                            if(asize > size)
+                            {
+                                //remove some
+                                for(var i = size; i < asize; i++)
+                                {
+                                    labels[key][i].remove();
+                                }
+                            }
+                            else if(asize < size)
+                            {
+                                //add some
+                                plug._applyTo(meshFiles[key], false);
+                                plug._applyTo(meshFiles[key], true); 
+                            }
+                        };
+                        bindToFun.toString = function () { return 'maxLabelsCount'; }
+                        return bindToFun;
+                }())
+        });
+
     };
 
     
@@ -166,7 +197,7 @@
             meshFiles[name] = myMeshFile;
             //Creating label, one for vertex   
             labels[name] = [];     
-            for(var ii = 0; ii < vv.length; ii+=3)
+            for(var ii = 0; ii < vv.length && ii/3 <= params.maxLabelsCount; ii+=3)
             {
                 var pos = toScreenPosition(vv.array[ii],vv.array[ii+1],vv.array[ii+2]);
                 labels[name].push(addLabel(ii/3 + "", name, my3D.position().left + pos.x, pos.y));
