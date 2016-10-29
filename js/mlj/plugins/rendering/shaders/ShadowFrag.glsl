@@ -23,7 +23,7 @@ float shadowCalc(vec2 vUv){
 
 
 
-  float shadow = current  - 0.005 > closest ? 1.0 : 0.0;
+  float shadow = current - 0.005 > closest ? 1.0 : 0.0;
 
   return shadow;
 }

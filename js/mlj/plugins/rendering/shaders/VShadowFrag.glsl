@@ -86,7 +86,7 @@ void main(){
 
   //anticipating position sampling, in order to fast discard
   vec4 posSample = texture2D(positionMap, vUv);
-  if(posSample == vec4(0.0)){ gl_FragColor = color; return;}
+  if(posSample == vec4(0.0)){ gl_FragColor = color; return; }
 
   float chebishev = shadowCalc(posSample);
 

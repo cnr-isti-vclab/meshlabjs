@@ -11,6 +11,7 @@ INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSER
 DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
   */
+  // REVIEW: un motivo per cui ho shadowing ai bordi potrebbe essere il fatto che durant
   // TODO: refactoring---commenting---memorycleanupondispose---icon
   /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
   /* variables for ui interaction */
@@ -278,9 +279,13 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
       /******************debug flag**************/
       let dBuf, bBuf;
-      if (debug) { bBuf = outBuffer; dBuf = outBuffer; }
-      // else buf = horBlurTarget;
-      else { bBuf = verBlurTarget; dBuf = depthMapTarget; }
+      if (debug) { 
+        bBuf = outBuffer; 
+        dBuf = (shadowPassUniforms.blurFlag.value) ? depthMapTarget : outBuffer;
+      } else { 
+        bBuf = verBlurTarget; 
+        dBuf = depthMapTarget; 
+      }
       /*************************************/
 
       let decos = scene.getDecoratorsGroup();
@@ -353,10 +358,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       shadowPassUniforms.intensity.value            = intensity;
       shadowPassUniforms.bleedBias.value            = bleedBias;
       shadowPassUniforms.lightDir.value             = lightD;
+
       if (shadowPassUniforms.blurFlag.value)
         shadowPassUniforms.blurMap.value = verBlurTarget;
   
-
       if (!debug)
         renderer.render(shadowScene, sceneCam, outBuffer, true);
 
