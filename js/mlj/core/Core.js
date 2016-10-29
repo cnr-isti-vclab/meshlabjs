@@ -183,7 +183,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     //   _light.updateMatrixWorld(true);
         // _lightMesh.lookAt(pos);
         // _light.position.set(1 , -1, 15);
-      _light.position.set(pos.x + 1, pos.y-1, pos.z);
+      _light.position.set(pos.x + 2, pos.y-2, pos.z);
     }
 
     /**

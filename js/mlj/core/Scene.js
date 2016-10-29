@@ -240,7 +240,6 @@ MLJ.core.Scene = {};
             var distance = bbox.min.distanceTo(bbox.max);
             var offset = bbox.center();//.negate();
 
-            /* uso dummyorigin, dato che la headlight è già figlia di scene (da architettura) */
             dummyOrigin = new THREE.Object3D();               
             dummyOrigin.position.set(offset.x,offset.y,offset.z);
 
@@ -284,6 +283,8 @@ MLJ.core.Scene = {};
             lines.add(line5); lines.add(line6); lines.add(line7); lines.add(line8);
 
             lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
+
+            /* ad ogni modifica del transformcontrol, voglio aggiornare la rotazione delle 'linee guida' */
             _lightControls.addEventListener('change', () => {
                 _lightControls.update();
                 lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());

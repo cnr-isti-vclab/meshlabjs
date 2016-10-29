@@ -1,71 +1,34 @@
 
 (function (plugin, core, scene) {
-
-  //TODO: usando decorators e layers associative arrays puoi evitare il discorso di due gruppi separati
-
-  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normale
-  //TODO: togli doubleside su filled e lo shader suo!!
-
-  //IDEA: Per permettere la scelta della direzione di luce dovrei:
+  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normale (normale needs another rend step => no normale)
   /*
-
-PER ORA IMPLEMENTO TUTTO IN SCENE.JS E PICCOLA MODIFICA A CORE.JS => SCENE.JS AL MOMENTO È SPORCO (tanto codice di debug e vecchio)
-Se ho capito bene in moving.js antnic fa:
-	- Sposto meshgroup (il dummy object3d per tenere centrato il moving tool)
-		In posizione centrale
-	- Sposto l'oggetto targettato di una quantità opposta, cosi ho il tool al centro e
-		L'oggetto non si è mosso in realtà..
-
-
-Per fare una cosa simile io dovrei: 
-	- Usare group come il dummy object3d di antnic (antnic applica solo ad un layer, io dovrei applicare all'intera scena)
-	- Applicare la traslazione al _group  e l'inversa a tutti gli altri oggetti nella scena
-
-In questo modo il transformControl, che è aggiunto come un decorator ( e quindi la gerarchia è _group-> _decoratorsGroup -> transformControls ) si trova al centro della scena (0,0,0) e le mesh  sono ancora centrate come prima (avendo applicato la traslazione inversa)…
-
-IIDEA: scrivere serve eheh, visto che transformControls è figlio di _decoGroup => se io applico la trasformazione per centrare il _decoGroup allora transformControls è centrato!
-Ora il problema qui è che I vari decoratori non si comportano in modo uniforme, ossia, gli assi sono centrati nell'origine di _decosGroup, e quindi di _group a cose normali, e quindi sono decentrati rispetto alla scena in sostanza (ricorda la trasformazione applicata alla scena)…
-Mentre il gridDecorator è costruito applicando la trasformazione per centrarlo sull bbox della scena
-
-====> se io applico la trasformazione a _decosGroup gli assi saranno centrati, il transformControls sarà centrato, ma il gridDeco sarà decentrato e male
-
-====> una soluzione sarebbe rivedere axes e grid per comportarsi in modo consistente e applicare di conseguenza a transformControls
-
-
-Un secondo problema è la gestione della dimensione del transformControls, che se ho capito bene è settabile con valori assoluti, quindi dovrei trovare una formulazione che mi permetta di 
-Trovare la dimensione giusta in base alla dimensione del bbox della scena.
-
 
 In alternativa c'è l'implementazione , più raffinata, nello stile come avevo fatto all'inizio, che risolve il problema dlela dimensione di sicuro, ma resta il fatto del decorator prolly.
 
-
-
-Ho fixato! Ora resta da decidere cosa fare per axes e grid…. E trovare un modo di avere la size parametrica che funzioni!
-
 Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, solo che è nascosto dal fatto che l'ombra è molto più nera…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
-
 
 INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSERE RIFATTORIZZATI UN PO' IN MODO CHE SIANO DEFINITI COME 
 DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
-
   */
   // TODO: refactoring---commenting---memorycleanupondispose---icon
-
+  /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
   /* variables for ui interaction */
-  let intensity = 1.0;
-  let fixedLight = false;
+  let intensity = 1.0, bleedBias = 0.3;
   let debug = false;
 
   let shadowPassUniforms = {
-    vBlurMap:             { type: "t", value: null },
-    hBlurMap:             { type: "t", value: null },
-    depthMap:             { type: "t", value: null },
-    positionMap:          { type: "t", value: null },
-    colorMap:             { type: "t", value: null },
-    lightViewProjection:  { type: "m4", value: null},
-    intensity:            { type: "f", value: null },
-    lightDir:             { type: 'v3', value: null}
+    // vBlurMap:             { type: "t",  value: null },
+    // hBlurMap:             { type: "t",  value: null },
+    blurMap:              { type: "t",  value: null },
+    depthMap:             { type: "t",  value: null },
+    positionMap:          { type: "t",  value: null },
+    colorMap:             { type: "t",  value: null },
+    lightViewProjection:  { type: "m4", value: null },
+    intensity:            { type: "f",  value: null },
+    lightDir:             { type: 'v3', value: null },
+    blurFlag:             { type: 'i',  value: 1 },
+    bleedBias:            { type: "f",  value: null }
   };
 
   let shadowPassOptions = {
@@ -75,7 +38,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     ShadowFrag: null,
     bufferWidth: 512,
     bufferHeight: 512,
-    lightPos: null
+    // lightPos: null
   }
 
   let plug = new plugin.GlobalRendering({
@@ -85,161 +48,178 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     on: false,
     icon: "img/icons/ambientocclusion.png",
     loadShader: ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl",
-              "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
-              "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl",
-            "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"]
+      "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
+      "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl",
+      "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"]
   });
   //
   //  let varianceFlag;
-  let intensityRng;
+  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag;
 
   plug._init = (guiBuilder) => {
     intensityRng = guiBuilder.RangedFloat({
-      label : "Shadow Transparency",
-      tooltip : "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
+      label: "Shadow Transparency",
+      tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval : 1.0,
-      bindTo: (function() {
-          var bindToFun = function (value) {
-            intensity = value;
-            scene.render();
-          };
-          bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
-          return bindToFun;
-      }())
+      defval: 1.0,
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          intensity = value;
+          scene.render();
+        };
+        bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
+        return bindToFun;
+      } ())
+    });
+
+    bleedRng = guiBuilder.RangedFloat({
+      label: "Bleed containment bias",
+      tooltip: "Manages the bias applied in VSM to contain bleed effects",
+      min: 0.0, max: 0.5, step: 0.0001,
+      defval: 0.3,
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          bleedBias = value;
+          scene.render();
+        };
+        bindToFun.toString = function () { return 'MLJ_SM_BleedBias'; }
+        return bindToFun;
+      } ())
     });
 
     bufferWidth = guiBuilder.Choice({
-      label : `Shadow Buffer Width`,
-      tooltip : `Manages the shadow buffer width, it allows only powers of 2
+      label: `Shadow Buffer Width`,
+      tooltip: `Manages the shadow buffer width, it allows only powers of 2
       to guarantee the creation of mipmaps`,
       options: [
-        {content: "128", value: 128},
-        {content: "256", value: 256},
-        {content: "512", value: 512, selected: true},
-        {content: "1024", value: 1024},
-        {content: "2048", value: 2048},
-        {content: "4096", value: 4096}
+        { content: "128",   value: 128 },
+        { content: "256",   value: 256 },
+        { content: "512",   value: 512, selected: true },
+        { content: "1024",  value: 1024 },
+        { content: "2048",  value: 2048 },
+        { content: "4096",  value: 4096 }
       ],
-      bindTo: (function() {
-          var callback = function (bufferWidth) {
-            plug._applyTo(false);
-            shadowPassOptions.bufferWidth = bufferWidth;
-            shadowPassOptions.bufferHeight = bufferWidth;
-            plug._applyTo(true);
-          };
-          callback.toString = function () { return "MLJ_SM_BufferWidth"; };
-          return callback;
-      }())
+      bindTo: (function () {
+        var callback = function (bufferWidth) {
+          plug._applyTo(false);
+          shadowPassOptions.bufferWidth = bufferWidth;
+          shadowPassOptions.bufferHeight = bufferWidth;
+          plug._applyTo(true);
+        };
+        callback.toString = function () { return "MLJ_SM_BufferWidth"; };
+        return callback;
+      } ())
     });
 
-    guiBuilder.Choice({
-        label: "Fix Light",
-        tooltip: "Fix light in current position, unbinding it from camera",
-        options: [
-            {content: "Off", value: false, selected: true},
-            {content: "On", value: true }
-        ],
-        bindTo: (function() {
-            var bindToFun = function (value) {
-                fixedLight = value;
-            };
-            bindToFun.toString = function () { return 'MLJ_SM_FixedLight'; };
-            return bindToFun;
-        }())
+    blurFlag = guiBuilder.Bool({
+      label: "Blur",
+      tooltip: "If checked, the shadow map gets filtered to smooth shadow borders",
+      defval: true,
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          shadowPassUniforms.blurFlag.value ^= 1;
+        };
+        bindToFun.toString = function () { return "MLJ_SM_BlurFlag"; };
+        return bindToFun;
+      })()
     });
 
-    guiBuilder.Choice({
-        label: "Debug MODE",
-        tooltip: "Use me sometimes",
-        options: [
-            {content: "Off", value: false, selected: true},
-            {content: "On", value: true }
-        ],
-        bindTo: (function() {
-            var bindToFun = function (value) {
-                debug = value;
-            };
-            bindToFun.toString = function () { return 'MLJ_SM_DEBUG'; };
-            return bindToFun;
-        }())
+    debugChoice = guiBuilder.Choice({
+      label: "Debug mode",
+      tooltip: "If 'On', it displays the shadow map",
+      options: [
+        { content: "Off", value: false, selected: true },
+        { content: "On",  value: true }
+      ],
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          debug = value;
+        };
+        bindToFun.toString = function () { return 'MLJ_SM_DEBUG'; };
+        return bindToFun;
+      } ())
     });
   };
 
   function SMContext() {
     shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
     /* shaders */
-    shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
-    shadowPassOptions.SMFrag = plug.shaders.getByKey("VSMFrag.glsl");
-    shadowPassOptions.shadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
-    shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
+    shadowPassOptions.SMVert      = plug.shaders.getByKey("VSMVertex.glsl");
+    shadowPassOptions.SMFrag      = plug.shaders.getByKey("VSMFrag.glsl");
+    shadowPassOptions.shadowFrag  = plug.shaders.getByKey("VShadowFrag.glsl");
+    shadowPassOptions.blurVert    = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
 
     /* weights and offset of the gaussian distrib (for a 35x35 kernel) */
-     let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
-                      0.02328, 0.01083, 0.00441, 0.00157];
-     let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
-                      10.41281, 12.39664, 14.38070, 16.36501];
+    let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
+      0.02328, 0.01083, 0.00441, 0.00157];
+    let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
+      10.41281, 12.39664, 14.38070, 16.36501];
 
     shadowPassOptions.gaussWeights = gWeights;
     shadowPassOptions.gaussOffsets = gOffsets;
 
     let renderTargetParams = {
-      type: THREE.FloatType,
+      type:      THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
       magFilter: THREE.Linear
     };
 
-    let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
-    let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
-    let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
+    let depthMapTarget    = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
+    let horBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
+    let verBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
     let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
 
-    shadowPassUniforms.depthMap.value     = depthMapTarget;
-    shadowPassUniforms.positionMap.value  = positionMapTarget;
-    shadowPassUniforms.vBlurMap.value     = verBlurTarget;
-    shadowPassUniforms.hBlurMap.value     = horBlurTarget;
+    shadowPassUniforms.depthMap.value = depthMapTarget;
+    shadowPassUniforms.positionMap.value = positionMapTarget;
+
     /*
     material containing the depth pass shaders. The original scene will be
     rendered using this shaders to produce a depth map
     */
     let prepareDepthMaterial = (size) => {
       let mat = new THREE.RawShaderMaterial({
-        uniforms: { pointSize: {type: 'f', value: size } },
-        side: THREE.DoubleSide,
-        derivatives: true,
-        vertexShader: shadowPassOptions.SMVert,
+        uniforms:       { pointSize: { type: 'f', value: size } },
+        side:           THREE.DoubleSide,
+        derivatives:    true,
+        vertexShader:   shadowPassOptions.SMVert,
         fragmentShader: shadowPassOptions.SMFrag
       });
       return mat;
     }
     let preparePositionMaterial = (size) => {
       let mat = new THREE.RawShaderMaterial({
-        uniforms: { pointSize: {type: 'f', value: size } },
-        side: THREE.DoubleSide,
-        vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
+        uniforms:       { pointSize: { type: 'f', value: size } },
+        side:           THREE.DoubleSide,
+        vertexShader:   plug.shaders.getByKey("PositionVertex.glsl"),
         fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
       });
       return mat;
     }
 
-    let blurUniforms = {
-      depthMap: {type: "t", value: depthMapTarget},
-      gWeights: {type: "1fv", value: shadowPassOptions.gaussWeights},
-      gOffsets: {type: "1fv", value: shadowPassOptions.gaussOffsets},
-      texSize: {type: "f", value: shadowPassOptions.bufferWidth}
+    let hBlurUniforms = {
+      depthMap: { type: "t",    value: depthMapTarget },
+      gWeights: { type: "1fv",  value: shadowPassOptions.gaussWeights },
+      gOffsets: { type: "1fv",  value: shadowPassOptions.gaussOffsets },
+      texSize:  { type: "f",    value: shadowPassOptions.bufferWidth }
+    };
+    let vBlurUniforms = {
+      depthMap: { type: "t",    value: horBlurTarget },
+      gWeights: { type: "1fv",  value: shadowPassOptions.gaussWeights },
+      gOffsets: { type: "1fv",  value: shadowPassOptions.gaussOffsets },
+      texSize:  { type: "f",    value: shadowPassOptions.bufferWidth }
     };
 
     let horBlurMaterial = new THREE.RawShaderMaterial({
-      uniforms: blurUniforms,
+      uniforms: hBlurUniforms,
       side: THREE.DoubleSide,
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.horBlurFrag
     });
 
     let verBlurMaterial = new THREE.RawShaderMaterial({
-      uniforms: blurUniforms,
+      uniforms: vBlurUniforms,
       side: THREE.DoubleSide,
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.verBlurFrag
@@ -260,7 +240,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
     let horBlurScene = new THREE.Scene(); horBlurScene.add(horBlurMesh);
     let verBlurScene = new THREE.Scene(); verBlurScene.add(verBlurMesh);
-    let shadowScene = new THREE.Scene();  shadowScene.add(shadowMapMesh);
+    let shadowScene = new THREE.Scene(); shadowScene.add(shadowMapMesh);
 
     let lightCamera;
     /*
@@ -268,48 +248,39 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
-      let sceneGraph  = scene.getScene();
-      let sceneCam    = scene.getCamera();
-      let renderer    = scene.getRenderer();
+      let sceneGraph = scene.getScene();
+      let sceneCam = scene.getCamera();
+      let renderer = scene.getRenderer();
 
       /* Get bbox and scale it */
-      let bbox  = scene.getBBox();
+      let bbox = scene.getBBox();
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
       bbmax.multiplyScalar(scale);
       bbmin.multiplyScalar(scale);
       bbox.set(bbmin, bbmax);
+
       /* Prepare light view camera frustum (orthographic for directional lights) */
       let diag = bbox.min.distanceTo(bbox.max);
       lightCamera = new THREE.OrthographicCamera(
-        -(diag) / 2,
-        diag / 2,
-        diag / 2,
-        -(diag / 2),
-        -(diag / 2),
-        diag / 2
+        -(diag / 2), diag / 2,
+        diag / 2, -(diag / 2),
+        -(diag / 2), diag / 2
       );
-      /* Prepare light position, based on current camera position */
-      let lightPos = scene.lights.Headlight.getWorldPosition();
-      if(!fixedLight) {
-        shadowPassOptions.lightPos = new THREE.Vector3(
-          lightPos.x + 4,
-          lightPos.y - 1,
-          lightPos.z
-        );
-      }
-      let lightD = new THREE.Vector3(shadowPassOptions.lightPos.x,shadowPassOptions.lightPos.y,shadowPassOptions.lightPos.z );
+      /* Prepare light position, based on current light position */
+      let lightD = scene.lights.Headlight.getWorldPosition();
       /* LightCamera setup */
       lightCamera.position.set(0, 0, 0);
       lightCamera.lookAt(lightD.negate());
       lightCamera.updateMatrixWorld();
       lightCamera.updateProjectionMatrix();
 
-      /******************debug**************/
-      let buf;
-      if (debug) buf = outBuffer;
-      else buf = horBlurTarget;
+      /******************debug flag**************/
+      let dBuf, bBuf;
+      if (debug) { bBuf = outBuffer; dBuf = outBuffer; }
+      // else buf = horBlurTarget;
+      else { bBuf = verBlurTarget; dBuf = depthMapTarget; }
       /*************************************/
 
       let decos = scene.getDecoratorsGroup();
@@ -337,10 +308,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
         while (overlaysIterator.hasNext()) {
           let overlay = overlaysIterator.next();
           if (overlay.name == 'Points' || overlay.name == 'Filled') {
-              overlay.__mlj_smplugin_material = overlay.material;
-              overlay.material = prepareDepthMaterial(pointSz);
-              overlay.__mlj_smplugin_pointSize = pointSz;
-              materialChanged.push(overlay);
+            overlay.__mlj_smplugin_material = overlay.material;
+            overlay.material = prepareDepthMaterial(pointSz);
+            overlay.__mlj_smplugin_pointSize = pointSz;
+            materialChanged.push(overlay);
           } else if (overlay.visible && overlay.geometry) {
             overlay.visible = false;
             hidden.push(overlay);
@@ -348,7 +319,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
         }
       }
       /* render depth map */
-      renderer.render(sceneGraph, lightCamera, depthMapTarget, true);
+      renderer.render(sceneGraph, lightCamera, dBuf, true);
 
       /******************PREPARE POSITION MAP********************/
       /*Selectively attach position map material */
@@ -359,7 +330,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
 
       /* Make hidden layers visible again  &  restore geometry materials */
-      for(let mesh in hidden) {
+      for (let mesh in hidden) {
         hidden[mesh].visible = true;
       }
       for (let mesh in materialChanged) {
@@ -369,8 +340,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       }
 
       /*****************PREPARE BLUR MAPS**********************/
-      renderer.render(horBlurScene, sceneCam, buf, true);
-      renderer.render(verBlurScene, sceneCam, verBlurTarget, true);
+      if (shadowPassUniforms.blurFlag.value) {
+        renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
+        renderer.render(verBlurScene, sceneCam, bBuf, true);
+      }
       /*******************FINAL RENDER PASS********************/
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
@@ -378,15 +351,21 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       shadowPassUniforms.lightViewProjection.value  = projScreenMatrix;
       shadowPassUniforms.colorMap.value             = inBuffer;
       shadowPassUniforms.intensity.value            = intensity;
+      shadowPassUniforms.bleedBias.value            = bleedBias;
       shadowPassUniforms.lightDir.value             = lightD;
+      if (shadowPassUniforms.blurFlag.value)
+        shadowPassUniforms.blurMap.value = verBlurTarget;
+  
 
-      if(!debug)
-       renderer.render(shadowScene, sceneCam, outBuffer, true);
+      if (!debug)
+        renderer.render(shadowScene, sceneCam, outBuffer, true);
 
       shadowPassUniforms.lightViewProjection.value  = null;
       shadowPassUniforms.colorMap.value             = null;
       shadowPassUniforms.intensity.value            = null;
+      shadowPassUniforms.bleedBias.value            = null;
       shadowPassUniforms.lightDir.value             = null;
+      shadowPassUniforms.blurMap.value              = null;
     };
   }
 

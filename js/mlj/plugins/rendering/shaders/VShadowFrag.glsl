@@ -11,12 +11,17 @@ uniform vec3 cameraPosition;
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
 uniform sampler2D depthMap;
-uniform sampler2D vBlurMap;
-uniform sampler2D hBlurMap;
+//uniform sampler2D vBlurMap;
+//uniform sampler2D hBlurMap;
+uniform sampler2D blurMap;
 
 uniform float intensity;
+uniform float bleedBias;
+uniform int blurFlag;
 
 varying vec2 vUv;
+
+/* implementing bleed containment as described in GPU Gems */
 
 float linearStep(float min, float max, float v) {
   return clamp((v-min)/(max-min), 0.0, 1.0);
@@ -39,7 +44,7 @@ float shadowContribution(vec2 moments, float t) {
   float pmax = variance / (variance + (d*d));
 
 //  return pmax;
-  return containBleed(pmax, 0.1);
+  return containBleed(pmax, bleedBias);
 }
 
 float shadowCalc(vec4 position){
@@ -53,8 +58,14 @@ float shadowCalc(vec4 position){
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
   //sample texture
-  vec2 moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
-                        texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
+  vec2 moments;
+  if (blurFlag == 1)
+ //   moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
+ //                         texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
+    moments = texture2D(blurMap, lightSpacePosition.xy).xy;
+  else
+    moments = texture2D(depthMap, lightSpacePosition.xy).xy;
+
 
   float fragDepth = lightSpacePosition.z;
 
