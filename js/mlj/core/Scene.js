@@ -179,6 +179,10 @@ MLJ.core.Scene.changeLayerList=new Array();
     var _group;
 
     var _camera;
+    
+    var _cameraPosition;
+    
+    var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
 
     var _cameraPosition;
 
@@ -299,25 +303,25 @@ MLJ.core.Scene.changeLayerList=new Array();
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
-
-        $(document).keydown(function (event) {
-            if ((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
+        
+        $(document).keydown(function(event) {           
+            if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
             }
-
+            
             // Shift + C -> copies camera position
-            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
+            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
                 event.preventDefault();
                 _this.copyCameraPositionJSON();
                 console.log("Viewpoint copied");
             }
-
+            
             // Shift + V -> sets camera position
-            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
+            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
                 event.preventDefault();
-
-                if (_cameraPositionCopy)
+                
+                if(_cameraPositionCopy)
                 {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
                     console.log("Viewpoint pasted");
@@ -385,8 +389,8 @@ MLJ.core.Scene.changeLayerList=new Array();
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
-
-
+    
+    
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
@@ -410,12 +414,12 @@ MLJ.core.Scene.changeLayerList=new Array();
             var iter = _layers.iterator();
 
             // Iterating over all the layers
-            while (iter.hasNext()) {
-                // Getting the bounding box of the current layer
-                var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
-
-                // Applying the union of the previous bounding box to the current one
-                BBGlobal.union(bbox);
+            while(iter.hasNext()) {
+               // Getting the bounding box of the current layer
+               var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
+               
+               // Applying the union of the previous bounding box to the current one
+               BBGlobal.union(bbox);
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
@@ -925,9 +929,9 @@ MLJ.core.Scene.changeLayerList=new Array();
             saveAs(blob, "snapshot.png");
         });
     };
+    
 
-
-    this.takeCameraPositionJSON = function () {
+    this.takeCameraPositionJSON = function() {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPosition = {
             camera: _controls.object.position.clone(),
@@ -939,9 +943,9 @@ MLJ.core.Scene.changeLayerList=new Array();
         // We stringify the object; the other parameters define the spacing between the elements
         return JSON.stringify(_cameraPosition, null, 4);
     };
-
+    
     // This function behaves like the function above, only it saves the values in a different variable and doesn't stringify the object
-    this.copyCameraPositionJSON = function () {
+    this.copyCameraPositionJSON = function() {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPositionCopy = {
             camera: _controls.object.position.clone(),
@@ -950,11 +954,11 @@ MLJ.core.Scene.changeLayerList=new Array();
             target: _controls.target.clone()
         };
     };
-
-
+    
+    
     this.setCameraPosition = function (cameraPos, target, up, fov) {
         // Changing the parameters
-        _controls.target.copy(target);
+        _controls.target.copy(target );
         _controls.object.position.copy(cameraPos);
         _controls.object.up.copy(up);
         _controls.object.fov = fov;
@@ -963,55 +967,56 @@ MLJ.core.Scene.changeLayerList=new Array();
         _controls.object.updateProjectionMatrix();
 
         // Changing the view direction
-        _controls.object.lookAt(_controls.target);
-
+        _controls.object.lookAt( _controls.target );
+        
         // Event taken from the TrackballControls class
-        var changeEvent = {type: 'change'}
-
+        var changeEvent = { type: 'change' }
+        
         // Notifying the controls object of the event and updating 
-        _controls.dispatchEvent(changeEvent);
+        _controls.dispatchEvent( changeEvent);
         _controls.update();
     };
-
-    this.setCameraPositionJSON = function (cameraJSON) {
+    
+    this.setCameraPositionJSON = function(cameraJSON) {
         var success = true;
-
+                
         try {
             var parsedJSON = JSON.parse(cameraJSON);
-
+            
             // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
             if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
-                    parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
-                    parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined)
+                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                parsedJSON.target.x === undefined|| parsedJSON.target.y === undefined || parsedJSON.target.z === undefined ||  parsedJSON.fov === undefined)
             {
                 success = false;
-            }
+            }   
             // If the "up" vector is the zero vector, it's not valid
-            else if (!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
+            else if(!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z) 
                 success = false;
             // If the fov is below 1, throw an error
-            else if (parsedJSON.fov < 1)
+            else if(parsedJSON.fov < 1) 
                 success = false;
             // Otherwise, we're good to go
             else
             {
                 // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
                 // just set the z value to be a little more than 0
-                if (!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
+                if(!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
                     parsedJSON.camera.z = 0.1;
-
+                
                 // Now that we have all parameters, we can change the viewpoint
                 _this.setCameraPosition(parsedJSON.camera, parsedJSON.target, parsedJSON.up, parsedJSON.fov);
             }
-        } catch (e) {
+        }
+        catch(e) {
             success = false;
         }
-
+        
         return success;
     }
 
-
-    this.resetTrackball = function () {
+    
+    this.resetTrackball = function() {
         _controls.reset();
     };
 
