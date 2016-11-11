@@ -123,11 +123,11 @@ MLJ.core.AmbientLight = function (scene, camera, renderer) {
  */
 MLJ.core.Headlight = function (scene, camera, renderer) {
     /***************debug****************** */
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    var cube1 = new THREE.Mesh( geometry, material );
-    var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
-    var cube2 = new THREE.Mesh( geometry, material1 );
+    // var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    // var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    // var cube1 = new THREE.Mesh( geometry, material );
+    // var material1 = new THREE.MeshBasicMaterial( {color: 0xFF0000} );
+    // var cube2 = new THREE.Mesh( geometry, material1 );
     /*************************************** */
 
     var _on = true;
@@ -179,11 +179,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      * @author Thomas Alderighi
      */
     this.setPosition = function (pos) {
-    //   _light.quaternion.set(0,0,0,1);
-    //   _light.updateMatrixWorld(true);
-        // _lightMesh.lookAt(pos);
-        // _light.position.set(1 , -1, 15);
-      _light.position.set(pos.x + 2, pos.y-2, pos.z);
+      _light.position.set(pos.x+1, pos.y-1, pos.z);
     }
 
     /**
