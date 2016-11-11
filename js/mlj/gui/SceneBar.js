@@ -173,7 +173,8 @@
             MLJ.gui.disabledOnSceneEmpty(deleteLayer);
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
-            
+            MLJ.gui.disabledOnSceneEmpty(unDo);
+            MLJ.gui.disableOnNoHistory(unDo);
             _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
 			_toolBar.add(doc,git);
 

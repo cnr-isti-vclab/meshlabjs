@@ -83,7 +83,7 @@ MLJ.gui.getWidget = function (name) {
  */
 MLJ.gui.disableOnNoHistory = function (component) {
     $(document).on("Undo", function (ev, timeStamp) {
-        if(timeStamp==0)
+        if(timeStamp<=0)
             component.disabled(true);
         else
             component.disabled(false);
