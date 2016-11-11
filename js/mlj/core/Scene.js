@@ -236,9 +236,8 @@ MLJ.core.Scene = {};
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
-            var scaleFac = 15.0 / (bbox.min.distanceTo(bbox.max)); //check if u can remove
             var distance = bbox.min.distanceTo(bbox.max);
-            var offset = bbox.center();//.negate();
+            var offset = bbox.center();
 
             dummyOrigin = new THREE.Object3D();               
             dummyOrigin.position.set(offset.x,offset.y,offset.z);
@@ -252,31 +251,28 @@ MLJ.core.Scene = {};
             _lightControls.attach(_this.lights.Headlight.getMesh());
             _lightControls.update();
 
-            var material = new THREE.LineBasicMaterial({
-                color: 0xFF0000
-            });
-
             var lightp = new THREE.Vector3().copy(_this.lights.Headlight.getLocalPosition());
                         
-            var geo5 = new THREE.Geometry();
-            geo5.vertices.push(
+            var geo = new THREE.Geometry();
+            geo.vertices.push(
                 new THREE.Vector3(lightp.x, lightp.y, lightp.z).multiplyScalar(distance / 25),
                 new THREE.Vector3(-lightp.x, -lightp.y, -lightp.z).multiplyScalar(distance / 25)
             );
+            var lineMaterial = new THREE.LineBasicMaterial({
+                color: 0xFF0000
+            });
 
-            var line = new THREE.Line(geo5, material);
+            var line = new THREE.Line(geo, lineMaterial);
             var line1 = line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
             var line5 = line.clone(), line6 = line.clone(), line7 = line.clone(), line8 = line.clone();
-            //var scale = new THREE.Matrix4().makeScale(1, 1, 1);
 
-            line1.translateX( distance / 4); //line1.scale = scale;
-            line2.translateX(-distance / 4); //line2.scale = scale;
-            line3.translateY( distance / 4); //line3.scale = scale;
-            line4.translateY(-distance / 4); //line4.scale = scale;
-            line5.translateX( distance / 4); line5.translateY( distance / 4); //line5.scale = scale;
-            line6.translateX(-distance / 4); line6.translateY( distance / 4); //line6.scale = scale;
-            line7.translateX(-distance / 4); line7.translateY(-distance / 4); //line7.scale = scale;
-            line8.translateX( distance / 4); line8.translateY(-distance / 4); //line8.scale = scale;
+            line1.translateX( distance / 4); line2.translateX(-distance / 4); 
+            line3.translateY( distance / 4); line4.translateY(-distance / 4); 
+
+            line5.translateX( distance / 4); line5.translateY( distance / 4);
+            line6.translateX(-distance / 4); line6.translateY( distance / 4);
+            line7.translateX(-distance / 4); line7.translateY(-distance / 4);
+            line8.translateX( distance / 4); line8.translateY(-distance / 4);
 
             var lines = new THREE.Object3D();
             lines.add(line); lines.add(line1); lines.add(line2); lines.add(line3); lines.add(line4); 
@@ -284,21 +280,20 @@ MLJ.core.Scene = {};
 
             lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
 
-            /* ad ogni modifica del transformcontrol, voglio aggiornare la rotazione delle 'linee guida' */
+            /* every time TransformControls gets updated, update the guidelines rotation */
             _lightControls.addEventListener('change', () => {
                 _lightControls.update();
                 lines.quaternion.copy(_this.lights.Headlight.getMesh().getWorldQuaternion());
                 _this.render();
             });
 
-            /* aggiungo lightControls a dummyorigin, così saranno sempre centrati */
+            /* add lightControls to dummyOrigin, this way it will always be centered */
             dummyOrigin.add(_lightControls);
             dummyOrigin.add(lines);
             dummyOrigin.updateMatrix();
             dummyOrigin.updateMatrixWorld(true);
 
             _this.addSceneDecorator(_lightControls.name, dummyOrigin);
-            // console.log('Mi sposto di: '+JSON.stringify(offset));
         }
 
         $(document).keyup(function (event) {
@@ -319,23 +314,25 @@ MLJ.core.Scene = {};
             if(event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
                 event.preventDefault();
                 _customLight = false;
-                // azzzero le trasformazioni applicate su lightmesh
+                // reset transformations applied on light 
                 _this.lights.Headlight.getMesh().position.set(0,0,0);
                 _this.lights.Headlight.getMesh().scale.set(1,1,1);
                 _this.lights.Headlight.getMesh().quaternion.set(0,0,0,1);
                 _this.lights.Headlight.getMesh().updateMatrix();
                 _this.lights.Headlight.getMesh().updateMatrixWorld(true);
-                // centro luce sulla posizione attuale della camera
+                // center light back in camera position (with small offset)
                 _this.lights.Headlight.setPosition(_camera.position);
-                // disegno scena
+                // draw scene
                 _this.render();
                 return;
             }
             /* CTRL+ALT+SHIFT (keep pressed) => light moving */
             if(event.ctrlKey && event.shiftKey && event.altKey) {
-              if(_lightPressed) return;
-              _lightPressed = true;
+              // if already moving don't do everything again
               event.preventDefault();
+              if(_lightPressed) return;
+
+              _lightPressed = true;
               _customLight = true;
               _controls.enabled = false;
               prepareLightControls();     
