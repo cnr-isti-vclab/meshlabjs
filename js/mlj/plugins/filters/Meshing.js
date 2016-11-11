@@ -171,6 +171,18 @@
         Module.InvertFaceOrientation(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var ReorientFaceCoherently = new plugin.Filter({
+        name: "Reorient Face coherently",
+        tooltip: "Reorient all the faces of a mesh in a coherent way. Require that the mesh is two-manifold and orientable",
+        arity: 1
+    });
+
+    ReorientFaceCoherently._init = function (builder) {};
+
+    ReorientFaceCoherently._applyTo = function (basemeshFile) {
+        Module.ReorientFaceCoherently(basemeshFile.ptrMesh());
+    };
+/******************************************************************************/  
     var CutAlongCrease = new plugin.Filter({
         name: "Cut Along Crease",
         tooltip: "Cut the current mesh along the crease edges, e.g. the edges where the two adjacent faces have normals that differs more than a given angle. .",
@@ -208,6 +220,7 @@
     plugin.Manager.install(RemoveUnrefVert);
     plugin.Manager.install(RemoveDupVert);
     plugin.Manager.install(InvertFaceOrientation);
+    plugin.Manager.install(ReorientFaceCoherently);
     plugin.Manager.install(CutAlongCrease);
     plugin.Manager.install(CutTopological);
     
