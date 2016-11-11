@@ -16,7 +16,7 @@ varying vec2 vUv;
 
 vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
      vec3 colOut = vec3( 0, 0, 0 );
-    // if (texture2D(tex0, centreUV) == vec4(0.0)) discard;
+     if (texture2D(tex0, centreUV) == vec4(0.0)) discard;
 
      for( int i = 0; i < stepCount; i++ ) {
          vec2 texCoordOffset = gOffsets[i] * pixelOffset;
