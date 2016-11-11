@@ -31,7 +31,7 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
     var listSceneChange = new Array();
     var tmpSC; //temporary object to store the actual scene changes
 
-    this.getList = function()
+    this.getList = function ()
     {
         return listSceneChange;
     }
@@ -61,7 +61,7 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
 };
 MLJ.core.SceneChange = function () { //Scene Changes class, stores a list of LayerChanges
     var listLayerChange = new Array();
-    this.getList =function()
+    this.getList = function ()
     {
         return listLayerChange;
     }
@@ -85,13 +85,13 @@ MLJ.core.LayerChange = function (id, type) //LayerChange class, structured as
 {
     var Layer; //id of the layer changed
     var ChangeType; //type of the change applied to the layer - structure ahead
-    Layer=id;
+    Layer = id;
     ChangeType = type;
-    this.getType=function()
+    this.getType = function ()
     {
         return ChangeType;
     }
-    this.getLayer=function()
+    this.getLayer = function ()
     {
         return Layer;
     }
@@ -120,23 +120,7 @@ MLJ.core.ChangeType = //ChangeType is structured like an enumerator which map ev
  * @author Stefano Gabriele
  *
  */
-MLJ.core.Undoable = function(layer, type)
-{
-    var uLayer=layer;
-    var uType=type;
-    this.getLayer=function()
-    {
-        return uLayer;
-    }
-    this.getType=function()
-    {
-        return uType;
-    }
-    this.toString = function ()
-    {
-        return "Undoable: " + uLayer.name + " " + uType;
-    }
-};
+
 MLJ.core.Scene = {};
 MLJ.core.Scene.history = new MLJ.core.SceneHistory();
 MLJ.core.Scene.timeStamp = 0;
@@ -191,9 +175,9 @@ MLJ.core.Scene.timeStamp = 0;
     var _group;
 
     var _camera;
-    
+
     var _cameraPosition;
-    
+
     var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
 
     var _cameraPosition;
@@ -217,39 +201,42 @@ MLJ.core.Scene.timeStamp = 0;
     /// @type {Object}
     var _renderer;
     var _this = this;
-    this.Undo=function()
+    this.Undo = function ()
     {
         if (this.timeStamp > 0) {
-                    var listLayerChange = this.history.getList().pop();
-                    var layerChange=listLayerChange.getList().pop(); 
-                    var layer=layerChange.getLayer();
-                    var type=layerChange.getType();
-                    MLJ.widget.Log.append("");
-                    
-                    if(type==MLJ.core.ChangeType.Creation)
-                    {
-                        MLJ.widget.Log.append("Undoing creation on layer "+ layer.name);
-                        this.removeLayerByName(layer.name);
-                    }
-                    else if(type==MLJ.core.ChangeType.Deletion)
-                    {
-                        MLJ.widget.Log.append("Undoing deletion on layer "+ layer.name);
-                        var oldLayer=this.getDeletedLayers().pop();
-                        this.addLayer(oldLayer);
-                        oldLayer.properties.set("Filled", true);
-                        this.updateLayer(oldLayer);
-                        
-                    }
-                    else
-                    {
-                        MLJ.widget.Log.append("\n\nUndo modification on layer " + layer.name);
-                        layer.meshH.restoreState(this.timeStamp, layer.ptrMesh());
-                        this.updateLayer(layer);
-                    }
-                    this.timeStamp--;
-                    $(document).trigger("Undo", this.timeStamp);
+            var listLayerChange = this.history.getList().pop();
+            
+            while (listLayerChange.getList().length > 0)
+            {
+                var layerChange = listLayerChange.getList().pop();
+                var layer = layerChange.getLayer();
+                var type = layerChange.getType();
+                MLJ.widget.Log.append("");
+                if (type == MLJ.core.ChangeType.Creation)
+                {
+                    MLJ.widget.Log.append("Undoing creation on layer " + layer.name);
+                    this.removeLayerByName(layer.name);
+                } else if (type == MLJ.core.ChangeType.Deletion)
+                {
+                    MLJ.widget.Log.append("Undoing deletion on layer " + layer.name);
+                    var oldLayer = this.getDeletedLayers().pop();
+                    this.addLayer(oldLayer);
+                    oldLayer.properties.set("Filled", true);
+                    this.updateLayer(oldLayer);
+
+                } else
+                {
+                    MLJ.widget.Log.append("\n\nUndo modification on layer " + layer.name);
+                    layer.meshH.restoreState(this.timeStamp, layer.ptrMesh());
+                    this.updateLayer(layer);
                 }
                 
+            }
+
+            this.timeStamp--;
+            $(document).trigger("Undo", this.timeStamp);
+        }
+
     }
     function get3DSize() {
         var _3D = $('#_3D');
@@ -348,25 +335,25 @@ MLJ.core.Scene.timeStamp = 0;
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
-        
-        $(document).keydown(function(event) {           
-            if((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
+
+        $(document).keydown(function (event) {
+            if ((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
             }
-            
+
             // Shift + C -> copies camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
                 event.preventDefault();
                 _this.copyCameraPositionJSON();
                 console.log("Viewpoint copied");
             }
-            
+
             // Shift + V -> sets camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
                 event.preventDefault();
-                
-                if(_cameraPositionCopy)
+
+                if (_cameraPositionCopy)
                 {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
                     console.log("Viewpoint pasted");
@@ -434,8 +421,8 @@ MLJ.core.Scene.timeStamp = 0;
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
-    
-    
+
+
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
@@ -459,12 +446,12 @@ MLJ.core.Scene.timeStamp = 0;
             var iter = _layers.iterator();
 
             // Iterating over all the layers
-            while(iter.hasNext()) {
-               // Getting the bounding box of the current layer
-               var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
-               
-               // Applying the union of the previous bounding box to the current one
-               BBGlobal.union(bbox);
+            while (iter.hasNext()) {
+                // Getting the bounding box of the current layer
+                var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
+
+                // Applying the union of the previous bounding box to the current one
+                BBGlobal.union(bbox);
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
@@ -499,12 +486,22 @@ MLJ.core.Scene.timeStamp = 0;
     this.getThreeJsGroup = function () {
         return _group;
     }
-    this.pushState= function (layer,type)
+    this.pushState = function (layers, type)
     {
-        MLJ.widget.Log.append("Pushed state "+type);
-        this.history.addLC(new MLJ.core.LayerChange(layer,type));
-        layer.meshH.pushState(++this.timeStamp,layer.ptrMesh());
-        MLJ.core.Scene.history.closeSC();
+        MLJ.widget.Log.append("Pushed state " + type);
+        if (layers instanceof Array)
+            while (layers.length > 0)
+            {
+                var layer = layers.pop();
+                this.history.addLC(new MLJ.core.LayerChange(layer, type));
+                layer.meshH.pushState(this.timeStamp, layer.ptrMesh());
+                //pushstate con stesso timestamp di tutti i layer toccati
+            }
+        else
+        {
+            this.history.addLC(new MLJ.core.LayerChange(layers, type));
+            layers.meshH.pushState(this.timeStamp, layers.ptrMesh());
+        }
     };
     /**
      * Selects the layer with the name <code>layerName</code>
@@ -512,7 +509,7 @@ MLJ.core.Scene.timeStamp = 0;
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele
      */
-    
+
     this.selectLayerByName = function (layerName) {
         _selectedLayer = _layers.getByKey(layerName);
         /**
@@ -592,7 +589,7 @@ MLJ.core.Scene.timeStamp = 0;
          *  );
          */
         $(document).trigger("SceneLayerAdded", [layer, _layers.size()]);
-
+        this.pushState(layer, MLJ.core.ChangeType.Creation);
         //render the scene
         _this.render();
     };
@@ -752,7 +749,7 @@ MLJ.core.Scene.timeStamp = 0;
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele     
      */
-    this.getDeletedLayers=function()
+    this.getDeletedLayers = function ()
     {
         return _deletedLayers;
     }
@@ -976,9 +973,9 @@ MLJ.core.Scene.timeStamp = 0;
             saveAs(blob, "snapshot.png");
         });
     };
-    
 
-    this.takeCameraPositionJSON = function() {
+
+    this.takeCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPosition = {
             camera: _controls.object.position.clone(),
@@ -990,9 +987,9 @@ MLJ.core.Scene.timeStamp = 0;
         // We stringify the object; the other parameters define the spacing between the elements
         return JSON.stringify(_cameraPosition, null, 4);
     };
-    
+
     // This function behaves like the function above, only it saves the values in a different variable and doesn't stringify the object
-    this.copyCameraPositionJSON = function() {
+    this.copyCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPositionCopy = {
             camera: _controls.object.position.clone(),
@@ -1001,11 +998,11 @@ MLJ.core.Scene.timeStamp = 0;
             target: _controls.target.clone()
         };
     };
-    
-    
+
+
     this.setCameraPosition = function (cameraPos, target, up, fov) {
         // Changing the parameters
-        _controls.target.copy(target );
+        _controls.target.copy(target);
         _controls.object.position.copy(cameraPos);
         _controls.object.up.copy(up);
         _controls.object.fov = fov;
@@ -1014,56 +1011,55 @@ MLJ.core.Scene.timeStamp = 0;
         _controls.object.updateProjectionMatrix();
 
         // Changing the view direction
-        _controls.object.lookAt( _controls.target );
-        
+        _controls.object.lookAt(_controls.target);
+
         // Event taken from the TrackballControls class
-        var changeEvent = { type: 'change' }
-        
+        var changeEvent = {type: 'change'}
+
         // Notifying the controls object of the event and updating 
-        _controls.dispatchEvent( changeEvent);
+        _controls.dispatchEvent(changeEvent);
         _controls.update();
     };
-    
-    this.setCameraPositionJSON = function(cameraJSON) {
+
+    this.setCameraPositionJSON = function (cameraJSON) {
         var success = true;
-                
+
         try {
             var parsedJSON = JSON.parse(cameraJSON);
-            
+
             // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
             if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
-                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
-                parsedJSON.target.x === undefined|| parsedJSON.target.y === undefined || parsedJSON.target.z === undefined ||  parsedJSON.fov === undefined)
+                    parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                    parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined)
             {
                 success = false;
-            }   
+            }
             // If the "up" vector is the zero vector, it's not valid
-            else if(!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z) 
+            else if (!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
                 success = false;
             // If the fov is below 1, throw an error
-            else if(parsedJSON.fov < 1) 
+            else if (parsedJSON.fov < 1)
                 success = false;
             // Otherwise, we're good to go
             else
             {
                 // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
                 // just set the z value to be a little more than 0
-                if(!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
+                if (!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
                     parsedJSON.camera.z = 0.1;
-                
+
                 // Now that we have all parameters, we can change the viewpoint
                 _this.setCameraPosition(parsedJSON.camera, parsedJSON.target, parsedJSON.up, parsedJSON.fov);
             }
-        }
-        catch(e) {
+        } catch (e) {
             success = false;
         }
-        
+
         return success;
     }
 
-    
-    this.resetTrackball = function() {
+
+    this.resetTrackball = function () {
         _controls.reset();
     };
 

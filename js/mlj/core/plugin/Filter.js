@@ -147,6 +147,14 @@ MLJ.core.plugin.Filter = function (parameters) {
             // Creation filters and filters that works on all layers ignore the current layer
             // so we do not pass it
             var type=undefined;
+            
+            //reset tutti i layer
+            var layersIt=MLJ.core.Scene.getLayers().iterator();
+            while(layersIt.hasNext())
+            {
+                var layerTmp=layersIt.next();
+                layerTmp.resetCalledPtrMesh();
+            }
             var layer = MLJ.core.Scene.getSelectedLayer();
             switch(_this.parameters.arity)
             {
@@ -165,14 +173,26 @@ MLJ.core.plugin.Filter = function (parameters) {
                     type=MLJ.core.ChangeType.Modification; 
                     break;
                 case 2:
-                    //da fare
+                    //to be fixed - not all the filters with arity 2 have no parameters
+                    _this._applyTo();
+                    type=MLJ.core.ChangeType.Modification;
                     break;
                 default:
                     alert("Error filter");
             }
             var t1 = performance.now();
-            MLJ.core.Scene.pushState(layer,type);
+            var layersToPush=new Array();
+            layersIt=MLJ.core.Scene.getLayers().iterator();
+             while(layersIt.hasNext())
+            {
+                var layerTmp=layersIt.next();
+                if(layerTmp.getCalledPtrMesh())
+                    layersToPush.push(layerTmp);
+            }
+            MLJ.core.Scene.pushState(layersToPush,type);
             MLJ.core.Scene.updateLayer(layer);
+            MLJ.core.Scene.timeStamp++;
+            MLJ.core.Scene.history.closeSC();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 

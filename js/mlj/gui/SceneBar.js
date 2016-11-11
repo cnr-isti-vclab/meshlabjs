@@ -241,6 +241,9 @@
                 var layer=MLJ.core.Scene.getSelectedLayer();
                 MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete",layer);
                 MLJ.core.Scene.pushState(layer,MLJ.core.ChangeType.Deletion);
+                MLJ.core.Scene.timeStamp++;
+                MLJ.core.Scene.history.closeSC();
+                //MLJ.core.Scene.selectLayerByName("");
             })
             
             cameraPosition.onClick(function() {
