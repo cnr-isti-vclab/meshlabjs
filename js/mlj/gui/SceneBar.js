@@ -196,30 +196,7 @@
             });
             unDo.onClick(function ()
             {
-                if (MLJ.core.Scene.timeStamp > 0) {
-                    
-                    var toUndo = MLJ.core.Scene.changeLayerList.pop();
-                    
-                    var layer=toUndo.getLayer();
-                    var type=toUndo.getType();
-                    if(type==MLJ.core.ChangeType.Creation)
-                    {
-                        MLJ.core.Scene.removeLayerByName(layer.name);
-                    }
-                    else if(type==MLJ.core.ChangeType.Deletion)
-                    {
-                        //da revisionare: trovare un modo per ripristinare il livello con la mesh
-                        //idea: fare un pushstate sul livello prima e dopo la delete
-                    }
-                    else
-                    {
-                        MLJ.widget.Log.append("\n\nUndo in progress at time " + (MLJ.core.Scene.timeStamp) + " on layer " + layer.name);
-                        layer.meshH.restoreState(MLJ.core.Scene.timeStamp, layer.ptrMesh());
-                        MLJ.core.Scene.updateLayer(layer);
-                    }
-                    MLJ.core.Scene.timeStamp--;
-                    $(document).trigger("Undo", MLJ.core.Scene.timeStamp);
-                }
+                MLJ.core.Scene.Undo();
             });
             reDo.onClick(function ()
             {
@@ -260,7 +237,9 @@
             });
 
             deleteLayer.onClick(function () {
-                MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete", MLJ.core.Scene.getSelectedLayer())
+                var layer=MLJ.core.Scene.getSelectedLayer();
+                MLJ.core.plugin.Manager.executeLayerFilter("Layer Delete",layer);
+                MLJ.core.Scene.pushState(layer,MLJ.core.ChangeType.Deletion);
             })
             
             cameraPosition.onClick(function() {

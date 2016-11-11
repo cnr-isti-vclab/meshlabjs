@@ -174,7 +174,6 @@ MLJ.core.plugin.Filter = function (parameters) {
             MLJ.core.Scene.pushState(layer,type);
             MLJ.core.Scene.updateLayer(layer);
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
-            MLJ.core.Scene.history.closeSC();
         });
 
         if (parameters.arity !== 0) {
