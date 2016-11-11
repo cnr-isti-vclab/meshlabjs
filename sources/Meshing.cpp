@@ -198,9 +198,17 @@ void CutTopologicalFilter(uintptr_t _baseM)
   m.UpdateBoxAndNormals(); 
 }
 
+void ReorientFaceCoherently(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  bool _isOriented,_isOrientable;
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::Clean<MyMesh>::OrientCoherentlyMesh(m,_isOriented,_isOrientable);  
+}
 
 void MeshingPluginTEST()
 {
+  printf("Meshing Plugin Test\n");
     MyMesh platonic; 
     Dodecahedron(platonic);
     CutAlongCreaseFilter(uintptr_t(&platonic),40);
@@ -212,6 +220,16 @@ void MeshingPluginTEST()
     
     Torus(platonic,3,1);
     CutTopologicalFilter(uintptr_t(&platonic));
+    
+    Torus(platonic,3,1);
+    tri::UpdateTopology<MyMesh>::FaceFace(platonic);
+    for(int i=0;i<5;++i)
+    {
+      int index = rand()%platonic.FN();
+      face::SwapEdge(platonic.face[index],rand()%3);
+    }    
+    ReorientFaceCoherently(uintptr_t(&platonic));
+    
       
   for(int i=1;i<5;++i)
   {
@@ -244,6 +262,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
     emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
     emscripten::function("InvertFaceOrientation",      &InvertFaceOrientation);
+    emscripten::function("ReorientFaceCoherently",     &ReorientFaceCoherently);
     emscripten::function("VoronoiClustering",          &VoronoiClustering);
     emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
