@@ -1,9 +1,6 @@
 
 (function (plugin, core, scene) {
-  // IDEA : prova a limitare di più il bleeding, magari con un test sulla normale (normale needs another rend step => no normale)
   /*
-
-In alternativa c'è l'implementazione , più raffinata, nello stile come avevo fatto all'inizio, che risolve il problema dlela dimensione di sicuro, ma resta il fatto del decorator prolly.
 
 Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, solo che è nascosto dal fatto che l'ombra è molto più nera…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
 
@@ -11,35 +8,29 @@ INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSER
 DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
   */
-  // REVIEW: un motivo per cui ho shadowing ai bordi potrebbe essere il fatto che durant
   // TODO: refactoring---commenting---memorycleanupondispose---icon
   /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
   /* variables for ui interaction */
-  let intensity = 1.0, bleedBias = 0.3;
-  let debug = false;
 
   let shadowPassUniforms = {
-    // vBlurMap:             { type: "t",  value: null },
-    // hBlurMap:             { type: "t",  value: null },
     blurMap:              { type: "t",  value: null },
     depthMap:             { type: "t",  value: null },
     positionMap:          { type: "t",  value: null },
     colorMap:             { type: "t",  value: null },
     lightViewProjection:  { type: "m4", value: null },
-    intensity:            { type: "f",  value: null },
+    intensity:            { type: "f",  value: 1 },
     lightDir:             { type: 'v3', value: null },
     blurFlag:             { type: 'i',  value: 1 },
-    bleedBias:            { type: "f",  value: null }
+    bleedBias:            { type: "f",  value: 0.0 }
   };
 
   let shadowPassOptions = {
-    minFilter: null,
-    SMVert: null,
-    SMFrag: null,
-    ShadowFrag: null,
-    bufferWidth: 512,
-    bufferHeight: 512,
-    // lightPos: null
+    minFilter:    THREE.LinearMipMapNearestFilter,
+    SMVert:       null,
+    SMFrag:       null,
+    ShadowFrag:   null,
+    bufferWidth:  1024,
+    debug:        false
   }
 
   let plug = new plugin.GlobalRendering({
@@ -65,7 +56,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       defval: 1.0,
       bindTo: (function () {
         var bindToFun = function (value) {
-          intensity = value;
+          shadowPassUniforms.intensity.value = value;
           scene.render();
         };
         bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
@@ -77,10 +68,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       label: "Bleed containment bias",
       tooltip: "Manages the bias applied in VSM to contain bleed effects",
       min: 0.0, max: 0.5, step: 0.0001,
-      defval: 0.3,
+      defval: 0.0,
       bindTo: (function () {
         var bindToFun = function (value) {
-          bleedBias = value;
+          shadowPassUniforms.bleedBias.value = value;
           scene.render();
         };
         bindToFun.toString = function () { return 'MLJ_SM_BleedBias'; }
@@ -95,8 +86,8 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       options: [
         { content: "128",   value: 128 },
         { content: "256",   value: 256 },
-        { content: "512",   value: 512, selected: true },
-        { content: "1024",  value: 1024 },
+        { content: "512",   value: 512 },
+        { content: "1024",  value: 1024, selected: true },
         { content: "2048",  value: 2048 },
         { content: "4096",  value: 4096 }
       ],
@@ -104,7 +95,6 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
         var callback = function (bufferWidth) {
           plug._applyTo(false);
           shadowPassOptions.bufferWidth = bufferWidth;
-          shadowPassOptions.bufferHeight = bufferWidth;
           plug._applyTo(true);
         };
         callback.toString = function () { return "MLJ_SM_BufferWidth"; };
@@ -114,7 +104,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
     blurFlag = guiBuilder.Bool({
       label: "Blur",
-      tooltip: "If checked, the shadow map gets filtered to smooth shadow borders",
+      tooltip: "If checked, the shadow map gets filtered to smooth shadow borders and shadow aliasing is contained",
       defval: true,
       bindTo: (function () {
         var bindToFun = function (value) {
@@ -127,14 +117,14 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
     debugChoice = guiBuilder.Choice({
       label: "Debug mode",
-      tooltip: "If 'On', it displays the shadow map",
+      tooltip: "If 'On', it renders the variance shadow map on screen",
       options: [
         { content: "Off", value: false, selected: true },
         { content: "On",  value: true }
       ],
       bindTo: (function () {
         var bindToFun = function (value) {
-          debug = value;
+          shadowPassOptions.debug = value;
         };
         bindToFun.toString = function () { return 'MLJ_SM_DEBUG'; };
         return bindToFun;
@@ -143,7 +133,6 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
   };
 
   function SMContext() {
-    shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
     /* shaders */
     shadowPassOptions.SMVert      = plug.shaders.getByKey("VSMVertex.glsl");
     shadowPassOptions.SMFrag      = plug.shaders.getByKey("VSMFrag.glsl");
@@ -167,10 +156,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       magFilter: THREE.Linear
     };
 
-    let depthMapTarget    = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
-    let horBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
-    let verBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferHeight / 2, renderTargetParams);
-    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferHeight, renderTargetParams);
+    let depthMapTarget    = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
+    let horBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
+    let verBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
+    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
 
     shadowPassUniforms.depthMap.value = depthMapTarget;
     shadowPassUniforms.positionMap.value = positionMapTarget;
@@ -243,7 +232,24 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     let verBlurScene = new THREE.Scene(); verBlurScene.add(verBlurMesh);
     let shadowScene = new THREE.Scene(); shadowScene.add(shadowMapMesh);
 
-    let lightCamera;
+    this.dispose = () => {
+      depthMapTarget.dispose();     depthMapTarget    = undefined;
+      positionMapTarget.dispose();  positionMapTarget = undefined
+      horBlurTarget.dispose();      horBlurTarget     = undefined;
+      verBlurTarget.dispose();      verBlurTarget     = undefined;
+
+      shadowScene.remove(shadowMapMesh); shadowScene   = undefined;
+      horBlurScene.remove(horBlurMesh);  horBlurScene  = undefined;
+      verBlurScene.remove(verBlurMesh);  verBlurScene  = undefined;
+
+      shadowMapMesh = undefined;
+      horBlurMesh   = undefined;
+      verBlurMesh   = undefined;
+
+      horBlurMaterial.dispose();  horBlurMaterial = undefined;
+      verBlurMaterial.dispose();  verBlurMaterial = undefined;
+    }
+
     /*
     receives an input buffer in Scene.js and outputs an output buffer that will
     be used as a texture for the last pass of the deferred rendering pipe.
@@ -264,7 +270,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
       /* Prepare light view camera frustum (orthographic for directional lights) */
       let diag = bbox.min.distanceTo(bbox.max);
-      lightCamera = new THREE.OrthographicCamera(
+      let lightCamera = new THREE.OrthographicCamera(
         -(diag / 2), diag / 2,
         diag / 2, -(diag / 2),
         -(diag / 2), diag / 2
@@ -279,7 +285,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
       /******************debug flag**************/
       let dBuf, bBuf;
-      if (debug) { 
+      if (shadowPassOptions.debug) { 
         bBuf = outBuffer; 
         dBuf = (shadowPassUniforms.blurFlag.value) ? depthMapTarget : outBuffer;
       } else { 
@@ -355,22 +361,16 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
       shadowPassUniforms.lightViewProjection.value  = projScreenMatrix;
       shadowPassUniforms.colorMap.value             = inBuffer;
-      shadowPassUniforms.intensity.value            = intensity;
-      shadowPassUniforms.bleedBias.value            = bleedBias;
       shadowPassUniforms.lightDir.value             = lightD;
 
       if (shadowPassUniforms.blurFlag.value)
         shadowPassUniforms.blurMap.value = verBlurTarget;
   
-      if (!debug)
+      if (!shadowPassOptions.debug)
         renderer.render(shadowScene, sceneCam, outBuffer, true);
 
-      shadowPassUniforms.lightViewProjection.value  = null;
-      shadowPassUniforms.colorMap.value             = null;
-      shadowPassUniforms.intensity.value            = null;
-      shadowPassUniforms.bleedBias.value            = null;
-      shadowPassUniforms.lightDir.value             = null;
-      shadowPassUniforms.blurMap.value              = null;
+      shadowPassUniforms.blurMap.value = null;
+
     };
   }
 
@@ -381,10 +381,9 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       scene.addPostProcessPass(plug.getName(), context.pass);
     } else {
       scene.removePostProcessPass(plug.getName());
-      /* add disposing of objects */
+      context.dispose();
       context = null;
     }
-
   };
 
   plugin.Manager.install(plug);
