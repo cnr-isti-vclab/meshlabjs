@@ -45,10 +45,6 @@ MLJ.core.Layer = function (id, name, cppMesh) {
     {
         this.calledPtrMesh=false;
     }
-    //deleted property for lazy deletion in scene
-    this.deleted = false;
-    //history of the mesh in the current layer
-    this.meshH = new Module.MeshHistory();
     /**
      * @type {String} - Set if a mesh is read from a file
      * (see {@link MLJ.core.File.openMeshFile}), defaults to the empty string
@@ -221,6 +217,7 @@ MLJ.core.Layer = function (id, name, cppMesh) {
      * Returns the ptr to the cppMesh object
      * @returns {Number} An emscripten pointer to the VCG mesh of this layer
      */
+    
     this.ptrMesh = function () {
         this.calledPtrMesh=true;
         return _this.cppMesh.getMeshPtr();

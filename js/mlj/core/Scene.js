@@ -45,6 +45,7 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
     {
         listSceneChange.push(tmpSC);
         tmpSC = undefined;
+        MLJ.core.Scene.timeStamp++;
     }
     this.addLC = function (newLC) //adds a new LayerChange to the actual SceneChange
     {
@@ -61,6 +62,15 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
 };
 MLJ.core.SceneChange = function () { //Scene Changes class, stores a list of LayerChanges
     var listLayerChange = new Array();
+    var currentLayer;
+    this.setCurrentLayer = function (current)
+    {
+        currentLayer = current;
+    }
+    this.getCurrentLayer = function ()
+    {
+        return currentLayer;
+    }
     this.getList = function ()
     {
         return listLayerChange;
@@ -106,7 +116,8 @@ MLJ.core.ChangeType = //ChangeType is structured like an enumerator which map ev
         {
             Creation: "Create",
             Deletion: "Delete",
-            Modification: "Modify"
+            Modification: "Modify",
+            Visibility: "Visibility"
         };
 /**
  * The MLJ.core.Scene namespace defines the functions to manage the scene, 
@@ -201,11 +212,36 @@ MLJ.core.Scene.timeStamp = 0;
     /// @type {Object}
     var _renderer;
     var _this = this;
+    this.pushState = function (layers, type)
+    {
+        MLJ.widget.Log.append("\n\nPushed state " + type);
+
+        if (layers instanceof Array)
+        {
+            while (layers.length > 0)
+            {
+                var layer = layers.pop();
+                this.history.addLC(new MLJ.core.LayerChange(layer, type));
+                layer.cppMesh.pushState(_this.timeStamp);
+                //pushstate con stesso timestamp di tutti i layer toccati
+            }
+        }
+        else
+        {
+            this.history.addLC(new MLJ.core.LayerChange(layers, type));
+            layers.cppMesh.pushState(_this.timeStamp);
+        }
+    };
     this.Undo = function ()
     {
-        if (this.timeStamp > 0) {
-            var listLayerChange = this.history.getList().pop();
-            
+        if (_this.timeStamp > 0) {
+            var listLayerChange = _this.history.getList().pop();
+            var time = _this.timeStamp;
+            if (listLayerChange.getList().length == 1)
+                time--;
+            var currentLayer = listLayerChange.getCurrentLayer();
+            debugger;
+            _this.selectLayerByName(currentLayer.name);
             while (listLayerChange.getList().length > 0)
             {
                 var layerChange = listLayerChange.getList().pop();
@@ -215,26 +251,25 @@ MLJ.core.Scene.timeStamp = 0;
                 if (type == MLJ.core.ChangeType.Creation)
                 {
                     MLJ.widget.Log.append("Undoing creation on layer " + layer.name);
-                    this.removeLayerByName(layer.name);
+                    _this.removeLayerByName(layer.name);
                 } else if (type == MLJ.core.ChangeType.Deletion)
                 {
                     MLJ.widget.Log.append("Undoing deletion on layer " + layer.name);
-                    var oldLayer = this.getDeletedLayers().pop();
-                    this.addLayer(oldLayer);
+                    var oldLayer = _this.getDeletedLayers().pop();
+                    _this.addLayer(oldLayer);
                     oldLayer.properties.set("Filled", true);
-                    this.updateLayer(oldLayer);
+                    _this.updateLayer(oldLayer);
 
                 } else
                 {
-                    MLJ.widget.Log.append("\n\nUndo modification on layer " + layer.name);
-                    layer.meshH.restoreState(this.timeStamp, layer.ptrMesh());
-                    this.updateLayer(layer);
+                    MLJ.widget.Log.append("\n\nUndo modification on layer " + layer.name + " at time " + MLJ.core.Scene.timeStamp);
+                    layer.cppMesh.restoreState(time);
+                    _this.updateLayer(layer);
                 }
-                
             }
 
-            this.timeStamp--;
-            $(document).trigger("Undo", this.timeStamp);
+            _this.timeStamp--;
+            $(document).trigger("Undo", _this.timeStamp);
         }
 
     }
@@ -486,23 +521,7 @@ MLJ.core.Scene.timeStamp = 0;
     this.getThreeJsGroup = function () {
         return _group;
     }
-    this.pushState = function (layers, type)
-    {
-        MLJ.widget.Log.append("Pushed state " + type);
-        if (layers instanceof Array)
-            while (layers.length > 0)
-            {
-                var layer = layers.pop();
-                this.history.addLC(new MLJ.core.LayerChange(layer, type));
-                layer.meshH.pushState(this.timeStamp, layer.ptrMesh());
-                //pushstate con stesso timestamp di tutti i layer toccati
-            }
-        else
-        {
-            this.history.addLC(new MLJ.core.LayerChange(layers, type));
-            layers.meshH.pushState(this.timeStamp, layers.ptrMesh());
-        }
-    };
+
     /**
      * Selects the layer with the name <code>layerName</code>
      * @param {String} layerName The name of the layer
@@ -547,7 +566,7 @@ MLJ.core.Scene.timeStamp = 0;
         }
 
 
-        MLJ.core.Scene.history.addLC(new MLJ.core.LayerChange(layer.id, MLJ.core.ChangeType.Modification));
+        MLJ.core.Scene.pushState(layer, MLJ.core.ChangeType.Visibility);
         MLJ.core.Scene.history.closeSC();
         MLJ.core.Scene.render();
     };
@@ -760,7 +779,6 @@ MLJ.core.Scene.timeStamp = 0;
             //remove layer from list
             _group.remove(layer.getThreeMesh());
             _deletedLayers.push(layer);
-            layer.deleted = true;
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
 
             if (_layers.size() > 0) {

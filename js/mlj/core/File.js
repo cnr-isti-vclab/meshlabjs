@@ -99,7 +99,6 @@ MLJ.core.File = {
             onLoaded(true, mf);
             MLJ.core.Scene.pushState(mf, MLJ.core.ChangeType.Creation)
             MLJ.core.Scene.history.closeSC();
-            console.error(mf.meshH.size());
         };
     }
 

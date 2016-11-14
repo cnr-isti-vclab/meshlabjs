@@ -118,8 +118,7 @@ private:
     int _currentTime;
 public:
 
-    inline void pushState(int currentTime, uintptr_t _m) {
-        MyMesh &m = *((MyMesh*) _m);
+    inline void pushState(int currentTime, MyMesh &m) {
         _currentTime = currentTime;
         _stateVec.push_back(MeshState(currentTime));
         _stateVec.back().SaveAll(m);
@@ -128,9 +127,7 @@ public:
     // The rationale is that if we want to restore a global state at a given time
     // we want to get the most recent state before that
 
-    inline void restoreState(int timeStamp, uintptr_t _m) {
-
-        MyMesh &m = *((MyMesh*) _m);
+    inline void restoreState(int timeStamp,  MyMesh &m) {
         assert(!_stateVec.empty());
         int i = _stateVec.size()-1;
         while (i>=0 && _stateVec[i].TimeStamp() >= timeStamp) --i;
@@ -161,8 +158,17 @@ public:
 class CppMesh {
 public:
     MyMesh m;
+    MeshHistory history;
     int loadmask;
 
+    void pushState(int timeStamp)
+    {
+        history.pushState(timeStamp,m);
+    }
+    void restoreState(int timeStamp)
+    {
+        history.restoreState(timeStamp,m);
+    }
     CppMesh() {
         loadmask = 0;
         m.tr.SetIdentity();
@@ -445,6 +451,8 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
             .function("getFaceIndex", &CppMesh::getFaceIndex)
             .function("getVertexColors", &CppMesh::getVertexColors)
             .function("getFaceColors", &CppMesh::getFaceColors)
+            .function("restoreState", &CppMesh::restoreState)
+            .function("pushState", &CppMesh::pushState)
             ;
 
 }

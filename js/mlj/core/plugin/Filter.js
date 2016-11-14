@@ -187,7 +187,6 @@ MLJ.core.plugin.Filter = function (parameters) {
             }
             MLJ.core.Scene.pushState(layersToPush,type);
             MLJ.core.Scene.updateLayer(layer);
-            MLJ.core.Scene.timeStamp++;
             MLJ.core.Scene.history.closeSC();
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
