@@ -216,6 +216,7 @@ MLJ.core.Scene = {};
         _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
         _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
+        // REMEMBER: HeadLight is now attached to scene, not anymore to the camera!
         _this.lights.Headlight.setPosition(_camera.position);
 
         _lightPressed = false;
@@ -233,6 +234,12 @@ MLJ.core.Scene = {};
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        /*
+            This functions defines the helper decorator that help visualizing the direction of
+            the HeadLight (the directional light of the scene) while the user uses the TransformControls
+            to move it around the center of the scene.
+            It also defines the TransformControls used to handle the light moving.
+        */
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
