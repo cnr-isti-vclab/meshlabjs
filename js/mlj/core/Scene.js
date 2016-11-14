@@ -30,27 +30,28 @@
 MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of SceneChange
     var listSceneChange = new Array();
     var tmpSC; //temporary object to store the actual scene changes
-
+    
     this.getList = function ()
     {
         return listSceneChange;
     }
-    this.openSC = function () //creates a new SceneChange object to store LayerChanges
+    this.openSC = function (current) //creates a new SceneChange object to store LayerChanges
     {
         tmpSC = new MLJ.core.SceneChange();
+        tmpSC.setCurrentLayer(current);
     }
     //"closes" the registration of LayerChanges and stores it in the array.
     //This is called at every Filter applied, Layer selected or deleted
     this.closeSC = function ()
     {
         listSceneChange.push(tmpSC);
-        tmpSC = undefined;
+        this.openSC(MLJ.core.Scene.getSelectedLayer());
         MLJ.core.Scene.timeStamp++;
     }
     this.addLC = function (newLC) //adds a new LayerChange to the actual SceneChange
     {
-        if (tmpSC == undefined) //if it's the first LayerChange, creates a new SceneChange
-            this.openSC();
+        if(tmpSC==undefined)
+            this.openSC(undefined);
         tmpSC.add(newLC);
     }
     this.toString = function () //debug function to see the result
@@ -217,7 +218,6 @@ MLJ.core.Scene.timeStamp = 0;
         MLJ.widget.Log.append("\n\nPushed state " + type);
 
         if (layers instanceof Array)
-        {
             while (layers.length > 0)
             {
                 var layer = layers.pop();
@@ -225,7 +225,6 @@ MLJ.core.Scene.timeStamp = 0;
                 layer.cppMesh.pushState(_this.timeStamp);
                 //pushstate con stesso timestamp di tutti i layer toccati
             }
-        }
         else
         {
             this.history.addLC(new MLJ.core.LayerChange(layers, type));
@@ -240,8 +239,7 @@ MLJ.core.Scene.timeStamp = 0;
             if (listLayerChange.getList().length == 1)
                 time--;
             var currentLayer = listLayerChange.getCurrentLayer();
-            debugger;
-            _this.selectLayerByName(currentLayer.name);
+            
             while (listLayerChange.getList().length > 0)
             {
                 var layerChange = listLayerChange.getList().pop();
@@ -267,7 +265,7 @@ MLJ.core.Scene.timeStamp = 0;
                     _this.updateLayer(layer);
                 }
             }
-
+            _this.selectLayerByName(currentLayer.name);
             _this.timeStamp--;
             $(document).trigger("Undo", _this.timeStamp);
         }
