@@ -142,7 +142,9 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
 
     /* weights and offset of the gaussian distrib (for a 35x35 kernel) */
-    let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
+    // let gWeights = [0.10855, 0.13135, 0.10406, 0.07216, 0.04380,
+    //   0.02328, 0.01083, 0.00441, 0.00157];
+    let gWeights = [0.13135, 0.10855, 0.10406, 0.07216, 0.04380,
       0.02328, 0.01083, 0.00441, 0.00157];
     let gOffsets = [0.66293, 2.47904, 4.46232, 6.44568, 8.42917,
       10.41281, 12.39664, 14.38070, 16.36501];
@@ -153,7 +155,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     let renderTargetParams = {
       type:      THREE.FloatType,
       minFilter: shadowPassOptions.minFilter,
-      magFilter: THREE.Linear
+      magFilter: THREE.LinearMipMapNearestFilter
     };
 
     let depthMapTarget    = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
@@ -278,12 +280,13 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       /* Prepare light position, based on current light position */
       let lightD = scene.lights.Headlight.getWorldPosition();
       /* LightCamera setup */
-      lightCamera.position.set(0, 0, 0);
-      lightCamera.lookAt(lightD.negate());
-      lightCamera.updateMatrixWorld();
+      lightCamera.position.set(0, 0, 0);    // camera centered in (0,0,0) since it's directional only
+      lightCamera.lookAt(lightD.negate());  // setting actual camera direction
+      lightCamera.updateMatrixWorld();      // update camera's matrices
       lightCamera.updateProjectionMatrix();
 
       /******************debug flag**************/
+      // the debug flag sets the renderer to display the depthmap instead of rendering the actual shadowed scene
       let dBuf, bBuf;
       if (shadowPassOptions.debug) { 
         bBuf = outBuffer; 
@@ -294,9 +297,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       }
       /*************************************/
 
+
+      /* Hide decorators  (that should not be shadowed) */
       let decos = scene.getDecoratorsGroup();
       let layers = scene.getLayersGroup();
-      /* Hide decorators  (that should not be shadowed) */
       let hidden = [];
       let materialChanged = [];
 
@@ -307,7 +311,8 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
         }
       });
       /********************PREPARE DEPTH MAP*******************/
-      /*Selectively attach depth map material */
+      /* Selectively attach depth map material, to every mesh layer in the scene  */
+      /* Filled layers and point layers will have different shader materials      */
       let layersIterator = scene.getLayers().iterator();
       while (layersIterator.hasNext()) {
 
@@ -333,7 +338,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       renderer.render(sceneGraph, lightCamera, dBuf, true);
 
       /******************PREPARE POSITION MAP********************/
-      /*Selectively attach position map material */
+      /* Selectively attach position map material */
       for (let mesh in materialChanged) {
         materialChanged[mesh].material = preparePositionMaterial(materialChanged[mesh].__mlj_smplugin_pointSize);
       }
