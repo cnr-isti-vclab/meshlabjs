@@ -16,7 +16,7 @@ varying vec2 vUv;
 
 vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
      vec3 colOut = vec3( 0, 0, 0 );
-     //if (texture2D(tex0, centreUV) == vec4(0.0)) discard;
+     //vec3 colOut = texture2D(tex0, centreUV).rgb;
      for( int i = 0; i < stepCount; i++ ) {
          vec2 texCoordOffset = gOffsets[i] * pixelOffset;
          vec3 col = texture2D(tex0, centreUV + texCoordOffset).xyz +
@@ -27,8 +27,5 @@ vec3 GaussianBlur(sampler2D tex0, vec2 centreUV, vec2 pixelOffset) {
  }
 
 void main() {
-  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(1.0 / texSize, 0.0)), 0.5);
-  // pixelOffset = 1.0 / 512.0 ossia 1 = max u,v coord diviso 512 = grandezza texture..
-
-
+  gl_FragColor = vec4(GaussianBlur(depthMap, vUv, vec2(1.0 / texSize, 0.0)), 1.0);
 }
