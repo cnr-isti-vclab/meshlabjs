@@ -169,13 +169,9 @@ MLJ.core.plugin.Filter = function (parameters) {
                     type=MLJ.core.ChangeType.Deletion;
                     break;
                 case 1:
+                case 2:
                     _this._applyTo(layer);
                     type=MLJ.core.ChangeType.Modification; 
-                    break;
-                case 2:
-                    //to be fixed - not all the filters with arity 2 have no parameters
-                    _this._applyTo(layer);
-                    type=MLJ.core.ChangeType.Modification;
                     break;
                 default:
                     alert("Error filter");
