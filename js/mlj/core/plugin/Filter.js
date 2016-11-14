@@ -174,7 +174,7 @@ MLJ.core.plugin.Filter = function (parameters) {
                     break;
                 case 2:
                     //to be fixed - not all the filters with arity 2 have no parameters
-                    _this._applyTo();
+                    _this._applyTo(layer);
                     type=MLJ.core.ChangeType.Modification;
                     break;
                 default:
