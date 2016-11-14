@@ -12,6 +12,13 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
   /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
   /* variables for ui interaction */
 
+
+
+/*
+    SOON Multiple render targets might be added to THREE.js:
+    RECALL: integrate normal map rendering and use normal map in shadowfrag to endarken faces facing away from light
+            render position map and normal map (at least) in a single render pass
+*/
   let shadowPassUniforms = {
     blurMap:              { type: "t",  value: null },
     depthMap:             { type: "t",  value: null },
