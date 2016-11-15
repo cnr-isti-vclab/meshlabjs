@@ -91,7 +91,7 @@
  */
 
 MLJ.core.plugin.Filter = function (parameters) {
-    
+
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
     var _this = this;
 
@@ -110,12 +110,12 @@ MLJ.core.plugin.Filter = function (parameters) {
         var found = false;
         var tooltipMatch, nameMatch;
         for (var i = 0, m = select.length; i < m; i++) {
-            
-            tooltipMatch = parameters.tooltip 
-                ? parameters.tooltip.indexOf(select[i]) != -1 : false;
-            
+
+            tooltipMatch = parameters.tooltip
+                    ? parameters.tooltip.indexOf(select[i]) != -1 : false;
+
             nameMatch = parameters.name.indexOf(select[i]) != -1;
-            
+
             if (nameMatch || tooltipMatch) {
                 entry.show();
                 found = true;
@@ -143,62 +143,58 @@ MLJ.core.plugin.Filter = function (parameters) {
         //aggiungere alla mesh history del layer l'apply in corso
         //aggiungere time stamp(intero incrementale - contatore)
         apply.onClick(function () {
-            var t0 = performance.now();
-            // Creation filters and filters that works on all layers ignore the current layer
-            // so we do not pass it
-            var type=undefined;
-            
-            //reset tutti i layer
-            var layersIt=MLJ.core.Scene.getLayers().iterator();
-            while(layersIt.hasNext())
+            //reset tutti i layer ptrmesh e meshHistory al timestamp corrente
+            var layersIt = MLJ.core.Scene.getLayers().iterator();
+            while (layersIt.hasNext())
             {
-                var layerTmp=layersIt.next();
+                var layerTmp = layersIt.next();
                 layerTmp.resetCalledPtrMesh();
+                layerTmp.cppMesh.Clear(MLJ.core.Scene.timeStamp);
             }
-            var layer = MLJ.core.Scene.getSelectedLayer();
-            switch(_this.parameters.arity)
+            //clear redo list
+            for (var i = MLJ.core.Scene.timeStamp+1; i < MLJ.core.Scene.layerSetHistory.length; i++)
+                MLJ.core.Scene.layerSetHistory.pop();
+            var t0 = performance.now();
+            switch (_this.parameters.arity)
             {
                 case 0:
                 case 3:
                     _this._applyTo();
                     break;
                 case -1:
-                    _this._applyTo(layer);
-                    type=MLJ.core.ChangeType.Deletion;
-                    break;
                 case 1:
                 case 2:
-                    _this._applyTo(layer);
-                    type = MLJ.core.ChangeType.Modification;
+                    _this._applyTo(MLJ.core.Scene.getSelectedLayer());
                     break;
                 default:
                     alert("Error filter");
             }
             var t1 = performance.now();
-            if (type != MLJ.core.ChangeType.Creation) {
-                var layersToPush = new Array();
-                layersIt = MLJ.core.Scene.getLayers().iterator();
-                while (layersIt.hasNext())
-                {
-                    var layerTmp = layersIt.next();
-                    if (layerTmp.getCalledPtrMesh())
-                        layersToPush.push(layerTmp);
-                }
-                MLJ.core.Scene.pushState(layersToPush, type);
+            MLJ.core.Scene.updateLayer(MLJ.core.Scene.getSelectedLayer());
+            //se la scena era vuota prima, viene memorizzato anche lo stato vuoto su cui poter fare la undo
+            if(MLJ.core.Scene.layerSetHistory.length==0)
+                MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++]=new MLJ.util.AssociativeArray();
+            //push dello stato attuale
+            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=MLJ.core.Scene.getLayers().duplicate();
+            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1].iterator();
+            //copio tutti i layer in layerSetHistory e per i layer modificati ne pusho lo stato
+            while (layersIt.hasNext())
+            {
+                var layerTmp = layersIt.next();
+                if (layerTmp.getCalledPtrMesh())
+                    layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
             }
-            MLJ.core.Scene.updateLayer(layer);
-            MLJ.core.Scene.history.closeSC();
-        
+            MLJ.core.Scene.timeStamp++;
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 
         if (parameters.arity !== 0) {
             MLJ.gui.disabledOnSceneEmpty(apply);
         }
-        
+
 
         _this._init(filterBuilder);
-        
+
     };
 };
 

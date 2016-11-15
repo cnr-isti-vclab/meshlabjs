@@ -271,4 +271,11 @@ MLJ.util.AssociativeArray = function () {
             keys.reverse();        
         }                
     };
+    this.duplicate = function ()
+    {
+        var duplicated=new MLJ.util.AssociativeArray();
+        for(var i=0;i<keys.length;i++)
+            duplicated.set(keys[i],values[keys[i]]);
+        return duplicated;
+    };
 };

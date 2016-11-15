@@ -169,6 +169,10 @@ public:
     {
         history.restoreState(timeStamp,m);
     }
+    void Clear(int timeStamp)
+    {
+        history.Clear(timeStamp);
+    }
     CppMesh() {
         loadmask = 0;
         m.tr.SetIdentity();
@@ -453,6 +457,7 @@ EMSCRIPTEN_BINDINGS(CppMesh) {
             .function("getFaceColors", &CppMesh::getFaceColors)
             .function("restoreState", &CppMesh::restoreState)
             .function("pushState", &CppMesh::pushState)
+    .function("Clear", &CppMesh::Clear)
             ;
 
 }
