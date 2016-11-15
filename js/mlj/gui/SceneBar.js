@@ -174,7 +174,9 @@
             MLJ.gui.disabledOnSceneEmpty(resetTrackball);
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
             MLJ.gui.disabledOnSceneEmpty(unDo);
+            MLJ.gui.disabledOnSceneEmpty(reDo);
             MLJ.gui.disableOnNoHistory(unDo);
+            MLJ.gui.disableOnNoHistory(reDo);
             _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
 			_toolBar.add(doc,git);
 
@@ -201,7 +203,7 @@
             });
             reDo.onClick(function ()
             {
-
+                MLJ.core.Scene.ReDo();
             });
             save.onClick(function () {
                 var layer = MLJ.core.Scene.getSelectedLayer();

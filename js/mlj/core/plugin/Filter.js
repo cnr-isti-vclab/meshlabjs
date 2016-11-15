@@ -161,8 +161,6 @@ MLJ.core.plugin.Filter = function (parameters) {
                 case 0:
                 case 3:
                     _this._applyTo();
-                    type=MLJ.core.ChangeType.Creation;
-                    layer = MLJ.core.Scene.getSelectedLayer();
                     break;
                 case -1:
                     _this._applyTo(layer);
@@ -171,23 +169,26 @@ MLJ.core.plugin.Filter = function (parameters) {
                 case 1:
                 case 2:
                     _this._applyTo(layer);
-                    type=MLJ.core.ChangeType.Modification; 
+                    type = MLJ.core.ChangeType.Modification;
                     break;
                 default:
                     alert("Error filter");
             }
             var t1 = performance.now();
-            var layersToPush=new Array();
-            layersIt=MLJ.core.Scene.getLayers().iterator();
-             while(layersIt.hasNext())
-            {
-                var layerTmp=layersIt.next();
-                if(layerTmp.getCalledPtrMesh())
-                    layersToPush.push(layerTmp);
+            if (type != MLJ.core.ChangeType.Creation) {
+                var layersToPush = new Array();
+                layersIt = MLJ.core.Scene.getLayers().iterator();
+                while (layersIt.hasNext())
+                {
+                    var layerTmp = layersIt.next();
+                    if (layerTmp.getCalledPtrMesh())
+                        layersToPush.push(layerTmp);
+                }
+                MLJ.core.Scene.pushState(layersToPush, type);
             }
-            MLJ.core.Scene.pushState(layersToPush,type);
             MLJ.core.Scene.updateLayer(layer);
             MLJ.core.Scene.history.closeSC();
+        
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 

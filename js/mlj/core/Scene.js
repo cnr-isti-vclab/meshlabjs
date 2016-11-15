@@ -30,7 +30,7 @@
 MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of SceneChange
     var listSceneChange = new Array();
     var tmpSC; //temporary object to store the actual scene changes
-    
+
     this.getList = function ()
     {
         return listSceneChange;
@@ -47,10 +47,11 @@ MLJ.core.SceneHistory = function () { //class SceneHistory, stores a list of Sce
         listSceneChange.push(tmpSC);
         this.openSC(MLJ.core.Scene.getSelectedLayer());
         MLJ.core.Scene.timeStamp++;
+        MLJ.core.Scene.redoList=new Array();
     }
     this.addLC = function (newLC) //adds a new LayerChange to the actual SceneChange
     {
-        if(tmpSC==undefined)
+        if (tmpSC == undefined)
             this.openSC(undefined);
         tmpSC.add(newLC);
     }
@@ -136,6 +137,7 @@ MLJ.core.ChangeType = //ChangeType is structured like an enumerator which map ev
 MLJ.core.Scene = {};
 MLJ.core.Scene.history = new MLJ.core.SceneHistory();
 MLJ.core.Scene.timeStamp = 0;
+MLJ.core.Scene.redoList = new Array(); //list of action to possibly redo
 (function () {
     /**
      * Associative Array that contains all the meshes in the scene 
@@ -231,18 +233,22 @@ MLJ.core.Scene.timeStamp = 0;
             layers.cppMesh.pushState(_this.timeStamp);
         }
     };
+
     this.Undo = function ()
     {
         if (_this.timeStamp > 0) {
             var listLayerChange = _this.history.getList().pop();
+            var toRedo=new Array();
             var time = _this.timeStamp;
             if (listLayerChange.getList().length == 1)
                 time--;
             var currentLayer = listLayerChange.getCurrentLayer();
-            
             while (listLayerChange.getList().length > 0)
             {
+                
                 var layerChange = listLayerChange.getList().pop();
+                debugger;
+                toRedo.push(layerChange);
                 var layer = layerChange.getLayer();
                 var type = layerChange.getType();
                 MLJ.widget.Log.append("");
@@ -265,11 +271,54 @@ MLJ.core.Scene.timeStamp = 0;
                     _this.updateLayer(layer);
                 }
             }
+            this.redoList.push(toRedo);
             _this.selectLayerByName(currentLayer.name);
             _this.timeStamp--;
             $(document).trigger("Undo", _this.timeStamp);
         }
 
+    }
+    this.ReDo = function ()
+    {
+        //nois -> scale 1 -> scale 2
+        //test noisy -> quadric semplification (undo 4 o 5 and redo)
+        debugger;
+        if (_this.redoList.length > 0)
+        {
+            var listLayerChange = _this.redoList.pop();
+            var time=_this.timeStamp;
+            while (listLayerChange.length > 0)
+            {
+                time++;
+                var layerChange = listLayerChange.pop();
+                var layer = layerChange.getLayer();
+                var type = layerChange.getType();
+  
+                MLJ.widget.Log.append("");
+                
+                if (type == MLJ.core.ChangeType.Creation)
+                {
+                    MLJ.widget.Log.append("Redoing creation on layer " + layer.name);
+                    _this.addLayer(layer);
+                    layer.properties.set("Filled", true);
+                } else if (type == MLJ.core.ChangeType.Deletion)
+                {
+                    MLJ.widget.Log.append("Redoing deletion on layer " + layer.name);
+                    _this.removeLayerByName(layer.name);
+                    this.pushState(layer,type);
+
+                } else
+                {
+                    MLJ.widget.Log.append("Redo modification on layer " + layer.name);
+                    layer.cppMesh.restoreState(time);
+                    _this.updateLayer(layer);
+                    this.pushState(layer,type);
+                }
+                
+            }
+            MLJ.core.Scene.history.closeSC();
+            $(document).trigger("Undo", _this.timeStamp);
+        }
     }
     function get3DSize() {
         var _3D = $('#_3D');
@@ -606,7 +655,7 @@ MLJ.core.Scene.timeStamp = 0;
          *  );
          */
         $(document).trigger("SceneLayerAdded", [layer, _layers.size()]);
-        this.pushState(layer, MLJ.core.ChangeType.Creation);
+        _this.pushState(layer,MLJ.core.ChangeType.Creation);
         //render the scene
         _this.render();
     };
