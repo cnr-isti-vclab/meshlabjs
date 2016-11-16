@@ -140,10 +140,8 @@ MLJ.core.plugin.Filter = function (parameters) {
         });
 
         entry.addHeaderButton(apply);
-        //aggiungere alla mesh history del layer l'apply in corso
-        //aggiungere time stamp(intero incrementale - contatore)
         apply.onClick(function () {
-            //reset tutti i layer ptrmesh e meshHistory al timestamp corrente
+            //reset of all the boolean CalledPtrMesh and clear of the mesh history after the current time
             var layersIt = MLJ.core.Scene.getLayers().iterator();
             while (layersIt.hasNext())
             {
@@ -151,7 +149,7 @@ MLJ.core.plugin.Filter = function (parameters) {
                 layerTmp.resetCalledPtrMesh();
                 layerTmp.cppMesh.Clear(MLJ.core.Scene.timeStamp);
             }
-            //clear redo list
+            //clear of the history of changes after current time
             for (var i = MLJ.core.Scene.timeStamp+1; i < MLJ.core.Scene.layerSetHistory.length; i++)
                 MLJ.core.Scene.layerSetHistory.pop();
             var t0 = performance.now();
@@ -171,13 +169,13 @@ MLJ.core.plugin.Filter = function (parameters) {
             }
             var t1 = performance.now();
             MLJ.core.Scene.updateLayer(MLJ.core.Scene.getSelectedLayer());
-            //se la scena era vuota prima, viene memorizzato anche lo stato vuoto su cui poter fare la undo
+            //if the scene was empty, we add an empty layerset to the history of the scene to make it possible to go back at the initial state
             if(MLJ.core.Scene.layerSetHistory.length==0)
                 MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++]=new MLJ.util.AssociativeArray();
-            //push dello stato attuale
-            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=MLJ.core.Scene.getLayers().duplicate();
-            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1].iterator();
-            //copio tutti i layer in layerSetHistory e per i layer modificati ne pusho lo stato
+            //push of the actual state at the current time, duplicating the current layer list
+            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=new Array(MLJ.core.Scene.getLayers().duplicate(),MLJ.core.Scene.getSelectedLayer());
+            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1][0].iterator(); //we iterate on all the actual layers
+            //and push the state of all the modified layers
             while (layersIt.hasNext())
             {
                 var layerTmp = layersIt.next();
@@ -185,6 +183,9 @@ MLJ.core.plugin.Filter = function (parameters) {
                     layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
             }
             MLJ.core.Scene.timeStamp++;
+            //trigger button events
+            $(document).trigger("Redo", MLJ.core.Scene.timeStamp);
+            $(document).trigger("Undo", MLJ.core.Scene.timeStamp-1);
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 

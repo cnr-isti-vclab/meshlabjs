@@ -175,11 +175,8 @@
             MLJ.gui.disabledOnSceneEmpty(uploadToWebsite);
             MLJ.gui.disabledOnSceneEmpty(unDo);
             MLJ.gui.disabledOnSceneEmpty(reDo);
-            MLJ.gui.disableOnNoHistory(unDo);
-            MLJ.gui.disableOnNoHistory(reDo);
-            _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
-			_toolBar.add(doc,git);
-
+            MLJ.gui.disableOnNoHistoryToUndo(unDo);
+            MLJ.gui.disableOnNoHistoryToRedo(reDo);
             _toolBar.add(open, save, uploadToWebsite, reload, cameraPosition, resetTrackball, snapshot, deleteLayer);
             _toolBar.add(doc, git);
             _toolBar.add(unDo, reDo);

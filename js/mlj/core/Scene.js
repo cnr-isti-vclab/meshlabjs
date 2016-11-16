@@ -41,7 +41,17 @@
  */
 
 MLJ.core.Scene = {};
+/**
+* Global variable for the timestamp of changes in the scene
+* @type Int
+* @memberOf MLJ.core.Scene     
+*/
 MLJ.core.Scene.timeStamp = 0;
+/**
+* Array containing sets of layers for every change in the scene at a current time (index)
+* @type Array
+* @memberOf MLJ.core.Scene     
+*/
 MLJ.core.Scene.layerSetHistory = new Array();
 (function () {
     /**
@@ -50,8 +60,6 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * @memberOf MLJ.core.Scene     
      */
     var _layers = new MLJ.util.AssociativeArray();
-    //list of deleted layers
-    var _deletedLayers = new Array();
     /**
      * Associative array that contains all the scene level "background" 
      * decorators (axes, background grid etc..)
@@ -120,79 +128,99 @@ MLJ.core.Scene.layerSetHistory = new Array();
     /// @type {Object}
     var _renderer;
     var _this = this;
-    //funzione che aggiorna la lista di layer rapportandola ad un LayerSet al timestamp corrente
+    /**
+     * Function that updates the list of layers in the scene
+     * using a set of layers stored in a history    
+     * to undo/redo changes in the scene
+     */
     this.updateLayerList=function()
     {
-        var newLayers = _this.layerSetHistory[_this.timeStamp];
-        //set di layer corrente
+        //we get a set of the layer list at a selected timestamp with its state
+        var layerSet = _this.layerSetHistory[_this.timeStamp];
+        var newLayers ;
+        if(layerSet.length!=undefined) //if the state collected is not the empty scene
+            newLayers= layerSet[0]; //we unpack the set of layers, which is stored in the index 0 of the cell in the layerSetHistory array
+        else newLayers=new MLJ.util.AssociativeArray();
+        //current set of layers
         var actualLayers = _this.getLayers();
         var iterator;
         var layersToCheck;
-        //se si hanno meno layer nel nuovo set che in quello corrente...
+        //if the actual set of layers is bigger than the new one....
         if (newLayers.size() < actualLayers.size())
         {
-            //vuol dire che dei layer sono stati cancellati
-
-            iterator = actualLayers.iterator();//scorriamo il più lungo dei due
-            layersToCheck = newLayers;//e lo confrontiamo col più corto
+            //it means that a layer or more were deleted
+            iterator = actualLayers.iterator();//we go throught the elements of the larger one
+            layersToCheck = newLayers;//and we confront them with the elements of the shorter one
             var layersToRemove = new Array();
             while (iterator.hasNext())
             {
                 var layer = iterator.next();
-                if (layersToCheck.getByKey(layer.name) == undefined) //se si trova un layer che non esiste in una delle due liste
-                    layersToRemove.push(layer); //lo si segna come da rimuovere
+                if (layersToCheck.getByKey(layer.name) == undefined) //if we find a missing layer in the list
+                    layersToRemove.push(layer); //we put it in a list of layers to remove
             }
-            while (layersToRemove.length > 0) //e poi si rimuovono dalla gui tutti quanti
+            while (layersToRemove.length > 0) //and then remove them all
                 _this.removeLayerByName(layersToRemove.pop().name);
         } else
         {
-            //se invece si hanno più layer nel nuovo set che nel attuale
-            //vuol dire che sono stati aggiunti dei layer
-            iterator = newLayers.iterator();  //iteriamo sul più lungo
-            layersToCheck = actualLayers; //e lo confrontiamo col più corto
+            //if the new set of layer has more layers than the actual one instead...
+            //it means there's been added a layer or more
+            iterator = newLayers.iterator();  //we iterate on the larger one
+            layersToCheck = actualLayers; //confront with the shorter
             while (iterator.hasNext())
             {
                 var layer = iterator.next();
-                if (layersToCheck.getByKey(layer.name) == undefined) //se si trova un layer che non è nella lista attuale
-                    _this.addLayer(layer); //lo si aggiunge
-                layer.properties.set("Filled", true);
+                if (layersToCheck.getByKey(layer.name) == undefined) ///if we find a missing layer in the shorter
+                    _this.addLayer(layer); //we simply add it to the list of actual layer in the scene
+                layer.properties.set("Filled", true); //we force the property "Filled" to be on to make the mesh visible
             }
         }
+        var currentLayer = layerSet[1];
+        if (currentLayer != undefined) //if we unpacked a state which had a selected layer beforce, we set it as selected in the restored state
+            _this.selectLayerByName(currentLayer.name);
     }
     this.Undo = function ()
     {
 
-        if (_this.timeStamp > 0) {
-            //guardia di sicurezza. Non possiamo trovare uno set di layer ad un timestamp negativo
+        if (_this.timeStamp > 0) { //if there is some state in the history
+            //we check if the goodness of the index. There cannot be a state on a negative timestamp
             if (_this.timeStamp - 2 < 0)
-                _this.timeStamp = 0; //allo timestamp 0 si ha la schermata vuota
+                _this.timeStamp = 0; //at timestamp 0 the scene is empty
             else
                 _this.timeStamp -= 2;
+            //we update the list of layers with the new one at the new timestamp
             _this.updateLayerList();
-            //si procede poi al undo vero e proprio
-            _this.timeStamp++; //aumentiamo il timestamp per tornare allo stato attuale
-            var layersIt = this.getLayers().iterator(); //iteriamo su tutti i layer
-            //faccio il restore nella meshHistory di tutti al tempo corrente
+            
+            //and then proceed to undo the modification
+            _this.timeStamp++; //we increment the timestamp
+            var layersIt = this.getLayers().iterator(); //iterate on all the layers
+            //and restore the meshHistory of them all
             while (layersIt.hasNext())
             {
                 var layerTmp = layersIt.next();
                 layerTmp.cppMesh.restoreState(_this.timeStamp);
                 _this.updateLayer(layerTmp);
             }
-            $(document).trigger("Undo", _this.timeStamp);
+            
         }
+        //trigger of event for the buttons to be displayed on and off properly
+        //  @event MLJ.core.Gui#Undo
+        $(document).trigger("Undo", _this.timeStamp-1);
+        //  @event MLJ.core.Gui#Redo
+        $(document).trigger("Redo", _this.timeStamp-1);
     }
-    
+
     this.ReDo = function ()
     {
+        //if we have some state that can be redone
         if (_this.timeStamp < _this.layerSetHistory.length)
         {
-            //layers estratti dalla historySet
+            //we update the list of layers in the scene with the ones on the state to be redone
             _this.updateLayerList();
+            //increment the timestamp
             _this.timeStamp++;
-            //si procede poi al redo vero e proprio
-            var layersIt = this.getLayers().iterator(); //iteriamo su tutti i layer
-            //faccio il restore nella meshHistory di tutti al tempo corrente
+            //and we proceed to redo the changes
+            var layersIt = this.getLayers().iterator(); //we iterate on all the layers
+            //and restore the meshHistory of them all
             while (layersIt.hasNext())
             {
                 var layerTmp = layersIt.next();
@@ -200,6 +228,12 @@ MLJ.core.Scene.layerSetHistory = new Array();
                 _this.updateLayer(layerTmp);
             }
         }
+        //trigger of event for the buttons to be displayed on and off properly
+        //  @event MLJ.core.Gui#Redo
+        $(document).trigger("Redo", _this.timeStamp);
+        //  @event MLJ.core.Gui#Undo
+        $(document).trigger("Undo", _this.timeStamp);
+        
     }
     function get3DSize() {
         var _3D = $('#_3D');
@@ -690,10 +724,6 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * @memberOf MLJ.core.Scene     
      * @author Stefano Gabriele     
      */
-    this.getDeletedLayers = function ()
-    {
-        return _deletedLayers;
-    }
     this.removeLayerByName = function (name) {
         var layer = this.getLayerByName(name);
 
@@ -701,7 +731,6 @@ MLJ.core.Scene.layerSetHistory = new Array();
             //remove layer from list
             _group.remove(layer.getThreeMesh());
             _layers.remove(layer.name);
-            _deletedLayers.push(layer);
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
 
             if (_layers.size() > 0) {

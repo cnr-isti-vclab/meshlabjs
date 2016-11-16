@@ -75,20 +75,40 @@ MLJ.gui.getWidget = function (name) {
 };
 
 /**
+ * Utility function to make a component automatically disabled if the history can't be redone
+ * @param {MLJ.gui.component.Component} component The component to disable/enable
+ * @memberOf MLJ.gui
+ * @author Marco Loddo
+ */
+MLJ.gui.disableOnNoHistoryToRedo = function (component) {
+    $(document).on("Redo", function (ev, timeStamp) {
+        if(timeStamp<MLJ.core.Scene.layerSetHistory.length)
+            component.disabled(false);
+        else
+            component.disabled(true);
+    });
+};
+/**
+ * Utility function to make a component automatically disabled if the history can't be undone
+ * @param {MLJ.gui.component.Component} component The component to disable/enable
+ * @memberOf MLJ.gui
+ * @author Marco Loddo
+ */
+MLJ.gui.disableOnNoHistoryToUndo = function (component) {
+    $(document).on("Undo", function (ev, timeStamp) {
+        if(timeStamp==0)
+            component.disabled(true);
+        else
+            component.disabled(false);
+    });
+};
+/**
  * Utility function to make a component automatically disabled if the scene doesn't contains layers
  * or automatically enabled if the scene contains at least one layer
  * @param {MLJ.gui.component.Component} component The component to disable/enable
  * @memberOf MLJ.gui
  * @author Stefano Gabriele
  */
-MLJ.gui.disableOnNoHistory = function (component) {
-    $(document).on("Undo", function (ev, timeStamp) {
-        if(timeStamp<=0)
-            component.disabled(true);
-        else
-            component.disabled(false);
-    });
-}
 MLJ.gui.disabledOnSceneEmpty = function (component) {
 
     $(window).ready(function () {
