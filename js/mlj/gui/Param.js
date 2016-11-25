@@ -47,7 +47,7 @@ MLJ.gui.Param.prototype = {
      * The function called to change the value of a param widget
      * @abstract    
      */
-    _changeValue: function (val) {
+    setValue: function (val) {
 
     }
 };
@@ -69,10 +69,6 @@ MLJ.gui.Param.Number = function (flags) {
         this.spinner.setValue(value);
     };
 
-    this._changeValue = function (value) {
-        this.setValue(value);
-    };
-
     MLJ.gui.Param.call(this);
 };
 
@@ -86,7 +82,11 @@ MLJ.gui.Param.Float = function (flags) {
     this.getValue = function () {
         return parseFloat(this.spinner.getValue());
     };
-
+    this.setValue=function(value)
+    {
+        return this.spinner.setValue(parseFloat(value));
+    };
+    //set value
     this.onChange = function (foo) {
         _this._onChange(function () {
             foo(_this.getValue());
@@ -105,7 +105,10 @@ MLJ.gui.Param.Integer = function (flags) {
     this.getValue = function () {
         return parseInt(this.spinner.getValue());
     };
-
+    this.setValue=function(value)
+    {
+        return this.spinner.setValue(parseInt(value));
+    };
     this.onChange = function (foo) {
         _this._onChange(function () {
             foo(_this.getValue());
@@ -129,18 +132,14 @@ MLJ.gui.Param.Bool = function (flags) {
         return this.checkbox.isChecked();
     };
 
-    this.setChecked = function (value) {
-        this.checkbox.setChecked(value);
+    this.setValue = function (value) {
+        this.checkbox.setValue(value);
     };
     
     this.onChange = function(foo) {
       this.checkbox.onChange(function() {
           foo(_this.getValue());
       });
-    };
-
-    this._changeValue = function (value) {
-        this.setChecked(value);
     };
 
     MLJ.gui.Param.call(this);
@@ -172,7 +171,7 @@ MLJ.gui.Param.Choice = function (flags) {
         this.choice.selectByValue(value);
     };
 
-    this._changeValue = function (value) {
+    this.setValue = function (value) {
         this.selectByValue(value);
     };
 
@@ -214,7 +213,7 @@ MLJ.gui.Param.Color = function (flags) {
         this.color.setColor(color);
     };
 
-    this._changeValue = function (value) {
+    this.setValue = function (value) {
         if(value instanceof THREE.Color) {
             this.color.setColor(value.getHexString());
         } else {
@@ -258,10 +257,6 @@ MLJ.gui.Param.RangedFloat = function (flags) {
         this.rangedfloat.onChange(function(event,ui) {
             foo(parseFloat(ui.value));
         });
-    };
-
-    this._changeValue = function (value) {
-        this.rangedfloat.setValue(value);
     };
 
 };
