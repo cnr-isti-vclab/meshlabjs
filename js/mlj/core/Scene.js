@@ -39,17 +39,27 @@
  * @author Stefano Gabriele
  *
  */
+
 MLJ.core.Scene = {};
-
+/**
+* Global variable for the timestamp of changes in the scene
+* @type Int
+* @memberOf MLJ.core.Scene     
+*/
+MLJ.core.Scene.timeStamp = 0;
+/**
+* Array containing sets of layers for every change in the scene at a current time (index)
+* @type Array
+* @memberOf MLJ.core.Scene     
+*/
+MLJ.core.Scene.layerSetHistory = new Array();
 (function () {
-
     /**
      * Associative Array that contains all the meshes in the scene
      * @type MLJ.util.AssociativeArray
      * @memberOf MLJ.core.Scene
      */
     var _layers = new MLJ.util.AssociativeArray();
-
     /**
      * Associative array that contains all the scene level "background"
      * decorators (axes, background grid etc..)
@@ -90,17 +100,16 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      */
     var _group;
+
     var _layersGroup;
     var _decoratorsGroup;
-
-    var _camera;
-
+    
     var _lightControls;
     var _customLight;
     var _lightPressed;
 
+    var _camera;
     var _cameraPosition;
-
     var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
 
     /**
@@ -120,12 +129,118 @@ MLJ.core.Scene = {};
     /// @type {Object}
     var _renderer;
     var _this = this;
+    /**
+     * Function that updates the list of layers in the scene
+     * using a set of layers stored in a history    
+     * to undo/redo changes in the scene
+     */
+    this.updateLayerList=function()
+    {
+        //we get a set of the layer list at a selected timestamp with its state
+        var layerSet = _this.layerSetHistory[_this.timeStamp];
+        var newLayers ;
+        if(layerSet.length!=undefined) //if the state collected is not the empty scene
+            newLayers= layerSet[0]; //we unpack the set of layers, which is stored in the index 0 of the cell in the layerSetHistory array
+        else newLayers=new MLJ.util.AssociativeArray();
+        //current set of layers
+        var actualLayers = _this.getLayers();
+        var iterator;
+        var layersToCheck;
+        //if the actual set of layers is bigger than the new one....
+        if (newLayers.size() < actualLayers.size())
+        {
+            //it means that a layer or more were deleted
+            iterator = actualLayers.iterator();//we go throught the elements of the larger one
+            layersToCheck = newLayers;//and we confront them with the elements of the shorter one
+            var layersToRemove = new Array();
+            while (iterator.hasNext())
+            {
+                var layer = iterator.next();
+                if (layersToCheck.getByKey(layer.name) == undefined) //if we find a missing layer in the list
+                    layersToRemove.push(layer); //we put it in a list of layers to remove
+            }
+            while (layersToRemove.length > 0) //and then remove them all
+                _this.removeLayerByName(layersToRemove.pop().name);
+        } else
+        {
+            //if the new set of layer has more layers than the actual one instead...
+            //it means there's been added a layer or more
+            iterator = newLayers.iterator();  //we iterate on the larger one
+            layersToCheck = actualLayers; //confront with the shorter
+            while (iterator.hasNext())
+            {
+                var layer = iterator.next();
+                if (layersToCheck.getByKey(layer.name) == undefined) ///if we find a missing layer in the shorter
+                    _this.addLayer(layer); //we simply add it to the list of actual layer in the scene
+                layer.properties.set("Filled", true); //we force the property "Filled" to be on to make the mesh visible
+            }
+        }
+        var currentLayer = layerSet[1];
+        if (currentLayer != undefined) //if we unpacked a state which had a selected layer beforce, we set it as selected in the restored state
+            _this.selectLayerByName(currentLayer.name);
+    }
+    this.Undo = function ()
+    {
 
+        if (_this.timeStamp > 0) { //if there is some state in the history
+            //we check if the goodness of the index. There cannot be a state on a negative timestamp
+            if (_this.timeStamp - 2 < 0)
+                _this.timeStamp = 0; //at timestamp 0 the scene is empty
+            else
+                _this.timeStamp -= 2;
+            //we update the list of layers with the new one at the new timestamp
+            _this.updateLayerList();
+            
+            //and then proceed to undo the modification
+            _this.timeStamp++; //we increment the timestamp
+            var layersIt = this.getLayers().iterator(); //iterate on all the layers
+            //and restore the meshHistory of them all
+            while (layersIt.hasNext())
+            {
+                var layerTmp = layersIt.next();
+                layerTmp.cppMesh.restoreState(_this.timeStamp);
+                _this.updateLayer(layerTmp);
+            }
+            
+        }
+        //trigger of event for the buttons to be displayed on and off properly
+        //  @event MLJ.core.Gui#Undo
+        $(document).trigger("Undo", _this.timeStamp-1);
+        //  @event MLJ.core.Gui#Redo
+        $(document).trigger("Redo", _this.timeStamp-1);
+    }
+
+    this.ReDo = function ()
+    {
+        //if we have some state that can be redone
+        if (_this.timeStamp < _this.layerSetHistory.length)
+        {
+            //we update the list of layers in the scene with the ones on the state to be redone
+            _this.updateLayerList();
+            //increment the timestamp
+            _this.timeStamp++;
+            //and we proceed to redo the changes
+            var layersIt = this.getLayers().iterator(); //we iterate on all the layers
+            //and restore the meshHistory of them all
+            while (layersIt.hasNext())
+            {
+                var layerTmp = layersIt.next();
+                layerTmp.cppMesh.restoreState(_this.timeStamp);
+                _this.updateLayer(layerTmp);
+            }
+        }
+        //trigger of event for the buttons to be displayed on and off properly
+        //  @event MLJ.core.Gui#Redo
+        $(document).trigger("Redo", _this.timeStamp);
+        //  @event MLJ.core.Gui#Undo
+        $(document).trigger("Undo", _this.timeStamp);
+        
+    }
     function get3DSize() {
         var _3D = $('#_3D');
 
         return {
-            width: _3D.innerWidth (),
+            width: _3D.innerWidth(),
             height: _3D.innerHeight()
         };
     }
@@ -165,7 +280,7 @@ MLJ.core.Scene = {};
         stats.domElement.style.top = '0px';
         stats.domElement.style.zIndex = 100;
 
-        $("#_3D").append( stats.domElement );
+        $("#_3D").append(stats.domElement);
 
         return stats;
     }
@@ -189,19 +304,18 @@ MLJ.core.Scene = {};
         _group.add(_decoratorsGroup);
 
         _scene2D = new THREE.Scene();
-        _camera2D = new THREE.OrthographicCamera(0 , _3DSize.width / _3DSize.height, 1, 0, -1, 1);
+        _camera2D = new THREE.OrthographicCamera(0, _3DSize.width / _3DSize.height, 1, 0, -1, 1);
         _camera2D.position.z = -1;
 
         _renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            preserveDrawingBuffer:true});
+            preserveDrawingBuffer: true});
+
         //_renderer.shadowMapEnabled = true;
         //_renderer.context.getSupportedExtensions();
         _renderer.context.getExtension("EXT_frag_depth");
-
-
-        _renderer.setPixelRatio( window.devicePixelRatio );
+        _renderer.setPixelRatio(window.devicePixelRatio);
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
         _scene.add(_camera);
@@ -221,6 +335,7 @@ MLJ.core.Scene = {};
 
         _lightPressed = false;
         _customLight = false;
+
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -352,23 +467,23 @@ MLJ.core.Scene = {};
             }
 
             // Shift + C -> copies camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 67) {
                 event.preventDefault();
                 _this.copyCameraPositionJSON();
                 console.log("Viewpoint copied");
             }
 
             // Shift + V -> sets camera position
-            if((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
+            if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
                 event.preventDefault();
-
-                if(_cameraPositionCopy)
+                if (_cameraPositionCopy)
                 {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
                     console.log("Viewpoint pasted");
                 }
             }
         });
+
 
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
@@ -384,7 +499,6 @@ MLJ.core.Scene = {};
         _controls.addEventListener('change', function () {       
             if(!_customLight) 
                 _this.lights.Headlight.setPosition(_camera.position);
-        
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -433,24 +547,24 @@ MLJ.core.Scene = {};
                     $(document).trigger("SceneLayerReloaded", [layer]);
                 });
     }
-    
 
-    /* Compute global bounding box and translate and scale every object in proportion
-     * of global bounding box. First translate every object into original position,
-     * then scale all by reciprocal value of scale factor (note that scale factor
-     * and original position are stored into mesh object). Then it computes
+    /* Compute global bounding box and translate and scale every object in proportion 
+     * of global bounding box. First translate every object into original position, 
+     * then scale all by reciprocal value of scale factor (note that scale factor 
+     * and original position are stored into mesh object). Then it computes 
+
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
     function _computeGlobalBBbox()
     {
         console.time("Time to update bbox: ");
-        _group.scale.set(1,1,1);
-        _group.position.set(0,0,0);
+        _group.scale.set(1, 1, 1);
+        _group.position.set(0, 0, 0);
         _group.updateMatrixWorld();
 
         if (_layers.size() === 0) // map to the canonical cube
-            BBGlobal = new THREE.Box3(new THREE.Vector3(-1,-1,-1), new THREE.Vector3(1,1,1));
+            BBGlobal = new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
         else {
             // Defining the starting bounding box as the one from the first layer
             BBGlobal = new THREE.Box3().setFromObject(_layers.getFirst().getThreeMesh());
@@ -458,19 +572,19 @@ MLJ.core.Scene = {};
             var iter = _layers.iterator();
 
             // Iterating over all the layers
-            while(iter.hasNext()) {
-               // Getting the bounding box of the current layer
-               var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
+            while (iter.hasNext()) {
+                // Getting the bounding box of the current layer
+                var bbox = new THREE.Box3().setFromObject(iter.next().getThreeMesh());
 
-               // Applying the union of the previous bounding box to the current one
-               BBGlobal.union(bbox);
+                // Applying the union of the previous bounding box to the current one
+                BBGlobal.union(bbox);
             }
         }
         var scaleFac = 15.0 / (BBGlobal.min.distanceTo(BBGlobal.max));
         var offset = BBGlobal.center().negate();
         offset.multiplyScalar(scaleFac);
-        _group.scale.set(scaleFac,scaleFac,scaleFac);
-        _group.position.set(offset.x,offset.y,offset.z);
+        _group.scale.set(scaleFac, scaleFac, scaleFac);
+        _group.position.set(offset.x, offset.y, offset.z);
         _group.updateMatrixWorld();
         //console.log("Position:" + offset.x +" "+ offset.y +" "+ offset.z );
         //console.log("ScaleFactor:" + _group.scale.x  +" "+ _group.scale.x  +" "+ _group.scale.x);
@@ -487,15 +601,16 @@ MLJ.core.Scene = {};
         Headlight: null
     };
 
-    this.getCamera = function() {
+
+    this.getCamera = function () {
         return _camera;
     };
 
-    this.getStats = function() {
+    this.getStats = function () {
         return _stats;
     }
 
-    this.getThreeJsGroup = function() {
+    this.getThreeJsGroup = function () {
         return _group;
     }
 
@@ -513,6 +628,7 @@ MLJ.core.Scene = {};
      * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      */
+
     this.selectLayerByName = function (layerName) {
         _selectedLayer = _layers.getByKey(layerName);
         /**
@@ -549,12 +665,9 @@ MLJ.core.Scene = {};
             iter.next().visible = visible;
         }
 
-        // if histogram overlay is defined show/hide labels
-        if (layer.__mlj_histogram) {
-            if (visible) layer.__mlj_histogram.show();
-            else layer.__mlj_histogram.hide();
+        while (iter.hasNext()) {
+            iter.next().visible = visible;
         }
-
         MLJ.core.Scene.render();
     };
 
@@ -596,7 +709,6 @@ MLJ.core.Scene = {};
          *  );
          */
         $(document).trigger("SceneLayerAdded", [layer, _layers.size()]);
-
         //render the scene
         _this.render();
     };
@@ -622,17 +734,20 @@ MLJ.core.Scene = {};
     };
 
     function disposeObject(obj) {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) obj.material.dispose();
-        if (obj.texture) obj.texture.dispose();
+        if (obj.geometry)
+            obj.geometry.dispose();
+        if (obj.material)
+            obj.material.dispose();
+        if (obj.texture)
+            obj.texture.dispose();
     }
 
-    this.removeOverlayLayer = function(layer, name, overlay2D) {
+
+    this.removeOverlayLayer = function (layer, name, overlay2D) {
         var mesh = layer.overlays.getByKey(name);
 
         if (mesh !== undefined) {
             mesh = layer.overlays.remove(name);
-
             if (overlay2D) {
                 _scene2D.remove(mesh);
             } else {
@@ -661,18 +776,14 @@ MLJ.core.Scene = {};
      */
     this.updateLayer = function (layer) {
         if (layer instanceof MLJ.core.Layer) {
-
             if (_layers.getByKey(layer.name) === undefined) {
                 console.warn("Trying to update a layer not in the scene.");
                 return;
             }
-
             layer.updateThreeMesh();
             _computeGlobalBBbox();
-
             //render the scene
             this.render();
-
             /**
              *  Triggered when a layer is updated
              *  @event MLJ.core.Scene#SceneLayerUpdated
@@ -691,6 +802,8 @@ MLJ.core.Scene = {};
         } else {
             console.error("The parameter must be an instance of MLJ.core.Layer");
         }
+
+
     };
 
     /**
@@ -724,10 +837,13 @@ MLJ.core.Scene = {};
             var collision = false;
             var layerIterator = MLJ.core.Scene.getLayers().iterator();
             while (layerIterator.hasNext() && !collision) {
-                if (meshName === layerIterator.next().name) collision = true;
+                if (meshName === layerIterator.next().name)
+                    collision = true;
             }
-            if (collision) meshName = prefix + "[" + ++maxNumTag + "]" + ext;
-            else break;
+            if (collision)
+                meshName = prefix + "[" + ++maxNumTag + "]" + ext;
+            else
+                break;
         }
         return meshName;
     }
@@ -740,9 +856,10 @@ MLJ.core.Scene = {};
      * @returns {MLJ.core.Layer} The new layer
      * @author Stefano Gabriele
      */
+    var lastID = 0;
     this.createLayer = function (name) {
         var layerName = disambiguateName(name);
-        var layer = new MLJ.core.Layer(layerName, new Module.CppMesh());
+        var layer = new MLJ.core.Layer(lastID++, layerName, new Module.CppMesh());
         return layer;
     };
 
@@ -768,10 +885,7 @@ MLJ.core.Scene = {};
             } else {
                 _this._selectedLayer = undefined;
             }
-
             _computeGlobalBBbox();
-
-
             MLJ.core.Scene.render();
         }
     };
@@ -785,8 +899,8 @@ MLJ.core.Scene = {};
      * @param {THREE.Object3D} decorator - The decorator object
      * @memberOf MLJ.core.Scene
      */
-    this.addSceneDecorator = function(name, decorator) {
-        if(!(decorator instanceof THREE.Object3D)) {
+    this.addSceneDecorator = function (name, decorator) {
+        if (!(decorator instanceof THREE.Object3D)) {
             console.warn("MLJ.core.Scene.addSceneDecorator(): decorator parameter not an instance of THREE.Object3D");
             return;
         }
@@ -802,7 +916,7 @@ MLJ.core.Scene = {};
      * @param {String} name - The name of the decorator to remove
      * @memberOf MLJ.core.Scene
      */
-    this.removeSceneDecorator = function(name) {
+    this.removeSceneDecorator = function (name) {
         var decorator = _decorators.getByKey(name)
 
         if (decorator !== undefined) {
@@ -826,6 +940,7 @@ MLJ.core.Scene = {};
      * @author Stefano Gabriele
      */
     this.getSelectedLayer = function () {
+
         return _selectedLayer;
     };
 
@@ -843,10 +958,16 @@ MLJ.core.Scene = {};
       return _decorators;
     }
 
-    this.get3DSize = function() { return get3DSize(); };
-    this.getRenderer = function() { return _renderer; };
+    this.get3DSize = function() { 
+        return get3DSize(); 
+    };
+    this.getRenderer = function() { 
+        return _renderer; 
+    };
 
-    this.getScene = function () {return _scene;};
+    this.getScene = function () {
+        return _scene;
+    };
 
     /**
      * Adds a post process pass to the rendering chain. As of now the interface
@@ -863,11 +984,11 @@ MLJ.core.Scene = {};
      * {@link MLJ.core.Scene}.
      *
      * @param {String} name - The name of the pass
-     * @param {Object} pass - The callable (function) object that will apply the pass
+     * @param {Object} pass - The callable (function) object that will applypu the pass
      * @memberOf MLJ.core.Scene
      */
     this.addPostProcessPass = function (name, pass) {
-        if(!jQuery.isFunction(pass)) {
+        if (!jQuery.isFunction(pass)) {
             console.warn("MLJ.core.Scene.addPostProcessPass(): pass parameter must be callable");
             return;
         }
@@ -899,15 +1020,15 @@ MLJ.core.Scene = {};
 
     var plane = new THREE.PlaneBufferGeometry(2, 2);
     var quadMesh = new THREE.Mesh(
-        plane
-    );
+            plane
+            );
 
     var quadScene = new THREE.Scene();
     quadScene.add(quadMesh);
 
     quadMesh.material = new THREE.ShaderMaterial({
         vertexShader:
-            "varying vec2 vUv; \
+                "varying vec2 vUv; \
              void main(void) \
              { \
                  vUv = uv; \
@@ -919,7 +1040,7 @@ MLJ.core.Scene = {};
              void main(void) { gl_FragColor = texture2D(offscreen, vUv.xy); }"
     });
     quadMesh.material.uniforms = {
-            offscreen: { type: "t", value: null }
+        offscreen: {type: "t", value: null}
     };
 
 
@@ -966,17 +1087,15 @@ MLJ.core.Scene = {};
     };
 
 
-
-    this.takeSnapshot = function() {
+    this.takeSnapshot = function () {
         var canvas = _renderer.context.canvas;
         // draw to canvas...
-        canvas.toBlob(function(blob) {
+        canvas.toBlob(function (blob) {
             saveAs(blob, "snapshot.png");
         });
     };
 
-
-    this.takeCameraPositionJSON = function() {
+    this.takeCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPosition = {
             camera: _controls.object.position.clone(),
@@ -990,7 +1109,7 @@ MLJ.core.Scene = {};
     };
 
     // This function behaves like the function above, only it saves the values in a different variable and doesn't stringify the object
-    this.copyCameraPositionJSON = function() {
+    this.copyCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
         _cameraPositionCopy = {
             camera: _controls.object.position.clone(),
@@ -1003,7 +1122,7 @@ MLJ.core.Scene = {};
 
     this.setCameraPosition = function (cameraPos, target, up, fov) {
         // Changing the parameters
-        _controls.target.copy(target );
+        _controls.target.copy(target);
         _controls.object.position.copy(cameraPos);
         _controls.object.up.copy(up);
         _controls.object.fov = fov;
@@ -1012,17 +1131,17 @@ MLJ.core.Scene = {};
         _controls.object.updateProjectionMatrix();
 
         // Changing the view direction
-        _controls.object.lookAt( _controls.target );
+        _controls.object.lookAt(_controls.target);
 
         // Event taken from the TrackballControls class
-        var changeEvent = { type: 'change' }
+        var changeEvent = {type: 'change'}
 
-        // Notifying the controls object of the event and updating
-        _controls.dispatchEvent( changeEvent);
+        // Notifying the controls object of the event and updating 
+        _controls.dispatchEvent(changeEvent);
         _controls.update();
     };
 
-    this.setCameraPositionJSON = function(cameraJSON) {
+    this.setCameraPositionJSON = function (cameraJSON) {
         var success = true;
 
         try {
@@ -1030,30 +1149,29 @@ MLJ.core.Scene = {};
 
             // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
             if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
-                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
-                parsedJSON.target.x === undefined|| parsedJSON.target.y === undefined || parsedJSON.target.z === undefined ||  parsedJSON.fov === undefined)
+                    parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                    parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined)
             {
                 success = false;
             }
             // If the "up" vector is the zero vector, it's not valid
-            else if(!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
+            else if (!parsedJSON.up.x && !parsedJSON.up.y && !parsedJSON.up.z)
                 success = false;
             // If the fov is below 1, throw an error
-            else if(parsedJSON.fov < 1)
+            else if (parsedJSON.fov < 1)
                 success = false;
             // Otherwise, we're good to go
             else
             {
                 // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
                 // just set the z value to be a little more than 0
-                if(!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
+                if (!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)
                     parsedJSON.camera.z = 0.1;
 
                 // Now that we have all parameters, we can change the viewpoint
                 _this.setCameraPosition(parsedJSON.camera, parsedJSON.target, parsedJSON.up, parsedJSON.fov);
             }
-        }
-        catch(e) {
+        } catch (e) {
             success = false;
         }
 
@@ -1061,7 +1179,7 @@ MLJ.core.Scene = {};
     }
 
 
-    this.resetTrackball = function() {
+    this.resetTrackball = function () {
         _controls.reset();
     };
 

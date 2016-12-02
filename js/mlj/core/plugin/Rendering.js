@@ -195,7 +195,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         for (var pname in params) {
             paramWidget = _this.getParam(pname);
             if (paramWidget !== undefined) {
-                paramWidget._changeValue(params[pname]);
+                paramWidget.setValue(params[pname]);
             }
         }
     }
