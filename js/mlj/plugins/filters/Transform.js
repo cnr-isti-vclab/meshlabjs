@@ -158,6 +158,30 @@
 	Module.Translate(meshFile.ptrMesh(),xTrasWdg.getValue(),yTrasWdg.getValue(),zTrasWdg.getValue(),
                          toOriginTransFlag.getValue());		
     };
+/******************************************************************************/
+    var FlipRelaxOptimizeFilter = new plugin.Filter({
+            name:"Flip-Relax Optimization",
+            tooltip:"Optimize the shape of the triangle of a mesh by changing position of vertices and topology by means of a sequence of edge-flip and laplacian smooth operations." ,
+            arity:1
+        });
+
+    var interNumWidget,planarityDegThrWidget;
+    FlipRelaxOptimizeFilter._init = function (builder) {
+
+       interNumWidget = builder.Integer({
+            min: 1, step: 1, defval: 1,
+            label: "Iteration",
+            tooltip: "Number of iteration of the smoothing algorithm"
+        });
+       planarityDegThrWidget = builder.Float({
+           step: 1, defval: "10.0",
+            label: "Planarity Thr (deg)",
+            tooltip: "Edge flips are performed only if they involve two triangles where the angle between the normals is lower than this threshold"
+        });
+    };
+    FlipRelaxOptimizeFilter._applyTo = function (meshFile) {
+	Module.FlipRelaxOptimize(meshFile.ptrMesh(),interNumWidget.getValue(),planarityDegThrWidget.getValue());		
+    };
 
 /******************************************************************************/
 
@@ -166,6 +190,7 @@
     plugin.Manager.install(RndDisplacementFilter);
     plugin.Manager.install(ScaleFilter);
     plugin.Manager.install(TranslateFilter);
+    plugin.Manager.install(FlipRelaxOptimizeFilter);
 
 
 })(MLJ.core.plugin, MLJ.core.Scene);
