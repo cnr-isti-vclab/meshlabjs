@@ -2,17 +2,18 @@
 (function (plugin, core, scene) {
   /*
 
-Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, solo che è nascosto dal fatto che l'ombra è molto più nera…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
+Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, 
+solo che è nascosto dal fatto che l'ombra utilizzi anche le normali per decidere se un punto è
+in ombra o meno…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
+  ===> Multi target rendering support risolverebbe questo problema, permettendo di creare position map + normal map in un'unica passata
 
 INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSERE RIFATTORIZZATI UN PO' IN MODO CHE SIANO DEFINITI COME 
 DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
 
   */
-  // TODO: refactoring---commenting---memorycleanupondispose---icon
+  // TODO: refactoring---commenting----
   /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
   /* variables for ui interaction */
-
-
 
 /*
     SOON Multiple render targets might be added to THREE.js:
@@ -28,7 +29,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     intensity:            { type: "f",  value: 1 },
     lightDir:             { type: 'v3', value: null },
     blurFlag:             { type: 'i',  value: 1 },
-    bleedBias:            { type: "f",  value: 0.0 }
+    bleedBias:            { type: "f",  value: 0.21 }
   };
 
   let shadowPassOptions = {
@@ -45,7 +46,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     tooltip: "Activate Shadow Mapping render pass",
     toggle: true,
     on: false,
-    icon: "img/icons/ambientocclusion.png",
+    icon: "img/icons/sm_ugly.png",
     loadShader: ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl",
       "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
       "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl",
@@ -75,7 +76,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       label: "Bleed containment bias",
       tooltip: "Manages the bias applied in VSM to contain bleed effects",
       min: 0.0, max: 0.5, step: 0.0001,
-      defval: 0.0,
+      defval: 0.21,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.bleedBias.value = value;
@@ -166,11 +167,11 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     };
 
     let depthMapTarget    = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
+    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
     let horBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
     let verBlurTarget     = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
-    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
 
-    shadowPassUniforms.depthMap.value = depthMapTarget;
+    shadowPassUniforms.depthMap.value    = depthMapTarget;
     shadowPassUniforms.positionMap.value = positionMapTarget;
 
     /*
@@ -224,7 +225,8 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       fragmentShader: shadowPassOptions.verBlurFrag
     });
     /*
-    quad che disegno per il passo di defferred rendering
+      This is the quad to draw on to output the rendering pass
+      (RECALL: Each rendering post process pass is defined as a function eg. pass: Texture -> Texture -> Texture)
     */
     let quad = new THREE.PlaneBufferGeometry(2, 2, 1, 1);
     let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
@@ -265,24 +267,27 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     */
     this.pass = (inBuffer, outBuffer) => {
       let sceneGraph = scene.getScene();
-      let sceneCam = scene.getCamera();
-      let renderer = scene.getRenderer();
+      let sceneCam   = scene.getCamera();
+      let renderer   = scene.getRenderer();
 
       /* Get bbox and scale it */
       let bbox = scene.getBBox();
+
       let scale = 15.0 / (bbox.min.distanceTo(bbox.max));
       let bbmax = new THREE.Vector3().copy(bbox.max);
       let bbmin = new THREE.Vector3().copy(bbox.min);
+      
       bbmax.multiplyScalar(scale);
       bbmin.multiplyScalar(scale);
+      
       bbox.set(bbmin, bbmax);
 
       /* Prepare light view camera frustum (orthographic for directional lights) */
       let diag = bbox.min.distanceTo(bbox.max);
       let lightCamera = new THREE.OrthographicCamera(
-        -(diag / 2), diag / 2,
-        diag / 2, -(diag / 2),
-        -(diag / 2), diag / 2
+        -(diag / 2),  (diag / 2),
+         (diag / 2), -(diag / 2),
+        -(diag / 2),  (diag / 2)
       );
       /* Prepare light position, based on current light position */
       let lightD = scene.lights.Headlight.getWorldPosition();

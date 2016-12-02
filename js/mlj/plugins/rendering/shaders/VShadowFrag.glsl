@@ -11,8 +11,6 @@ uniform vec3 cameraPosition;
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
 uniform sampler2D depthMap;
-//uniform sampler2D vBlurMap;
-//uniform sampler2D hBlurMap;
 uniform sampler2D blurMap;
 
 uniform float intensity;
@@ -60,8 +58,6 @@ float shadowCalc(vec4 position){
   //sample texture
   vec2 moments;
   if (blurFlag == 1)
- //   moments = mix(texture2D(hBlurMap, lightSpacePosition.xy).xy,
- //                         texture2D(vBlurMap, lightSpacePosition.xy).xy, 0.5);
     moments = texture2D(blurMap, lightSpacePosition.xy).xy;
   else
     moments = texture2D(depthMap, lightSpacePosition.xy).xy;
