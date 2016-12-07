@@ -212,6 +212,24 @@
         Module.CutTopologicalFilter(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var HoleFilling = new plugin.Filter({
+        name: "Hole Filling",
+        tooltip: "Fill all the holes of the mesh within a given size (expressed as boundary edge number)  ",
+        arity: 1
+    });
+    var maxHoleEdgeNumWidget
+    HoleFilling._init = function (builder) {
+                maxHoleEdgeNumWidget = builder.Integer({
+            min: 0, step: 10, defval: 30,
+            label: "Max Hole Size",
+            tooltip: "The maximum number of edges of the boundary of the holes to be filled."
+        });
+    };
+
+    HoleFilling._applyTo = function (basemeshFile) {
+        Module.HoleFilling(basemeshFile.ptrMesh(),maxHoleEdgeNumWidget.getValue());
+    };
+/******************************************************************************/  
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
@@ -223,5 +241,6 @@
     plugin.Manager.install(ReorientFaceCoherently);
     plugin.Manager.install(CutAlongCrease);
     plugin.Manager.install(CutTopological);
+    plugin.Manager.install(HoleFilling);
     
 })(MLJ.core.plugin, MLJ.core.Scene);

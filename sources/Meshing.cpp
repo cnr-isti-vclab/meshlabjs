@@ -6,6 +6,7 @@
 #include<vcg/complex/algorithms/voronoi_processing.h>
 #include<vcg/complex/algorithms/crease_cut.h>
 #include<vcg/complex/algorithms/curve_on_manifold.h>
+#include<vcg/complex/algorithms/hole.h>
 
 
 using namespace vcg;
@@ -206,6 +207,14 @@ void ReorientFaceCoherently(uintptr_t _baseM)
   tri::Clean<MyMesh>::OrientCoherentlyMesh(m,_isOriented,_isOrientable);  
 }
 
+void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::Hole<MyMesh>::EarCuttingFill< tri::TrivialEar<MyMesh> > (m, maxHoleEdgeNum);  
+}
+
+
 void MeshingPluginTEST()
 {
   printf("Meshing Plugin Test\n");
@@ -228,7 +237,11 @@ void MeshingPluginTEST()
       int index = rand()%platonic.FN();
       face::SwapEdge(platonic.face[index],rand()%3);
     }    
+    
     ReorientFaceCoherently(uintptr_t(&platonic));
+    
+    tri::SphericalCap(platonic, 120, 1);    
+    HoleFilling(uintptr_t(&platonic),30);
     
       
   for(int i=1;i<5;++i)
@@ -251,7 +264,7 @@ void MeshingPluginTEST()
     printf("Voronoi Clustering %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t4-t3)/CLOCKS_PER_SEC);
   }
 }
- 
+  
 
 #ifdef __EMSCRIPTEN__
 //Binding code
@@ -266,6 +279,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("VoronoiClustering",          &VoronoiClustering);
     emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
+    emscripten::function("HoleFilling",                &HoleFilling);
 }
 #endif
 
