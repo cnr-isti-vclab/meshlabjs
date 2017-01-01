@@ -230,6 +230,24 @@
         Module.HoleFilling(basemeshFile.ptrMesh(),maxHoleEdgeNumWidget.getValue());
     };
 /******************************************************************************/  
+    var CoarseIsotropicRemeshing = new plugin.Filter({
+        name: "Coarse Isotropic Remeshing",
+        tooltip: "TODO ",
+        arity: 1
+    });
+    var iterNumWidget;
+    CoarseIsotropicRemeshing._init = function (builder) {
+                iterNumWidget = builder.Integer({
+            min: 1, step: 1, defval: 0,
+            label: "Iterations",
+            tooltip: "TODO"
+        });
+    };
+
+    CoarseIsotropicRemeshing._applyTo = function (basemeshFile) {
+        Module.CoarseIsotropicRemeshing(basemeshFile.ptrMesh(),iterNumWidget.getValue());
+    };
+/******************************************************************************/  
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
@@ -242,5 +260,6 @@
     plugin.Manager.install(CutAlongCrease);
     plugin.Manager.install(CutTopological);
     plugin.Manager.install(HoleFilling);
+    plugin.Manager.install(CoarseIsotropicRemeshing);
     
 })(MLJ.core.plugin, MLJ.core.Scene);

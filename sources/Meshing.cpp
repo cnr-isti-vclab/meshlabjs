@@ -215,6 +215,319 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
 }
 
 
+
+/*
+ * TODO: lavorare on crease preserving...non riesco a far fungere
+ *       facefauxfromcrease
+ * su laurana anche già solo il refine, con 0.5 fa casini con overlappign
+ * ma laurana parte già di suo molto storta
+ *
+ * collapse sicuramente fa casini (visto anche su ferty)
+ * COLLAPSE SCAZZA
+*/
+
+#define LENGTH 0.5f
+#include<vcg/complex/algorithms/update/color.h>
+#include<vcg/complex/algorithms/update/quality.h>
+#include<vcg/complex/algorithms/update/curvature.h>
+#include<vcg/complex/algorithms/update/normal.h>
+#include<vcg/complex/algorithms/refine.h>
+#include<vcg/complex/algorithms/stat.h>
+#include<vcg/complex/algorithms/smooth.h>
+#include<vcg/complex/algorithms/local_optimization/tri_edge_collapse.h>
+#include<vcg/space/index/spatial_hashing.h>
+
+
+typedef  face::Pos<MyFace> MyPos;
+typedef  BasicVertexPair<MyVertex> MyPair;
+typedef  EdgeCollapser<MyMesh, BasicVertexPair<MyVertex>> MyCollapser;
+typedef  GridStaticPtr<MyFace, float> MyTable;
+
+
+float lerp (float a, float b, float lambda)
+{
+    math::Clamp(lambda, 0.f, 1.f);
+    return a * lambda + (1-lambda) * b;
+}
+
+
+class EdgeSplitPred
+{
+public:
+    float length, min, max;
+    bool operator()(MyPos &ep) const
+    {
+        float mult = lerp(1.f/10.f, 10.f, (ep.V()->Q()/(max-min)));
+        return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
+
+    }
+};
+
+int ComputeValence(MyPos &p)
+{
+    return p.NumberOfIncidentVertices();
+    //    MyPos start=p;
+    //    int val=0;
+    //    bool isB=false;
+    //    do
+    //    {
+    //        p.FlipF();
+    //        p.FlipE();
+    //        ++val;
+    //        if(p.IsBorder()) isB=true;
+    //    } while (start!=p);
+    //    val = (isB) ? val/2 + 1 : val;
+    //    return val;
+}
+
+int idealValence(MyPos p)
+{
+    if(p.IsBorder()) return 4;
+    return 6;
+}
+
+/* TODO */
+bool testSwap(MyPos p)
+{
+    //if border or feature, do not swap
+    if(p.IsBorder() || !p.IsFaux()) return false;
+    //gathering the vertices interested by this swap
+    int oldDist = 0, newDist = 0;
+    MyPos tp=p;
+    MyVertex *v0=p.V();
+    oldDist += abs(idealValence(tp) - ComputeValence(tp));
+    newDist += abs(idealValence(tp) - ComputeValence(tp) - 1);
+    tp.FlipF();tp.FlipE();tp.FlipV();
+    MyVertex *v1=tp.V();
+    oldDist += abs(idealValence(tp) - ComputeValence(tp));
+    newDist += abs(idealValence(tp) - ComputeValence(tp) + 1);
+    tp.FlipE();tp.FlipV();tp.FlipE();
+    MyVertex *v2=tp.V();
+    oldDist += abs(idealValence(tp) - ComputeValence(tp));
+    newDist += abs(idealValence(tp) - ComputeValence(tp) - 1);
+    tp.FlipF();tp.FlipE();tp.FlipV();
+    MyVertex *v3=tp.V();
+    oldDist += abs(idealValence(tp) - ComputeValence(tp));
+    newDist += abs(idealValence(tp) - ComputeValence(tp) + 1);
+
+    float qOld = std::min(Quality(v0->P(),v2->P(),v3->P()),Quality(v0->P(),v1->P(),v2->P()));
+    float qNew = std::min(Quality(v0->P(),v1->P(),v3->P()),Quality(v2->P(),v3->P(),v1->P()));
+
+    return newDist < oldDist && qNew >= qOld * 1.f;
+}
+
+void MapErrorColor(MyMesh &m)
+{
+    static float minQ=0, maxQ=0;
+    if(minQ==maxQ)
+        tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m,minQ,maxQ);
+    tri::UpdateColor<MyMesh>::PerFaceQualityRamp(m,minQ,maxQ);
+}
+
+void MapCreaseColor(MyMesh &m)
+{
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
+
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m,math::ToRad(45.f));
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            for(auto i=0; i<3; ++i)
+            {
+                MyPos pi(&*fi, i);
+                if(!pi.F()->IsF(pi.E()))
+                {
+                    pi.V()->C() = vcg::Color4b::Red;
+                }
+                else
+                {
+                    pi.V()->C() = vcg::Color4b::White;
+                }
+            }
+        }
+    tri::UpdateColor<MyMesh>::PerFaceFromVertex(m);
+
+}
+
+void ImproveValence(MyMesh &m)
+{
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
+    //feature conservative
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(30.0f));
+
+    int swapCnt=0;
+    for(auto fi=m.face.begin();fi!=m.face.end();++fi)
+        if(!(*fi).IsD())
+        {
+            for(int i=0;i<3;++i)
+            {
+                MyPos pi(&*fi,i);
+
+                /* se lo stesso edge, sull'altra faccia, non è stato visitato */
+                if(!pi.FFlip()->IsV())
+                    if(testSwap(pi) &&
+                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(10.0f)) &&
+                            face::CheckFlipEdge(*fi,i) )
+                    {
+                        face::FlipEdge(*fi,i);
+                        swapCnt++;
+                    }
+            }
+            fi->SetV();
+        }
+    printf("Performed %i swaps\n",swapCnt);
+}
+
+
+void SplitLongEdges(MyMesh &m)
+{
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    Distribution<float> distr;
+    tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
+    float min,max;
+    max = distr.Percentile(0.9f);
+    min = distr.Percentile(0.1f);
+
+    tri::MidPoint<MyMesh> midFunctor(&m);
+    EdgeSplitPred ep;
+    ep.min = min;
+    ep.max = max;
+    ep.length =(4.0f/3.0f)*LENGTH;
+
+    tri::RefineE(m,midFunctor,ep);
+}
+
+bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max)
+{
+    float mult = lerp(1.f/10.f, 10.f, (((p.V(0)->Q()+p.V(1)->Q())/2.f)/(max-min)));
+    float dist = Distance(p.V(0)->P(), p.V(1)->P());
+    return  dist < mult*(4.0f/5.0f)*LENGTH &&
+            !p.V(0)->IsB() && !p.V(1)->IsB() &&
+            eg.LinkConditions(p);
+}
+
+void CollapseShortEdges(MyMesh &m)
+{
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
+
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(30.0f));
+
+    Distribution<float> distr;
+    tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
+
+    float min,max;
+    max = distr.Percentile(0.9f);
+    min = distr.Percentile(0.1f);
+
+    MyCollapser eg;
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            for(auto i=0; i<3; ++i)
+            {
+                MyPos pi(&*fi, i);
+
+                //                if(!pi.IsBorder() && !pi.FFlip()->IsV())
+                if(pi.F()->IsF(pi.E()) && !pi.IsBorder() && /*!pi.V()->IsV() && !pi.VFlip()->IsV() &&*/ !pi.FFlip()->IsV())
+                {
+                    MyPair bp(pi.V(), pi.VFlip());
+                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
+                    if(testCollapse(bp, eg, min, max))
+                    {
+                        eg.Do(m, bp, mp);
+                        pi.V()->SetV();
+                        break;
+                    }
+                }
+            }
+
+            fi->SetV();
+        }
+
+    Allocator<MyMesh>::CompactEveryVector(m);
+}
+
+
+void ImproveByLaplacian(MyMesh &m)
+{
+    tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
+    tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
+    tri::UpdateSelection<MyMesh>::VertexInvert(m);
+    tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
+    printf("Laplacian done \n");
+}
+
+void ProjectToSurface(MyMesh &m, MyTable t, FaceTmark<MyMesh> mark)
+{
+    face::PointDistanceBaseFunctor<float> distFunct;
+    float maxDist = 100.f, minDist = 0.f;
+    int cnt = 0;
+    for(auto vi=m.vert.begin();vi!=m.vert.end();++vi)
+    {
+        Point3f newP;
+        t.GetClosest(distFunct, mark, vi->P(), maxDist, minDist, newP);
+
+        vi->P().X() = newP.X();
+        vi->P().Y() = newP.Y();
+        vi->P().Z() = newP.Z();
+        ++cnt;
+        // printf("closest x,y,z: %f,%f,%f\n", newP.X(), newP.Y(), newP.Z());
+    }
+    printf("projected %d\n", cnt);
+
+}
+
+void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter)
+{
+    MyMesh &original = *((MyMesh*) _baseM), m;
+    original.UpdateBoxAndNormals();
+
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
+
+    MyTable t;
+    t.Set(original.face.begin(), original.face.end());
+    tri::FaceTmark<MyMesh> mark;
+    mark.SetMesh(&original);
+
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
+    tri::UpdateNormal<MyMesh>::PerVertexPerFace(m);
+    tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
+    tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
+    tri::UpdateQuality<MyMesh>::VertexSaturate(m);
+    tri::UpdateQuality<MyMesh>::FaceFromVertex(m);
+    tri::UpdateQuality<MyMesh>::FaceNormalize(m);
+
+
+    MapErrorColor(m);
+    //MapCreaseColor(m);
+    tri::io::ExporterPLY<MyMesh>::Save(m,"grid.ply",tri::io::Mask::IOM_FACECOLOR + tri::io::Mask::IOM_FACEQUALITY);
+    //ImproveByLaplacian(m);
+    for(int i=0; i < iter; ++i)
+    {
+        printf("iter %d \n", i+1);
+        SplitLongEdges(m);
+        CollapseShortEdges(m);
+        ImproveValence(m);
+        ImproveByLaplacian(m);
+        ProjectToSurface(m, t, mark);
+    }
+
+    tri::io::ExporterPLY<MyMesh>::Save(m,"gridFlip.ply",tri::io::Mask::IOM_FACECOLOR + tri::io::Mask::IOM_FACEQUALITY);
+
+    m.UpdateBoxAndNormals();
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(original,m);
+}
+
+
+
+
 void MeshingPluginTEST()
 {
   printf("Meshing Plugin Test\n");
@@ -280,6 +593,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
     emscripten::function("HoleFilling",                &HoleFilling);
+    emscripten::function("CoarseIsotropicRemeshing",   &CoarseIsotropicRemeshing);
 }
 #endif
 
