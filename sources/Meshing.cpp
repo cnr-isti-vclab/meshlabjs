@@ -226,7 +226,6 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
  * COLLAPSE SCAZZA
 */
 
-#define LENGTH 0.5f
 #include<vcg/complex/algorithms/update/color.h>
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
@@ -329,34 +328,38 @@ void MapCreaseColor(MyMesh &m)
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
-
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m,math::ToRad(45.f));
+    tri::UpdateFlags<MyMesh>::VertexClearV(m);
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m,math::ToRad(15.f));
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
+
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.F()->IsF(pi.E()))
+                if(!pi.F()->IsF(i))
                 {
-                    pi.V()->C() = vcg::Color4b::Red;
+                        pi.V()->C() = vcg::Color4b::Red;
+                        pi.V()->SetV();
                 }
                 else
                 {
-                    pi.V()->C() = vcg::Color4b::White;
+                    if(!pi.V()->IsV())
+                        pi.V()->C() = vcg::Color4b::White;
+                        pi.V()->SetV();
                 }
             }
         }
     tri::UpdateColor<MyMesh>::PerFaceFromVertex(m);
-
 }
+
 
 void ImproveValence(MyMesh &m)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
     //feature conservative
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(30.0f));
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(15.0f));
 
     int swapCnt=0;
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
@@ -366,10 +369,9 @@ void ImproveValence(MyMesh &m)
             {
                 MyPos pi(&*fi,i);
 
-                /* se lo stesso edge, sull'altra faccia, non è stato visitato */
                 if(!pi.FFlip()->IsV())
                     if(testSwap(pi) &&
-                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(10.0f)) &&
+                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(15.0f)) &&
                             face::CheckFlipEdge(*fi,i) )
                     {
                         face::FlipEdge(*fi,i);
@@ -381,32 +383,58 @@ void ImproveValence(MyMesh &m)
     printf("Performed %i swaps\n",swapCnt);
 }
 
-
 void SplitLongEdges(MyMesh &m)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
+
     Distribution<float> distr;
     tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
     float min,max;
     max = distr.Percentile(0.9f);
     min = distr.Percentile(0.1f);
 
+    float length = m.bbox.Diag()/1000.f;
+
     tri::MidPoint<MyMesh> midFunctor(&m);
     EdgeSplitPred ep;
     ep.min = min;
     ep.max = max;
-    ep.length =(4.0f/3.0f)*LENGTH;
+    ep.length =(4.0f/3.0f)*length;
 
     tri::RefineE(m,midFunctor,ep);
 }
 
-bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max)
+bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float length)
 {
     float mult = lerp(1.f/10.f, 10.f, (((p.V(0)->Q()+p.V(1)->Q())/2.f)/(max-min)));
     float dist = Distance(p.V(0)->P(), p.V(1)->P());
-    return  dist < mult*(4.0f/5.0f)*LENGTH &&
+    return  dist < mult*(4.0f/5.0f)*length &&
             !p.V(0)->IsB() && !p.V(1)->IsB() &&
             eg.LinkConditions(p);
+}
+void computeCrease(MyMesh &m)
+{
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            for(auto i=0; i<3; ++i)
+            {
+                MyPos pi(&*fi, i);
+                Point3f n0,n1;
+
+                n0 = NormalizedTriangleNormal(*(pi.F()));
+                n1 = NormalizedTriangleNormal(*(pi.FFlip()));
+
+                float angle = math::ToDeg(AngleN(n0, n1));
+                if(angle > 15.f)
+                {
+                    pi.F()->SetCrease(i);
+                    pi.FlipF();
+                    pi.FFlip()->SetCrease(pi.E());
+
+                }
+            }
+        }
 }
 
 void CollapseShortEdges(MyMesh &m)
@@ -415,7 +443,7 @@ void CollapseShortEdges(MyMesh &m)
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
 
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(30.0f));
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(15.0f));
 
     Distribution<float> distr;
     tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
@@ -424,6 +452,8 @@ void CollapseShortEdges(MyMesh &m)
     max = distr.Percentile(0.9f);
     min = distr.Percentile(0.1f);
 
+    float length = m.bbox.Diag()/1000.f;
+
     MyCollapser eg;
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
@@ -431,13 +461,11 @@ void CollapseShortEdges(MyMesh &m)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-
-                //                if(!pi.IsBorder() && !pi.FFlip()->IsV())
-                if(pi.F()->IsF(pi.E()) && !pi.IsBorder() && /*!pi.V()->IsV() && !pi.VFlip()->IsV() &&*/ !pi.FFlip()->IsV())
+                if(!pi.F()->IsAnyF() && !(pi.FFlip()->IsAnyF()) && !pi.IsBorder() && /*!pi.V()->IsV() && !pi.VFlip()->IsV() &&*/ !pi.FFlip()->IsV())
                 {
                     MyPair bp(pi.V(), pi.VFlip());
                     Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
-                    if(testCollapse(bp, eg, min, max))
+                    if(testCollapse(bp, eg, min, max, length))
                     {
                         eg.Do(m, bp, mp);
                         pi.V()->SetV();
@@ -445,7 +473,6 @@ void CollapseShortEdges(MyMesh &m)
                     }
                 }
             }
-
             fi->SetV();
         }
 
@@ -460,6 +487,7 @@ void ImproveByLaplacian(MyMesh &m)
     tri::UpdateSelection<MyMesh>::VertexInvert(m);
     tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
     printf("Laplacian done \n");
+    tri::UpdateSelection<MyMesh>::Clear(m);
 }
 
 void ProjectToSurface(MyMesh &m, MyTable t, FaceTmark<MyMesh> mark)
@@ -471,12 +499,8 @@ void ProjectToSurface(MyMesh &m, MyTable t, FaceTmark<MyMesh> mark)
     {
         Point3f newP;
         t.GetClosest(distFunct, mark, vi->P(), maxDist, minDist, newP);
-
-        vi->P().X() = newP.X();
-        vi->P().Y() = newP.Y();
-        vi->P().Z() = newP.Z();
+        vi->P() = newP;
         ++cnt;
-        // printf("closest x,y,z: %f,%f,%f\n", newP.X(), newP.Y(), newP.Z());
     }
     printf("projected %d\n", cnt);
 
@@ -505,10 +529,10 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter)
     tri::UpdateQuality<MyMesh>::FaceNormalize(m);
 
 
-    MapErrorColor(m);
-    //MapCreaseColor(m);
-    tri::io::ExporterPLY<MyMesh>::Save(m,"grid.ply",tri::io::Mask::IOM_FACECOLOR + tri::io::Mask::IOM_FACEQUALITY);
-    //ImproveByLaplacian(m);
+    computeCrease(m);
+    //MapErrorColor(m);
+    MapCreaseColor(m);
+
     for(int i=0; i < iter; ++i)
     {
         printf("iter %d \n", i+1);
@@ -518,9 +542,6 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter)
         ImproveByLaplacian(m);
         ProjectToSurface(m, t, mark);
     }
-
-    tri::io::ExporterPLY<MyMesh>::Save(m,"gridFlip.ply",tri::io::Mask::IOM_FACECOLOR + tri::io::Mask::IOM_FACEQUALITY);
-
     m.UpdateBoxAndNormals();
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(original,m);
 }
