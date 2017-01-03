@@ -259,7 +259,12 @@
 
 
     CoarseIsotropicRemeshing._applyTo = function (basemeshFile) {
-        Module.CoarseIsotropicRemeshing(basemeshFile.ptrMesh(), iterNumWidget.getValue());
+        Module.CoarseIsotropicRemeshing(
+            basemeshFile.ptrMesh(),
+            iterNumWidget.getValue(), 
+            adaptiveWidget.getValue(), 
+            creaseThrWidget.getValue()
+            );
     };
     /******************************************************************************/
 

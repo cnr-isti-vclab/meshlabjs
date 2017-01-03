@@ -254,11 +254,11 @@ class EdgeSplitPred
 {
 public:
     float length, min, max;
+    bool adapt;
     bool operator()(MyPos &ep) const
     {
-        float mult = lerp(1.f/10.f, 10.f, (ep.V()->Q()/(max-min)));
+        float mult = (adapt)? lerp(1.f/10.f, 10.f, (ep.V()->Q()/(max-min))) : 1.f;
         return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
-
     }
 };
 
@@ -383,7 +383,7 @@ void ImproveValence(MyMesh &m)
     printf("Performed %i swaps\n",swapCnt);
 }
 
-void SplitLongEdges(MyMesh &m)
+void SplitLongEdges(MyMesh &m, bool adapt)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
 
@@ -399,14 +399,15 @@ void SplitLongEdges(MyMesh &m)
     EdgeSplitPred ep;
     ep.min = min;
     ep.max = max;
+    ep.adapt = adapt;
     ep.length =(4.0f/3.0f)*length;
 
     tri::RefineE(m,midFunctor,ep);
 }
 
-bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float length)
+bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float length, bool adapt)
 {
-    float mult = lerp(1.f/10.f, 10.f, (((p.V(0)->Q()+p.V(1)->Q())/2.f)/(max-min)));
+    float mult = (adapt) ? lerp(1.f/10.f, 10.f, (((p.V(0)->Q()+p.V(1)->Q())/2.f)/(max-min))) : 1.f;
     float dist = Distance(p.V(0)->P(), p.V(1)->P());
     return  dist < mult*(4.0f/5.0f)*length &&
             !p.V(0)->IsB() && !p.V(1)->IsB() &&
@@ -437,7 +438,7 @@ void computeCrease(MyMesh &m)
         }
 }
 
-void CollapseShortEdges(MyMesh &m)
+void CollapseShortEdges(MyMesh &m, bool adapt)
 {
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -461,11 +462,15 @@ void CollapseShortEdges(MyMesh &m)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.F()->IsAnyF() && !(pi.FFlip()->IsAnyF()) && !pi.IsBorder() && /*!pi.V()->IsV() && !pi.VFlip()->IsV() &&*/ !pi.FFlip()->IsV())
+                if(!pi.F()->IsAnyF() && !pi.FFlip()->IsAnyF() && // se collassarmi non sposta un crease vertex
+                        //(!pi.F()->IsF(i) || (!pi.F()->IsAnyF() && !pi.FFlip()->IsAnyF())) && questa guardia non funziona su crease con angoli (fandisk)
+                        !pi.IsBorder() &&
+                        /*!pi.V()->IsV() && !pi.VFlip()->IsV() &&*/
+                        !pi.FFlip()->IsV())
                 {
                     MyPair bp(pi.V(), pi.VFlip());
                     Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
-                    if(testCollapse(bp, eg, min, max, length))
+                    if(testCollapse(bp, eg, min, max, length, adapt))
                     {
                         eg.Do(m, bp, mp);
                         pi.V()->SetV();
@@ -506,7 +511,7 @@ void ProjectToSurface(MyMesh &m, MyTable t, FaceTmark<MyMesh> mark)
 
 }
 
-void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter)
+void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, int crease)
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
     original.UpdateBoxAndNormals();
@@ -536,8 +541,8 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter)
     for(int i=0; i < iter; ++i)
     {
         printf("iter %d \n", i+1);
-        SplitLongEdges(m);
-        CollapseShortEdges(m);
+        SplitLongEdges(m, adapt);
+        CollapseShortEdges(m, adapt);
         ImproveValence(m);
         ImproveByLaplacian(m);
         ProjectToSurface(m, t, mark);
