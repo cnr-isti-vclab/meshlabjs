@@ -312,7 +312,7 @@ bool testSwap(MyPos p)
     float qOld = std::min(Quality(v0->P(),v2->P(),v3->P()),Quality(v0->P(),v1->P(),v2->P()));
     float qNew = std::min(Quality(v0->P(),v1->P(),v3->P()),Quality(v2->P(),v3->P(),v1->P()));
 
-    return newDist < oldDist && qNew >= qOld * 1.f;
+    return (newDist <= oldDist && qNew >= qOld * 1.f) || qNew > 1.5f * qOld;
 }
 
 void MapErrorColor(MyMesh &m)
@@ -354,12 +354,12 @@ void MapCreaseColor(MyMesh &m)
 }
 
 
-void ImproveValence(MyMesh &m)
+void ImproveValence(MyMesh &m, float crease)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
     //feature conservative
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(15.0f));
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
     int swapCnt=0;
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
@@ -371,7 +371,7 @@ void ImproveValence(MyMesh &m)
 
                 if(!pi.FFlip()->IsV())
                     if(testSwap(pi) &&
-                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(15.0f)) &&
+                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(90.f)) &&
                             face::CheckFlipEdge(*fi,i) )
                     {
                         face::FlipEdge(*fi,i);
@@ -438,13 +438,13 @@ void computeCrease(MyMesh &m)
         }
 }
 
-void CollapseShortEdges(MyMesh &m, bool adapt)
+void CollapseShortEdges(MyMesh &m, bool adapt, float crease)
 {
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
 
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(15.0f));
+    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
     Distribution<float> distr;
     tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
@@ -511,9 +511,10 @@ void ProjectToSurface(MyMesh &m, MyTable t, FaceTmark<MyMesh> mark)
 
 }
 
-void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, int crease)
+void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, float crease)
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
+
     original.UpdateBoxAndNormals();
 
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
@@ -531,19 +532,19 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, int crease
     tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m);
     tri::UpdateQuality<MyMesh>::FaceFromVertex(m);
-    tri::UpdateQuality<MyMesh>::FaceNormalize(m);
+    tri::UpdateQuality<MyMesh>::FaceSaturate(m);
 
 
-    computeCrease(m);
-    //MapErrorColor(m);
-    MapCreaseColor(m);
+    //computeCrease(m);
+    MapErrorColor(m);
+    //MapCreaseColor(m);
 
     for(int i=0; i < iter; ++i)
     {
         printf("iter %d \n", i+1);
         SplitLongEdges(m, adapt);
-        CollapseShortEdges(m, adapt);
-        ImproveValence(m);
+        CollapseShortEdges(m, adapt, crease);
+        ImproveValence(m, crease);
         ImproveByLaplacian(m);
         ProjectToSurface(m, t, mark);
     }

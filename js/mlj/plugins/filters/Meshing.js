@@ -250,9 +250,9 @@
         });
         /*TODO support this in cpp*/ 
         creaseThrWidget = builder.RangedFloat({
-            min: 0, max: 90, step: 1, defval: 30,
+            min: 1, max: 90, step: 0.3, defval: 30,
             label: "Crease Threshold",
-            tooltip: "Minimum angle between faces to be consider the shared edge as crease."
+            tooltip: "Minimum angle between faces to consider the shared edge as crease."
         });
     };
 
