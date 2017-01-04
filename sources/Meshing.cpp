@@ -487,8 +487,8 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease)
 
 void ImproveByLaplacian(MyMesh &m)
 {
-    tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
-    tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
+    tri::UpdateFlags<MyMesh>::FaceBorderFromNone(m);
+    tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
     tri::UpdateSelection<MyMesh>::VertexInvert(m);
     tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
     printf("Laplacian done \n");
@@ -516,6 +516,11 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, float crea
     MyMesh &original = *((MyMesh*) _baseM), m;
 
     original.UpdateBoxAndNormals();
+
+    //queste cose in meshlabjs non andrebbero fatte a model loading?
+    int dup = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
+    int unref = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
+    tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
 
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
 
