@@ -383,17 +383,17 @@ void ImproveValence(MyMesh &m, float crease)
     printf("Performed %i swaps\n",swapCnt);
 }
 
-void SplitLongEdges(MyMesh &m, bool adapt)
+void SplitLongEdges(MyMesh &m, bool adapt, float length)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
 
     Distribution<float> distr;
-    tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
+    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
     float min,max;
     max = distr.Percentile(0.9f);
     min = distr.Percentile(0.1f);
 
-    float length = m.bbox.Diag()/1000.f;
+    //float length = m.bbox.Diag()/1000.f;
 
     tri::MidPoint<MyMesh> midFunctor(&m);
     EdgeSplitPred ep;
@@ -438,7 +438,30 @@ void computeCrease(MyMesh &m)
         }
 }
 
-void CollapseShortEdges(MyMesh &m, bool adapt, float crease)
+float computeMeanEdgeLength(MyMesh &m)
+{
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
+    float total = 0.f;
+    int edges = 0;
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            for(int i=0;i<3;++i)
+            {
+                MyPos pi(&*fi,i);
+
+                if(!pi.FFlip()->IsV())
+                {
+                    total += Distance(pi.V()->P(), pi.VFlip()->P());
+                    ++edges;
+                }
+            }
+            fi->SetV();
+        }
+    return total / (float) edges;
+}
+
+void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
 {
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -447,13 +470,13 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease)
     tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
     Distribution<float> distr;
-    tri::Stat<MyMesh>::ComputePerFaceQualityDistribution(m,distr);
+    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
 
     float min,max;
     max = distr.Percentile(0.9f);
     min = distr.Percentile(0.1f);
 
-    float length = m.bbox.Diag()/1000.f;
+    //float length = m.bbox.Diag()/1000.f;
 
     MyCollapser eg;
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
@@ -515,12 +538,12 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, float crea
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
 
-    original.UpdateBoxAndNormals();
-
     //queste cose in meshlabjs non andrebbero fatte a model loading?
     int dup = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
     int unref = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
     tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
+
+    original.UpdateBoxAndNormals();
 
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
 
@@ -531,24 +554,28 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, float crea
 
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateTopology<MyMesh>::VertexFace(m);
-    tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
+  //  tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
     tri::UpdateNormal<MyMesh>::PerVertexPerFace(m);
     tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
     tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m);
-    tri::UpdateQuality<MyMesh>::FaceFromVertex(m);
-    tri::UpdateQuality<MyMesh>::FaceSaturate(m);
+  //  tri::UpdateQuality<MyMesh>::FaceFromVertex(m);
+  //  tri::UpdateQuality<MyMesh>::FaceSaturate(m);
 
 
     //computeCrease(m);
-    MapErrorColor(m);
+    //MapErrorColor(m);
     //MapCreaseColor(m);
+
+    float length = computeMeanEdgeLength(m);
+    printf("Avg edge size: %f\n", length);
+    printf("BBox dep size: %f\n", m.bbox.Diag() / 1000.f);
 
     for(int i=0; i < iter; ++i)
     {
         printf("iter %d \n", i+1);
-        SplitLongEdges(m, adapt);
-        CollapseShortEdges(m, adapt, crease);
+        SplitLongEdges(m, adapt, length);
+        CollapseShortEdges(m, adapt, crease, length);
         ImproveValence(m, crease);
         ImproveByLaplacian(m);
         ProjectToSurface(m, t, mark);
