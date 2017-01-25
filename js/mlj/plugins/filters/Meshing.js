@@ -235,20 +235,29 @@
         tooltip: "TODO ",
         arity: 1
     });
-    var iterNumWidget, adaptiveWidget, creaseThrWidget;
+    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
             label: "Iterations",
             tooltip: "No. of iterations to do."
         });
-        /* TODO support this in cpp */
+
         adaptiveWidget = builder.Bool({
             defval: true,
             label: "Adaptive",
             tooltip: "Toggles adaptive isotropic remeshing"
         });
-        /*TODO support this in cpp*/ 
+        refineWidget = builder.Bool({
+            defval: true,
+            label: "Refine step",
+            tooltip: "Toggles the split & collapse steps in the remeshing loop"
+        });
+        swapWidget = builder.Bool({
+            defval: true,
+            label: "Edge Swap step",
+            tooltip: "Toggles the edge swapping step in the remeshing loop"
+        });
         creaseThrWidget = builder.RangedFloat({
             min: 1, max: 90, step: 0.3, defval: 30,
             label: "Crease Threshold",
@@ -256,15 +265,15 @@
         });
     };
 
-
-
     CoarseIsotropicRemeshing._applyTo = function (basemeshFile) {
         Module.CoarseIsotropicRemeshing(
             basemeshFile.ptrMesh(),
-            iterNumWidget.getValue(), 
-            adaptiveWidget.getValue(), 
+            iterNumWidget.getValue(),
+            adaptiveWidget.getValue(),
+            refineWidget.getValue(),
+            swapWidget.getValue(),
             creaseThrWidget.getValue()
-            );
+        );
     };
     /******************************************************************************/
 
