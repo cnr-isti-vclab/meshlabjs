@@ -175,8 +175,8 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     shadowPassUniforms.positionMap.value = positionMapTarget;
 
     /*
-    material containing the depth pass shaders. The original scene will be
-    rendered using this shaders to produce a depth map
+      material containing the depth pass shaders. The original scene will be
+      rendered using this shaders to produce a depth map
     */
     let prepareDepthMaterial = (size) => {
       let mat = new THREE.RawShaderMaterial({
@@ -188,6 +188,11 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       });
       return mat;
     }
+    /*
+      material containing the position pass shaders. The original scene will be
+      rendered using this shaders to produce a position map 
+      (needed since last render step renders a quad, not geometry)
+    */
     let preparePositionMaterial = (size) => {
       let mat = new THREE.RawShaderMaterial({
         uniforms:       { pointSize: { type: 'f', value: size } },
@@ -211,6 +216,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       texSize:  { type: "f",    value: shadowPassOptions.bufferWidth }
     };
 
+    /*
+        material containing the blur pass shaders. The depth map will be blurred using this 
+        shaders.
+    */
     let horBlurMaterial = new THREE.RawShaderMaterial({
       uniforms: hBlurUniforms,
       side: THREE.DoubleSide,
@@ -224,6 +233,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.verBlurFrag
     });
+    
     /*
       This is the quad to draw on to output the rendering pass
       (RECALL: Each rendering post process pass is defined as a function eg. pass: Texture -> Texture -> Texture)

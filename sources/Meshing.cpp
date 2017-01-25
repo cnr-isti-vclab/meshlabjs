@@ -216,16 +216,6 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
 
 
 
-/*
- * TODO: lavorare on crease preserving...non riesco a far fungere
- *       facefauxfromcrease
- * su laurana anche già solo il refine, con 0.5 fa casini con overlappign
- * ma laurana parte già di suo molto storta
- *
- * collapse sicuramente fa casini (visto anche su ferty)
- * COLLAPSE SCAZZA
-*/
-
 #include<vcg/complex/algorithms/update/color.h>
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
@@ -556,12 +546,12 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, float crea
     tri::UpdateTopology<MyMesh>::VertexFace(m);
   //  tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
     tri::UpdateNormal<MyMesh>::PerVertexPerFace(m);
+    // here it crashes if executed after simplification (cluster or quadric)
     tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
     tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m);
   //  tri::UpdateQuality<MyMesh>::FaceFromVertex(m);
   //  tri::UpdateQuality<MyMesh>::FaceSaturate(m);
-
 
     //computeCrease(m);
     //MapErrorColor(m);
