@@ -214,8 +214,6 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
     tri::Hole<MyMesh>::EarCuttingFill< tri::TrivialEar<MyMesh> > (m, maxHoleEdgeNum);
 }
 
-
-
 #include<vcg/complex/algorithms/update/color.h>
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
@@ -238,11 +236,6 @@ float lerp (float a, float b, float lambda)
     math::Clamp(lambda, 0.f, 1.f);
     return a * lambda + (1-lambda) * b;
 }
-
-
-
-
-
 
 void MapErrorColor(MyMesh &m)
 {
@@ -305,8 +298,6 @@ void computeCrease(MyMesh &m, float crease)
             }
         }
 }
-
-
 
 
 class EdgeSplitPred
@@ -543,7 +534,7 @@ int selectVertexFromCrease(MyMesh &m)
 /*
     Simple Laplacian Smoothing step
 */
-void ImproveByLaplacian(MyMesh &m)
+void ImproveByLaplacian(MyMesh &m, bool DEBUGCREASE)
 {
     tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
     int i1 = tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
@@ -553,7 +544,8 @@ void ImproveByLaplacian(MyMesh &m)
     int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
     tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
     printf("Laplacian done (selected %d)\n", i);
-    tri::UpdateSelection<MyMesh>::Clear(m);
+    if(!DEBUGCREASE)
+        tri::UpdateSelection<MyMesh>::Clear(m);
 }
 
 /*
@@ -595,7 +587,8 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
  *
  * TODO: Think about using tri::Clean<MyMesh>::ComputeValence to compute the valence in the flip stage
  */
-void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refine, bool swap, float crease, bool DEBUGLAPLA, bool DEBUGPROJ)
+void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refine, bool swap, float crease,
+                              bool DEBUGLAPLA, bool DEBUGPROJ, bool DEBUGCREASE)
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
 
@@ -604,7 +597,6 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
     int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
     Allocator<MyMesh>::CompactEveryVector(original);
-
 
     /* Updating box before constructing the grid, otherwise we get weird results */
     original.UpdateBoxAndNormals();
@@ -666,7 +658,7 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
             ImproveValence(m, crease);
 
         if(DEBUGLAPLA)
-            ImproveByLaplacian(m);
+            ImproveByLaplacian(m, DEBUGCREASE);
         if(DEBUGPROJ)
             ProjectToSurface(m, t, mark);
     }

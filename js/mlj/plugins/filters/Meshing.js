@@ -258,6 +258,7 @@
             label: "Edge Swap step",
             tooltip: "Toggles the edge swapping step in the remeshing loop"
         });
+//###################DEBUG#########################################
         lapla = builder.Bool({
             defval: true,
             label: "DEBUG: laplacian",
@@ -268,6 +269,13 @@
             label: "DEBUG: projection",
             tooltip: "Toggles projection step"
         });
+
+        crease = builder.Bool({
+            defval: true,
+            label: "DEBUG: Crease selection",
+            tooltip: ""
+        });
+//###############################################################
         creaseThrWidget = builder.RangedFloat({
             min: 1, max: 90, step: 0.3, defval: 30,
             label: "Crease Threshold",
@@ -283,8 +291,11 @@
             refineWidget.getValue(),
             swapWidget.getValue(),
             creaseThrWidget.getValue(),
+            //################DEBUG##################
             lapla.getValue(),
-            proj.getValue()
+            proj.getValue(),
+            crease.getValue()
+            //#######################################
         );
     };
     /******************************************************************************/
