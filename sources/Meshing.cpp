@@ -547,17 +547,15 @@ int selectVertexFromCrease(MyMesh &m)
 */
 void ImproveByLaplacian(MyMesh &m)
 {
-    //#########PROVA CON VERTEX##################
-        tri::UpdateSelection<MyMesh>::VertexFromFaceStrict(m);
-        tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
-        int i1 = tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
-        printf("sel on border %d\n", i1);
-        int i2 = selectVertexFromCrease(m);
-        printf("sel on crease %d\n", i2);
-        int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
-        tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
-        printf("Laplacian done (selected %d)\n", i);
-        tri::UpdateSelection<MyMesh>::Clear(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
+    int i1 = tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
+    printf("sel on border %d\n", i1);
+    int i2 = selectVertexFromCrease(m);
+    printf("sel on crease %d\n", i2);
+    int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
+    tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
+    printf("Laplacian done (selected %d)\n", i);
+    //tri::UpdateSelection<MyMesh>::Clear(m);
 }
 
 /*
@@ -599,17 +597,32 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
  * Da discutere con prof:
  *  Sul bunny 5k.off con solo 1 swap succede cosa brutta brutta sotto
  *  Su laurana con 1 solo swap la mesh diventa non manifold
+ * in realtà è  lo smoothlaplaciano (dubito)
  *  Prima ipotesi era che avessi problemi su mesh non watertight, ma su semi1/2.ply funziona bene
  *  È un problema mio (più probabile :( ) (o delle mesh di cui sopra?)
+ *
+ *
+ * IL comportamento è molto strano: quando viene fatto il laplaciano, adesso non pulisco il bit selected,
+ * e sul bunny il vertice che schizza via facendo lo smooth non viene nemmeno selezionato, e quindi in teoria
+ * non viene smoothato..non capisco cosa succeda
+ * NUOVE INFO: se rimuovo anche le operazioni di clean iniziale (che forse in realtà potrebbero non servire, se
+ * scopro la fonte del bug) la cosa peggiora tanto. Tuttavia, provando sempre su bunny5k e anche 70k stl e attivando
+ * solo il passo di laplacian, succede una cosa strana: tutti i vertici sono considerati di bordo e di crease (già strano),
+ * quindi nessun vertice è selezionato per il laplacian...quindi non dovrebbe fare nulla (ancora più strano)...
+ * COSA INTERESSANTE È CHE SI MANIFESTA SOLO SU MESH CON BORDO eg LAURANA E BUNNY, MA NON CON SEMI1/2...
+ *
+ * TODO: Think about using tri::Clean<MyMesh>::ComputeValence to compute the valence in the flip stage
  */
-void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refine, bool swap, float crease)
+void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refine, bool swap, float crease, bool DEBUGLAPLA, bool DEBUGPROJ)
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
 
-    /* Mesh cleaning (needed to support formats like .stl) */
-    int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
-    int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
-    int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
+    /* Mesh cleaning (needed to support formats like .stl PROBABLY NOT NEEDED!!! CHECK BUG!) */
+//    int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
+//    int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
+//    int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
+//    Allocator<MyMesh>::CompactEveryVector(original);
+
 
     /* Updating box before constructing the grid, otherwise we get weird results */
     original.UpdateBoxAndNormals();
@@ -670,17 +683,16 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
         if(swap)
             ImproveValence(m, crease);
 
-        ImproveByLaplacian(m);
-        ProjectToSurface(m, t, mark);
+        if(DEBUGLAPLA)
+            ImproveByLaplacian(m);
+        if(DEBUGPROJ)
+            ProjectToSurface(m, t, mark);
     }
     printf("Final Mean Valence: %.15f \n", computeMeanValence(m));
 
     m.UpdateBoxAndNormals();
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(original,m);
 }
-
-
-
 
 void MeshingPluginTEST()
 {

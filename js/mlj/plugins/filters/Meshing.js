@@ -235,7 +235,7 @@
         tooltip: "TODO ",
         arity: 1
     });
-    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget;
+    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget, lapla, proj;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
@@ -258,6 +258,16 @@
             label: "Edge Swap step",
             tooltip: "Toggles the edge swapping step in the remeshing loop"
         });
+        lapla = builder.Bool({
+            defval: true,
+            label: "DEBUG: laplacian",
+            tooltip: "Toggles laplacian smooth"
+        });
+        proj = builder.Bool({
+            defval: true,
+            label: "DEBUG: projection",
+            tooltip: "Toggles projection step"
+        });
         creaseThrWidget = builder.RangedFloat({
             min: 1, max: 90, step: 0.3, defval: 30,
             label: "Crease Threshold",
@@ -272,7 +282,9 @@
             adaptiveWidget.getValue(),
             refineWidget.getValue(),
             swapWidget.getValue(),
-            creaseThrWidget.getValue()
+            creaseThrWidget.getValue(),
+            lapla.getValue(),
+            proj.getValue()
         );
     };
     /******************************************************************************/
