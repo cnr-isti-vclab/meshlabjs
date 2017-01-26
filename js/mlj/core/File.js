@@ -97,8 +97,7 @@ MLJ.core.File = {
             console.timeEnd("Parsing Mesh Time");
             FS.unlink(file.name);
             onLoaded(true, mf);
-            MLJ.core.Scene.pushState(mf, MLJ.core.ChangeType.Creation)
-            MLJ.core.Scene.history.closeSC();
+            MLJ.core.Scene.addStateToHistory();
         };
     }
 

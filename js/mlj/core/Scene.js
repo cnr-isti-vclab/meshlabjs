@@ -53,6 +53,9 @@ MLJ.core.Scene.timeStamp = 0;
 * @memberOf MLJ.core.Scene     
 */
 MLJ.core.Scene.layerSetHistory = new Array();
+
+
+
 (function () {
     /**
      * Associative Array that contains all the meshes in the scene 
@@ -60,6 +63,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * @memberOf MLJ.core.Scene     
      */
     var _layers = new MLJ.util.AssociativeArray();
+    
     /**
      * Associative array that contains all the scene level "background" 
      * decorators (axes, background grid etc..)
@@ -128,10 +132,35 @@ MLJ.core.Scene.layerSetHistory = new Array();
     /// @type {Object}
     var _renderer;
     var _this = this;
+    
+     /**
+     * Function that add a current state of the set of layers to the history 
+     * so that it can be undo-ed. It is called by the apply and by the open file
+     * 
+     */
+    this.addStateToHistory=function()
+    {
+                    //if the scene was empty, we add an empty layerset to the history of the scene to make it possible to go back at the initial state
+            if(MLJ.core.Scene.layerSetHistory.length==0)
+                MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++]=new MLJ.util.AssociativeArray();
+            //push of the actual state at the current time, duplicating the current layer list
+            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=new Array(MLJ.core.Scene.getLayers().duplicate(),MLJ.core.Scene.getSelectedLayer());
+            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1][0].iterator(); //we iterate on all the actual layers
+            //and push the state of all the modified layers
+            while (layersIt.hasNext())
+            {
+                var layerTmp = layersIt.next();
+                if (layerTmp.getCalledPtrMesh())
+                    layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
+            }
+            MLJ.core.Scene.timeStamp++;
+    }
+    
     /**
      * Function that updates the list of layers in the scene
      * using a set of layers stored in a history    
-     * to undo/redo changes in the scene
+     * to undo/redo changes in the scene.
+     * It is called only by the undo/redo 
      */
     this.updateLayerList=function()
     {
@@ -178,6 +207,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         if (currentLayer != undefined) //if we unpacked a state which had a selected layer beforce, we set it as selected in the restored state
             _this.selectLayerByName(currentLayer.name);
     }
+    
     this.Undo = function ()
     {
 
