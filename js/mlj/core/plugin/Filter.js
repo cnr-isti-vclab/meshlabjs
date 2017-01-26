@@ -155,13 +155,13 @@ MLJ.core.plugin.Filter = function (parameters) {
             var t0 = performance.now();
             switch (_this.parameters.arity)
             {
-                case 0:
-                case 3:
+                case 0:  // Creation Filters (they do not rely on a "current layer"
+                case 3:  // Filter that apply to ALL layer (flatten) 
                     _this._applyTo();
                     break;
-                case -1:
-                case 1:
-                case 2:
+                case -1:  // DeleteFilter
+                case 1:  // Standard filters that apply to a single mesh
+                case 2:  // 
                     _this._applyTo(MLJ.core.Scene.getSelectedLayer());
                     break;
                 default:
@@ -169,20 +169,7 @@ MLJ.core.plugin.Filter = function (parameters) {
             }
             var t1 = performance.now();
             MLJ.core.Scene.updateLayer(MLJ.core.Scene.getSelectedLayer());
-            //if the scene was empty, we add an empty layerset to the history of the scene to make it possible to go back at the initial state
-            if(MLJ.core.Scene.layerSetHistory.length==0)
-                MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++]=new MLJ.util.AssociativeArray();
-            //push of the actual state at the current time, duplicating the current layer list
-            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=new Array(MLJ.core.Scene.getLayers().duplicate(),MLJ.core.Scene.getSelectedLayer());
-            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1][0].iterator(); //we iterate on all the actual layers
-            //and push the state of all the modified layers
-            while (layersIt.hasNext())
-            {
-                var layerTmp = layersIt.next();
-                if (layerTmp.getCalledPtrMesh())
-                    layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
-            }
-            MLJ.core.Scene.timeStamp++;
+            MLJ.core.Scene.addStateToHistory()
             //trigger button events
             $(document).trigger("Redo", MLJ.core.Scene.timeStamp);
             $(document).trigger("Undo", MLJ.core.Scene.timeStamp-1);
