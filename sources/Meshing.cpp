@@ -462,8 +462,6 @@ void SplitLongEdges(MyMesh &m, bool adapt, float length)
     max = distr.Percentile(0.9f);
     min = distr.Percentile(0.1f);
 
-    //float length = m.bbox.Diag()/1000.f;
-
     tri::MidPoint<MyMesh> midFunctor(&m);
     EdgeSplitPred ep;
     ep.min = min;
@@ -555,7 +553,7 @@ void ImproveByLaplacian(MyMesh &m)
     int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
     tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(15.f),true);
     printf("Laplacian done (selected %d)\n", i);
-    //tri::UpdateSelection<MyMesh>::Clear(m);
+    tri::UpdateSelection<MyMesh>::Clear(m);
 }
 
 /*
@@ -594,22 +592,6 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
  *  il valence offset (reale-ideale) diminuisce monotonicamente (con soli swap)
  *  la qualità sembra aumentare (si polarizza anche un po' di più tra brutti e belli)
  *
- * Da discutere con prof:
- *  Sul bunny 5k.off con solo 1 swap succede cosa brutta brutta sotto
- *  Su laurana con 1 solo swap la mesh diventa non manifold
- * in realtà è  lo smoothlaplaciano (dubito)
- *  Prima ipotesi era che avessi problemi su mesh non watertight, ma su semi1/2.ply funziona bene
- *  È un problema mio (più probabile :( ) (o delle mesh di cui sopra?)
- *
- *
- * IL comportamento è molto strano: quando viene fatto il laplaciano, adesso non pulisco il bit selected,
- * e sul bunny il vertice che schizza via facendo lo smooth non viene nemmeno selezionato, e quindi in teoria
- * non viene smoothato..non capisco cosa succeda
- * NUOVE INFO: se rimuovo anche le operazioni di clean iniziale (che forse in realtà potrebbero non servire, se
- * scopro la fonte del bug) la cosa peggiora tanto. Tuttavia, provando sempre su bunny5k e anche 70k stl e attivando
- * solo il passo di laplacian, succede una cosa strana: tutti i vertici sono considerati di bordo e di crease (già strano),
- * quindi nessun vertice è selezionato per il laplacian...quindi non dovrebbe fare nulla (ancora più strano)...
- * COSA INTERESSANTE È CHE SI MANIFESTA SOLO SU MESH CON BORDO eg LAURANA E BUNNY, MA NON CON SEMI1/2...
  *
  * TODO: Think about using tri::Clean<MyMesh>::ComputeValence to compute the valence in the flip stage
  */
@@ -618,10 +600,10 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     MyMesh &original = *((MyMesh*) _baseM), m;
 
     /* Mesh cleaning (needed to support formats like .stl PROBABLY NOT NEEDED!!! CHECK BUG!) */
-//    int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
-//    int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
-//    int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
-//    Allocator<MyMesh>::CompactEveryVector(original);
+    int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
+    int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
+    int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
+    Allocator<MyMesh>::CompactEveryVector(original);
 
 
     /* Updating box before constructing the grid, otherwise we get weird results */
