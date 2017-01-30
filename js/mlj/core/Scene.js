@@ -763,7 +763,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         _this.render();
     };
 
-    function disposeObject(obj) {
+    this.disposeObject = function disposeObject(obj) {
         if (obj.geometry)
             obj.geometry.dispose();
         if (obj.material)

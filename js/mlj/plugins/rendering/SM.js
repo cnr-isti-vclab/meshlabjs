@@ -8,14 +8,9 @@ in ombra o meno…per quanto riguarda mesh non convesse (aperte) ci saranno semp
   ===> Multi target rendering support risolverebbe questo problema, permettendo di creare position map + normal map in un'unica passata
 
 INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSERE RIFATTORIZZATI UN PO' IN MODO CHE SIANO DEFINITI COME 
-DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
+DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
 
-  */
-  // TODO: refactoring---commenting----
-  /* refattorizza blur per usare una sola mappa ===> se si vuole anche aumentare il blur allora usa 2 mappe + ping-pong */
-  /* variables for ui interaction */
 
-/*
     SOON Multiple render targets might be added to THREE.js:
     RECALL: integrate normal map rendering and use normal map in shadowfrag to endarken faces facing away from light
             render position map and normal map (at least) in a single render pass
@@ -254,21 +249,21 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCENA
     let shadowScene = new THREE.Scene(); shadowScene.add(shadowMapMesh);
 
     this.dispose = () => {
-      depthMapTarget.dispose();     depthMapTarget    = undefined;
-      positionMapTarget.dispose();  positionMapTarget = undefined
-      horBlurTarget.dispose();      horBlurTarget     = undefined;
-      verBlurTarget.dispose();      verBlurTarget     = undefined;
+      scene.disposeObject(depthMapTarget);    
+      scene.disposeObject(positionMapTarget); 
+      scene.disposeObject(horBlurTarget);    
+      scene.disposeObject(verBlurTarget);     
 
-      shadowScene.remove(shadowMapMesh); shadowScene   = undefined;
-      horBlurScene.remove(horBlurMesh);  horBlurScene  = undefined;
-      verBlurScene.remove(verBlurMesh);  verBlurScene  = undefined;
+      shadowPassUniforms.depthMap.value     = undefined;
+      shadowPassUniforms.positionMap.value  = undefined;
+      hBlurUniforms.depthMap.value          = undefined;
+      vBlurUniforms.depthMap.value          = undefined;
 
-      shadowMapMesh = undefined;
-      horBlurMesh   = undefined;
-      verBlurMesh   = undefined;
+      shadowScene.remove(shadowMapMesh); scene.disposeObject(shadowMapMesh); 
+      horBlurScene.remove(horBlurMesh);  scene.disposeObject(horBlurMesh);
+      verBlurScene.remove(verBlurMesh);  scene.disposeObject(verBlurMesh); 
 
-      horBlurMaterial.dispose();  horBlurMaterial = undefined;
-      verBlurMaterial.dispose();  verBlurMaterial = undefined;
+      horBlurMaterial.dispose(); verBlurMaterial.dispose();  
     }
 
     /*
