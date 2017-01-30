@@ -1,9 +1,7 @@
 #ifndef COARSEISOTROPICREMESHING_H
 #define COARSEISOTROPICREMESHING_H
-
 #endif // COARSEISOTROPICREMESHING_H
 
-#include<vcg/complex/algorithms/update/color.h>
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
 #include<vcg/complex/algorithms/update/normal.h>
@@ -29,43 +27,6 @@ inline float lerp (float a, float b, float lambda)
     return a * lambda + (1-lambda) * b;
 }
 
-void MapErrorColor(MyMesh &m)
-{
-    static float minQ=0, maxQ=0;
-    if(minQ==maxQ)
-        tri::Stat<MyMesh>::ComputePerFaceQualityMinMax(m,minQ,maxQ);
-    tri::UpdateColor<MyMesh>::PerFaceQualityRamp(m,minQ,maxQ);
-}
-
-void MapCreaseColor(MyMesh &m)
-{
-    tri::UpdateTopology<MyMesh>::VertexFace(m);
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
-    tri::UpdateFlags<MyMesh>::VertexClearV(m);
-    tri::UpdateFlags<MyMesh>::FaceFauxCrease(m,math::ToRad(15.f));
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-
-            for(auto i=0; i<3; ++i)
-            {
-                MyPos pi(&*fi, i);
-                if(!pi.F()->IsF(i))
-                {
-                    pi.V()->C() = vcg::Color4b::Red;
-                    pi.V()->SetV();
-                }
-                else
-                {
-                    if(!pi.V()->IsV())
-                        pi.V()->C() = vcg::Color4b::White;
-                    pi.V()->SetV();
-                }
-            }
-        }
-    tri::UpdateColor<MyMesh>::PerFaceFromVertex(m);
-}
 //This could be used in place of FaceFauxCrease to avoid using the Faux bit
 void computeCrease(MyMesh &m, float crease)
 {
@@ -154,8 +115,6 @@ float computeMeanValence(MyMesh &m)
         Before Swap             After Swap
 */
 
-// su trim star non fa scomparire proprio tutti i problemi sulle punte, probabilmente anche perché
-// hanno angoli tali da risultare di crease.
 //think about refactoring this using tri::Clean<MyMesh>::ComputeValence() and using a valence vector
 // PRO using pervertex handle: seems faster (about 500ms on 100k vert remeshed twirl.off)
 // CONS : bigger memory footprint, might be a problem for big meshes => can exceed memory limits imposed by browsers
@@ -168,7 +127,7 @@ bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h)
 
     MyPos tp=p;
     //starting pos v0: here we decrease the edge count by 1
-    MyVertex *v0=p.V();
+    MyVertex *v0=tp.V();
     idealV  = idealValence(tp); actualV = h[tri::Index(m, v0)]; //actualV = ComputeValence(tp);
     oldDist += abs(idealV - actualV);
     newDist += abs(idealV - (actualV - 1));
@@ -201,9 +160,9 @@ bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h)
 // Edge swap step: edges are flipped in order to optimize valence and triangle quality across the mesh
 void ImproveValence(MyMesh &m, float crease)
 {
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
+  //  tri::UpdateTopology<MyMesh>::FaceFace(m);
+
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
-    //feature conservative
     tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
     MyMesh::PerVertexIntHandle h = tri::Allocator<MyMesh>::AddPerVertexAttribute<int>(m, std::string("Valence"));
@@ -248,8 +207,7 @@ public:
 
 void SplitLongEdges(MyMesh &m, bool adapt, float crease, float length)
 {
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-
+   // tri::UpdateTopology<MyMesh>::FaceFace(m);
     Distribution<float> distr;
     tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
     float min,max;
@@ -279,10 +237,10 @@ inline bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float
 
 void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
 {
-    tri::UpdateTopology<MyMesh>::VertexFace(m);
+   // tri::UpdateTopology<MyMesh>::VertexFace(m);
     //tri::UpdateTopology<MyMesh>::FaceFace(m); //FF is updated by the preceding RefineE
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
 
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
     Distribution<float> distr;
@@ -374,20 +332,6 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
 
 }
 /*
- * CONTROLLA BENE QUANDO SONO DAVVERO NEC LE CHIAMATE DI UPDATE DELLA TOPOLOGIA E FLAG
- * dai statistiche prima dopo di:
- *  valenza media     (direi media e media della distanza da ideale)
- *  qualità triangoli (dovrebbe esserci già in meshlabjs)
- * magari fallo anche come filtro a se
- *
- * aggiungi la possibilità di escludere refine (split e collapse)  edgeswap [done]
- *
- *
- * Seems good:
- *  il valence offset (reale-ideale) diminuisce monotonicamente (con soli swap)
- *  la qualità sembra aumentare (si polarizza anche un po' di più tra brutti e belli)
- *
- *
  * TODO: Think about using tri::Clean<MyMesh>::ComputeValence to compute the valence in the flip stage
  */
 void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refine, bool swap, float crease,
@@ -395,20 +339,18 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
 
-    /* Mesh cleaning (needed to support formats like .stl PROBABLY NOT NEEDED!!! CHECK BUG!) */
+    // Mesh cleaning (needed to support formats like .stl PROBABLY NOT NEEDED!!! CHECK BUG!)
     int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
     int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
     int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
     Allocator<MyMesh>::CompactEveryVector(original);
 
-    /* Updating box before constructing the grid, otherwise we get weird results */
+    //Updating box before constructing the grid, otherwise we get weird results
     original.UpdateBoxAndNormals();
 
-    /*
-     * Build a uniform grid with the orignal mesh.
-     * Needed to apply the reprojection step.
-     *
-     */
+
+    //Build a uniform grid with the orignal mesh.
+    //Needed to apply the reprojection step.
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
 
     MyGrid t;
@@ -433,11 +375,6 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m); //do you really want this?
 
-    //was used to debug
-    //computeCrease(m);
-    //MapErrorColor(m);
-    //MapCreaseColor(m);
-
     /* Computing mean edge length (it needs the edge vector) */
     tri::UpdateTopology<MyMesh>::AllocateEdge(m);
     float length = tri::Stat<MyMesh>::ComputeEdgeLengthAverage(m);
@@ -447,7 +384,6 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     for(int i=0; i < iter; ++i)
     {
         printf("iter %d \n", i+1);
-
         if(refine)
         {
             SplitLongEdges(m, adapt, crease, length);
