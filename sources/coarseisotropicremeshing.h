@@ -3,8 +3,6 @@
 
 #endif // COARSEISOTROPICREMESHING_H
 
-
-
 #include<vcg/complex/algorithms/update/color.h>
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
@@ -24,7 +22,8 @@ typedef  EdgeCollapser<MyMesh, BasicVertexPair<MyVertex>> MyCollapser;
 typedef  GridStaticPtr<MyFace, float> MyGrid;
 
 
-float lerp (float a, float b, float lambda)
+// My lerp (vcg does not implement lerp on scalars as of 30-01-2017)
+inline float lerp (float a, float b, float lambda)
 {
     math::Clamp(lambda, 0.f, 1.f);
     return a * lambda + (1-lambda) * b;
@@ -67,6 +66,7 @@ void MapCreaseColor(MyMesh &m)
         }
     tri::UpdateColor<MyMesh>::PerFaceFromVertex(m);
 }
+//This could be used in place of FaceFauxCrease to avoid using the Faux bit
 void computeCrease(MyMesh &m, float crease)
 {
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
@@ -92,20 +92,8 @@ void computeCrease(MyMesh &m, float crease)
         }
 }
 
-
-class EdgeSplitPred
-{
-public:
-    float length, min, max;
-    bool adapt;
-    bool operator()(MyPos &ep) const
-    {
-        float mult = (adapt)? lerp(1.f/10.f, 10.f, (ep.V()->Q()/(max-min))) : 1.f;
-        return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
-    }
-};
-
-int ComputeValence(MyPos &p)
+//this can be deleted of course
+inline int ComputeValence(MyPos &p)
 {
     return p.NumberOfIncidentVertices();
 }
@@ -115,7 +103,7 @@ int ComputeValence(MyPos &p)
  4 for border vertices
  6 for internal vertices
 */
-int idealValence(MyPos p)
+inline int idealValence(MyPos p)
 {
     if(p.IsBorder()) return 4;
     return 6;
@@ -167,7 +155,7 @@ float computeMeanValence(MyMesh &m)
 */
 
 // su trim star non fa scomparire proprio tutti i problemi sulle punte, probabilmente anche perché
-// hanno angoli tali da risultare di crease...su meshlabjs non sono sicurissimo di averci visto bene
+// hanno angoli tali da risultare di crease.
 //think about refactoring this using tri::Clean<MyMesh>::ComputeValence() and using a valence vector
 // PRO using pervertex handle: seems faster (about 500ms on 100k vert remeshed twirl.off)
 // CONS : bigger memory footprint, might be a problem for big meshes => can exceed memory limits imposed by browsers
@@ -210,6 +198,7 @@ bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h)
             (newDist == oldDist && qNew >= qOld * 1.1f) || qNew > 1.5f * qOld;
 }
 
+// Edge swap step: edges are flipped in order to optimize valence and triangle quality across the mesh
 void ImproveValence(MyMesh &m, float crease)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -244,6 +233,19 @@ void ImproveValence(MyMesh &m, float crease)
     printf("Performed %i swaps\n",swapCnt);
 }
 
+// The predicate that defines which edges should be split
+class EdgeSplitPred
+{
+public:
+    float length, min, max;
+    bool adapt;
+    bool operator()(MyPos &ep) const
+    {
+        float mult = (adapt)? lerp(1.f/10.f, 10.f, (ep.V()->Q()/(max-min))) : 1.f;
+        return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
+    }
+};
+
 void SplitLongEdges(MyMesh &m, bool adapt, float crease, float length)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -265,7 +267,8 @@ void SplitLongEdges(MyMesh &m, bool adapt, float crease, float length)
     tri::RefineE(m,midFunctor,ep);
 }
 
-bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float length, bool adapt)
+// Collapse test: Usual collapse test plus borders and adaptivity management
+inline bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float length, bool adapt)
 {
     float mult = (adapt) ? lerp(1.f/10.f, 10.f, (((p.V(0)->Q()+p.V(1)->Q())/2.f)/(max-min))) : 1.f;
     float dist = Distance(p.V(0)->P(), p.V(1)->P());
@@ -318,6 +321,7 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
     Allocator<MyMesh>::CompactEveryVector(m);
 }
 
+// This function sets the selection bit on vertices that lies on creases
 int selectVertexFromCrease(MyMesh &m)
 {
     int count = 0;
@@ -444,11 +448,11 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     {
         printf("iter %d \n", i+1);
 
-        if(refine) {
+        if(refine)
+        {
             SplitLongEdges(m, adapt, crease, length);
             CollapseShortEdges(m, adapt, crease, length);
         }
-
         if(swap)
             ImproveValence(m, crease);
         if(DEBUGLAPLA)

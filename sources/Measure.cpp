@@ -230,6 +230,7 @@ void ComputeMeanValence(uintptr_t meshPtr)
                 }
             }
         }
+
     printf("Total vertices: %d\n", count);
     printf("Regular vertices: %d\n", regVert);
     printf("Non regular vertices: %d\n", count-regVert);
