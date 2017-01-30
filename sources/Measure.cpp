@@ -196,6 +196,8 @@ inline int idealValence(MyPos p)
     if(p.IsBorder()) return 4;
     return 6;
 }
+//here we could use the tri::clean<>::computevalence ... talk about this with cignoni, as in coarseisotropicremeshing
+// here should be surely more efficient, but as before needs a bigger memory footprint!
 void ComputeMeanValence(uintptr_t meshPtr)
 {
     MyMesh &m = *((MyMesh*) meshPtr);
@@ -204,6 +206,7 @@ void ComputeMeanValence(uintptr_t meshPtr)
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
 
     int total = 0, count = 0, totalOff = 0;
+    int regVert = 0, minVal = INT_MAX, maxVal = INT_MIN;
 
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
@@ -213,13 +216,25 @@ void ComputeMeanValence(uintptr_t meshPtr)
                 MyPos p(&*fi, i);
                 if(!p.V()->IsV())
                 {
-                    total += p.NumberOfIncidentVertices();
-                    totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
+                    int val = p.NumberOfIncidentVertices();
+                    int off = abs(idealValence(p)-val);
+
+                    total       += val;
+                    totalOff    += off;
+                    regVert     += (off == 0) ? 1 : 0;
+                    maxVal       = (val > maxVal) ? val : maxVal;
+                    minVal       = (val < minVal) ? val : minVal;
+
                     p.V()->SetV();
                     ++count;
                 }
             }
         }
+    printf("Total vertices: %d\n", count);
+    printf("Regular vertices: %d\n", regVert);
+    printf("Non regular vertices: %d\n", count-regVert);
+    printf("Minimum valence: %d\n", minVal);
+    printf("Maximum valence: %d\n", maxVal);
     printf("Mean offset from ideal valence: %.15f\n", ((float)totalOff/(float)count));
     printf("Mean valence: %.15f\n", (float) total / (float) count);
 }
