@@ -19,4 +19,5 @@ SOURCES += FilterTest.cpp \
   Transform.cpp
 
 HEADERS += mesh_def.h \
-    FilterTest.h
+    FilterTest.h \
+    coarseisotropicremeshing.h
