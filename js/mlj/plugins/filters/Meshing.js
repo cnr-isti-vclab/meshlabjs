@@ -279,5 +279,6 @@
     plugin.Manager.install(CutAlongCrease);
     plugin.Manager.install(CutTopological);
     plugin.Manager.install(HoleFilling);
+    plugin.Manager.install(PointCloudNormal);
     
 })(MLJ.core.plugin, MLJ.core.Scene);
