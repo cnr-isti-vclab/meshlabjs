@@ -412,8 +412,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
             _renderer.setSize(size.width, size.height);
 
 
-            colorBuffer.setSize(size.width, size.height);
-            targetBuffer.setSize(size.width, size.height);
+            MLJ.core.Scene.resizeWebGLRenderTarget(colorBuffer, size.width, size.height);
+            MLJ.core.Scene.resizeWebGLRenderTarget(targetBuffer, size.width, size.height);
 
             _camera2D.left = size.width / size.height;
             _camera2D.updateProjectionMatrix;
@@ -845,6 +845,23 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
     this.getScene = function () {
         return _scene;
+    };
+
+    /**
+     * Utility function to resize a WebGL render target, since the implementation
+     * of THREE.WebGLRenderTarget.setSize() method fails to do so in ThreeJS r71.
+     * (This method should no longer be needed in later versions).
+     */
+    this.resizeWebGLRenderTarget = function (renderTarget, width, height) {
+        if (!(renderTarget instanceof THREE.WebGLRenderTarget)) {
+            console.warn('MLJ.core.Scene.resizeWebGLRenderTarget(): renderTarget is	not an instance of THREE.WebGLRenderTarget');
+            return;
+        }
+        if (renderTarget.width !== width || renderTarget.height !== height) {
+            renderTarget.width = width;
+            renderTarget.height = height;
+            renderTarget.dispose();
+        }
     };
 
     /**

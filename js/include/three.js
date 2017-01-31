@@ -21212,7 +21212,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		// custom render plugins (post pass)
 
-		resetGLState();
 		spritePlugin.render( scene, camera );
 		lensFlarePlugin.render( scene, camera, _currentWidth, _currentHeight );
 
@@ -24091,15 +24090,9 @@ THREE.WebGLRenderTarget.prototype = {
 	constructor: THREE.WebGLRenderTarget,
 
 	setSize: function ( width, height ) {
-		
-		if ( this.width !== width || this.height !== height ) {
 
-			this.width = width;
-			this.height = height;
-
-			this.dispose();
-
-		}
+		this.width = width;
+		this.height = height;
 
 	},
 
@@ -24259,7 +24252,6 @@ THREE.WebGLProgram = ( function () {
 
 			var id = identifiers[ i ];
 			attributes[ id ] = gl.getAttribLocation( program, id );
-			//console.log(id + " at attrib location " + attributes[id]);
 
 		}
 
@@ -24765,7 +24757,6 @@ THREE.WebGLState = function ( gl, paramThreeToGL ) {
 	};
 
 	this.enableAttribute = function ( attribute ) {
-		//console.log(attribute);
 
 		newAttributes[ attribute ] = 1;
 
@@ -24783,8 +24774,7 @@ THREE.WebGLState = function ( gl, paramThreeToGL ) {
 		for ( var i = 0, l = enabledAttributes.length; i < l; i ++ ) {
 
 			if ( enabledAttributes[ i ] !== newAttributes[ i ] ) {
-				// enabledAttributes[i] latched to 1 from previous state, so disable it
-				//console.log("disabled " + i);
+
 				gl.disableVertexAttribArray( i );
 				enabledAttributes[ i ] = 0;
 
@@ -25005,7 +24995,6 @@ THREE.WebGLState = function ( gl, paramThreeToGL ) {
 		for ( var i = 0; i < enabledAttributes.length; i ++ ) {
 
 			enabledAttributes[ i ] = 0;
-			gl.disableVertexAttribArray( i ); // FIX (actually disable the slots)
 
 		}
 
