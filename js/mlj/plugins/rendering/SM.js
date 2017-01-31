@@ -96,9 +96,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       ],
       bindTo: (function () {
         var callback = function (bufferWidth) {
-          plug._applyTo(false);
           shadowPassOptions.bufferWidth = bufferWidth;
-          plug._applyTo(true);
         };
         callback.toString = function () { return "MLJ_SM_BufferWidth"; };
         return callback;
