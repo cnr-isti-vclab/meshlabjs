@@ -1,15 +1,33 @@
 (function(plugin, scene) {
 
-	var ColorFromVertexQualityFilter = new plugin.Filter({
-		name: "Generate Color from Vertex Quality",
-		tooltip: "Assign color to each vertex according to the scalar value stored in quality. <br>"
-                        +"A standard rainbow (red-green-blue) colormap is used.",
+	var ColorFromQualityFilter = new plugin.Filter({
+		name: "Generate Color from Quality",
+		tooltip: "Assign color to each vertex/face according to the scalar value stored in quality. <br>"
+                        +"Three colormaps are available: a standard rainbow (red-green-blue) colormap (similar to Jet), "
+                        +"a gray scale, and a Blue-Yellow shade (similar to Parula).",
 		arity: 1
 	});
 
-	var qMin, qMax, percentile, zeroSym;
+	var qualitySelection, qMin, qMax, percentile, zeroSym, colorBarWdg;
 
-	ColorFromVertexQualityFilter._init = function (builder) {
+	ColorFromQualityFilter._init = function (builder) {
+                qualitySelection = builder.Choice({
+                    label: "Quality",
+                    tooltip: "The quality attribute used to generate color",
+                    options: [
+                        { content: "Vertex", value: "V", selected: true },
+                        { content: "Face", value: "F" }
+                    ]
+                });
+                colorBarWdg = builder.Choice({
+                        label: "ColorMap",
+                        tooltip: "Choose one of the possible color mapping",
+                        options: [
+                            {content: "Blue-Green-Red (Jet)", value: 0, selected: true},
+                            {content: "Gray Shade", value: 1},
+                            {content: "Blue-Yellow (Parula)", value: 2},
+                        ]
+                });   
 		qMin = new builder.Float({
 			step: 0.5, defval: "0.0",
 			label: "Quality min",
@@ -29,16 +47,24 @@
 			defval: false,
 			label: "Zero symmetric",
 			tooltip: "If true, the quality range will be enlarged to be symmetric (so that green is always zero)"
-		});
+		});                         
 	};
 
-	ColorFromVertexQualityFilter._applyTo = function(meshFile) {
-		Module.ColorizeByVertexQuality(meshFile.ptrMesh(), qMin.getValue(), qMax.getValue(), percentile.getValue(), zeroSym.getValue());
-		meshFile.cppMesh.addPerVertexColor();
-		meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+	ColorFromQualityFilter._applyTo = function(meshFile) {
+                var vertexQuality = qualitySelection.getValue() == "V";
+		Module.ColorizeByQuality(meshFile.ptrMesh(), vertexQuality, qMin.getValue(), qMax.getValue(), 
+                    percentile.getValue(), zeroSym.getValue(),colorBarWdg.getValue());
+                if(vertexQuality) {
+                    meshFile.cppMesh.addPerVertexColor();
+                    meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Vertex;
+                }
+		else {
+                    meshFile.cppMesh.addPerFaceColor();
+                    meshFile.overlaysParams.getByKey("ColorWheel").mljColorMode = MLJ.ColorMode.Face;
+                }
 	};
 
-	plugin.Manager.install(ColorFromVertexQualityFilter);
+	plugin.Manager.install(ColorFromQualityFilter);
 
 
 	/*** Colorize by border distance ***/

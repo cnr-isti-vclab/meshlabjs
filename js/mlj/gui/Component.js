@@ -519,7 +519,7 @@ MLJ.gui.component.CheckBox = function (checked) {
             checked = false;
         }
 
-        this.setChecked(checked);
+        this.setValue(checked);
     };
 
     this.onChange = function (foo) {
@@ -533,7 +533,7 @@ MLJ.gui.component.CheckBox = function (checked) {
         return this.$.prop('checked');
     };
 
-    this.setChecked = function (boolean) {
+    this.setValue = function (boolean) {
         if (jQuery.type(boolean) !== "boolean") {
             boolean = false;
         }

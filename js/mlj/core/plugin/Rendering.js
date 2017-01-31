@@ -166,11 +166,11 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
             });            
     }
 
-    $(document).on("SceneLayerSelected", function (event, meshFile) {
+    $(document).on("SceneLayerSelected", function (event, layer) {
         update();
 
         if (parameters.toggle === true) {
-            var val = meshFile.properties.getByKey(parameters.name);
+            var val = layer.properties.getByKey(parameters.name);
             if (val === true) {
                 btn.toggle("on");
             } else {
@@ -195,7 +195,7 @@ MLJ.core.plugin.Rendering = function (parameters, defaults) {
         for (var pname in params) {
             paramWidget = _this.getParam(pname);
             if (paramWidget !== undefined) {
-                paramWidget._changeValue(params[pname]);
+                paramWidget.setValue(params[pname]);
             }
         }
     }

@@ -8,6 +8,60 @@ using namespace std;
 #define NUM_VERTICES_PER_FACE 3
 #define NUM_FLOATS_PER_VERTEX 3
 
+
+// This function build a vector of coords that define the 24 half-edges of a box. 
+// it returns a vector of 48 x 3 float.
+// Ratio is the normalized lenght of two half edges: 
+//    1 means that the two half edges are connected 
+//    0 means that the two half edges are just points
+
+uintptr_t buildBoxCoordVec(uintptr_t _mIn, float ratio)
+{
+  MyMesh &mIn = *( (MyMesh*)( _mIn));
+  Point3f *vVec = new Point3f[48];
+  tri::UpdateBounding<MyMesh>::Box(mIn);
+  Box3f bb=mIn.bbox;
+  Point3f mi=bb.min;
+  Point3f ma=bb.max;
+  Point3f d3=(bb.max-bb.min)*0.5*ratio;
+  Point3f zz(0,0,0);
+  int i=0;
+  vVec[i++]=Point3f(mi[0],mi[1],mi[2]); vVec[i++]=Point3f(mi[0]+d3[0],mi[1]+zz[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],mi[1],mi[2]); vVec[i++]=Point3f(mi[0]+zz[0],mi[1]+d3[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],mi[1],mi[2]); vVec[i++]=Point3f(mi[0]+zz[0],mi[1]+zz[1],mi[2]+d3[2]);
+
+  vVec[i++]=Point3f(ma[0],mi[1],mi[2]); vVec[i++]=Point3f(ma[0]-d3[0],mi[1]+zz[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],mi[1],mi[2]); vVec[i++]=Point3f(ma[0]+zz[0],mi[1]+d3[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],mi[1],mi[2]); vVec[i++]=Point3f(ma[0]+zz[0],mi[1]+zz[1],mi[2]+d3[2]);
+
+  vVec[i++]=Point3f(mi[0],ma[1],mi[2]); vVec[i++]=Point3f(mi[0]+d3[0],ma[1]+zz[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],ma[1],mi[2]); vVec[i++]=Point3f(mi[0]+zz[0],ma[1]-d3[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],ma[1],mi[2]); vVec[i++]=Point3f(mi[0]+zz[0],ma[1]+zz[1],mi[2]+d3[2]);
+
+  vVec[i++]=Point3f(ma[0],ma[1],mi[2]); vVec[i++]=Point3f(ma[0]-d3[0],ma[1]+zz[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],ma[1],mi[2]); vVec[i++]=Point3f(ma[0]+zz[0],ma[1]-d3[1],mi[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],ma[1],mi[2]); vVec[i++]=Point3f(ma[0]+zz[0],ma[1]+zz[1],mi[2]+d3[2]);
+
+  vVec[i++]=Point3f(mi[0],mi[1],ma[2]); vVec[i++]=Point3f(mi[0]+d3[0],mi[1]+zz[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],mi[1],ma[2]); vVec[i++]=Point3f(mi[0]+zz[0],mi[1]+d3[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],mi[1],ma[2]); vVec[i++]=Point3f(mi[0]+zz[0],mi[1]+zz[1],ma[2]-d3[2]);
+
+  vVec[i++]=Point3f(ma[0],mi[1],ma[2]); vVec[i++]=Point3f(ma[0]-d3[0],mi[1]+zz[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],mi[1],ma[2]); vVec[i++]=Point3f(ma[0]+zz[0],mi[1]+d3[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],mi[1],ma[2]); vVec[i++]=Point3f(ma[0]+zz[0],mi[1]+zz[1],ma[2]-d3[2]);
+
+  vVec[i++]=Point3f(mi[0],ma[1],ma[2]); vVec[i++]=Point3f(mi[0]+d3[0],ma[1]+zz[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],ma[1],ma[2]); vVec[i++]=Point3f(mi[0]+zz[0],ma[1]-d3[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(mi[0],ma[1],ma[2]); vVec[i++]=Point3f(mi[0]+zz[0],ma[1]+zz[1],ma[2]-d3[2]);
+
+  vVec[i++]=Point3f(ma[0],ma[1],ma[2]); vVec[i++]=Point3f(ma[0]-d3[0],ma[1]+zz[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],ma[1],ma[2]); vVec[i++]=Point3f(ma[0]+zz[0],ma[1]-d3[1],ma[2]+zz[2]);
+  vVec[i++]=Point3f(ma[0],ma[1],ma[2]); vVec[i++]=Point3f(ma[0]+zz[0],ma[1]+zz[1],ma[2]-d3[2]);
+  
+  assert(i==48);
+  return (uintptr_t)((void *)vVec);
+}
+
 uintptr_t buildSelectedFacesCoordsVec(uintptr_t _mIn) {
 
 	MyMesh &mIn = *((MyMesh*)_mIn);
@@ -51,8 +105,6 @@ uintptr_t buildSelectedFacesCoordsVec(uintptr_t _mIn) {
 
 	return (uintptr_t)((void *)facesCoordsVec);
 }
-
-
 
 uintptr_t buildSelectedPointsCoordsVec(uintptr_t _mIn) {
 
@@ -561,6 +613,32 @@ ColorHistogramf ComputeColorHistogram(
 	return ch;
 }
 
+float qualityMin(uintptr_t meshptr) {
+    MyMesh &m = *((MyMesh*) meshptr);
+    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    return minmax.first;
+}
+
+float qualityMax(uintptr_t meshptr) {
+    MyMesh &m = *((MyMesh*) meshptr);
+    std::pair<float, float> minmax = tri::Stat<MyMesh>::ComputePerVertexQualityMinMax(m);
+    return minmax.second;
+}
+
+uintptr_t buildVertexQualityVec(uintptr_t _mIn) {
+    MyMesh &mIn = *((MyMesh*)_mIn);
+
+    size_t numBytesVertices = mIn.VN() * sizeof(float);
+
+    float *vec = (float *) malloc(numBytesVertices);
+
+    int i = 0;
+
+    for (MyMesh::VertexIterator vi = mIn.vert.begin(); vi != mIn.vert.end(); ++vi) 
+        vec[i++] = vi->Q();
+    
+    return (uintptr_t) ((void *)vec);
+}
 
 #ifdef __EMSCRIPTEN__
 using namespace emscripten;
@@ -582,6 +660,10 @@ EMSCRIPTEN_BINDINGS(DecoratorPlugin) {
     emscripten::function("buildNonManifoldEdgeCoordsVec", &buildNonManifoldEdgeCoordsVec);
     emscripten::function("buildVertexNormalsVec", &buildVertexNormalsVec);
     emscripten::function("buildAttributesVecForWireframeRendering", &buildAttributesVecForWireframeRendering);
+    emscripten::function("buildBoxCoordVec", &buildBoxCoordVec);
     emscripten::function("ComputeColorHistogram", &ComputeColorHistogram);
+    emscripten::function("buildVertexQualityVec", &buildVertexQualityVec);
+    emscripten::function("qualityMin", &qualityMin);
+    emscripten::function("qualityMax", &qualityMax);
 }
 #endif

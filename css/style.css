@@ -272,6 +272,12 @@ html,body{
 
 
 /* Save dialog style ________________________________________________________ */
+
+#mlj-save-dialog input[type='checkbox']{
+    width: 20%;
+    text-align: center;
+}
+
 #mlj-save-dialog input,
 #mlj-save-dialog select {
     margin: 6px 0;
@@ -383,4 +389,56 @@ html,body{
     text-align: center;
     vertical-align: middle;
     border-radius: 4px;
+}
+
+ #sketchfabProgressBar {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    background-color: #BCC6CC;
+    margin-top: 10px;
+}
+
+#progressBar {
+    position: absolute;
+    width: 0%;
+    height: 100%;
+    background-color: #4863A0;
+}
+
+#pBarLabel {
+    text-align: center; /* If you want to center it */
+    line-height: 20px; /* Set the line-height to the same as the height of the progress bar container, to center it vertically */
+    color: white;
+}
+
+#exitUpdateButton,#mlj-upload-dialog-button,#uploadButton{
+    width: 50%;
+    height: 30px;
+    text-align: center;
+    position: relative;
+    left: 25%;
+    margin-top: 10px;
+}
+
+#the-form input[type='text'],#the-form input[type='password'],#the-form textarea{
+    width: 98%;
+}
+
+#the-form{
+    line-height: 19px;
+}
+
+#passwordCounter,#descriptionCounter,#nameCounter {
+    display:inline;
+    color: grey;   
+    font-size: 90%;
+}
+
+#passwordCounter.overflow,#descriptionCounter.overflow,#nameCounter.overflow,#status.error{
+    color: red;
+}
+
+#sketchfabUpload{
+    margin-top: 8px;
 }

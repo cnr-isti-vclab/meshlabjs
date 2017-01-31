@@ -44,6 +44,7 @@ MLJ.core.plugin = {
  * @memberOf MLJ.core.plugin
  * @author Stefano Gabriele 
  */
+;
 MLJ.core.plugin.Plugin = function (name, parameters) {
     if (name === undefined) {
         throw new Error("MLJ.core.plugin.Plugin: parameters.name undefined");
@@ -108,18 +109,35 @@ MLJ.core.plugin.Plugin.prototype = {
  * @author Stefano Gabriele 
  */
 MLJ.core.plugin.GUIBuilder = function (component) {
+    var widgets=new Array();
     var _this = this;
     var _onChange = function () {
     };
     this.params = new MLJ.util.AssociativeArray();
-
+    widgets.addValue=function(o,val)
+    {
+        var i=this.map(function(e) { return e.object; }).indexOf(o);
+        if(i>-1)
+                this[i].value=val;
+        else
+                this.push({object:o,value:val});
+    }
+    this.Values=function()
+    {
+            return widgets.map(function(e) { return e.value});
+    }
+    this.setWidgetValue=function(id,newVal)
+    {
+        widgets[id].object.setValue(newVal);
+    }
     this.Float = function (flags) {
         var float = new MLJ.gui.Param.Float(flags);
         component.appendContent(float._make());
         _this.params.set(flags.bindTo, float);
-
+	widgets.addValue(float,flags.defval);
         float.onChange(function (val) {
             _onChange(flags.bindTo, val);
+            widgets.addValue(float,val);
         });
 
         return float;
@@ -128,9 +146,10 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var integer = new MLJ.gui.Param.Integer(flags);
         component.appendContent(integer._make());
         _this.params.set(flags.bindTo, integer);
-
+		widgets.addValue(integer,flags.defval);
         integer.onChange(function (val) {
             _onChange(flags.bindTo, val);
+			widgets.addValue(integer,val);
         });
 
         return integer;
@@ -139,9 +158,10 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var bool = new MLJ.gui.Param.Bool(flags);
         component.appendContent(bool._make());
         _this.params.set(flags.bindTo, bool);
-
+		widgets.addValue(bool,flags.defval);
         bool.onChange(function (val) {
             _onChange(flags.bindTo, val);
+			widgets.addValue(bool,val);
         });
 
         return bool;
@@ -163,7 +183,6 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var choice = new MLJ.gui.Param.Choice(flags);
         component.appendContent(choice._make());
         _this.params.set(flags.bindTo, choice);
-
         choice.onChange(function (val) {
             _onChange(flags.bindTo, val);
         });
@@ -191,9 +210,10 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var rangedfloat = new MLJ.gui.Param.RangedFloat(flags);
         component.appendContent(rangedfloat._make());
         _this.params.set(flags.bindTo, rangedfloat);
-                
+        widgets.addValue(rangedfloat,flags.defval);  
         rangedfloat.onChange(function (val) {            
-            _onChange(flags.bindTo, val);            
+            _onChange(flags.bindTo, val);
+            widgets.addValue(rangedfloat,val);           
         });
         
         return rangedfloat;
@@ -202,7 +222,7 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var layerSelection = new MLJ.gui.Param.LayerSelection(flags);
         component.appendContent(layerSelection._make());
         _this.params.set(flags.bindTo, layerSelection);
-        
+        widgets.addValue(layerSelection,undefined);         
         return layerSelection;
     };
 

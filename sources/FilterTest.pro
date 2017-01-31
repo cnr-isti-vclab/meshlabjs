@@ -1,5 +1,6 @@
 DEPENDPATH += . ../../vcglib
 INCLUDEPATH += . ../../vcglib muparser-2.2.5/include
+INCLUDEPATH += . ../../vcglib ../../vcglib/eigenlib
 CONFIG += console stl c++11
 TEMPLATE = app
 # Mac specific Config required to avoid to make application bundles
@@ -12,6 +13,8 @@ MUPARSERSRC = $$MUD/muParser.cpp $$MUD/muParserBase.cpp \
 
 #TARGET = filtertest
 SOURCES += FilterTest.cpp \
+  CppMesh.cpp \ 
+  Decorator.cpp \
   Color.cpp \
   Create.cpp \
   FuncParser.cpp \

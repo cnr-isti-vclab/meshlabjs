@@ -25,7 +25,7 @@
     
     DuplicateLayerFilter._applyTo = function (basemeshFile) {
         var newmeshFile = MLJ.core.Scene.createLayer("copy of "+basemeshFile.name);
-        Module.DuplicateLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
+        Module.AddLayerToLayer(basemeshFile.ptrMesh(), newmeshFile.ptrMesh());
         scene.addLayer(newmeshFile);
     };
 /******************************************************************************/

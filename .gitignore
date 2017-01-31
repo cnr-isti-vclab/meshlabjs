@@ -14,3 +14,4 @@ doc/html/
 
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
+build-*/

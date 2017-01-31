@@ -40,7 +40,15 @@ MLJ.core.File = {
         OFF: ".off",
         OBJ: ".obj",
         PLY: ".ply",
-        STL: ".stl"        
+        STL: ".stl"
+    },
+    SupportedSketchfabExtensions: {
+        OBJ: ".obj",
+        PLY: ".ply",
+        STL: ".stl"
+    },
+    SupportedWebsites: {
+        SKF: "Sketchfab"
     }
 };
 
@@ -54,6 +62,7 @@ MLJ.core.File = {
             case ".obj":
             case ".ply":
             case ".stl":
+            case ".zip":
                 return true;
         }
 
@@ -72,21 +81,27 @@ MLJ.core.File = {
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
-            
             console.time("Parsing Mesh Time");
-            var resOpen = mf.cppMesh.openMesh(file.name);
+//            console.log("File extension: " +file.name.split('.').pop());
+            var resOpen = -1;
+            if (file.name.split('.').pop() === "zip")
+                resOpen = mf.cppMesh.openMeshZip(file.name);
+            else
+                resOpen = mf.cppMesh.openMesh(file.name);
+
             if (resOpen !== 0) {
                 console.log("Ops! Error in Opening File. Try again.");
                 FS.unlink(file.name);
                 onLoaded(false);
             }
-            console.timeEnd("Parsing Mesh Time");        
+            console.timeEnd("Parsing Mesh Time");
             FS.unlink(file.name);
             onLoaded(true, mf);
+            MLJ.core.Scene.addStateToHistory();
         };
     }
 
-    
+
 
     /**
      * Opens a mesh file or a list of mesh files     
@@ -118,7 +133,8 @@ MLJ.core.File = {
             }
 
             var mf = MLJ.core.Scene.createLayer(file.name);
-            mf.fileName = file.name; 
+
+            mf.fileName = file.name;
 
             loadMeshDataFromFile(file, mf, function (loaded, meshFile) {
                 if (loaded) {
@@ -138,6 +154,7 @@ MLJ.core.File = {
                     $(document).trigger("MeshFileOpened", [meshFile]);
                 }
             });
+
         });
     };
 
@@ -176,27 +193,248 @@ MLJ.core.File = {
         });
     };
 
-    this.saveMeshFile = function (meshFile, fileName) {
-        
+    this.saveMeshFile = function (mesh, fileName) {
         //Create data file in FS
-        var int8buf = new Int8Array(meshFile.ptrMesh());
+        var int8buf = new Int8Array(mesh.ptrMesh());
         FS.createDataFile("/", fileName, int8buf, true, true);
-        
-        //call a SaveMesh contructon from c++ Saver.cpp class
-        var Save = new Module.SaveMesh(meshFile.ptrMesh());
+
         //call a saveMesh method from above class
-        var resSave = Save.saveMesh(fileName);
-        
+        var resSave = mesh.cppMesh.saveMesh(fileName);
+
         //handle errors ...        
-        
+
         //readFile is a Emscripten function which read a file into memory by path
         var file = FS.readFile(fileName);
         //create a Blob by filestream
         var blob = new Blob([file], {type: "application/octet-stream"});
         //call a saveAs function of FileSaver Library
         saveAs(blob, fileName);
-        
+
         FS.unlink(fileName);
-    };        
+    };
+
+
+    this.saveMeshFileZip = function (mesh, fileName, archiveName) {
+        mesh.cppMesh.saveMesh(fileName);
+        mesh.cppMesh.saveMeshZip(fileName, archiveName);
+
+        var file = FS.readFile(archiveName);
+        var blob = new Blob([file], {type: "application/octet-stream"});
+        saveAs(blob, archiveName);
+
+        FS.unlink(archiveName);
+        FS.unlink(fileName);
+    };
+
+
+    this.uploadToSketchfab = function (meshFile, meshExt, zipBool, dialog) {
+        var meshInfo = meshFile.name.split(".");
+        var meshFileName = meshInfo[0] + meshExt;
+        var fileName = meshFileName;
+
+        var resSave = meshFile.cppMesh.saveMesh(meshFileName);
+
+        if (zipBool) {
+            fileName = meshInfo[0] + ".zip";
+            meshFile.cppMesh.saveMeshZip(meshFileName, fileName);
+        }
+
+        console.log("Uploading " + meshFileName + " compressed: " + zipBool + " filename: " + fileName);
+        var file = FS.readFile(fileName);
+        var blob = new Blob([file], {type: "application/octet-stream"});
+
+        var sketchfabApiUrl = 'https://api.sketchfab.com/v2/models';
+        var sketchfabModelUrl = 'https://sketchfab.com/models/';
+        // var data = document.getElementById( 'the-form' );
+        var data = $('#the-form')[0];
+        var modelName = data[1].value;
+        uploadModel(data);
+        $('#status').html('Uploading File...');
+        $('#status').removeClass('error');
+
+        FS.unlink(fileName);
+
+        function uploadModel(data) {
+//          console.log( 'Begin upload of ' + String( data.modelFile.value ) );  
+            var formData = new FormData();
+
+            formData.append("modelFile", blob, fileName);
+            formData.append("token", data[0].value);
+            formData.append("name", data[1].value);
+            formData.append("description", data[2].value + "    \n\Made with **MeshLabJS**, the mesh processing tool on the web. Freely available at [www.meshlabjs.net](http://www.meshlabjs.net)   \n\![MeshLabJS](http://www.meshlabjs.net/img/favicon48.png \"MeshLabJS\")");
+            formData.append("tags", data[3].value + " meshlab meshlabjs");
+            formData.append("private", data[4].value);
+            formData.append("password", data[5].value);
+            formData.append("source", "meshlabjs");
+
+//          var entries = formData.entries();
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+//          console.log(entries.next().value);
+            var abort = false;
+            var upError = false;
+            var upSuccess = false;
+
+            var progressBar = $('#progressBar');
+            var pBarLabel = $('#pBarLabel');
+
+            var xhr = $.ajax({
+                xhr: function ()
+                {
+                    var xhrProgr = new window.XMLHttpRequest();
+                    xhrProgr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                            var percentProgressBar = Math.round((evt.loaded / evt.total) * 50);
+                            $('#status').html('Uploading File ' + percentComplete + '%');
+                            $('#status').removeClass('error');
+                            progressBar.width(percentProgressBar + '%');
+                            pBarLabel.html(percentProgressBar + '%');
+                        }
+                    }, false);
+                    return xhrProgr;
+                },
+                url: sketchfabApiUrl,
+                data: formData,
+                cache: false,
+                source: 'meshlabjs',
+                contentType: false,
+                processData: false,
+                type: 'POST',
+                success: function (response) {
+                    upSuccess = true;
+                    var uid = response.uid;
+                    console.log('Begin polling processing status. If successful, the model will be available at ' + sketchfabModelUrl + uid);
+                    $('#status').removeClass('error');
+                    $('#status').html('Upload successful, polling...');
+                    $('#exitUpdateButton').prop('disabled', true);
+                    progressBar.width("50%");
+                    pBarLabel.html("50%");
+                    pollProcessingStatus(uid);
+                },
+                error: function (response) {
+                    if (!abort) {
+                        upError = true;
+                        console.log('Upload Error!');
+                        console.log(JSON.stringify(response));
+                        $('#status').html('Upload error!');
+                        $('#status').addClass('error');
+                    } else {
+                        console.log("Upload Aborted");
+                        $('#status').html('Upload Aborted!');
+                        $('#status').addClass('error');
+                    }
+
+                    $('#exitUpdateButton').prop('disabled', false);
+                    $('#exitUpdateButton').prop('disabled', false);
+                    $('#exitUpdateButton').text('Exit');
+                }
+            });
+
+            $('#exitUpdateButton').click(function () {
+                if (!abort && !upError && !upSuccess) {
+                    abort = true;
+                    xhr.abort();
+                } else if (upError || upSuccess) {
+                    dialog.destroy();
+                } else {
+                    dialog.destroy();
+                }
+            });
+        }
+
+        function pollProcessingStatus(urlid) {
+            var url = sketchfabApiUrl + '/' + urlid + '/status?token=' + data.token.value;
+            var progressBar = $('#progressBar');
+            var pBarLabel = $('#pBarLabel');
+            var errors = 0;
+            var maxErrors = 10;
+            var retry = 0;
+            var maxRetries = 50;
+            var retryTimeout = 5000;  // milliseconds
+            var retryTimeoutSec = retryTimeout / 1000; // seconds
+            var complete = false;
+            function getStatus() {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (response) {
+                        retry++;
+                        console.log('Got status...')
+                        var status = response.processing;
+
+                        switch (status) {
+                            case 'PENDING':
+                                console.log('Model is in the processing queue. Waiting ' + (retryTimeoutSec) + ' seconds to try again...');
+                                $('#status').html('Model in queue...');
+                                $('#status').removeClass('error');
+                                progressBar.width('60%');
+                                pBarLabel.html("60%");
+                                break;
+                            case 'PROCESSING':
+                                console.log('Model is being processed. Waiting ' + (retryTimeoutSec) + ' seconds to try again...');
+                                $('#status').html('Model processing...');
+                                $('#status').removeClass('error');
+                                progressBar.width('75%');
+                                pBarLabel.html("75%");
+                                break;
+                            case 'FAILED':
+                                console.log('Model processing failed:');
+                                console.log(response.error);
+                                $('#status').html('Model processing failed!');
+                                $('#status').addClass('error');
+                                $('#exitUpdateButton').prop('disabled', false);
+                                $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
+                                $('#exitUpdateButton').text('Exit');
+                                complete = true;
+                                break;
+                            case 'SUCCEEDED':
+                                console.log('It worked!');
+                                console.log(sketchfabModelUrl + urlid);
+                                complete = true;
+                                $('#status').removeClass('error');
+                                $('#status').html('It worked! See it here: <a href="' + sketchfabModelUrl + urlid + '" target="_blank"> Sketchfab: ' + modelName + '</a>');
+                                $('#exitUpdateButton').button().text('Ok');
+                                $('#exitUpdateButton').prop('disabled', false);
+                                $('#exitUpdateButton').removeClass("ui-button-disabled ui-state-disabled");
+                                progressBar.width('100%');
+                                pBarLabel.html("100%");
+                                break;
+                            default:
+                                console.log('This message should never appear...something changed in the processing response. See: ' + url);
+                        }
+
+                        if (retry < maxRetries && !complete) {
+                            setTimeout(getStatus, retryTimeout);
+                        } else if (complete) {
+                            return;
+                        } else if (retry >= maxRetries) {
+                            console.log('Polled ' + maxRetries + ' times and it\'s still not finished...quitting');
+                        } else {
+                            console.log('Something weird happened...quitting');
+                        }
+                    },
+                    error: function (response) {
+                        errors++;
+                        retry++;
+                        if (errors < maxErrors && retry < maxRetries && !complete) {
+                            console.log('Error: ' + JSON.stringify(response));
+                            console.log('Error getting status ( ' + errors + ' ). Trying again...');
+                            setTimeout(getStatus, retryTimeout);
+                        } else {
+                            console.log('Too many errors...quitting');
+                        }
+                    }
+                });
+            }
+            getStatus();
+        }
+    };
 
 }).call(MLJ.core.File);
