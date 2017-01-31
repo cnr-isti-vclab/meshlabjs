@@ -46,7 +46,7 @@ void computeCrease(MyMesh &m, float crease)
                 {
                     pi.F()->SetCrease(i);
                     pi.FlipF();
-                    pi.FFlip()->SetCrease(pi.E());
+                    pi.F()->SetCrease(pi.E());
 
                 }
             }
@@ -290,7 +290,7 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
     Allocator<MyMesh>::CompactEveryVector(m);
 }
 
-// This function sets the selection bit on vertices that lies on creases
+// This function sets the selection bit on vertices that lie on creases
 int selectVertexFromCrease(MyMesh &m)
 {
     int count = 0;
@@ -308,7 +308,7 @@ int selectVertexFromCrease(MyMesh &m)
 }
 
 /*
-    Simple Laplacian Smoothing step
+    Simple Laplacian Smoothing step - Border and crease vertices are ignored.
 */
 void ImproveByLaplacian(MyMesh &m, bool DEBUGCREASE)
 {
