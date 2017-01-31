@@ -7,6 +7,7 @@
 #include<vcg/complex/algorithms/crease_cut.h>
 #include<vcg/complex/algorithms/curve_on_manifold.h>
 #include<vcg/complex/algorithms/hole.h>
+#include<vcg/complex/algorithms/pointcloud_normal.h>
 
 
 using namespace vcg;
@@ -214,6 +215,18 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
   tri::Hole<MyMesh>::EarCuttingFill< tri::TrivialEar<MyMesh> > (m, maxHoleEdgeNum);  
 }
 
+void ComputePointCloudNormal(uintptr_t _baseM, int kNearestNum, int smoothIter, bool flipFlag)
+{
+   MyMesh &mesh = *((MyMesh*) _baseM);
+   
+   tri::PointCloudNormal<MyMesh>::Param p;
+   p.fittingAdjNum = kNearestNum;
+   p.smoothingIterNum = smoothIter;
+   p.useViewPoint = flipFlag;
+   
+   tri::PointCloudNormal<MyMesh>::Compute(mesh, p);
+}
+
 
 void MeshingPluginTEST()
 {
@@ -280,6 +293,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
     emscripten::function("HoleFilling",                &HoleFilling);
+    emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif
 
