@@ -160,7 +160,7 @@ bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h)
 // Edge swap step: edges are flipped in order to optimize valence and triangle quality across the mesh
 void ImproveValence(MyMesh &m, float crease)
 {
-  //  tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
 
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
     tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
@@ -207,12 +207,18 @@ public:
 
 void SplitLongEdges(MyMesh &m, bool adapt, float crease, float length)
 {
-   // tri::UpdateTopology<MyMesh>::FaceFace(m);
-    Distribution<float> distr;
-    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+
     float min,max;
-    max = distr.Percentile(0.9f);
-    min = distr.Percentile(0.1f);
+
+    if(adapt) //if not adaptive, do not compute quality
+    {
+        Distribution<float> distr;
+        tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
+
+        max = distr.Percentile(0.9f);
+        min = distr.Percentile(0.1f);
+    }
 
     tri::MidPoint<MyMesh> midFunctor(&m);
     EdgeSplitPred ep;
@@ -237,18 +243,23 @@ inline bool testCollapse(MyPair &p, MyCollapser &eg, float min, float max, float
 
 void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
 {
-   // tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
     //tri::UpdateTopology<MyMesh>::FaceFace(m); //FF is updated by the preceding RefineE
 
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
     tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
 
-    Distribution<float> distr;
-    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
-
     float min,max;
-    max = distr.Percentile(0.9f);
-    min = distr.Percentile(0.1f);
+
+    if(adapt)
+    {
+        Distribution<float> distr;
+        tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
+
+
+        max = distr.Percentile(0.9f);
+        min = distr.Percentile(0.1f);
+    }
 
     MyCollapser eg;
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
@@ -259,7 +270,7 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, float length)
                 MyPos pi(&*fi, i);
                 if(!pi.F()->IsAnyF() && !pi.FFlip()->IsAnyF() && // se collassarmi non sposta un crease vertex
                         //should be: if the edge is crease or we don't have creases on the face
-//                        (!pi.IsFaux() || (pi.F()->IsF(0) && pi.F()->IsF(1) && pi.F()->IsF(2))) &&
+                        //                        (!pi.IsFaux() || (pi.F()->IsF(0) && pi.F()->IsF(1) && pi.F()->IsF(2))) &&
                         !pi.IsBorder() &&
                         !pi.FFlip()->IsV())
                 {
@@ -358,7 +369,6 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     tri::FaceTmark<MyMesh> mark;
     mark.SetMesh(&original);
 
-    // Update required topology and quality
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateTopology<MyMesh>::VertexFace(m);
 
@@ -370,10 +380,9 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
         return;
     }
 
-    // here it crashes if executed after simplification (cluster or quadric)
     tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
     tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
-    tri::UpdateQuality<MyMesh>::VertexSaturate(m); //do you really want this?
+    //tri::UpdateQuality<MyMesh>::VertexSaturate(m); //do you really want this?
 
     /* Computing mean edge length (it needs the edge vector) */
     tri::UpdateTopology<MyMesh>::AllocateEdge(m);

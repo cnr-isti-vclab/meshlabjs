@@ -267,6 +267,7 @@ void MeshingPluginTEST()
 }
 
 
+
 #ifdef __EMSCRIPTEN__
 //Binding code
 EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
