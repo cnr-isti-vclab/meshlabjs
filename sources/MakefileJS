@@ -14,17 +14,24 @@ CC=emcc
 # -s TOTAL_MEMORY=1073741824 
  
 
-CFLAGS=-I.  -I ../../vcglib/ -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
+CFLAGS=-I.  -I ../../vcglib/ -I muparser-2.2.5/include  -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Selection.bc Quality.bc \
+      FuncParser.bc \
       ../../vcglib/wrap/ply/plylib.bc
+
+LIBS = lib/muparserLib.bc
+
 
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
 MeshLabCppCore.js: $(OBJ)
-	$(CC) -o ../js/generated/$@ $^ $(CFLAGS)
+	$(CC) -o ../js/generated/$@ $^ $(LIBS) $(CFLAGS)
+
+FuncParser.bc : FuncParser.cpp
+	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
 
 
 clean:

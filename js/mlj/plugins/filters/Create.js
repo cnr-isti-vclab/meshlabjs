@@ -268,6 +268,45 @@
         Module.CreateSuperEllipsoid(mf.ptrMesh(),feature1.getValue(), feature2.getValue(), feature3.getValue(),stepWidget.getValue());
         scene.addLayer(mf);
     };
+
+/******************************************************************************/
+    var IsosurfaceFilter = new plugin.Filter({
+        name: "Create User Defined Isosurface",
+        tooltip: "Create a isosurface user defined scalar field",
+        arity: 0});
+
+    var isoFuncWidget,isoResWidget,minXWdg,minYWdg,minZWdg,maxXWdg,maxYWdg,maxZWdg;
+    IsosurfaceFilter._init = function (builder) {
+        
+            isoFuncWidget  = builder.String({
+            label: "Volume Field",
+            tooltip: "This expression is evaluated on all the voxel of the volume",
+//            defval: "cos(x)*sin(y)+cos(y)*sin(z)+cos(z)*sin(x)"
+            defval: "cos(x)*sin(y)+cos(y)*sin(z)+cos(z)*sin(x)"
+        });
+        isoResWidget = builder.Float({
+            min: 0, step: 0.01, defval: 0.1,
+            label: "Voxel Resolution",
+            tooltip: "Resolution of the grid where the isosurface is defined"
+        });        
+        
+        minXWdg = builder.Float({ step: 0.1, defval:-4.0, label: "X Min", tooltip: "Domain range minimum x value" });
+        minYWdg = builder.Float({ step: 0.1, defval:-4.0, label: "Y Min", tooltip: "Domain range minimum y value" });
+        minZWdg = builder.Float({ step: 0.1, defval:-4.0, label: "Z Min", tooltip: "Domain range minimum z value" });
+        maxXWdg = builder.Float({ step: 0.1, defval: 4.0, label: "X Max", tooltip: "Domain range maximum x value" });
+        maxYWdg = builder.Float({ step: 0.1, defval: 4.0, label: "Y Max", tooltip: "Domain range maximum y value" });
+        maxZWdg = builder.Float({ step: 0.1, defval: 4.0, label: "Z Max", tooltip: "Domain range maximum z value" });
+    };
+
+    IsosurfaceFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
+        Module.IsosurfaceFilter(mf.ptrMesh(), isoFuncWidget.getValue(), 
+                    minXWdg.getValue(),minYWdg.getValue(),minZWdg.getValue(),
+                    maxXWdg.getValue(),maxYWdg.getValue(),maxZWdg.getValue(),
+                    isoResWidget.getValue());
+                    scene.addLayer(mf);
+    };
+
 /******************************************************************************/
     var NoisyIsoFilter = new plugin.Filter({
         name: "Create Noisy Isosurface",
@@ -289,8 +328,60 @@
         scene.addLayer(mf);
     };
 
+/******************************************************************************/
+    var ParametricSurfaceFilter = new plugin.Filter({
+        name: "Create Parametric Surface",
+        tooltip: "Create a parametric surface defined by (x,y,z) = F(u,v)",
+        arity: 0});
+
+    var funcStrXWdg,funcStrYWdg,funcStrZWdg,
+        countUWdg,countVWdg, minUWdg,minVWdg,maxUWdg,maxVWdg;
+    ParametricSurfaceFilter._init = function (builder) {
+        
+        funcStrXWdg  = builder.String({
+            label: "X func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "u-sin(u)*cosh(v)"
+        });
+        funcStrYWdg  = builder.String({
+            label: "Y func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "1-cos(u)*cosh(v)"
+        });
+        funcStrZWdg  = builder.String({
+            label: "Z func",
+            tooltip: "This expression is evaluated on all the point of the (u,v) parametric surface grid to get the X value",
+            defval: "4*sin(1/2*u)*sinh(v/2)"
+        });
+        countUWdg = builder.Integer({
+            min: 1, step: 5, defval: 200,
+            label: "U steps",
+            tooltip: "Resolution of the grid along the 'u' dimension"
+        });         
+        countVWdg = builder.Integer({
+            min: 1, step: 5, defval: 50,
+            label: "V steps",
+            tooltip: "Resolution of the grid along the 'u' dimension"
+        });         
+        
+        minUWdg = builder.Float({ step: 0.1, defval:-10.0, label: "U Min", tooltip: "Domain range minimum U value" });
+        minVWdg = builder.Float({ step: 0.1, defval:-2.0, label: "V Min", tooltip: "Domain range minimum V value" });
+        maxUWdg = builder.Float({ step: 0.1, defval: 10.0, label: "U Max", tooltip: "Domain range maximum U value" });
+        maxVWdg = builder.Float({ step: 0.1, defval: 2.0, label: "V Max", tooltip: "Domain range maximum V value" });
+        
+    };
+
+    ParametricSurfaceFilter._applyTo = function () {
+        var mf = MLJ.core.Scene.createLayer("Param Surf");
+        Module.ParametricSurfaceFilter(mf.ptrMesh(), 
+                    funcStrXWdg.getValue(), funcStrYWdg.getValue(), funcStrZWdg.getValue(), 
+                    minUWdg.getValue(), maxUWdg.getValue(), countUWdg.getValue(),
+                    minVWdg.getValue(), maxVWdg.getValue(), countVWdg.getValue()  );
+                    scene.addLayer(mf);
+    };
 
 /******************************************************************************/
+
 
     plugin.Manager.install(DeleteLayerFilter);
     plugin.Manager.install(DuplicateLayerFilter);
@@ -301,7 +392,8 @@
     plugin.Manager.install(PlatonicFilter);
     plugin.Manager.install(TorusFilter);
     plugin.Manager.install(NoisyIsoFilter);
-	plugin.Manager.install(SuperToroidFilter);
-	plugin.Manager.install(SuperEllipsoidFilter);
-
+    plugin.Manager.install(SuperToroidFilter);
+    plugin.Manager.install(SuperEllipsoidFilter);
+    plugin.Manager.install(IsosurfaceFilter);
+    plugin.Manager.install(ParametricSurfaceFilter);   
 })(MLJ.core.plugin, MLJ.core.Scene);

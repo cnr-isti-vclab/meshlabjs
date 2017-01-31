@@ -1,7 +1,5 @@
 #include "mesh_def.h"
 
-#include <vcg/complex/algorithms/update/color.h>
-#include <vcg/complex/algorithms/update/flag.h>
 #include <vcg/complex/algorithms/geodesic.h>
 #include <vcg/complex/algorithms/stat.h>
 
