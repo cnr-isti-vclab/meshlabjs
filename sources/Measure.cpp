@@ -226,6 +226,7 @@ void ComputeMeanValence(uintptr_t meshPtr)
                     minVal       = (val < minVal) ? val : minVal;
 
                     p.V()->SetV();
+                    p.V()->Q() = val;
                     ++count;
                 }
             }

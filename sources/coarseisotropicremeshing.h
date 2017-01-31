@@ -30,9 +30,9 @@ inline float lerp (float a, float b, float lambda)
 //This could be used in place of FaceFauxCrease to avoid using the Faux bit
 void computeVertexCrease(MyMesh &m, float crease, int creaseBitFlag)
 {
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     tri::UpdateFlags<MyMesh>::VertexClear(m, creaseBitFlag);
     tri::UpdateFlags<MyMesh>::FaceClearCreases(m);
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
 
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
@@ -168,13 +168,13 @@ void ImproveValence(MyMesh &m, float crease, int creaseBitFlag)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m); //collapser does not update FF
 
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     // tri::UpdateFlags<MyMesh>::FaceFauxCrease(m, math::ToRad(crease));
-    computeVertexCrease(m, crease, creaseBitFlag);
 
     MyMesh::PerVertexIntHandle h = tri::Allocator<MyMesh>::AddPerVertexAttribute<int>(m, std::string("Valence"));
     tri::Clean<MyMesh>::ComputeValence(m, h);
 
+    computeVertexCrease(m, crease, creaseBitFlag);
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     int swapCnt=0;
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
         if(!(*fi).IsD())
@@ -305,7 +305,7 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, 
                 MyPos pi(&*fi, i);
 
                 if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag) &&
-                        !pi.IsBorder() &&
+                        !pi.V()->IsB() && !pi.VFlip()->IsB() &&
                         !pi.FFlip()->IsV())
                 {
                     MyPair bp(pi.V(), pi.VFlip());
@@ -412,6 +412,7 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
 
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
 
     /* Manifold(ness) check*/
     if(tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m) != 0 ||
