@@ -15,18 +15,20 @@
         var samples = [];
         var k = 0;
         for (var i = 0; i < 32; ++i) {
-            do {
-                var pt = new THREE.Vector3(
-                    Math.random() * 2.0 - 1.0,
-                    Math.random() * 2.0 - 1.0,
-                    Math.random()
-                );
-            } while (pt.length() > 1);
+            // sample using spherical coordinates
+            var theta = 0.5*Math.PI*Math.random();
+            var phi = 2*Math.PI*Math.random();
+            var pt = new THREE.Vector3(
+                Math.cos(phi)*Math.sin(theta),
+                Math.sin(phi)*Math.sin(theta),
+                Math.cos(theta)
+            );
 
-            // group samples closer to the origin
-            //pt.normalize();
-            //var x = i / 32;
-            //pt.multiplyScalar(Math.max(0.1, x*x));
+            // re-normalize and scale to get more samples closer to
+            // the origin
+            pt.normalize();
+            var length = Math.random();
+            pt.multiplyScalar(length*length);
 
             samples[k++] = pt.x;
             samples[k++] = pt.y;
@@ -88,7 +90,7 @@
             label: "Ambient Occlusion Power",
             tooltip: "The occlusion factor is raised to this power (occluded areas \
                 get darker)",
-            min: 1.0, step: 0.1, max:5.0,
+            min: 0.05, step: 0.1, max:5.0,
             defval: AOPassUniforms.occlusionPower.value,
             bindTo: (function () {
                 var bindToFun = function (value) {
@@ -166,6 +168,9 @@
                 3)
             );
             quadGeometry.attributes.frustumCorner.needsUpdate = true;
+
+            // make sure the scene is rendered with the updated values
+            MLJ.core.Scene.render();
         }
 
         updateFrustumAttribute();
@@ -223,7 +228,7 @@
             });
             // normals and depth pass
             threeScene.overrideMaterial = distanceMapMaterial;
-            distanceMapTarget.setSize(inputBuffer.width, inputBuffer.height);
+            MLJ.core.Scene.resizeWebGLRenderTarget(distanceMapTarget, inputBuffer.width, inputBuffer.height);
             renderer.render(threeScene, scene.getCamera(), distanceMapTarget, true);
             threeScene.overrideMaterial = null;
 
@@ -236,7 +241,7 @@
             });
 
             // ambient occlusion pass
-            ambientOcclusionMapTarget.setSize(inputBuffer.width, inputBuffer.height);
+            MLJ.core.Scene.resizeWebGLRenderTarget(ambientOcclusionMapTarget, inputBuffer.width, inputBuffer.height);
             AOPassUniforms.uvMultiplier.value.set(inputBuffer.width/4, inputBuffer.height/4);
             renderer.render(AOPassScene, scene.getCamera(), ambientOcclusionMapTarget, true);
 
