@@ -785,8 +785,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
 //                _group.remove(mesh);
             }
 
-            mesh.traverse(disposeObject);
-            disposeObject(mesh);
+            mesh.traverse(this.disposeObject);
+            this.disposeObject(mesh);
 
             _this.render();
         }
@@ -953,8 +953,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
             var mesh = _decorators.remove(name);
             _decoratorsGroup.remove(decorator);
 
-            mesh.traverse(disposeObject);
-            disposeObject(mesh);
+            mesh.traverse(this.disposeObject);
+            this.disposeObject(mesh);
         } else {
             console.warn("Warning: " + name + " decorator not in the scene");
         }

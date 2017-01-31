@@ -271,6 +271,11 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
+      MLJ.core.Scene.resizeWebGLRenderTarget(depthMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
+      MLJ.core.Scene.resizeWebGLRenderTarget(positionMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
+      MLJ.core.Scene.resizeWebGLRenderTarget(horBlurTarget, shadowPassOptions.bufferWidth/2, shadowPassOptions.bufferWidth/2);
+      MLJ.core.Scene.resizeWebGLRenderTarget(verBlurTarget, shadowPassOptions.bufferWidth/2, shadowPassOptions.bufferWidth/2);
+
       let sceneGraph = scene.getScene();
       let sceneCam   = scene.getCamera();
       let renderer   = scene.getRenderer();
