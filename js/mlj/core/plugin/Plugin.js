@@ -166,7 +166,20 @@ MLJ.core.plugin.GUIBuilder = function (component) {
 
         return bool;
     };
-    this.Choice = function (flags) { //da mappare per salvare il valore
+    
+    this.String = function (flags) {
+        var string = new MLJ.gui.Param.String(flags);
+        component.appendContent(string._make());
+        _this.params.set(flags.bindTo, string);
+
+        string.onChange(function (val) {
+            _onChange(flags.bindTo, val);
+        });
+
+        return string;
+    };
+    
+    this.Choice = function (flags) {
         var choice = new MLJ.gui.Param.Choice(flags);
         component.appendContent(choice._make());
         _this.params.set(flags.bindTo, choice);

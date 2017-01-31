@@ -1,7 +1,7 @@
 
-*.o
-*.bc
-*.db
+sources/*.o
+sources/*.bc
+sources/muparser-2.2.5/src/*.bc
 
 sources/FilterTest.pro.user
 sources/.qmake.stash
@@ -12,8 +12,6 @@ nbproject/
 
 doc/html/
 
-js/generated/MeshlabJs.js.mem
-js/generated/MeshlabJs.js
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
 build-*/
