@@ -1,7 +1,6 @@
 #ifndef COARSEISOTROPICREMESHING_H
 #define COARSEISOTROPICREMESHING_H
 #endif // COARSEISOTROPICREMESHING_H
-
 #include<vcg/complex/algorithms/update/quality.h>
 #include<vcg/complex/algorithms/update/curvature.h>
 #include<vcg/complex/algorithms/update/normal.h>
@@ -20,14 +19,36 @@ typedef  EdgeCollapser<MyMesh, BasicVertexPair<MyVertex>> MyCollapser;
 typedef  GridStaticPtr<MyFace, float> MyGrid;
 
 
+struct params {
+    float maxLength;
+    float minLength;
+    float crease;  //cos of the crease threshold
+    float adapt;
+} params;
+
+
+
+
 // My lerp (vcg does not implement lerp on scalars as of 30-01-2017)
 inline float lerp (float a, float b, float lambda)
 {
     math::Clamp(lambda, 0.f, 1.f);
     return a * lambda + (1-lambda) * b;
 }
+// this returns the value of cos(a) where a is the angle between n0 and n1.
+inline float fastAngle(Point3f n0, Point3f n1)
+{
+    return math::Clamp(n0*n1, -1.f, 1.f);
+}
 
-//This could be used in place of FaceFauxCrease to avoid using the Faux bit
+inline bool testCreaseEdge(MyPos &p)
+{
+    float angle = fastAngle(NormalizedTriangleNormal(*(p.F())), NormalizedTriangleNormal(*(p.FFlip())));
+    return (angle <= params.crease && angle >= -params.crease);
+}
+
+//here i could also compute corners by using a temp vertexhandle to store the num of incident edges on a vert
+//and a bitflag to store the corner bit on vertices
 void computeVertexCrease(MyMesh &m, float crease, int creaseBitFlag)
 {
     tri::UpdateFlags<MyMesh>::VertexClear(m, creaseBitFlag);
@@ -51,8 +72,8 @@ void computeVertexCrease(MyMesh &m, float crease, int creaseBitFlag)
                     {
                         pi.V()->SetUserBit(creaseBitFlag);
                         pi.VFlip()->SetUserBit(creaseBitFlag);
-//                        pi.F()->SetCrease(i);
-//                        pi.FFlip()->SetCrease(i);
+                        //                        pi.F()->SetCrease(i);
+                        //                        pi.FFlip()->SetCrease(i);
                     }
                 }
             }
@@ -79,6 +100,7 @@ inline int idealValence(MyPos p)
 
 float computeMeanValence(MyMesh &m)
 {
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
     int total = 0, count = 0, totalOff = 0;
 
@@ -122,15 +144,12 @@ float computeMeanValence(MyMesh &m)
         Before Swap             After Swap
 */
 
-//think about refactoring this using tri::Clean<MyMesh>::ComputeValence() and using a valence vector
-// PRO using pervertex handle: seems faster (about 500ms on 100k vert remeshed twirl.off)
-// CONS : bigger memory footprint, might be a problem for big meshes => can exceed memory limits imposed by browsers
 bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h, int creaseBitFlag)
 {
     //if border or feature, do not swap
     //    if(p.IsBorder() || !p.IsFaux()) return false;
-    if(p.IsBorder() || p.V()->IsUserBit(creaseBitFlag) || p.VFlip()->IsUserBit(creaseBitFlag)) return false;
-//    if(p.IsBorder() || p.IsCrease()) return false;
+    //  if(p.IsBorder() || p.V()->IsUserBit(creaseBitFlag) || p.VFlip()->IsUserBit(creaseBitFlag)) return false;
+    if(p.IsBorder() || testCreaseEdge(p)) return false;
 
 
     int oldDist = 0, newDist = 0, idealV, actualV;
@@ -138,22 +157,22 @@ bool testSwap(MyMesh &m, MyPos p, typename MyMesh::PerVertexIntHandle &h, int cr
     MyPos tp=p;
 
     MyVertex *v0=tp.V();
-    idealV  = idealValence(tp); actualV = h[tri::Index(m, v0)]; //actualV = ComputeValence(tp);
+    idealV  = idealValence(tp); actualV = ComputeValence(tp);
     oldDist += abs(idealV - actualV); newDist += abs(idealV - (actualV - 1));
 
     tp.FlipF();tp.FlipE();tp.FlipV();
     MyVertex *v1=tp.V();
-    idealV  = idealValence(tp); actualV = h[tri::Index(m, v1)]; //actualV = ComputeValence(tp);
+    idealV  = idealValence(tp); actualV = ComputeValence(tp);
     oldDist += abs(idealV - actualV); newDist += abs(idealV - (actualV + 1));
 
     tp.FlipE();tp.FlipV();tp.FlipE();
     MyVertex *v2=tp.V();
-    idealV  = idealValence(tp); actualV = h[tri::Index(m, v2)]; //actualV = ComputeValence(tp);
+    idealV  = idealValence(tp); actualV = ComputeValence(tp);
     oldDist += abs(idealV - actualV); newDist += abs(idealV - (actualV - 1));
 
     tp.FlipF();tp.FlipE();tp.FlipV();
     MyVertex *v3=tp.V();
-    idealV  = idealValence(tp); actualV = h[tri::Index(m, v3)]; //actualV = ComputeValence(tp);
+    idealV  = idealValence(tp); actualV = ComputeValence(tp);
     oldDist += abs(idealV - actualV); newDist += abs(idealV - (actualV + 1));
 
     float qOld = std::min(Quality(v0->P(),v2->P(),v3->P()),Quality(v0->P(),v1->P(),v2->P()));
@@ -245,6 +264,7 @@ void SplitLongEdges(MyMesh &m, bool adapt, float length)
 
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
+    //tri::UpdateNormal<MyMesh>::PerFaceNormalized(m);
     printf("Split done\n");
 }
 
@@ -259,20 +279,32 @@ bool testCollapse(MyPos &p, Point3f &mp, float min, float max, float length, boo
         face::VVStarVF<MyFace>(p.V(), vv);
 
         for(MyVertex *v: vv)
-            if(Distance(mp, v->P()) > maxLength(length))
+            if(Distance(mp, v->P()) > mult*maxLength(length))
                 return false;
 
 
         face::VVStarVF<MyFace>(p.VFlip(), vv);
 
         for(MyVertex *v: vv)
-            if(Distance(mp, v->P()) > maxLength(length))
+            if(Distance(mp, v->P()) > mult*maxLength(length))
                 return false;
 
         return true;
     } else return false;
 }
 
+//PROBLEMI: Gestire i corner (un modo ad esempio è contorllare se su quel vert ho più di due crease edge)
+//              Calcolarli al volo è costoso (girare intorno al vertice) prima è un casino tenere consistente facendo collapse
+//          Per usare crease calcolato al volo durante collapse devi riscriverlo per usare VFAdj e non FFAdj (trova esempi di uso VFAdj! doc non ho trovato nulla di che)
+//          Su crease curvi (e.g. fandisk o blockpippo) collassare potrebbe causare problemi (cattiva approssimazione della mesh) (forse andando in midpoint nemmeno troppo)
+//          Per ora spesso la mesh diventa non-manifold (problema mio di come gestisco i collapse? probabile.)
+//          Usare il crease calcolato al volo non è semplice comunque: devi contare casi in cui sei su un triangolo che non ha crease, ma i cui vertici (o uno solo) giace
+//              su un crease, quindi comuqne devi visitare un intorno di un triangolo per capire quali vertici non possono muoversi
+//
+// Se uso, dopo ogni collapse, update FF allora funziona bene (sia adattivo che uniforme (ma se fai adattivo un po' di volte  epoi uniforme scazza per ovvi motivi)) (ma costa troppo ovviamente)
+// => se imparo a calcolare la stessa cosa usando la VF li sono a posto (anche su doc vcg dice che è poco efficiente calcolare boundary, e quindi anche crease penso, senza FF)
+//
+//strange behaviour: it creates boundaries and nonmanifold edges...my fault? (probable)
 void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, float length)
 {
     tri::UpdateTopology<MyMesh>::VertexFace(m);
@@ -303,20 +335,72 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, 
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
+//                MyPair bp(pi.V(), pi.VFlip());
+                //if both border or both crease or both internal collapse on midpoint (check me in future for corners)
+                //this is crap, works of course but you can;t compute ff every collapse u do
+//                if/*((!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag)) ||
+//                        (!pi.V()->IsB() && !pi.VFlip()->IsB()))*/
+//                (testCreaseEdge(pi) || pi.IsBorder())
+//                {
+//                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
+//                    if(testCollapse(pi, pi.V()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+//                    {
+//                        eg.Do(m, bp, pi.V()->P());
+//                        tri::UpdateTopology<MyMesh>::FaceFace(m);
+//                        ++count;
+//                        break;
+//                    }
+                //}//here you are for sure not crease and not border
+                //not working..after some iterations it starts to sbarellare
+//                else if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag) &&
+//                        !pi.V()->IsB() && !pi.VFlip()->IsB())
+//                {
+//                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
+//                    if(testCollapse(pi, mp, min, max, length, adapt) && eg.LinkConditions(bp))
+//                    {
+//                        eg.Do(m, bp, mp);
+//                        ++count;
+//                        break;
+//                    }
+//                }
+//                //one of the two vertices must be border or crease
+//                else
+//                {
 
-                if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag) &&
-                        !pi.V()->IsB() && !pi.VFlip()->IsB() &&
-                        !pi.FFlip()->IsV())
-                {
-                    MyPair bp(pi.V(), pi.VFlip());
-                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
-                    if(testCollapse(pi, mp, min, max, length, adapt) && eg.LinkConditions(bp))
+                //like this, the uniform version seems almost good, adaptive is still  problematic sometimes,
+                //but overall seems to work: bad edges in trim star are collapsed, doing uniforma fter adaptive collapses the small edges
+                    if(pi.V()->IsUserBit(creaseBitFlag) || pi.V()->IsB())
                     {
-                        eg.Do(m, bp, mp);
-                        ++count;
-                        break;
+                        MyPair bp(pi.VFlip(), pi.V());//recall: v1 survives (and so should its bits)
+                        if(testCollapse(pi, pi.V()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                        {
+                            eg.Do(m, bp, pi.V()->P());
+                            ++count;
+                            break;
+                        }
                     }
-                }
+                    if(pi.VFlip()->IsUserBit(creaseBitFlag) || pi.VFlip()->IsB())
+                    {
+                        MyPair bp(pi.V(), pi.VFlip());
+                        if(testCollapse(pi, pi.VFlip()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                        {
+                            eg.Do(m, bp, pi.VFlip()->P());
+                            ++count;
+                            break;
+                        }
+                    }
+                    if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.V()->IsUserBit(creaseBitFlag))
+                    {
+                        MyPair bp(pi.V(), pi.VFlip());//recall: v1 survives (and so should its bits)
+                        Point3f mp = (bp.V(0)->P() + bp.V(1)->P())/2.f;
+                        if(testCollapse(pi, mp, min, max, length, adapt) && eg.LinkConditions(bp))
+                        {
+                            eg.Do(m, bp, mp);
+                            ++count;
+                            break;
+                        }
+                    }
+//                }
             }
             fi->SetV();
         }
@@ -329,22 +413,26 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, 
 int selectVertexFromCrease(MyMesh &m, int creaseBitFlag)
 {
     int count = 0;
-    //    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-    //        if(!(*fi).IsD())
-    //            for(int i=0; i<3; ++i)
-    //                if(!(*fi).IsF(i))
-    //                {
-    //                    MyPos p(&*fi, i);
-    //                    p.V()->SetS();
-    //                    p.VFlip()->SetS();
-    //                    ++count;
-    //                }
-    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-        if(!(*vi).IsD() && (*vi).IsUserBit(creaseBitFlag))
-        {
-            (*vi).SetS();
-            ++count;
-        }
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+            for(int i=0; i<3; ++i)
+            {
+                MyPos p(&*fi, i);
+                if(testCreaseEdge(p))
+                {
+                    p.V()->SetS();
+                    p.VFlip()->SetS();
+                    ++count;
+                }
+            }
+
+
+//        for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
+//            if(!(*vi).IsD() && (*vi).IsUserBit(creaseBitFlag))
+//            {
+//                (*vi).SetS();
+//                ++count;
+//            }
 
 
     return count; //count is not accurate atm
@@ -355,7 +443,7 @@ int selectVertexFromCrease(MyMesh &m, int creaseBitFlag)
 */
 void ImproveByLaplacian(MyMesh &m, int creaseBitFlag, bool DEBUGCREASE)
 {
-    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
     tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
     selectVertexFromCrease(m, creaseBitFlag);
     int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
@@ -393,6 +481,8 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
 {
     MyMesh &original = *((MyMesh*) _baseM), m;
 
+    params.crease = math::Cos(math::ToRad(crease));
+
     // Mesh cleaning
     int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(original);
     int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(original);
@@ -400,7 +490,7 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     Allocator<MyMesh>::CompactEveryVector(original);
 
     //Updating box before constructing the grid, otherwise we get weird results
-    original.UpdateBoxAndNormals();
+    original.UpdateBoxAndNormals(); //per face normalized and per vertex
 
     //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
