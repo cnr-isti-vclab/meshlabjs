@@ -63,12 +63,7 @@ void computeVertexCrease(MyMesh &m, float crease, int creaseBitFlag)
                 MyPos pi(&*fi, i);
                 if(!pi.FFlip()->IsV()) // edge not visited already
                 {
-                    Point3f n0,n1;
-                    n0 = NormalizedTriangleNormal(*(pi.F()));
-                    n1 = NormalizedTriangleNormal(*(pi.FFlip()));
-
-                    float angle = math::ToDeg(AngleN(n0, n1));
-                    if(angle >= crease || angle <= -crease)
+                    if(testCreaseEdge(pi))
                     {
                         pi.V()->SetUserBit(creaseBitFlag);
                         pi.VFlip()->SetUserBit(creaseBitFlag);
@@ -235,7 +230,7 @@ public:
     bool adapt;
     bool operator()(MyPos &ep) const
     {
-        float mult = (adapt)? lerp(1.f/1.5f, 1.5f, (((ep.V()->Q()+ep.VFlip()->Q())/2.f)/(max-min))) : 1.f;
+        float mult = (adapt)? lerp(1.f/3.f, 3.f, (((ep.V()->Q()+ep.VFlip()->Q())/2.f)/(max-min))) : 1.f;
         return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
     }
 };
@@ -271,7 +266,7 @@ void SplitLongEdges(MyMesh &m, bool adapt, float length)
 // Collapse test: Usual collapse test plus borders and adaptivity management
 bool testCollapse(MyPos &p, Point3f &mp, float min, float max, float length, bool adapt)
 {
-    float mult = (adapt) ? lerp(1.f/1.5f, 1.5f, (((p.V()->Q()+p.VFlip()->Q())/2.f)/(max-min))) : 1.f;
+    float mult = (adapt) ? lerp(1.f/3.f, 3.f, (((p.V()->Q()+p.VFlip()->Q())/2.f)/(max-min))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
     if(dist < mult*minLength(length))//if to collapse
     {
@@ -305,6 +300,7 @@ bool testCollapse(MyPos &p, Point3f &mp, float min, float max, float length, boo
 // => se imparo a calcolare la stessa cosa usando la VF li sono a posto (anche su doc vcg dice che è poco efficiente calcolare boundary, e quindi anche crease penso, senza FF)
 //
 //strange behaviour: it creates boundaries and nonmanifold edges...my fault? (probable)
+// In 1 adaptive step + 1 uniform step on fandsik it opens holes
 void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, float length)
 {
     tri::UpdateTopology<MyMesh>::VertexFace(m);
@@ -335,72 +331,94 @@ void CollapseShortEdges(MyMesh &m, bool adapt, float crease, int creaseBitFlag, 
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-//                MyPair bp(pi.V(), pi.VFlip());
+                MyPair bp(pi.V(), pi.VFlip());
                 //if both border or both crease or both internal collapse on midpoint (check me in future for corners)
                 //this is crap, works of course but you can;t compute ff every collapse u do
-//                if/*((!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag)) ||
-//                        (!pi.V()->IsB() && !pi.VFlip()->IsB()))*/
-//                (testCreaseEdge(pi) || pi.IsBorder())
-//                {
-//                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
-//                    if(testCollapse(pi, pi.V()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
-//                    {
-//                        eg.Do(m, bp, pi.V()->P());
-//                        tri::UpdateTopology<MyMesh>::FaceFace(m);
-//                        ++count;
-//                        break;
-//                    }
-                //}//here you are for sure not crease and not border
-                //not working..after some iterations it starts to sbarellare
-//                else if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag) &&
-//                        !pi.V()->IsB() && !pi.VFlip()->IsB())
-//                {
-//                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
-//                    if(testCollapse(pi, mp, min, max, length, adapt) && eg.LinkConditions(bp))
-//                    {
-//                        eg.Do(m, bp, mp);
-//                        ++count;
-//                        break;
-//                    }
-//                }
-//                //one of the two vertices must be border or crease
-//                else
-//                {
+                // This approach doesnt open holes, but unfeasible (and still creates non manifoldness
+                //                if(testCreaseEdge(pi) || pi.IsBorder())
+                //                {
+                //                    Point3f mp=(bp.V(0)->P()+bp.V(1)->P())/2.0f;
+                //                    if(testCollapse(pi, pi.V()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                //                    {
+                //                        eg.Do(m, bp, pi.V()->P());//preserve creasebit
+                //                        tri::UpdateTopology<MyMesh>::FaceFace(m);
+                //                        ++count;
+                //                        break;
+                //                    }
+                //                }
+                //                if(pi.V()->IsUserBit(creaseBitFlag) || pi.V()->IsB())
+                //                {
+                //                    MyPair bp(pi.VFlip(), pi.V());//recall: v1 survives (and so should its bits)
+                //                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                //                    {
+                //                        eg.Do(m, bp, bp.V(1)->P());
+                //                        tri::UpdateTopology<MyMesh>::FaceFace(m);
+                //                        ++count;
+                //                        break;
+                //                    }
+                //                }
+                //                if(pi.VFlip()->IsUserBit(creaseBitFlag) || pi.VFlip()->IsB())
+                //                {
+                //                    MyPair bp(pi.V(), pi.VFlip());
+                //                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                //                    {
+                //                        eg.Do(m, bp, bp.V(1)->P());
+                //                        tri::UpdateTopology<MyMesh>::FaceFace(m);
+                //                        ++count;
+                //                        break;
+                //                    }
+                //                }
 
+                //----------ALT--------------//
+                //adaptive fast gets messy, spawning nonmanifold edges...shouldn't it be avoided by linkconditions?
                 //like this, the uniform version seems almost good, adaptive is still  problematic sometimes,
                 //but overall seems to work: bad edges in trim star are collapsed, doing uniforma fter adaptive collapses the small edges
-                    if(pi.V()->IsUserBit(creaseBitFlag) || pi.V()->IsB())
-                    {
-                        MyPair bp(pi.VFlip(), pi.V());//recall: v1 survives (and so should its bits)
-                        if(testCollapse(pi, pi.V()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
-                        {
-                            eg.Do(m, bp, pi.V()->P());
-                            ++count;
-                            break;
-                        }
-                    }
-                    if(pi.VFlip()->IsUserBit(creaseBitFlag) || pi.VFlip()->IsB())
-                    {
-                        MyPair bp(pi.V(), pi.VFlip());
-                        if(testCollapse(pi, pi.VFlip()->P(), min, max, length, adapt) && eg.LinkConditions(bp))
-                        {
-                            eg.Do(m, bp, pi.VFlip()->P());
-                            ++count;
-                            break;
-                        }
-                    }
-                    if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.V()->IsUserBit(creaseBitFlag))
-                    {
-                        MyPair bp(pi.V(), pi.VFlip());//recall: v1 survives (and so should its bits)
-                        Point3f mp = (bp.V(0)->P() + bp.V(1)->P())/2.f;
-                        if(testCollapse(pi, mp, min, max, length, adapt) && eg.LinkConditions(bp))
-                        {
-                            eg.Do(m, bp, mp);
-                            ++count;
-                            break;
-                        }
-                    }
+                //even after 1 step it creates T intersections
+//                if(pi.V()->IsUserBit(creaseBitFlag) || pi.V()->IsB())
+//                {
+//                    MyPair bp(pi.VFlip(), pi.V());//recall: v1 survives (and so should its bits)
+//                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+//                    {
+//                        eg.Do(m, bp, bp.V(1)->P());
+//                        ++count;
+//                        break;
+//                    }
 //                }
+//                if(pi.VFlip()->IsUserBit(creaseBitFlag) || pi.VFlip()->IsB())
+//                {
+//                    MyPair bp(pi.V(), pi.VFlip());
+//                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+//                    {
+//                        eg.Do(m, bp, bp.V(1)->P());
+//                        ++count;
+//                        break;
+//                    }
+//                }
+                //this adds problems!
+//                if(!pi.V()->IsUserBit(creaseBitFlag) && !pi.V()->IsUserBit(creaseBitFlag))
+//                {
+//                    MyPair bp(pi.V(), pi.VFlip());//recall: v1 survives (and so should its bits)
+//                    Point3f mp = (bp.V(0)->P() + bp.V(1)->P())/2.f;
+//                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+//                    {
+//                        eg.Do(m, bp, bp.V(1)->P());
+//                        ++count;
+//                        break;
+//                    }
+//                }
+//            }
+                //---------ALT-------------//
+                // Pierre Aillez suggests collapsing only along feature edges if doing feature preserving remeshing
+                if((pi.V()->IsUserBit(creaseBitFlag) && pi.VFlip()->IsUserBit(creaseBitFlag))|| (pi.V()->IsB() && pi.VFlip()->IsB()))
+                {
+                    MyPair bp(pi.VFlip(), pi.V());//recall: v1 survives (and so should its bits)
+                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && eg.LinkConditions(bp))
+                    {
+                        eg.Do(m, bp, bp.V(1)->P());
+                        ++count;
+                        break;
+                    }
+                }
             }
             fi->SetV();
         }
@@ -427,12 +445,12 @@ int selectVertexFromCrease(MyMesh &m, int creaseBitFlag)
             }
 
 
-//        for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-//            if(!(*vi).IsD() && (*vi).IsUserBit(creaseBitFlag))
-//            {
-//                (*vi).SetS();
-//                ++count;
-//            }
+    //        for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
+    //            if(!(*vi).IsD() && (*vi).IsUserBit(creaseBitFlag))
+    //            {
+    //                (*vi).SetS();
+    //                ++count;
+    //            }
 
 
     return count; //count is not accurate atm
@@ -443,7 +461,8 @@ int selectVertexFromCrease(MyMesh &m, int creaseBitFlag)
 */
 void ImproveByLaplacian(MyMesh &m, int creaseBitFlag, bool DEBUGCREASE)
 {
-    tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
     tri::UpdateSelection<MyMesh>::VertexFromBorderFlag(m);
     selectVertexFromCrease(m, creaseBitFlag);
     int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
