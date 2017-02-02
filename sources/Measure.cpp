@@ -233,8 +233,8 @@ void ComputeMeanValence(uintptr_t meshPtr)
         }
 
     printf("Total vertices: %d\n", count);
-    printf("Regular vertices: %d\n", regVert);
-    printf("Non regular vertices: %d\n", count-regVert);
+    printf("Regular vertices: %d (%.2f%%)\n", regVert, ((float)regVert/(float)count)*100.f);
+    printf("Non regular vertices: %d (%.2f%%)\n", count-regVert, ((float)(count-regVert)/(float)count)*100.f);
     printf("Minimum valence: %d\n", minVal);
     printf("Maximum valence: %d\n", maxVal);
     printf("Mean offset from ideal valence: %.15f\n", ((float)totalOff/(float)count));
