@@ -235,7 +235,7 @@
         tooltip: "TODO ",
         arity: 1
     });
-    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget, lapla, proj;
+    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget, lapla, proj, crease, split, collapse;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
@@ -252,6 +252,16 @@
             defval: true,
             label: "Refine step",
             tooltip: "Toggles the split & collapse steps in the remeshing loop"
+        });
+        split = builder.Bool({
+            defval: true,
+            label: "DEBUG: spli",
+            tooltip: "Toggles laplacian smooth"
+        });
+        collapse = builder.Bool({
+            defval: true,
+            label: "DEBUG: col",
+            tooltip: "Toggles projection step"
         });
         swapWidget = builder.Bool({
             defval: true,
@@ -294,7 +304,9 @@
             //################DEBUG##################
             lapla.getValue(),
             proj.getValue(),
-            crease.getValue()
+            crease.getValue(),
+            collapse.getValue(),
+            split.getValue()
             //#######################################
         );
     };
