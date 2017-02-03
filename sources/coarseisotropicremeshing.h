@@ -75,8 +75,6 @@ void computeVertexCreaseAndCorner(MyMesh &m, int creaseBitFlag)
 {
     tri::UpdateSelection<MyMesh>::VertexClear(m);
     tri::UpdateFlags<MyMesh>::VertexClear(m, creaseBitFlag);
-    tri::UpdateFlags<MyMesh>::FaceClearCreases(m);
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     CornerMap h = tri::Allocator<MyMesh>::GetPerVertexAttribute<int>(m);
 
     for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
@@ -115,7 +113,6 @@ void computeVertexCreaseAndCorner(MyMesh &m, int creaseBitFlag)
 void selectCreaseCorners(MyMesh &m)
 {
     tri::UpdateSelection<MyMesh>::VertexClear(m);
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     CornerMap h = tri::Allocator<MyMesh>::GetPerVertexAttribute<int>(m);
 
     for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
@@ -293,7 +290,7 @@ public:
     bool operator()(MyPos &ep) const
     { //could adjust mult on corners..accumulation of vertices is cause of nnonmanifoldnes
         float mult = (adapt)? lerp(0.8f, 1.2f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(max-min))) : 1.f;
-        return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length;
+        return vcg::Distance(ep.V()->P(), ep.VFlip()->P()) > mult*length ;
     }
 };
 
@@ -375,11 +372,11 @@ void CollapseShortEdges(MyMesh &m, bool adapt, int creaseBitFlag, float length)
         max = distr.Percentile(0.9f);
         min = distr.Percentile(0.1f);
     }
-
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
     computeVertexCreaseAndCorner(m, creaseBitFlag); //this uses the selection bit to flag corners!!!
     //    tri::UpdateFlags<MyMesh>::VertexClearV(m);
-    int count = 0;
-    //    tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
+    int count = 0, candidates = 0;
+    tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
@@ -432,14 +429,16 @@ void CollapseShortEdges(MyMesh &m, bool adapt, int creaseBitFlag, float length)
                 //like this, the uniform version seems almost good, adaptive is still  problematic sometimes,
                 //but overall seems to work: bad edges in trim star are collapsed, doing uniforma fter adaptive collapses the small edges
                 //even after 1 step it creates T intersections ... i'm doing something wrong somewherE!!!!!
-                if((pi.VFlip()->IsUserBit(creaseBitFlag) && pi.VFlip()->IsUserBit(creaseBitFlag)) && !pi.V()->IsS() && !pi.VFlip()->IsS() /*||
+                if((pi.V()->IsUserBit(creaseBitFlag) && pi.VFlip()->IsUserBit(creaseBitFlag)) && !pi.V()->IsS() && !pi.VFlip()->IsS() /*||
                                 (!pi.V()->IsUserBit(creaseBitFlag) && !pi.VFlip()->IsUserBit(creaseBitFlag))*/ /*||
                                 (!pi.V()->IsB() && !pi.VFlip()->IsB())*/) //&& !pi.V()->IsV() && !pi.VFlip()->IsV())
                 {
+                    ++candidates;
                     MyPair bp(pi.V(), pi.VFlip());
-                    if(testCollapse(pi, bp.V(1)->P(), min, max, length, adapt) && MyCollapser::LinkConditions(bp))
+                    Point3f mp = (bp.V(1)->P()+bp.V(0)->P())/2.f;
+                    if(testCollapse(pi, mp, min, max, length, adapt) && MyCollapser::LinkConditions(bp))
                     {
-                        MyCollapser::Do(m, bp, bp.V(1)->P());
+                        MyCollapser::Do(m, bp, mp);
                         ++count;
                         break;
                     }
@@ -481,6 +480,7 @@ void CollapseShortEdges(MyMesh &m, bool adapt, int creaseBitFlag, float length)
                 //                }
             }
         }
+    printf("Collapse candidate edges: %d\n", candidates);
     printf("Collapsed edges: %d\n", count);
     //compact vectors, since we killed vertices
     Allocator<MyMesh>::CompactEveryVector(m);
@@ -610,9 +610,16 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
             selectCreaseCorners(m);
             if(DEBUGSPLIT)
                 SplitLongEdges(m, adapt, length);
-            if(DEBUGCOLLAPSE)
+            tri::UpdateTopology<MyMesh>::TestFaceFace(m);
+            if(DEBUGCOLLAPSE){
                 CollapseShortEdges(m, adapt, creaseBitFlag, length);
+                tri::UpdateTopology<MyMesh>::TestVertexFace(m);
+            }
         }
+
+        tri::UpdateTopology<MyMesh>::FaceFace(m);
+        tri::UpdateTopology<MyMesh>::TestFaceFace(m);
+
         if(swap)
             ImproveValence(m, crease);
         if(DEBUGLAPLA)
@@ -625,6 +632,8 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
     printf("Final Mean edge size: %.6f\n", tri::Stat<MyMesh>::ComputeEdgeLengthAverage(m));
     printf("Final Mean Valence: %.15f \n", computeMeanValence(m));
 
+tri::UpdateTopology<MyMesh>::FaceFace(m);
+computeVertexCreaseAndCorner(m, creaseBitFlag);
     m.UpdateBoxAndNormals();
     vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(original,m);
 }
