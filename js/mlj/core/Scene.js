@@ -384,23 +384,24 @@ MLJ.core.Scene.layerSetHistory = new Array();
             dummyOrigin = new THREE.Object3D(); //the dummyOrigin to center the gyzmo
             dummy = new THREE.Object3D();       //the dummy object to store the transform and keep the lines oriented
 
-            dummyOrigin.add(dummy); //it must be centered on the view 
-
-            var p = new THREE.Vector3(0, 0, -15);   //position the dummyOrigin centered on the view
-            _camera.localToWorld(p);
+            dummyOrigin.add(dummy); 
+            //it would be cool to center it in front of camera (so it always stays in center of view)
+            //but the rendered transform gyzmo doesn't behave as expected.
+            var p = new THREE.Vector3(0, 0, 0);  
+            // _camera.localToWorld(p);
             _decoratorsGroup.worldToLocal(p);
+
 
             dummyOrigin.position.set(p.x, p.y, p.z);
             dummyOrigin.updateMatrix();
             dummyOrigin.updateMatrixWorld(true);
 
-
             var lightp = new THREE.Vector3().copy(_this.lights.Headlight.getLocalPosition());
 
             var geo = new THREE.Geometry();
             geo.vertices.push(
-                new THREE.Vector3(lightp.x, lightp.y, lightp.z).multiplyScalar(distance / 25),
-                new THREE.Vector3(-lightp.x, -lightp.y, -lightp.z).multiplyScalar(distance / 25)
+                new THREE.Vector3(lightp.x, lightp.y, _camera.position.z).multiplyScalar(scaleFac),
+                new THREE.Vector3(-lightp.x, -lightp.y, -_camera.position.z).multiplyScalar(scaleFac)
             );
             var lineMaterial = new THREE.LineBasicMaterial({
                 color: 0xFF0000
@@ -410,13 +411,13 @@ MLJ.core.Scene.layerSetHistory = new Array();
             var line1 = line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
             var line5 = line.clone(), line6 = line.clone(), line7 = line.clone(), line8 = line.clone();
 
-            line1.translateX(distance / 4); line2.translateX(-distance / 4);
-            line3.translateY(distance / 4); line4.translateY(-distance / 4);
+            line1.translateX(distance/2); line2.translateX(-distance/2);
+            line3.translateY(distance/2); line4.translateY(-distance/2);
 
-            line5.translateX(distance / 4); line5.translateY(distance / 4);
-            line6.translateX(-distance / 4); line6.translateY(distance / 4);
-            line7.translateX(-distance / 4); line7.translateY(-distance / 4);
-            line8.translateX(distance / 4); line8.translateY(-distance / 4);
+            line5.translateX(distance/2); line5.translateY(distance/2);
+            line6.translateX(-distance/2); line6.translateY(distance/2);
+            line7.translateX(-distance/2); line7.translateY(-distance/2);
+            line8.translateX(distance/2); line8.translateY(-distance/2);
 
             var lines = new THREE.Object3D();
             lines.add(line); lines.add(line1); lines.add(line2); lines.add(line3); lines.add(line4);
