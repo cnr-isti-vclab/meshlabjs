@@ -321,7 +321,7 @@ void SplitLongEdges(MyMesh &m, bool adapt, float length)
     printf("Split done\n");
 }
 
-//this dowsn't work
+//if using bitflags checking the creases is not needed! (thecorner is i think)
 bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length)
 {
     vector<MyFace*> ff;
@@ -357,12 +357,12 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length)
 //        }
         //-----------------------------------------------------------------------------------
 
-        if(pi.VFlip() == v1 || pi.VFlip() == v2) // se sono una faccia adiacente
-        {
-            float angle = fastAngle(faceNormal, NormalizedTriangleNormal(*(pi.F())));
-            if(angle <= params.crease && angle >= -params.crease)
-                ++creases;
-        }
+//        if(pi.VFlip() == v1 || pi.VFlip() == v2) // se sono una faccia adiacente
+//        {
+//            float angle = fastAngle(faceNormal, NormalizedTriangleNormal(*(pi.F())));
+//            if(angle <= params.crease && angle >= -params.crease)
+//                ++creases;
+//        }
 
         pi.FlipE();
         //check that collapse do not introduce to long edges
@@ -382,17 +382,18 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length)
 //------------------------------------------------------------------------------------------------
 
 
-        if(pi.VFlip() == v1 || pi.VFlip() == v2) // se sono una faccia adiacente
-        {
-            float angle = fastAngle(faceNormal, NormalizedTriangleNormal(*(pi.F())));
-            if(angle <= params.crease && angle >= -params.crease)
-                ++creases;
-        }
+//        if(pi.VFlip() == v1 || pi.VFlip() == v2) // se sono una faccia adiacente
+//        {
+//            float angle = fastAngle(faceNormal, NormalizedTriangleNormal(*(pi.F())));
+//            if(angle <= params.crease && angle >= -params.crease)
+//                ++creases;
+//        }
 
         //like this i check if the triangle iis on a corner
         //if i had a check on the "crease normals" i could check if tri
         if(creases > 1)
         {
+            printf("corner!\n");
             return false;
         }
     }
@@ -651,7 +652,7 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
         printf("iter %d \n", i+1);
         if(refine)
         {
-            selectCreaseCorners(m);
+//           selectCreaseCorners(m);
             if(DEBUGSPLIT)
                 SplitLongEdges(m, adapt, length);
             if(DEBUGCOLLAPSE){
