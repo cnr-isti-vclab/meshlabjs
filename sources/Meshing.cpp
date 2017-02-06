@@ -219,7 +219,7 @@ void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
 void ComputePointCloudNormal(uintptr_t _baseM, int kNearestNum, int smoothIter, bool flipFlag)
 {
    MyMesh &mesh = *((MyMesh*) _baseM);
-   
+
    tri::PointCloudNormal<MyMesh>::Param p;
    p.fittingAdjNum = kNearestNum;
    p.smoothingIterNum = smoothIter;

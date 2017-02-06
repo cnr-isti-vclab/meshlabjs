@@ -235,7 +235,8 @@
         tooltip: "TODO ",
         arity: 1
     });
-    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget, lapla, proj, crease, split, collapse;
+    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget,
+        lengthThrWidget, lapla, proj, crease, split, collapse;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
@@ -287,9 +288,14 @@
         });
 //###############################################################
         creaseThrWidget = builder.RangedFloat({
-            min: 1, max: 90, step: 0.3, defval: 30,
+            min: 1, max: 90, step: 0.1, defval: 30,
             label: "Crease Threshold",
             tooltip: "Minimum angle between faces to consider the shared edge as crease."
+        });
+        lengthThrWidget = builder.RangedFloat({
+            min: 0.1, max: 5, step: 0.1, defval: 1,
+            label: "Length Threshold",
+            tooltip: "Minimum threshold on the edges length expressed in percentage of the BBOX diagonal length."
         });
     };
 
@@ -301,6 +307,7 @@
             refineWidget.getValue(),
             swapWidget.getValue(),
             creaseThrWidget.getValue(),
+            lengthThrWidget.getValue(),
             //################DEBUG##################
             lapla.getValue(),
             proj.getValue(),
