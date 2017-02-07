@@ -299,7 +299,7 @@
     };
 
     IsosurfaceFilter._applyTo = function () {
-        var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
+        var mf = MLJ.core.Scene.createLayer("User Defined Isosurf");
         Module.IsosurfaceFilter(mf.ptrMesh(), isoFuncWidget.getValue(), 
                     minXWdg.getValue(),minYWdg.getValue(),minZWdg.getValue(),
                     maxXWdg.getValue(),maxYWdg.getValue(),maxZWdg.getValue(),
