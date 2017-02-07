@@ -313,9 +313,9 @@
         tooltip: "Create a isosurface from a cylindrical scalar field perturbed by perlin noise",
         arity: 0});
 
-    var isoResWidget;
+    var noisyIsoResWdg;
     NoisyIsoFilter._init = function (builder) {
-        isoResWidget = builder.Integer({
+        noisyIsoResWdg = builder.Integer({
             min: 16, step: 16, defval: 32,
             label: "Resolution",
             tooltip: "Resolution of the grid where the isosurface is defined"
@@ -324,7 +324,7 @@
 
     NoisyIsoFilter._applyTo = function () {
         var mf = MLJ.core.Scene.createLayer("Noisy Isosurf");
-        Module.CreateNoisyIsosurface(mf.ptrMesh(), isoResWidget.getValue());
+        Module.CreateNoisyIsosurface(mf.ptrMesh(), noisyIsoResWdg.getValue());
         scene.addLayer(mf);
     };
 
