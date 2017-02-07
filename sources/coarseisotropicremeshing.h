@@ -388,7 +388,7 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
     }
     return false;
 }
-
+//Feature preserving collapse step
 void CollapseShortEdges(MyMesh &m, Params &params)
 {
     float minQ, maxQ;
@@ -432,12 +432,29 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     Allocator<MyMesh>::CompactEveryVector(m);
 }
 
+//Here I just need to check the faces of the cross, since the other faces are not
+//affected by the collapse of the internal faces of the cross.
 bool testCrossCollapse(MyPos &p, Point3f &mp)
 {
     if(!checkFacesAroundVert(p, mp, 0, true))
         return false;
     return true;
 }
+
+//Choose the best way to collapse a cross based on the (external) cross vertices valence
+//and resulting face quality
+//                                      +0                   -1
+//             v1                    v1                    v1
+//            /| \                   /|\                  / \
+//           / |  \                 / | \                /   \
+//          /  |   \               /  |  \              /     \
+//         / *p|    \           -1/   |   \ -1       +0/       \+0
+//       v0-------- v2 ========> v0   |   v2    OR    v0-------v2
+//        \    |    /             \   |   /            \       /
+//         \   |   /               \  |  /              \     /
+//          \  |  /                 \ | /                \   /
+//           \ | /                   \|/ +0               \ / -1
+//             v3                     v3                   v3
 
 MyPair chooseBestCrossCollapse(MyPos &p, vector<MyFace*> &ff)
 {
