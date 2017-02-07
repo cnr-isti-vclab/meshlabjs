@@ -51,6 +51,34 @@ inline bool testCreaseEdge(MyPos &p, float creaseThr)
     return (angle <= creaseThr && angle >= -creaseThr);
 }
 
+//riscrivi con vfiterator e iterando solo sui vertici
+void computeQuality(MyMesh &m)
+{
+    tri::UpdateFlags<MyMesh>::VertexClearV(m);
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            Point3f fNormal = NormalizedTriangleNormal(*fi);
+            for(auto i=0; i<3; ++i)
+                if(!(*fi).V(i)->IsV())
+                {
+                    MyVertex *v = (*fi).V(i);
+                    vector<MyFace*> ff;
+                    vector<int> vi;
+
+                    face::VFStarVF<MyFace>(v, ff, vi);
+
+                    float tot = 0;
+                    for(MyFace *f: ff)
+                        if(f != &*fi)
+                        {
+                            tot+= 1-math::Abs(fastAngle(fNormal, NormalizedTriangleNormal(*f)));
+                        }
+                    v->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
+                    v->SetV();
+                }
+        }
+}
 //here i could also compute corners by using a temp vertexhandle to store the num of incident edges on a vert
 //and a bitflag to store the corner bit on vertices
 void computeVertexCrease(MyMesh &m, float creaseThr, int creaseBitFlag)
@@ -279,7 +307,7 @@ public:
     bool adapt;
     bool operator()(MyPos &ep)
     { //could adjust mult on corners..accumulation of vertices is cause of nnonmanifoldnes
-        float mult = (adapt)? lerp(0.8f, 1.2f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
+        float mult = (adapt)? lerp(0.5f, 1.5f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
         float dist = Distance(ep.V()->P(), ep.VFlip()->P());
         //if the edge length is less the lengthThr don't split anymore
         if(dist > lengthThr && dist > mult*length)
@@ -333,7 +361,7 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=fa
     face::VFStarVF<MyFace>(p.V(), ff, vi);
 
     for(MyFace *f: ff)
-        if(f != p.F()) //i'm not a deleted face
+        if(!(*f).IsD() && f != p.F()) //i'm not a deleted face
         {
             MyPos pi(f, p.V()); //same vertex
 
@@ -370,7 +398,7 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=fa
 // Collapse test: Usual collapse test plus borders and adaptivity management
 bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 {
-    float mult = (params.adapt) ? lerp(0.8f, 1.2f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
+    float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
     float thr  = std::max(mult*params.minLength, params.lengthThr);
 
@@ -405,6 +433,7 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     }
 
     tri::UpdateTopology<MyMesh>::VertexFace(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -465,7 +494,7 @@ MyPair chooseBestCrossCollapse(MyPos &p, vector<MyFace*> &ff)
     v1 = p.F()->V2(p.VInd());
 
     for(MyFace *f: ff)
-        if(f != p.F())
+        if(!(*f).IsD() && f != p.F())
         {
             MyPos pi(f, p.V());
             MyVertex *fv1 = pi.F()->V1(pi.VInd());
@@ -508,7 +537,7 @@ void CollapseCrosses(MyMesh &m , Params &params)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.V()->IsB())
+                if(!pi.V()->IsB() && !pi.F()->V1(pi.VInd())->IsB() && !pi.F()->V2(pi.VInd())->IsB())
                 {
                     vector<MyFace*> ff;
                     vector<int> vi;
@@ -630,8 +659,11 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
         return;
     }
 
-    tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
-    tri::UpdateQuality<MyMesh>::VertexFromMeanCurvatureHG(m);
+//    tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
+//    tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
+
+        computeQuality(m);
+        tri::UpdateQuality<MyMesh>::VertexSaturate(m);
 
     tri::UpdateTopology<MyMesh>::AllocateEdge(m);
     float length = tri::Stat<MyMesh>::ComputeEdgeLengthAverage(m);
