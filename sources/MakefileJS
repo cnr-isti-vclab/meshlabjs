@@ -14,28 +14,27 @@ CC=emcc
 # -s TOTAL_MEMORY=1073741824 
  
 
-CFLAGS=-I.  -I ../../vcglib/ -I muparser-2.2.5/include  -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind 
+CFLAGS=-I.  -I ../../vcglib/ -I muparser-2.2.5/include  -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -std=c++11 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind 
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Selection.bc Quality.bc \
-      FuncParser.bc \
-      ../../vcglib/wrap/ply/plylib.bc
+      ../../vcglib/wrap/ply/plylib.bc \
+      FuncParser.bc 
 
 LIBS = lib/muparserLib.bc
 
-
 %.bc: %.cpp
-	$(CC) -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) -s LINKABLE=1 -Os
 
-MeshLabCppCore.js: $(OBJ)
-	$(CC) -o ../js/generated/$@ $^ $(LIBS) $(CFLAGS)
+MeshLabCppCore.js: $(OBJ) $(LIBS)
+	$(CC) -o ../js/generated/$@ $^ $(LIBS) $(CFLAGS) -O3
 
-FuncParser.bc : FuncParser.cpp
-	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
 
+lib/muparserLib.bc: 
+	cd ./muparser-2.2.5/src/ && $(MAKE) -f MakefileJS
 
 clean:
-	rm -f *.bc MeshlabGenJs.js
+	rm -f *.bc MeshlabGenJs.js ../../vcglib/wrap/ply/plylib.bc lib/muparserLib.bc muparser-2.2.5/src/*.bc
 
 install:
 	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated
