@@ -9,7 +9,7 @@
 #include<vcg/complex/algorithms/hole.h>
 #include<vcg/complex/algorithms/pointcloud_normal.h>
 
-#include<coarseisotropicremeshing.h>
+#include<CoarseIsotropicRemeshing.h>
 
 using namespace vcg;
 using namespace std;

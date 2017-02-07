@@ -28,4 +28,4 @@ SOURCES += FilterTest.cpp \
 
 HEADERS += mesh_def.h \
     FilterTest.h \
-    coarseisotropicremeshing.h
+    CoarseIsotropicRemeshing.h

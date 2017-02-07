@@ -30,7 +30,6 @@ struct Params {
         adapt(adapt), maxLength((4.f/3.f)*length), minLength((4.f/5.f)*length),
         lengthThr(lengthThr), creaseThr(math::Cos(math::ToRad(creaseThr)))
     {}
-
 };
 
 
@@ -145,7 +144,6 @@ void selectCreaseCorners(MyMesh &m, float creaseThr)
     for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
         if(h[vi] > 4)
             (*vi).SetS();
-
 }
 
 /*
@@ -153,9 +151,14 @@ void selectCreaseCorners(MyMesh &m, float creaseThr)
  4 for border vertices
  6 for internal vertices
 */
-inline int idealValence(MyPos p)
+inline int idealValence(MyPos &p)
 {
     if(p.IsBorder()) return 4;
+    return 6;
+}
+inline int idealValence(MyVertex &v)
+{
+    if(v.IsB()) return 4;
     return 6;
 }
 
@@ -271,13 +274,21 @@ void ImproveValence(MyMesh &m, Params params)
 class EdgeSplitPred
 {
 public:
+    int count = 0;
     float length, lengthThr, minQ, maxQ;
     bool adapt;
-    bool operator()(MyPos &ep) const
+    bool operator()(MyPos &ep)
     { //could adjust mult on corners..accumulation of vertices is cause of nnonmanifoldnes
         float mult = (adapt)? lerp(0.8f, 1.2f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
         float dist = Distance(ep.V()->P(), ep.VFlip()->P());
-        return dist > lengthThr && dist > mult*length;
+        //if the edge length is less the lengthThr don't split anymore
+        if(dist > lengthThr && dist > mult*length)
+        {
+            ++count;
+            return true;
+        }
+        else
+            return false;
     }
 };
 
@@ -303,10 +314,9 @@ void SplitLongEdges(MyMesh &m, Params &params)
     ep.adapt     = params.adapt;
     ep.length    = params.maxLength;
     ep.lengthThr = params.lengthThr;
-
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
-    printf("Split done\n");
+    printf("Split done: splitted %d edges\n",ep.count);
 }
 
 //Geometric check on feasibility of the collapse.
@@ -315,7 +325,7 @@ void SplitLongEdges(MyMesh &m, Params &params)
 //  -new face normal diverges too much after collapse.
 //  -new face has too long edges.
 // TRY: if the vertex has valence 4 (cross vertex) we relax the check on length
-bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length)
+bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=false)
 {
     vector<MyFace*> ff;
     vector<int> vi;
@@ -323,34 +333,37 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length)
     face::VFStarVF<MyFace>(p.V(), ff, vi);
 
     for(MyFace *f: ff)
-        if(f != p.F())
-    {
-        MyPos pi(f, p.V()); //same vertex
+        if(f != p.F()) //i'm not a deleted face
+        {
+            MyPos pi(f, p.V()); //same vertex
 
-        MyVertex *v0 = pi.V();
-        MyVertex *v1 = pi.F()->V1(pi.VInd());
-        MyVertex *v2 = pi.F()->V2(pi.VInd());
+            MyVertex *v0 = pi.V();
+            MyVertex *v1 = pi.F()->V1(pi.VInd());
+            MyVertex *v2 = pi.F()->V2(pi.VInd());
 
-        //check on whole face
-        float newQ = Quality(mp, v1->P(), v2->P());
-        float oldQ = Quality(v0->P(), v1->P(), v2->P());
+            if( v1 == p.VFlip() || v2 == p.VFlip()) //i'm the other deleted face
+                continue;
 
-        if(newQ <= 0.5*oldQ)
-            return false;
+            //quality and normal divergence checks
+            float newQ = Quality(mp, v1->P(), v2->P());
+            float oldQ = Quality(v0->P(), v1->P(), v2->P());
 
-        Point3f oldN = NormalizedTriangleNormal(*(pi.F()));
-        Point3f newN = Normal(mp, v1->P(), v2->P()).Normalize();
-        float div = fastAngle(oldN, newN);
-        float thr = math::Cos(math::ToRad(5.0f));
-
-        if(div <= thr && div >= -thr)
-            return false;
-
-        //here if the vertex is a cross vert we skip the check on length, to ease the collapsing of crosses
-        if(ff.size() != 4)
-            if(Distance(mp, v1->P()) > length || Distance(mp, v2->P()) > length)
+            if(newQ <= 0.5*oldQ)
                 return false;
-    }
+
+            Point3f oldN = NormalizedTriangleNormal(*(pi.F()));
+            Point3f newN = Normal(mp, v1->P(), v2->P()).Normalize();
+            float div = fastAngle(oldN, newN);
+            float thr = math::Cos(math::ToRad(2.5f));
+
+            if(div <= thr && div >= -thr)
+                return false;
+
+            //here if the vertex is a cross vert we skip the check on length, to ease the collapsing of crosses
+            if(!relaxed)
+                if(Distance(mp, v1->P()) > length || Distance(mp, v2->P()) > length)
+                    return false;
+        }
     return true;
 }
 
@@ -359,7 +372,8 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 {
     float mult = (params.adapt) ? lerp(0.8f, 1.2f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
-    float thr  = (mult*params.minLength > params.lengthThr) ? mult*params.minLength : params.lengthThr;
+    float thr  = std::max(mult*params.minLength, params.lengthThr);
+
     if(dist < thr)//if to collapse
     {
         if(!checkFacesAroundVert(p, mp, mult*params.maxLength))
@@ -370,7 +384,7 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
         if(!checkFacesAroundVert(p, mp, mult*params.maxLength))
             return false;
 
-        return true;    
+        return true;
     }
     return false;
 }
@@ -396,9 +410,7 @@ void CollapseShortEdges(MyMesh &m, Params &params)
         {
             for(auto i=0; i<3; ++i)
             {
-                //if using edgecollapser;
                 MyPos pi(&*fi, i);
-                //----------new: GEO CHECK ONLY---------
                 if(!pi.V()->IsB() && !pi.VFlip()->IsB())
                 {
                     ++candidates;
@@ -420,23 +432,114 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     Allocator<MyMesh>::CompactEveryVector(m);
 }
 
-// This function sets the selection bit on vertices that lie on creases
-int selectVertexFromCrease(MyMesh &m, float creaseThr)
+bool testCrossCollapse(MyPos &p, Point3f &mp)
 {
+    if(!checkFacesAroundVert(p, mp, 0, true))
+        return false;
+    return true;
+}
+
+MyPair chooseBestCrossCollapse(MyPos &p, vector<MyFace*> &ff)
+{
+    vector<MyVertex*> vv0, vv1, vv2, vv3;
+    MyVertex *v0, *v1, *v2, *v3;
+
+    v0 = p.F()->V1(p.VInd());
+    v1 = p.F()->V2(p.VInd());
+
+    for(MyFace *f: ff)
+        if(f != p.F())
+        {
+            MyPos pi(f, p.V());
+            MyVertex *fv1 = pi.F()->V1(pi.VInd());
+            MyVertex *fv2 = pi.F()->V2(pi.VInd());
+
+            if(fv1 == v0 || fv2 == v0)
+                v3 = (fv1 == v0) ? fv2 : fv1;
+            if(fv1 == v1 || fv2 == v1)
+                v2 = (fv1 == v1) ? fv2 : fv1;
+        }
+
+    face::VVStarVF<MyFace>(v0, vv0);
+    face::VVStarVF<MyFace>(v1, vv1);
+    face::VVStarVF<MyFace>(v2, vv2);
+    face::VVStarVF<MyFace>(v3, vv3);
+
+
+    int nv0 = vv0.size(), nv1 = vv1.size();
+    int nv2 = vv2.size(), nv3 = vv3.size();
+
+    int delta1 = (idealValence(*v0) - nv0) + (idealValence(*v2) - nv2);
+    int delta2 = (idealValence(*v1) - nv1) + (idealValence(*v3) - nv3);
+
+    float Q1 = std::min(Quality(v0->P(), v1->P(), v3->P()), Quality(v1->P(), v2->P(), v3->P()));
+    float Q2 = std::min(Quality(v0->P(), v1->P(), v2->P()), Quality(v2->P(), v3->P(), v0->P()));
+
+    if(delta1 < delta2 && Q1 >= 0.6f*Q2)
+        return MyPair(p.V(), v1);
+    else
+        return MyPair(p.V(), v0);
+}
+
+void CollapseCrosses(MyMesh &m , Params &params)
+{
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
     int count = 0;
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
+        {
+            for(auto i=0; i<3; ++i)
+            {
+                MyPos pi(&*fi, i);
+                if(!pi.V()->IsB())
+                {
+                    vector<MyFace*> ff;
+                    vector<int> vi;
+                    face::VFStarVF<MyFace>(pi.V(), ff, vi);
+
+                    //removing crosses only
+                    if(ff.size() == 4)
+                    {
+                        MyPair bp  = chooseBestCrossCollapse(pi, ff);
+                        Point3f mp = bp.V(1)->P();
+                        //todo: think about if you should try doing the other collapse if test or link fails for this one
+                        if(testCrossCollapse(pi, mp) && MyCollapser::LinkConditions(bp))
+                        {
+                            MyCollapser::Do(m, bp, mp);
+                            ++count;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    printf("Collapsed crosses: %d\n", count);
+    //compact vectors, since we killed vertices
+    Allocator<MyMesh>::CompactEveryVector(m);
+}
+
+// This function sets the selection bit on vertices that lie on creases
+int selectVertexFromCrease(MyMesh &m, float creaseThr)
+{
+    tri::UpdateFlags<MyMesh>::FaceClearV(m);
+    int count = 0;
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
             for(int i=0; i<3; ++i)
             {
                 MyPos p(&*fi, i);
-                if(testCreaseEdge(p, creaseThr))
+                //if edge is not already visited and is of crease
+                if(!(p.FFlip()->IsV()) && testCreaseEdge(p, creaseThr))
                 {
                     p.V()->SetS();
                     p.VFlip()->SetS();
                     ++count;
                 }
             }
-    return count; //count is not accurate atm
+            (*fi).SetV();
+        }
+    return count;
 }
 
 /*
@@ -533,6 +636,7 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, int iter, bool adapt, bool refin
         }
         if(swap)
             ImproveValence(m, params);
+        CollapseCrosses(m, params);
         if(DEBUGLAPLA)
             ImproveByLaplacian(m, params, DEBUGCREASE);
         if(DEBUGPROJ)
