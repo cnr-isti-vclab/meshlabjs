@@ -374,94 +374,89 @@ MLJ.core.Scene.layerSetHistory = new Array();
             to move it around the center of the scene.
             It also defines the TransformControls used to handle the light moving.
         */
+        var _help, _help1, _help2;
+
         let prepareLightControls = () => {
 
             var bbox = _this.getBBox();
             var distance = bbox.min.distanceTo(bbox.max);
             var scaleFac = distance / 15.0;
-            var offset = bbox.center(); offset.multiplyScalar(15.0 / distance);
+            // var offset = bbox.center(); offset.multiplyScalar(15.0 / distance);
 
-            dummyOrigin = new THREE.Object3D(); //the dummyOrigin to center the gyzmo
-            dummy = new THREE.Object3D();       //the dummy object to store the transform and keep the lines oriented
+            // _lightControls = new THREE.TransformControls(_camera, container);
+            // _lightControls.setMode('rotate');
+            // _lightControls.setSpace('local');
+            // _lightControls.setSize(1);
+            // _lightControls.name = 'lightControls';
 
-            dummyOrigin.add(dummy); 
-            //it would be cool to center it in front of camera (so it always stays in center of view)
-            //but the rendered transform gyzmo doesn't behave as expected.
-            var p = new THREE.Vector3(0, 0, 0);  
-            // _camera.localToWorld(p);
-            _decoratorsGroup.worldToLocal(p);
-
-
-            dummyOrigin.position.set(p.x, p.y, p.z);
-            dummyOrigin.updateMatrix();
-            dummyOrigin.updateMatrixWorld(true);
-
-            var lightp = new THREE.Vector3().copy(_this.lights.Headlight.getLocalPosition());
-
-            var geo = new THREE.Geometry();
-            geo.vertices.push(
-                new THREE.Vector3(lightp.x, lightp.y, _camera.position.z).multiplyScalar(scaleFac),
-                new THREE.Vector3(-lightp.x, -lightp.y, -_camera.position.z).multiplyScalar(scaleFac)
-            );
-            var lineMaterial = new THREE.LineBasicMaterial({
-                color: 0xFF0000
-            });
-
-            var line = new THREE.Line(geo, lineMaterial);
-            var line1 = line.clone(), line2 = line.clone(), line3 = line.clone(), line4 = line.clone();
-            var line5 = line.clone(), line6 = line.clone(), line7 = line.clone(), line8 = line.clone();
-
-            line1.translateX(distance/2); line2.translateX(-distance/2);
-            line3.translateY(distance/2); line4.translateY(-distance/2);
-
-            line5.translateX(distance/2); line5.translateY(distance/2);
-            line6.translateX(-distance/2); line6.translateY(distance/2);
-            line7.translateX(-distance/2); line7.translateY(-distance/2);
-            line8.translateX(distance/2); line8.translateY(-distance/2);
-
-            var lines = new THREE.Object3D();
-            lines.add(line); lines.add(line1); lines.add(line2); lines.add(line3); lines.add(line4);
-            lines.add(line5); lines.add(line6); lines.add(line7); lines.add(line8);
-
-            dummy.quaternion.copy(_this.lights.Headlight.getMesh().quaternion);
-
-            _lightControls = new THREE.TransformControls(_camera, container);
-            _lightControls.setMode('rotate');
-            _lightControls.setSpace('local');
-            _lightControls.setSize(scaleFac);
-            _lightControls.name = 'lightControls';
-
-            //attach the controls to dummy (attaching to dummyorigin itself causes bad behaviour (the gyzmo will rotate too))
-            _lightControls.attach(dummy);
-
-            /* add lightControls to dummyOrigin, this way it will always be centered */
-            dummyOrigin.add(_lightControls);
-            dummy.add(lines);
-            dummyOrigin.updateMatrix();
-            dummyOrigin.updateMatrixWorld(true);
+            // _lightControls.attach(_this.lights.Headlight.getMesh());
 
             /* every time TransformControls gets updated, update the guidelines rotation */
-            _lightControls.addEventListener('change', () => {
-                _lightControls.update();
-                _this.lights.Headlight.getMesh().quaternion.copy(dummy.quaternion);
-                _this.render();
-            });
+            // _lightControls.addEventListener('change', () => {
+            //     _lightControls.update();
+            //     _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+            //     _this.render();
+            // });
 
-            _this.addSceneDecorator(_lightControls.name, dummyOrigin);
+            _help = new THREE.Group();
+            _help1 = new THREE.Group();
+            _help2 = new THREE.Group();
+
+            var dir = new THREE.Vector3(0, 0, 1);
+            var origin1 = new THREE.Vector3(1, 1, 0);
+            var origin2 = new THREE.Vector3(0, 0, 0);
+            var origin3 = new THREE.Vector3(-1, -1, 0);
+            var origin4 = new THREE.Vector3(1, -1, 0);
+            var origin5 = new THREE.Vector3(-1, 1, 0);
+            var length = 5;
+            var hex = 0xffff00;
+
+            var p = new THREE.Vector3(0, 0, -5);
+            _camera.localToWorld(p);
+            _decoratorsGroup.worldToLocal(p);
+            _help.position.set(p.x, p.y, p.z);
+            _help.scale.set(scaleFac, scaleFac, scaleFac);
+
+            _help1.add(new THREE.ArrowHelper(dir, origin1, length, hex, 0.001 * length));
+            _help1.add(new THREE.ArrowHelper(dir, origin2, length, hex, 0.001 * length));
+            _help1.add(new THREE.ArrowHelper(dir, origin3, length, hex, 0.001 * length));
+            _help1.add(new THREE.ArrowHelper(dir, origin4, length, hex, 0.001 * length));
+            _help1.add(new THREE.ArrowHelper(dir, origin5, length, hex, 0.001 * length));
+            dir.negate();
+            _help1.add(new THREE.ArrowHelper(dir, origin1, length, hex));
+            _help1.add(new THREE.ArrowHelper(dir, origin2, length, hex));
+            _help1.add(new THREE.ArrowHelper(dir, origin3, length, hex));
+            _help1.add(new THREE.ArrowHelper(dir, origin4, length, hex));
+            _help1.add(new THREE.ArrowHelper(dir, origin5, length, hex));
+
+            // _scene.add(_help);
+            _help.add(_help1);
+
+            // _help2.add(_lightControls);
+
+            // _help.add(_help2);
+            
+            _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+            _this.addSceneDecorator("hi", _help);
         }
 
         $(document).keyup(function (event) {
             if (event.ctrlKey || event.shiftKey || event.altKey) {
                 event.preventDefault();
                 if (_lightPressed) {
-                    _this.removeSceneDecorator(_lightControls.name);
-                    _lightControls.detach();
+                    _this.removeSceneDecorator("hi");
+                    // _lightControls.detach();
                     _lightPressed = false;
-                    _controls.enabled = true;
+                    _controls.noZoom = false;
+                    _controls.noPan = false;
+                    // _controls.enabled = true;
+                    _controls.object = _camera;
+                    // _scene.remove(_help);
                     _this.render();
                 }
             }
         });
+
 
         $(document).keydown(function (event) {
             /* CTRL+ALT+SHIFT+H => reset */
@@ -488,9 +483,13 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
                 _lightPressed = true;
                 _customLight = true;
-                _controls.enabled = false;
+                _controls.noZoom = true;
+                _controls.noPan = true;
+                // _controls.enabled = false;
                 prepareLightControls();
-                _lightControls.update();
+                // _lightControls.update();
+                _controls.object = _this.lights.Headlight.getLight();
+                _controls.update();
                 _this.render();
             }
 
@@ -531,6 +530,9 @@ MLJ.core.Scene.layerSetHistory = new Array();
         _controls.addEventListener('change', function () {
             if (!_customLight)
                 _this.lights.Headlight.setPosition(_camera.position);
+            else
+                _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
