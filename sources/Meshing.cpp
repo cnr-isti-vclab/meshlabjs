@@ -9,8 +9,6 @@
 #include<vcg/complex/algorithms/hole.h>
 #include<vcg/complex/algorithms/pointcloud_normal.h>
 
-#include<CoarseIsotropicRemeshing.h>
-
 using namespace vcg;
 using namespace std;
 
@@ -124,7 +122,7 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
     ch.Clear();
     tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
     ch.UpdateBoxAndNormals();
-} 
+}
 
 void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
 {
@@ -295,7 +293,6 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
     emscripten::function("HoleFilling",                &HoleFilling);
-    emscripten::function("CoarseIsotropicRemeshing",   &CoarseIsotropicRemeshing);
     emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif
