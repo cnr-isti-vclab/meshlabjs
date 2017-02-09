@@ -381,77 +381,57 @@ MLJ.core.Scene.layerSetHistory = new Array();
             var bbox = _this.getBBox();
             var distance = bbox.min.distanceTo(bbox.max);
             var scaleFac = distance / 15.0;
-            // var offset = bbox.center(); offset.multiplyScalar(15.0 / distance);
-
-            // _lightControls = new THREE.TransformControls(_camera, container);
-            // _lightControls.setMode('rotate');
-            // _lightControls.setSpace('local');
-            // _lightControls.setSize(1);
-            // _lightControls.name = 'lightControls';
-
-            // _lightControls.attach(_this.lights.Headlight.getMesh());
-
-            /* every time TransformControls gets updated, update the guidelines rotation */
-            // _lightControls.addEventListener('change', () => {
-            //     _lightControls.update();
-            //     _help1.lookAt(_this.lights.Headlight.getWorldPosition());
-            //     _this.render();
-            // });
 
             _help = new THREE.Group();
             _help1 = new THREE.Group();
             _help2 = new THREE.Group();
 
             var dir = new THREE.Vector3(0, 0, 1);
-            var origin1 = new THREE.Vector3(1, 1, 0);
-            var origin2 = new THREE.Vector3(0, 0, 0);
-            var origin3 = new THREE.Vector3(-1, -1, 0);
-            var origin4 = new THREE.Vector3(1, -1, 0);
-            var origin5 = new THREE.Vector3(-1, 1, 0);
+            var origins = [];
+            origins.push(new THREE.Vector3(0,-2, 0));
+            origins.push(new THREE.Vector3(0,-1, 0));
+            origins.push(new THREE.Vector3(0, 0, 0)); 
+            origins.push(new THREE.Vector3(0, 1, 0));
+            origins.push(new THREE.Vector3(0, 2, 0));
             var length = 5;
             var hex = 0xffff00;
 
-            var p = new THREE.Vector3(0, 0, -5);
+            var p = new THREE.Vector3(0, 0, -15);
             _camera.localToWorld(p);
             _decoratorsGroup.worldToLocal(p);
             _help.position.set(p.x, p.y, p.z);
             _help.scale.set(scaleFac, scaleFac, scaleFac);
 
-            _help1.add(new THREE.ArrowHelper(dir, origin1, length, hex, 0.001 * length));
-            _help1.add(new THREE.ArrowHelper(dir, origin2, length, hex, 0.001 * length));
-            _help1.add(new THREE.ArrowHelper(dir, origin3, length, hex, 0.001 * length));
-            _help1.add(new THREE.ArrowHelper(dir, origin4, length, hex, 0.001 * length));
-            _help1.add(new THREE.ArrowHelper(dir, origin5, length, hex, 0.001 * length));
+            origins.forEach(function(origin) {
+                _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
+            });
             dir.negate();
-            _help1.add(new THREE.ArrowHelper(dir, origin1, length, hex));
-            _help1.add(new THREE.ArrowHelper(dir, origin2, length, hex));
-            _help1.add(new THREE.ArrowHelper(dir, origin3, length, hex));
-            _help1.add(new THREE.ArrowHelper(dir, origin4, length, hex));
-            _help1.add(new THREE.ArrowHelper(dir, origin5, length, hex));
+            origins.forEach(function(origin) {
+                _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
+            });
 
-            // _scene.add(_help);
+            for(var i=-2; i<3; ++i)
+            {
+                var h = _help2.clone();
+                h.translateX(i);
+                _help1.add(h);
+            }
+
             _help.add(_help1);
-
-            // _help2.add(_lightControls);
-
-            // _help.add(_help2);
             
             _help1.lookAt(_this.lights.Headlight.getWorldPosition());
-            _this.addSceneDecorator("hi", _help);
+            _this.addSceneDecorator("lightHelper", _help);
         }
 
         $(document).keyup(function (event) {
             if (event.ctrlKey || event.shiftKey || event.altKey) {
                 event.preventDefault();
                 if (_lightPressed) {
-                    _this.removeSceneDecorator("hi");
-                    // _lightControls.detach();
+                    _this.removeSceneDecorator("lightHelper");
                     _lightPressed = false;
                     _controls.noZoom = false;
                     _controls.noPan = false;
-                    // _controls.enabled = true;
                     _controls.object = _camera;
-                    // _scene.remove(_help);
                     _this.render();
                 }
             }
