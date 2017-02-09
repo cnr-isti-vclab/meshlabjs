@@ -9,6 +9,8 @@
 #include<vcg/complex/algorithms/hole.h>
 #include<vcg/complex/algorithms/pointcloud_normal.h>
 
+#include <muParser.h>
+
 #include<CoarseIsotropicRemeshing.h>
 
 using namespace vcg;
@@ -228,6 +230,112 @@ void ComputePointCloudNormal(uintptr_t _baseM, int kNearestNum, int smoothIter, 
    tri::PointCloudNormal<MyMesh>::Compute(mesh, p);
 }
 
+void ProjectToSurfaceFilter(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, float minDist, float maxDist)
+{
+    MyMesh &mesh = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &projMesh = *((MyMesh*) _projM);
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,mesh);
+
+    m.UpdateBoxAndNormals();
+    float diag = m.bbox.Diag();
+
+    minDist *= diag;
+    maxDist *= diag;
+
+    projMesh.UpdateBoxAndNormals();
+    MyGrid t;
+    t.Set(projMesh.face.begin(), projMesh.face.end());
+    tri::FaceTmark<MyMesh> mark;
+    mark.SetMesh(&projMesh);
+
+    face::PointDistanceBaseFunctor<float> distFunct;
+
+    for(auto vi=m.vert.begin();vi!=m.vert.end();++vi)
+        if(!(*vi).IsD())
+        {
+            Point3f newP;
+            t.GetClosest(distFunct, mark, vi->P(), maxDist, minDist, newP);
+            vi->P() = newP;
+        }
+    m.UpdateBoxAndNormals();
+}
+
+void ProjectToParametricFilter(uintptr_t _baseM, uintptr_t _newM, std::string funcStr)
+{
+    MyMesh &mesh = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM);
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,mesh);
+
+    double x,y;
+    mu::Parser pz; pz.DefineVar("x", &x); pz.DefineVar("y", &y);
+    pz.SetExpr(funcStr);
+
+    for(auto vi=m.vert.begin();vi!=m.vert.end();++vi)
+        if(!(*vi).IsD())
+        {
+            Point3f vp = vi->P();
+            x = vp.X(); y = vp.Y();
+            vi->P() = Point3f(x, y, pz.Eval());
+        }
+    m.UpdateBoxAndNormals();
+}
+
+void CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
+                              bool split, bool collapse, bool swap, float crease, float collapseThr, float splitThr)
+{
+    MyMesh &original = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &toProject = *((MyMesh*) _projM);
+
+    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
+
+    // Mesh cleaning
+    tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
+    tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
+    Allocator<MyMesh>::CompactEveryVector(m);
+
+    //Updating box before constructing the grid, otherwise we get weird results
+    m.UpdateBoxAndNormals();
+    collapseThr *= (m.bbox.Diag()/100);
+    splitThr    *= (m.bbox.Diag()/100);
+
+    //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
+    toProject.UpdateBoxAndNormals();
+    MyGrid t;
+    t.Set(toProject.face.begin(), toProject.face.end());
+    tri::FaceTmark<MyMesh> mark;
+    mark.SetMesh(&toProject);
+
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
+
+    /* Manifold(ness) check*/
+    if(tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m) != 0 ||
+            tri::Clean<MyMesh>::CountNonManifoldVertexFF(m) != 0)
+    {
+        printf("Input mesh is non-manifold, manifoldness is required!\nInterrupting filter");
+        return;
+    }
+
+    tri::UpdateTopology<MyMesh>::VertexFace(m);
+    isoremesh::computeQuality(m);
+    tri::UpdateQuality<MyMesh>::VertexSaturate(m);
+
+    isoremesh::Params params(adapt, collapseThr, splitThr, crease);
+
+    for(int i=0; i < iter; ++i)
+    {
+        printf("iter %d \n", i+1);
+        if(split)
+            isoremesh::SplitLongEdges(m, params);
+        if(collapse)
+            isoremesh::CollapseShortEdges(m, params);
+        if(swap)
+            isoremesh::ImproveValence(m, params);
+
+        isoremesh::CollapseCrosses(m, params);
+        isoremesh::ImproveByLaplacian(m, params);
+        isoremesh::ProjectToSurface(m, t, mark);
+    }
+    m.UpdateBoxAndNormals();
+}
+
 
 void MeshingPluginTEST()
 {
@@ -296,6 +404,8 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
     emscripten::function("HoleFilling",                &HoleFilling);
     emscripten::function("CoarseIsotropicRemeshing",   &CoarseIsotropicRemeshing);
+    emscripten::function("ProjectToSurfaceFilter",     &ProjectToSurfaceFilter);
+    emscripten::function("ProjectToParametricFilter",  &ProjectToParametricFilter);
     emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif

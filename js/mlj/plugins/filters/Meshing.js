@@ -235,8 +235,8 @@
         tooltip: "TODO ",
         arity: 1
     });
-    var iterNumWidget, adaptiveWidget, refineWidget, swapWidget, creaseThrWidget,
-        collapseThrWidget, splitThrWidget, lapla, proj, crease, split, collapse,
+    var iterNumWidget, adaptiveWidget, swapWidget, creaseThrWidget,
+        collapseThrWidget, splitThrWidget, splitWidget, collapseWidget,
         projMeshWidget;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
@@ -244,23 +244,17 @@
             label: "Iterations",
             tooltip: "No. of iterations to do."
         });
-
         adaptiveWidget = builder.Bool({
             defval: true,
             label: "Adaptive",
             tooltip: "Toggles adaptive isotropic remeshing"
         });
-        refineWidget = builder.Bool({
-            defval: true,
-            label: "Refine step",
-            tooltip: "Toggles the split & collapse steps in the remeshing loop"
-        });
-        split = builder.Bool({
+        splitWidget = builder.Bool({
             defval: true,
             label: "DEBUG: spli",
             tooltip: "Toggles laplacian smooth"
         });
-        collapse = builder.Bool({
+        collapseWidget = builder.Bool({
             defval: true,
             label: "DEBUG: col",
             tooltip: "Toggles projection step"
@@ -270,24 +264,6 @@
             label: "Edge Swap step",
             tooltip: "Toggles the edge swapping step in the remeshing loop"
         });
-//###################DEBUG#########################################
-        lapla = builder.Bool({
-            defval: true,
-            label: "DEBUG: laplacian",
-            tooltip: "Toggles laplacian smooth"
-        });
-        proj = builder.Bool({
-            defval: true,
-            label: "DEBUG: projection",
-            tooltip: "Toggles projection step"
-        });
-
-        crease = builder.Bool({
-            defval: true,
-            label: "DEBUG: Crease selection",
-            tooltip: ""
-        });
-//###############################################################
         creaseThrWidget = builder.RangedFloat({
             min: 1, max: 90, step: 0.1, defval: 30,
             label: "Crease Threshold",
@@ -296,14 +272,14 @@
         collapseThrWidget = builder.RangedFloat({
             min: 0.1, max: 5, step: 0.1, defval: 1,
             label: "Collapse Length Threshold",
-            tooltip: "Collapse step will consider only edges whose length is less than this threshold"+
-                " (expressed in percentage of the BBOX diagonal length)."
+            tooltip: "Collapse step will consider only edges whose length is less than this threshold" +
+            " (expressed in percentage of the BBOX diagonal length)."
         });
         splitThrWidget = builder.RangedFloat({
             min: 0.1, max: 5, step: 0.1, defval: 2,
             label: "Split Threshold",
-            tooltip: "Split step will consider only edges whose length is more than this threshold"+
-                " (expressed in percentage of the BBOX diagonal length)."
+            tooltip: "Split step will consider only edges whose length is more than this threshold" +
+            " (expressed in percentage of the BBOX diagonal length)."
         });
         projMeshWidget = builder.LayerSelection({
             label: "Projection Mesh",
@@ -321,24 +297,77 @@
             projMeshWidget.getSelectedPtrMesh(),
             iterNumWidget.getValue(),
             adaptiveWidget.getValue(),
-            refineWidget.getValue(),
+            splitWidget.getValue(),
+            collapseWidget.getValue(),
             swapWidget.getValue(),
             creaseThrWidget.getValue(),
             collapseThrWidget.getValue(),
-            splitThrWidget.getValue(),
-            //################DEBUG##################
-            lapla.getValue(),
-            proj.getValue(),
-            crease.getValue(),
-            collapse.getValue(),
-            split.getValue()
-            //#######################################
+            splitThrWidget.getValue()
         );
         scene.addLayer(newmeshFile);
     };
     /******************************************************************************/
+    var ProjectToSurface = new plugin.Filter({
+        name: "Project to target mesh",
+        tooltip: "Project the current mesh vertices on the target mesh surface ",
+        arity: 1
+    });
+    var projMeshWidget, minDistWidget, maxDistWidget;
+    ProjectToSurface._init = function (builder) {
+        projMeshWidget = builder.LayerSelection({
+            label: "Projection Mesh",
+            tooltip: "Specifies the mesh to project the vertices onto"
+        });
+        minDistWidget = builder.RangedFloat({
+            min: 0.0, max: 1, step: 0.1, defval: 0,
+            label: "Min dist.",
+            tooltip: "Minimum distance cutoff, expressed as percentage of the BBOX diagonal."
+        });
+        maxDistWidget = builder.RangedFloat({
+            min: 0.0, max: 1, step: 0.1, defval: 0.1,
+            label: "Max dist.",
+            tooltip: "Maximum distance cutoff, expressed as percentage of the BBOX diagonal."
+        });
+    };
 
+    ProjectToSurface._applyTo = function (basemeshFile) {
+        var name = basemeshFile.name.replace("Projection of ", "");
+        var newmeshFile = MLJ.core.Scene.createLayer("Projection of " + name);
+        Module.ProjectToSurfaceFilter(
+            basemeshFile.ptrMesh(),
+            newmeshFile.ptrMesh(),
+            projMeshWidget.getSelectedPtrMesh(),
+            minDistWidget.getValue(),
+            maxDistWidget.getValue()
+        );
+        scene.addLayer(newmeshFile);
+    };
+    /******************************************************************************/
+    var ProjectToParametric = new plugin.Filter({
+        name: "Project to parametric surface",
+        tooltip: "Project the current mesh vertices on the parametric surface",
+        arity: 1
+    });
+    var funcWidget;
+    ProjectToParametric._init = function (builder) {
+        funcWidget = builder.String({
+            label: "",
+            tooltip: "This expression is evaluated on all the vertices to find the z-value",
+            defval: "cos(x)*cos(x) + sin(y)*sin(y)"
+        });
+    };
 
+    ProjectToParametric._applyTo = function (basemeshFile) {
+        var name = basemeshFile.name.replace("Projection of ", "");
+        var newmeshFile = MLJ.core.Scene.createLayer("Projection of " + name);
+        Module.ProjectToParametricFilter(
+            basemeshFile.ptrMesh(),
+            newmeshFile.ptrMesh(),
+            funcWidget.getValue()
+        );
+        scene.addLayer(newmeshFile);
+    };
+    /******************************************************************************/
     var PointCloudNormal = new plugin.Filter({
         name: "Point Cloud Normal Extrapolation",
         tooltip: "Compute the normals of the vertices of a mesh without exploiting the triangle connectivity, useful for dataset with no faces",
@@ -358,7 +387,7 @@
             tooltip: "The number of smoothing iteration done on the p used to estimate and propagate normals."
         });
 
-         flipFlagWidget = builder.Bool({
+        flipFlagWidget = builder.Bool({
             defval: false,
             label: "Flip normals w.r.t. viewpoint",
             tooltip: "If the 'viewpoint' (i.e. scanner position) is known, it can be used to disambiguate normals orientation, so that all the normals will be oriented in the same direction."
@@ -366,13 +395,13 @@
     };
 
     PointCloudNormal._applyTo = function (basemeshFile) {
-        if(!basemeshFile.cppMesh.hasPerVertexNormal())
+        if (!basemeshFile.cppMesh.hasPerVertexNormal())
             basemeshFile.cppMesh.addPerVertexNormal();
 
         Module.ComputePointCloudNormal(basemeshFile.ptrMesh(), nNumWidget.getValue(), smoothIterWidget.getValue(), flipFlagWidget.getValue());
     };
 
-/******************************************************************************/  
+    /******************************************************************************/
 
 
     plugin.Manager.install(QuadricSimpFilter);
@@ -387,5 +416,8 @@
     plugin.Manager.install(CutTopological);
     plugin.Manager.install(HoleFilling);
     plugin.Manager.install(CoarseIsotropicRemeshing);
+    plugin.Manager.install(ProjectToSurface);
+    plugin.Manager.install(ProjectToParametric);
     plugin.Manager.install(PointCloudNormal);
+
 })(MLJ.core.plugin, MLJ.core.Scene);

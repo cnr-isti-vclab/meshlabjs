@@ -19,10 +19,12 @@ typedef  EdgeCollapser<MyMesh, BasicVertexPair<MyVertex>> MyCollapser;
 typedef  GridStaticPtr<MyFace, float> MyGrid;
 typedef  MyMesh::PerVertexAttributeHandle<int> CornerMap;
 
+namespace isoremesh
+{
+
 struct Params {
     float maxLength;
     float minLength;
-//    float lengthThr;
     float creaseThr;
     bool adapt;
 
@@ -31,7 +33,6 @@ struct Params {
         creaseThr(math::Cos(math::ToRad(creaseThr)))
     {}
 };
-
 
 // My lerp (vcg does not implement lerp on scalars as of 30-01-2017)
 inline float lerp (float a, float b, float lambda)
@@ -78,100 +79,6 @@ void computeQuality(MyMesh &m)
                     v->SetV();
                 }
         }
-}
-//here i could also compute corners by using a temp vertexhandle to store the num of incident edges on a vert
-//and a bitflag to store the corner bit on vertices
-void computeVertexCrease(MyMesh &m, float creaseThr, int creaseBitFlag)
-{
-    tri::UpdateFlags<MyMesh>::VertexClear(m, creaseBitFlag);
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
-
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-            for(auto i=0; i<3; ++i)
-            {
-                MyPos pi(&*fi, i);
-                if(!pi.FFlip()->IsV()) // edge not visited already
-                {
-                    if(testCreaseEdge(pi, creaseThr))
-                    {
-                        pi.V()->SetUserBit(creaseBitFlag);
-                        pi.VFlip()->SetUserBit(creaseBitFlag);
-                    }
-                }
-            }
-            (*fi).SetV();
-        }
-}
-
-void computeVertexCreaseAndCorner(MyMesh &m, float creaseThr, int creaseBitFlag)
-{
-    tri::UpdateSelection<MyMesh>::VertexClear(m);
-    tri::UpdateFlags<MyMesh>::VertexClear(m, creaseBitFlag);
-    CornerMap h = tri::Allocator<MyMesh>::GetPerVertexAttribute<int>(m);
-
-    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-        h[vi] = 0;
-
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-            for(auto i=0; i<3; ++i)
-            {
-                MyPos pi(&*fi, i);
-
-                if(testCreaseEdge(pi, creaseThr))
-                {
-                    pi.V()->SetUserBit(creaseBitFlag);
-                    pi.VFlip()->SetUserBit(creaseBitFlag);
-                    ++h[tri::Index(m, pi.V())];
-                }
-                pi.FlipE();            // need to flip edge to visit all the incident edges for each vert
-                if(testCreaseEdge(pi, creaseThr))
-                {
-                    pi.V()->SetUserBit(creaseBitFlag);
-                    pi.VFlip()->SetUserBit(creaseBitFlag);
-                    ++h[tri::Index(m, pi.V())];
-                }
-            }
-        }
-    //in a manifold mesh every edge is share by 2 faces => every crease adds 2 to its vertices handles
-    //if a vertex has more than 2 incident crease edges is a corner => if h[vi] > 4 it is corner
-    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-        if(h[vi] > 4)
-            (*vi).SetS();
-
-}
-//same as before... won't probably use this version..
-void selectCreaseCorners(MyMesh &m, float creaseThr)
-{
-    tri::UpdateSelection<MyMesh>::VertexClear(m);
-    CornerMap h = tri::Allocator<MyMesh>::GetPerVertexAttribute<int>(m);
-
-    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-        h[vi] = 0;
-
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-            for(auto i=0; i<3; ++i)
-            {
-                MyPos pi(&*fi, i);
-
-                if(testCreaseEdge(pi, creaseThr))
-                    ++h[tri::Index(m, pi.V())];
-
-                pi.FlipE();
-
-                if(testCreaseEdge(pi, creaseThr))
-                    ++h[tri::Index(m, pi.V())];
-            }
-        }
-    //now every crease added 2 to the vertex handle => if h[i] > 4 then corner
-    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
-        if(h[vi] > 4)
-            (*vi).SetS();
 }
 
 /*
@@ -311,7 +218,7 @@ public:
         float dist = Distance(ep.V()->P(), ep.VFlip()->P());
         //if the edge length is less the lengthThr don't split anymore
         //if(dist > lengthThr && dist > mult*length)
-//        if(dist > std::min(lengthThr, mult*length))
+        //        if(dist > std::min(lengthThr, mult*length))
         if(dist > mult*length)
         {
             ++count;
@@ -343,7 +250,7 @@ void SplitLongEdges(MyMesh &m, Params &params)
     ep.maxQ      = maxQ;
     ep.adapt     = params.adapt;
     ep.length    = params.maxLength;
-//    ep.lengthThr = params.lengthThr;
+    //    ep.lengthThr = params.lengthThr;
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
     printf("Split done: splitted %d edges\n",ep.count);
@@ -406,7 +313,7 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 {
     float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
-//    float thr  = std::max(mult*params.minLength, params.lengthThr);
+    //    float thr  = std::max(mult*params.minLength, params.lengthThr);
     float thr = mult*params.minLength;
     if(dist < thr)//if to collapse
     {
@@ -597,7 +504,7 @@ int selectVertexFromCrease(MyMesh &m, float creaseThr)
 /*
     Simple Laplacian Smoothing step - Border and crease vertices are ignored.
 */
-void ImproveByLaplacian(MyMesh &m, Params params, bool DEBUGCREASE)
+void ImproveByLaplacian(MyMesh &m, Params params)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
     tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
@@ -606,9 +513,9 @@ void ImproveByLaplacian(MyMesh &m, Params params, bool DEBUGCREASE)
     int i = tri::UpdateSelection<MyMesh>::VertexInvert(m);
     tri::Smooth<MyMesh>::VertexCoordPlanarLaplacian(m,1,math::ToRad(10.f),true);
     printf("Laplacian done (selected vertices: %d)\n", i);
-    if(!DEBUGCREASE)
-        tri::UpdateSelection<MyMesh>::Clear(m);
+    tri::UpdateSelection<MyMesh>::Clear(m);
 }
+
 /*
     Reprojection step, this method reprojects each vertex on the original surface
     sampling the nearest point onto it using a uniform grid MyGrid t
@@ -628,83 +535,5 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
         }
     printf("projected %d\n", cnt);
 }
-/*
- * TODO: Think about using tri::Clean<MyMesh>::ComputeValence to compute the valence in the flip stage
- */
-void CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
-                              bool refine, bool swap, float crease, float collapseThr, float splitThr,
-                              bool DEBUGLAPLA, bool DEBUGPROJ, bool DEBUGCREASE, bool DEBUGCOLLAPSE, bool DEBUGSPLIT)
-{
-    MyMesh &original = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &toProject = *((MyMesh*) _projM);
 
-    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,original);
-
-    // Mesh cleaning
-    int dup      = tri::Clean<MyMesh>::RemoveDuplicateVertex(m);
-    int unref    = tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
-    //int zeroArea = tri::Clean<MyMesh>::RemoveZeroAreaFace(original);
-    Allocator<MyMesh>::CompactEveryVector(m);
-
-    //Updating box before constructing the grid, otherwise we get weird results
-    m.UpdateBoxAndNormals(); //per face normalized and per vertex
-    collapseThr *= (m.bbox.Diag()/100);
-    splitThr    *= (m.bbox.Diag()/100);
-    //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
-
-    toProject.UpdateBoxAndNormals();
-    MyGrid t;
-    t.Set(toProject.face.begin(), toProject.face.end());
-    tri::FaceTmark<MyMesh> mark;
-    mark.SetMesh(&toProject);
-
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-    tri::UpdateTopology<MyMesh>::VertexFace(m);
-    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
-
-    /* Manifold(ness) check*/
-    if(tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m) != 0 ||
-            tri::Clean<MyMesh>::CountNonManifoldVertexFF(m) != 0)
-    {
-        printf("Input mesh is non-manifold, manifoldness is required!\nInterrupting filter");
-        return;
-    }
-
-//    tri::UpdateCurvature<MyMesh>::MeanAndGaussian(m);
-//    tri::UpdateQuality<MyMesh>::VertexFromAbsoluteCurvature(m);
-
-        computeQuality(m);
-        tri::UpdateQuality<MyMesh>::VertexSaturate(m);
-
-    tri::UpdateTopology<MyMesh>::AllocateEdge(m);
-    float length = tri::Stat<MyMesh>::ComputeEdgeLengthAverage(m);
-    printf("Initial Mean edge size: %.6f\n", length);
-    printf("Initial Mean Valence:   %.15f\n", computeMeanValence(m));
-
-    Params params(adapt, collapseThr, splitThr, crease);
-
-    for(int i=0; i < iter; ++i)
-    {
-        printf("iter %d \n", i+1);
-        if(refine)
-        {
-            if(DEBUGSPLIT)
-                SplitLongEdges(m, params);
-            if(DEBUGCOLLAPSE){
-                CollapseShortEdges(m, params);
-            }
-        }
-        if(swap)
-            ImproveValence(m, params);
-        CollapseCrosses(m, params);
-        if(DEBUGLAPLA)
-            ImproveByLaplacian(m, params, DEBUGCREASE);
-        if(DEBUGPROJ)
-            ProjectToSurface(m, t, mark);
-    }
-
-    tri::UpdateTopology<MyMesh>::AllocateEdge(m);
-    printf("Final Mean edge size: %.6f\n", tri::Stat<MyMesh>::ComputeEdgeLengthAverage(m));
-    printf("Final Mean Valence: %.15f \n", computeMeanValence(m));
-
-    m.UpdateBoxAndNormals();
 }
