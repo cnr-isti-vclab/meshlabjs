@@ -570,8 +570,9 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
-    function _computeGlobalBBbox() {
-        console.time("Time to update bbox: ");
+    function _computeGlobalBBbox()
+    {
+        //console.time("Time to update bbox: ");
         _group.scale.set(1, 1, 1);
         _group.position.set(0, 0, 0);
         _group.updateMatrixWorld();
