@@ -27,4 +27,5 @@ SOURCES += FilterTest.cpp \
   $$MUPARSERSRC
 
 HEADERS += mesh_def.h \
-    FilterTest.h
+    FilterTest.h \
+    coarseisotropicremeshing.h
