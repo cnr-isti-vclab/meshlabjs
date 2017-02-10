@@ -22,7 +22,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     normalMap: {type: "t", value: null},
     colorMap: { type: "t", value: null },
     lightViewProjection: { type: "m4", value: null },
-    intensity: { type: "f", value: 1 },
+    intensity: { type: "f", value: 0.874 },
     lightDir: { type: 'v3', value: null },
     blurFlag: { type: 'i', value: 1 },
     bleedBias: { type: "f", value: 0.5 }
@@ -58,7 +58,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       label: "Shadow Transparency",
       tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval: 1.0,
+      defval: 0.8740,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.intensity.value = value;
@@ -73,7 +73,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       label: "Bleed containment bias",
       tooltip: "Manages the bias applied in VSM to contain bleed effects",
       min: 0.0, max: 0.5, step: 0.0001,
-      defval: 0.21,
+      defval: 0.5,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.bleedBias.value = value;
