@@ -393,7 +393,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
             origins.push(new THREE.Vector3(0, 0, 0)); 
             origins.push(new THREE.Vector3(0, 1, 0));
             origins.push(new THREE.Vector3(0, 2, 0));
-            var length = 5;
+            var length = 9;
             var hex = 0xffff00;
 
             var p = new THREE.Vector3(0, 0, -15);
