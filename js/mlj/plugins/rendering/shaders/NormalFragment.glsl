@@ -2,7 +2,7 @@ precision highp float;
 
 uniform float pointSize;
 
-varying vec4 vPosition;
+varying vec3 vNormal;
 
 void main() {
 if (pointSize != 0.0) {
@@ -11,7 +11,8 @@ if (pointSize != 0.0) {
   float w = u*u+v*v;
   if (w > 1.0) discard;
 }
-  // vec4 n = (vPosition * 0.5 + 0.5) * 255.0; 
-  gl_FragColor = vPosition;
-
+ 
+  vec3 n = (gl_FrontFacing) ? normalize(vNormal) : normalize(-vNormal);
+  // n = (n * 0.5 + 0.5) * 255.0; 
+  gl_FragColor = vec4(n, 0.0);
 }

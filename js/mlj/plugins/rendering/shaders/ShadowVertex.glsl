@@ -9,6 +9,7 @@ attribute vec2 uv;
 
 uniform sampler2D depthMap;
 uniform sampler2D positionMap;
+uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 
 varying vec2 vUv;

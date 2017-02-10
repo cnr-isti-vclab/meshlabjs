@@ -19,5 +19,5 @@ void main() {
   float dx = dFdx(d);
   float dy = dFdy(d);
 
-  gl_FragColor = vec4(d, d * d + 0.25*(dx*dx + dy*dy), 0.0, 1.0);
+  gl_FragColor = vec4(d, d * d, 0.0, 1.0);
 }

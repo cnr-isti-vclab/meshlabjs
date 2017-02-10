@@ -2,14 +2,14 @@
 precision highp float;
 
 uniform mat4 lightViewProjection;
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
+uniform mat4 modelViewMatrix;
 
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
 
 uniform sampler2D colorMap;
 uniform sampler2D positionMap;
+uniform sampler2D normalMap;
 uniform sampler2D depthMap;
 uniform sampler2D blurMap;
 
@@ -67,12 +67,17 @@ float shadowCalc(vec4 position){
 
 
   //Per face normals make way too blocky shadows obviuosly
-  vec3 v1 = dFdx(position.xyz);
-  vec3 v2 = dFdy(position.xyz);
-  vec3 vn = normalize(cross(v1, v2));
-  float p = (dot(vn, -lightDir));
-  // if (p < -0.05) return 0.0;
+  // vec3 v1 = dFdx(position.xyz);
+  // vec3 v2 = dFdy(position.xyz);
+  // vec3 vn = normalize(cross(v1, v2));
+  // float p = (dot(vn, -lightDir));
+  // if (p < -0.55) return 0.0;
 
+  // vec4 normSample = texture2D(normalMap, vUv);
+  // // normSample = (normSample / 255.0); //[0..1]
+  // // normSample = (normSample - 0.5) * 2.0; // [-1..1]
+  // if(dot(normSample.xyz,-lightDir) < -0.2) 
+  //  return 0.2;
 
   return shadowContribution(moments, fragDepth);
   // return 1.0;
@@ -83,7 +88,9 @@ void main(){
 
   //anticipating position sampling, in order to fast discard
   vec4 posSample = texture2D(positionMap, vUv);
-  if(posSample == vec4(0.0)){ gl_FragColor = color; return; }
+  // posSample = (posSample / 255.0); //[0..1]
+  // posSample = (posSample - 0.5) * 2.0; // [-1..1]
+  if(posSample.a == 0.0){ gl_FragColor = color; return; }
 
   float chebishev = shadowCalc(posSample);
 
@@ -93,7 +100,7 @@ void main(){
   // // gl_FragColor = vec4(vec3(0.0), 0.5 - shadow);
   //   gl_FragColor = vec4(vec3(0.0), (intensity-chebishev)*color.a);
 
-  if (chebishev > 0.4)
+  if (chebishev > 0.5)
     gl_FragColor = vec4(color.rgb, color.a);
   else {
     float shadowing = (intensity <= 0.5) ? mix(0.0, (chebishev), 2.0*intensity) : mix(chebishev, 1.0, 2.0*intensity-1.0);

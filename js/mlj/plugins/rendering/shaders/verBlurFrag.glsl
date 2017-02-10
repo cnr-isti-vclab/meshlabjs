@@ -7,7 +7,7 @@ precision highp float;
 
 uniform sampler2D depthMap;
 
-#define stepCount 9 //35x35 kernel
+#define stepCount 9
 uniform float gWeights[stepCount];
 uniform float gOffsets[stepCount];
 uniform float texSize;
