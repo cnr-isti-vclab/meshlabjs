@@ -36,12 +36,12 @@ float shadowContribution(vec2 moments, float t) {
   float m1_2 = moments.x * moments.x;
   float variance = moments.y - m1_2; // var = E(x^2) - E(x)^2;
 
-  variance = max(variance, 0.0002);
+  variance = max(variance, 0.002);
 
-  float d = t - moments.x;
+  float d = moments.x - t;
   float pmax = variance / (variance + (d*d));
 
-//  return pmax;
+  // return pmax;
   return containBleed(pmax, bleedBias);
 }
 
@@ -63,7 +63,7 @@ float shadowCalc(vec4 position){
     moments = texture2D(depthMap, lightSpacePosition.xy).xy;
 
 
-  float fragDepth = lightSpacePosition.z - 0.0005;
+  float fragDepth = lightSpacePosition.z;
 
 
   //Per face normals make way too blocky shadows obviuosly
@@ -71,10 +71,11 @@ float shadowCalc(vec4 position){
   vec3 v2 = dFdy(position.xyz);
   vec3 vn = normalize(cross(v1, v2));
   float p = (dot(vn, -lightDir));
-  if (p < -0.05) return 0.0;
+  // if (p < -0.05) return 0.0;
 
 
   return shadowContribution(moments, fragDepth);
+  // return 1.0;
 }
 
 void main(){
@@ -86,11 +87,16 @@ void main(){
 
   float chebishev = shadowCalc(posSample);
 
+  // if (chebishev > 0.4)
+  //   gl_FragColor = vec4(color.rgb, color.a);
+  // else
+  // // gl_FragColor = vec4(vec3(0.0), 0.5 - shadow);
+  //   gl_FragColor = vec4(vec3(0.0), (intensity-chebishev)*color.a);
+
   if (chebishev > 0.4)
     gl_FragColor = vec4(color.rgb, color.a);
   else {
-    //float shadowing = clamp(0.6 + chebishev, 0.7, 1.0) * intensity;
-    float shadowing = (chebishev + 0.6) * intensity;
-    gl_FragColor = vec4(color.rgb * (shadowing), color.a);
+    float shadowing = (intensity <= 0.5) ? mix(0.0, (chebishev), 2.0*intensity) : mix(chebishev, 1.0, 2.0*intensity-1.0);
+    gl_FragColor = vec4(shadowing*color.rgb, color.a);
   }
 }
