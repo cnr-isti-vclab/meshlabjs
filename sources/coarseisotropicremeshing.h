@@ -315,8 +315,10 @@ void SplitLongEdges(MyMesh &m, Params &params)
 //  -new face normal diverges too much after collapse.
 //  -new face has too long edges.
 // TRY: if the vertex has valence 4 (cross vertex) we relax the check on length
-bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=false)
+bool checkFacesAroundVert(MyPos &p, Point3f &mp, float targetLength, float maxLength=0, bool relaxed=false)
 {
+    targetLength *= targetLength;
+
     vector<MyFace*> ff;
     vector<int> vi;
 
@@ -340,7 +342,7 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=fa
             float newQ = Quality(mp, v1->P(), v2->P());
             float oldQ = Quality(v0->P(), v1->P(), v2->P());
 
-            if(newQ <= 0.5*oldQ /*&& area >= length*length/20.f*/)
+            if(newQ <= 0.5*oldQ && area >= targetLength/100.f)
                 return false;
 
             Point3f oldN = NormalizedTriangleNormal(*(pi.F()));
@@ -348,12 +350,12 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=fa
             float div = fastAngle(oldN, newN);
             float thr = math::Cos(math::ToRad(2.5f));
 
-            if(div <= thr && div >= -thr /*&& area >= length*length/20.f*/)
+            if(div <= thr && div >= -thr && area >= targetLength/100.f)
                 return false;
 
             //here if the vertex is a cross vert we skip the check on length, to ease the collapsing of crosses
             if(!relaxed)
-                if((Distance(mp, v1->P()) > length || Distance(mp, v2->P()) > length)/* && area >= length*length/20.f*/)
+                if((Distance(mp, v1->P()) > maxLength || Distance(mp, v2->P()) > maxLength) && area >= targetLength/100.f)
                     return false;
         }
     return true;
@@ -366,14 +368,14 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
     float dist = Distance(p.V()->P(), p.VFlip()->P());
     float thr = mult*params.minLength;
     float area = DoubleArea(*(p.F()))/2.f;
-    if(dist < thr /*|| area < params.minLength*params.minLength/50.f*/)//if to collapse
+    if(dist < thr || area < params.minLength*params.minLength/100.f)//if to collapse
     {
-        if(!checkFacesAroundVert(p, mp, mult*params.maxLength))
+        if(!checkFacesAroundVert(p, mp, params.minLength ,mult*params.maxLength))
             return false;
 
         p.FlipV();
 
-        if(!checkFacesAroundVert(p, mp, mult*params.maxLength))
+        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength))
             return false;
 
         return true;
@@ -437,9 +439,9 @@ void CollapseShortEdges(MyMesh &m, Params &params)
 
 //Here I just need to check the faces of the cross, since the other faces are not
 //affected by the collapse of the internal faces of the cross.
-bool testCrossCollapse(MyPos &p, Point3f &mp)
+bool testCrossCollapse(MyPos &p, Point3f &mp, Params &params)
 {
-    if(!checkFacesAroundVert(p, mp, 0, true))
+    if(!checkFacesAroundVert(p, mp, params.minLength, 0, true))
         return false;
     return true;
 }
@@ -546,7 +548,7 @@ void CollapseCrosses(MyMesh &m , Params &params)
                         MyPair bp  = chooseBestCrossCollapse(pi, ff);
                         Point3f mp = bp.V(1)->P();
                         //todo: think about if you should try doing the other collapse if test or link fails for this one
-                        if(testCrossCollapse(pi, mp) && MyCollapser::LinkConditions(bp))
+                        if(testCrossCollapse(pi, mp, params) && MyCollapser::LinkConditions(bp))
                         {
                             MyCollapser::Do(m, bp, mp);
                             ++count;
