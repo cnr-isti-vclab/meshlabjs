@@ -237,7 +237,7 @@
     });
     var iterNumWidget, adaptiveWidget, swapWidget, creaseThrWidget,
         collapseThrWidget, splitThrWidget, splitWidget, collapseWidget,
-        projMeshWidget;
+        absoluteThrWidget, projMeshWidget;
     CoarseIsotropicRemeshing._init = function (builder) {
         iterNumWidget = builder.Integer({
             min: 1, step: 1, defval: 1,
@@ -281,6 +281,12 @@
             tooltip: "Split step will consider only edges whose length is more than this threshold" +
             " (expressed in percentage of the BBOX diagonal length)."
         });
+        absoluteThrWidget = builder.RangedFloat({
+            min: 0.1, max: 5, step: 0.1, defval: 2,
+            label: "Minimum Threshold",
+            tooltip: "This is the minimum length threshold for the edges" +
+            " (expressed in percentage of the BBOX diagonal length)."
+        });
         projMeshWidget = builder.LayerSelection({
             label: "Projection Mesh",
             tooltip: "Specifies a different mesh to project onto during the projection step"
@@ -291,7 +297,8 @@
     CoarseIsotropicRemeshing._applyTo = function (basemeshFile) {
         var name = basemeshFile.name.replace("Isotropic Remeshing of ", "");
         var newmeshFile = MLJ.core.Scene.createLayer("Isotropic Remeshing of " + name);
-        Module.CoarseIsotropicRemeshing(
+        console.log(projMeshWidget.getSelectedLayer().name);
+        var success = Module.CoarseIsotropicRemeshing(
             basemeshFile.ptrMesh(),
             newmeshFile.ptrMesh(),
             projMeshWidget.getSelectedPtrMesh(),
@@ -302,9 +309,11 @@
             swapWidget.getValue(),
             creaseThrWidget.getValue(),
             collapseThrWidget.getValue(),
-            splitThrWidget.getValue()
+            splitThrWidget.getValue(),
+            absoluteThrWidget.getValue()
         );
-        scene.addLayer(newmeshFile);
+        if(success)
+            scene.addLayer(newmeshFile);
     };
     /******************************************************************************/
     var ProjectToSurface = new plugin.Filter({

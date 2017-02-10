@@ -25,12 +25,13 @@ namespace isoremesh
 struct Params {
     float maxLength;
     float minLength;
+    float lengthThr;
     float creaseThr;
     bool adapt;
 
-    Params(bool adapt, float collapseThr, float splitThr, float creaseThr) :
+    Params(bool adapt, float collapseThr, float splitThr, float lengthThr, float creaseThr) :
         adapt(adapt), maxLength((4.f/3.f)*splitThr), minLength((4.f/5.f)*collapseThr),
-        creaseThr(math::Cos(math::ToRad(creaseThr)))
+        lengthThr(lengthThr), creaseThr(math::Cos(math::ToRad(creaseThr)))
     {}
 };
 
@@ -51,34 +52,76 @@ inline bool testCreaseEdge(MyPos &p, float creaseThr)
     float angle = fastAngle(NormalizedTriangleNormal(*(p.F())), NormalizedTriangleNormal(*(p.FFlip())));
     return (angle <= creaseThr && angle >= -creaseThr);
 }
+inline void computeVQualityDistrMinMax(MyMesh &m, float &minQ, float &maxQ)
+{
+    Distribution<float> distr;
+    tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
+
+    maxQ = distr.Percentile(0.9f);
+    minQ = distr.Percentile(0.1f);
+}
+
+//could become: forEachFacePos(MyMesh, std::function<bool (MyPos *)> actionGuard, ... action, std::function<void (MyFace*)> faceFlags)
+inline void forEachFacePos(MyMesh &m, std::function<void (MyFace &, MyPos &, int)> action)
+{
+    for(auto fi=m.face.begin();fi!=m.face.end();++fi)
+        if(!(*fi).IsD())
+        {
+            for(int i=0;i<3;++i)
+            {
+                MyPos pi(&*fi,i);
+                action(*fi, pi, i);
+            }
+            fi->SetV();
+        }
+}
 
 //riscrivi con vfiterator e iterando solo sui vertici
 void computeQuality(MyMesh &m)
 {
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
+
+    for(auto vi=m.vert.begin(); vi!=m.vert.end(); ++vi)
+        if(!(*vi).IsD())
         {
-            Point3f fNormal = NormalizedTriangleNormal(*fi);
-            for(auto i=0; i<3; ++i)
-                if(!(*fi).V(i)->IsV())
-                {
-                    MyVertex *v = (*fi).V(i);
-                    vector<MyFace*> ff;
-                    vector<int> vi;
+            vector<MyFace*> ff;
+            face::VFExtendedStarVF(&*vi, 0, ff);
 
-                    face::VFStarVF<MyFace>(v, ff, vi);
-
-                    float tot = 0;
-                    for(MyFace *f: ff)
-                        if(f != &*fi)
-                        {
-                            tot+= 1-math::Abs(fastAngle(fNormal, NormalizedTriangleNormal(*f)));
-                        }
-                    v->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
-                    v->SetV();
-                }
+            float tot = 0;
+            auto it = ff.begin();
+            Point3f fNormal = NormalizedTriangleNormal(**it);
+            ++it;
+            while(it != ff.end())
+            {
+                tot+= 1-math::Abs(fastAngle(fNormal, NormalizedTriangleNormal(**it)));
+                ++it;
+            }
+            vi->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
+            vi->SetV();
         }
+//    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+//        if(!(*fi).IsD())
+//        {
+//            Point3f fNormal = NormalizedTriangleNormal(*fi);
+//            for(auto i=0; i<3; ++i)
+//                if(!(*fi).V(i)->IsV())
+//                {
+//                    MyVertex *v = (*fi).V(i);
+//                    vector<MyFace*> ff;
+//                    vector<int> vi;
+
+//                    face::VFStarVF<MyFace>(v, ff, vi);
+
+//                    float tot = 0;
+//                    for(MyFace *f: ff)
+//                        if(f != &*fi)
+//                        {
+//                            tot+= 1-math::Abs(fastAngle(fNormal, NormalizedTriangleNormal(*f)));
+//                        }
+//                    v->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
+//                    v->SetV();
+//                }
+//        }
 }
 
 /*
@@ -103,6 +146,15 @@ float computeMeanValence(MyMesh &m)
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
     int total = 0, count = 0, totalOff = 0;
 
+    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+    //        if(!p.V()->IsV())
+    //        {
+    //            total += p.NumberOfIncidentVertices();
+    //            totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
+    //            p.V()->SetV();
+    //            ++count;
+    //        }
+    //    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -182,9 +234,20 @@ bool testSwap(MyPos p, float creaseThr)
 void ImproveValence(MyMesh &m, Params params)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m); //collapser does not update FF
-
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
+
     int swapCnt=0;
+
+    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+    //        if(!p.FFlip()->IsV())
+    //            if(testSwap(p, params.creaseThr) &&
+    //                    face::CheckFlipEdgeNormal(f, i, math::ToRad(10.f)) &&
+    //                    face::CheckFlipEdge(f,i) )
+    //            {
+    //                face::FlipEdge(f,i);
+    //                swapCnt++;
+    //            }
+    //    });
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
         if(!(*fi).IsD())
         {
@@ -210,16 +273,13 @@ class EdgeSplitPred
 {
 public:
     int count = 0;
-    float length, /*lengthThr,*/ minQ, maxQ;
+    float length, lengthThr, minQ, maxQ;
     bool adapt;
     bool operator()(MyPos &ep)
-    { //could adjust mult on corners..accumulation of vertices is cause of nnonmanifoldnes
+    {
         float mult = (adapt)? lerp(0.5f, 1.5f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
         float dist = Distance(ep.V()->P(), ep.VFlip()->P());
-        //if the edge length is less the lengthThr don't split anymore
-        //if(dist > lengthThr && dist > mult*length)
-        //        if(dist > std::min(lengthThr, mult*length))
-        if(dist > mult*length)
+        if(dist > std::max(mult*length,lengthThr*2))
         {
             ++count;
             return true;
@@ -234,15 +294,8 @@ void SplitLongEdges(MyMesh &m, Params &params)
     tri::UpdateTopology<MyMesh>::FaceFace(m);
 
     float minQ,maxQ;
-
-    if(params.adapt) //if not adaptive, do not compute quality
-    {
-        Distribution<float> distr;
-        tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
-
-        maxQ = distr.Percentile(0.9f);
-        minQ = distr.Percentile(0.1f);
-    }
+    if(params.adapt)
+        computeVQualityDistrMinMax(m, minQ, maxQ);
 
     tri::MidPoint<MyMesh> midFunctor(&m);
     EdgeSplitPred ep;
@@ -250,7 +303,7 @@ void SplitLongEdges(MyMesh &m, Params &params)
     ep.maxQ      = maxQ;
     ep.adapt     = params.adapt;
     ep.length    = params.maxLength;
-    //    ep.lengthThr = params.lengthThr;
+    ep.lengthThr = params.lengthThr;
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
     printf("Split done: splitted %d edges\n",ep.count);
@@ -281,28 +334,26 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float length=0, bool relaxed=fa
             if( v1 == p.VFlip() || v2 == p.VFlip()) //i'm the other deleted face
                 continue;
 
+            float area = DoubleArea(*(pi.F()))/2.f;
+
             //quality and normal divergence checks
             float newQ = Quality(mp, v1->P(), v2->P());
             float oldQ = Quality(v0->P(), v1->P(), v2->P());
 
-            if(newQ <= 0.5*oldQ)
+            if(newQ <= 0.5*oldQ /*&& area >= length*length/20.f*/)
                 return false;
-
-            float area = DoubleArea(*(pi.F()))/2.f;
-            if(area <= length/100)
-                return true;
 
             Point3f oldN = NormalizedTriangleNormal(*(pi.F()));
             Point3f newN = Normal(mp, v1->P(), v2->P()).Normalize();
             float div = fastAngle(oldN, newN);
             float thr = math::Cos(math::ToRad(2.5f));
 
-            if(div <= thr && div >= -thr)
+            if(div <= thr && div >= -thr /*&& area >= length*length/20.f*/)
                 return false;
 
             //here if the vertex is a cross vert we skip the check on length, to ease the collapsing of crosses
             if(!relaxed)
-                if(Distance(mp, v1->P()) > length || Distance(mp, v2->P()) > length)
+                if((Distance(mp, v1->P()) > length || Distance(mp, v2->P()) > length)/* && area >= length*length/20.f*/)
                     return false;
         }
     return true;
@@ -313,9 +364,9 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 {
     float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
-    //    float thr  = std::max(mult*params.minLength, params.lengthThr);
     float thr = mult*params.minLength;
-    if(dist < thr)//if to collapse
+    float area = DoubleArea(*(p.F()))/2.f;
+    if(dist < thr /*|| area < params.minLength*params.minLength/50.f*/)//if to collapse
     {
         if(!checkFacesAroundVert(p, mp, mult*params.maxLength))
             return false;
@@ -336,17 +387,26 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     int count = 0, candidates = 0;
 
     if(params.adapt)
-    {
-        Distribution<float> distr;
-        tri::Stat<MyMesh>::ComputePerVertexQualityDistribution(m,distr);
-
-
-        maxQ = distr.Percentile(0.9f);
-        minQ = distr.Percentile(0.1f);
-    }
+        computeVQualityDistrMinMax(m, minQ, maxQ);
 
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
+
+    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+    //        if(!p.V()->IsB() && !p.VFlip()->IsB())
+    //        {
+    //            ++candidates;
+    //            MyPair bp(p.V(), p.VFlip());
+    //            Point3f mp = (bp.V(1)->P()+bp.V(0)->P())/2.f;
+
+    //            if(testCollapse(p, mp, minQ, maxQ, params) && MyCollapser::LinkConditions(bp))
+    //            {
+    //                MyCollapser::Do(m, bp, mp);
+    //                ++count;
+    //                break;
+    //            }
+    //        }
+    //    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -371,7 +431,8 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     printf("Collapse candidate edges: %d\n", candidates);
     printf("Collapsed edges: %d\n", count);
     //compact vectors, since we killed vertices
-    Allocator<MyMesh>::CompactEveryVector(m);
+    if(count > 0)
+        Allocator<MyMesh>::CompactEveryVector(m);
 }
 
 //Here I just need to check the faces of the cross, since the other faces are not
@@ -442,8 +503,31 @@ MyPair chooseBestCrossCollapse(MyPos &p, vector<MyFace*> &ff)
 
 void CollapseCrosses(MyMesh &m , Params &params)
 {
+    tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     int count = 0;
+
+//    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+//        if(!p.V()->IsB() && !f.V1(p.VInd())->IsB() && !f.V2(p.VInd())->IsB())
+//        {
+//            vector<MyFace*> ff;
+//            vector<int> vi;
+//            face::VFStarVF<MyFace>(p.V(), ff, vi);
+
+//            //removing crosses only
+//            if(ff.size() == 4)
+//            {
+//                MyPair bp  = chooseBestCrossCollapse(p, ff);
+//                Point3f mp = bp.V(1)->P();
+//                if(testCrossCollapse(p, mp) && MyCollapser::LinkConditions(bp))
+//                {
+//                    MyCollapser::Do(m, bp, mp);
+//                    ++count;
+//                    break;
+//                }
+//            }
+//        }
+//    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -482,6 +566,15 @@ int selectVertexFromCrease(MyMesh &m, float creaseThr)
 {
     tri::UpdateFlags<MyMesh>::FaceClearV(m);
     int count = 0;
+
+//        forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+//            if(!(p.FFlip()->IsV()) && testCreaseEdge(p, creaseThr))
+//            {
+//                p.V()->SetS();
+//                p.VFlip()->SetS();
+//                ++count;
+//            }
+//        });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {

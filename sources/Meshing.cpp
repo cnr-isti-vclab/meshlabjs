@@ -226,7 +226,7 @@ void ComputePointCloudNormal(uintptr_t _baseM, int kNearestNum, int smoothIter, 
    p.fittingAdjNum = kNearestNum;
    p.smoothingIterNum = smoothIter;
    p.useViewPoint = flipFlag;
-   
+
    tri::PointCloudNormal<MyMesh>::Compute(mesh, p);
 }
 
@@ -278,8 +278,8 @@ void ProjectToParametricFilter(uintptr_t _baseM, uintptr_t _newM, std::string fu
     m.UpdateBoxAndNormals();
 }
 
-void CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
-                              bool split, bool collapse, bool swap, float crease, float collapseThr, float splitThr)
+bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
+                              bool split, bool collapse, bool swap, float crease, float collapseThr, float splitThr, float absoluteThr)
 {
     MyMesh &original = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &toProject = *((MyMesh*) _projM);
 
@@ -310,14 +310,14 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
             tri::Clean<MyMesh>::CountNonManifoldVertexFF(m) != 0)
     {
         printf("Input mesh is non-manifold, manifoldness is required!\nInterrupting filter");
-        return;
+        return false;
     }
 
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     isoremesh::computeQuality(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m);
 
-    isoremesh::Params params(adapt, collapseThr, splitThr, crease);
+    isoremesh::Params params(adapt, collapseThr, splitThr, absoluteThr, crease);
 
     for(int i=0; i < iter; ++i)
     {
@@ -333,7 +333,9 @@ void CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
         isoremesh::ImproveByLaplacian(m, params);
         isoremesh::ProjectToSurface(m, t, mark);
     }
+
     m.UpdateBoxAndNormals();
+    return true;
 }
 
 
