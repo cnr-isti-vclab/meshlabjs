@@ -1,16 +1,6 @@
 
 (function (plugin, core, scene) {
   /*
-
-Per il fatto del peterpanning quello in realtà vedo che è parecchio presente anche in meshlab, 
-solo che è nascosto dal fatto che l'ombra utilizzi anche le normali per decidere se un punto è
-in ombra o meno…per quanto riguarda mesh non convesse (aperte) ci saranno sempre dei problemi
-  ===> Multi target rendering support risolverebbe questo problema, permettendo di creare position map + normal map in un'unica passata
-
-INOLTRE PER QUANTO RIGUARDA I TOOLS di ANTNIC, PENSO CHE QUESTI DOVREBBERO ESSERE RIFATTORIZZATI UN PO' IN MODO CHE SIANO DEFINITI COME 
-DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
-
-
     SOON Multiple render targets might be added to THREE.js:
     RECALL: integrate normal map rendering and use normal map in shadowfrag to endarken faces facing away from light
             render position map and normal map (at least) in a single render pass
@@ -19,19 +9,26 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     blurMap: { type: "t", value: null },
     depthMap: { type: "t", value: null },
     positionMap: { type: "t", value: null },
-    normalMap: {type: "t", value: null},
+    normalMap: { type: "t", value: null },
     colorMap: { type: "t", value: null },
     lightViewProjection: { type: "m4", value: null },
-    intensity: { type: "f", value: 0.874 },
+    intensity: { type: "f", value: 0.5 },
     lightDir: { type: 'v3', value: null },
     blurFlag: { type: 'i', value: 1 },
-    bleedBias: { type: "f", value: 0.5 }
+    bleedBias: { type: "f", value: 0.5 },
+    bufWidth: { type: "f", value: null },
+    bufHeight: { type: "f", value: null },
+    pointSize: {type: "f", value: null }
   };
 
   let shadowPassOptions = {
-    minFilter: THREE.LinearMipMapNearestFilter,
+    minFilter: null,
+    magFilter: null,
     SMVert: null,
     SMFrag: null,
+    ShadowFrag: null,
+    ShadowVert: null,
+    VShadowFrag: null,
     ShadowFrag: null,
     bufferWidth: 1024,
     debug: false
@@ -43,11 +40,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     toggle: true,
     on: false,
     icon: "img/icons/sm_ugly.png",
-    loadShader: ["VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl",
-      "SMVertex.glsl", "SMFrag.glsl", "ShadowVertex.glsl",
-      "ShadowFrag.glsl", "PositionVertex.glsl", "PositionFragment.glsl",
-      "NormalVertex.glsl", "NormalFragment.glsl",
-      "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"]
+    loadShader: [
+      "VShadowFrag.glsl", "VSMVertex.glsl", "VSMFrag.glsl", "SMVertex.glsl", "SMFrag.glsl",
+      "ShadowVertex.glsl", "ShadowFrag.glsl", "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"
+    ]
   });
   //
   //  let varianceFlag;
@@ -58,7 +54,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       label: "Shadow Transparency",
       tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval: 0.8740,
+      defval: 0.5,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.intensity.value = value;
@@ -112,6 +108,13 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.blurFlag.value ^= 1;
+          if (value) {
+            shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
+            shadowPassOptions.magFilter = THREE.LinearMipMapNearestFilter;
+          } else {
+            shadowPassOptions.minFilter = THREE.NearestFilter;
+            shadowPassOptions.magFilter = THREE.NearestFilter;
+          }
         };
         bindToFun.toString = function () { return "MLJ_SM_BlurFlag"; };
         return bindToFun;
@@ -137,9 +140,13 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
 
   function SMContext() {
     /* shaders */
-    shadowPassOptions.SMVert = plug.shaders.getByKey("VSMVertex.glsl");
-    shadowPassOptions.SMFrag = plug.shaders.getByKey("VSMFrag.glsl");
-    shadowPassOptions.shadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
+    shadowPassOptions.SMVert = plug.shaders.getByKey("SMVertex.glsl");
+    shadowPassOptions.SMFrag = plug.shaders.getByKey("SMFrag.glsl");
+    shadowPassOptions.VSMVert = plug.shaders.getByKey("VSMVertex.glsl");
+    shadowPassOptions.VSMFrag = plug.shaders.getByKey("VSMFrag.glsl");
+    shadowPassOptions.ShadowVert = plug.shaders.getByKey("ShadowVertex.glsl");
+    shadowPassOptions.VShadowFrag = plug.shaders.getByKey("VShadowFrag.glsl");
+    shadowPassOptions.ShadowFrag = plug.shaders.getByKey("ShadowFrag.glsl");
     shadowPassOptions.blurVert = plug.shaders.getByKey("blurVertex.glsl");
     shadowPassOptions.horBlurFrag = plug.shaders.getByKey("horBlurFrag.glsl");
     shadowPassOptions.verBlurFrag = plug.shaders.getByKey("verBlurFrag.glsl");
@@ -162,53 +169,10 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     };
 
     let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
-    let positionMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
-    let normalMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
     let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
     let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
 
     shadowPassUniforms.depthMap.value = depthMapTarget;
-    shadowPassUniforms.positionMap.value = positionMapTarget;
-    shadowPassUniforms.normalMap.value = normalMapTarget;
-
-    /*
-      material containing the depth pass shaders. The original scene will be
-      rendered using this shaders to produce a depth map
-    */
-    let prepareDepthMaterial = (size) => {
-      let mat = new THREE.RawShaderMaterial({
-        uniforms: { pointSize: { type: 'f', value: size } },
-        side: THREE.FrontSide,
-        derivatives: true,
-        vertexShader: shadowPassOptions.SMVert,
-        fragmentShader: shadowPassOptions.SMFrag
-      });
-      return mat;
-    }
-    /*
-      material containing the position pass shaders. The original scene will be
-      rendered using this shaders to produce a position map 
-      (needed since last render step renders a quad, not geometry)
-    */
-    let preparePositionMaterial = (size) => {
-      let mat = new THREE.RawShaderMaterial({
-        uniforms: { pointSize: { type: 'f', value: size } },
-        side: THREE.DoubleSide,
-        vertexShader: plug.shaders.getByKey("PositionVertex.glsl"),
-        fragmentShader: plug.shaders.getByKey("PositionFragment.glsl")
-      });
-      return mat;
-    }
-    let prepareNormalMaterial = (size, attributes) => {
-      let mat = new THREE.RawShaderMaterial({
-        uniforms: { pointSize: { type: 'f', value: size } },
-        side: THREE.DoubleSide,
-        attributes: attributes,
-        vertexShader: plug.shaders.getByKey("NormalVertex.glsl"),
-        fragmentShader: plug.shaders.getByKey("NormalFragment.glsl")
-      });
-      return mat;
-    }
 
     let hBlurUniforms = {
       depthMap: { type: "t", value: depthMapTarget },
@@ -233,47 +197,54 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.horBlurFrag
     });
-
     let verBlurMaterial = new THREE.RawShaderMaterial({
       uniforms: vBlurUniforms,
       side: THREE.DoubleSide,
       vertexShader: shadowPassOptions.blurVert,
       fragmentShader: shadowPassOptions.verBlurFrag
     });
-
+    /*
+      material containing the depth pass shaders. The original scene will be
+      rendered using this shaders to produce a depth map
+    */
+    let prepareDepthMaterial = (size, vsm) => {
+      let mat = new THREE.RawShaderMaterial({
+        uniforms: { pointSize: { type: 'f', value: size } },
+        side: THREE.DoubleSide,
+        derivatives: true,
+        vertexShader: (vsm) ? shadowPassOptions.VSMVert : shadowPassOptions.SMVert,
+        fragmentShader: (vsm) ? shadowPassOptions.VSMFrag : shadowPassOptions.SMFrag
+      });
+      return mat;
+    }
+    let prepareShadowMaterial = (size, vsm) => {
+      shadowPassUniforms.pointSize.value = size;
+      let mat = new THREE.RawShaderMaterial({
+        uniforms: THREE.UniformsUtils.clone(shadowPassUniforms),// (needed to attach diff pointsize to diff meshes)
+        side: THREE.DoubleSide,
+        vertexShader: shadowPassOptions.ShadowVert,
+        fragmentShader: (vsm) ? shadowPassOptions.VShadowFrag : shadowPassOptions.ShadowFrag
+      });
+      return mat;
+    }
     /*
       This is the quad to draw on to output the rendering pass
-      (RECALL: Each rendering post process pass is defined as a function eg. pass: Texture -> Texture -> Texture)
     */
     let quad = new THREE.PlaneBufferGeometry(2, 2, 1, 1);
-    let shadowMapMesh = new THREE.Mesh(quad, new THREE.RawShaderMaterial({
-      uniforms: shadowPassUniforms,
-      side: THREE.DoubleSide,
-      vertexShader: plug.shaders.getByKey("ShadowVertex.glsl"),
-      fragmentShader: shadowPassOptions.shadowFrag
-    }));
-
     let horBlurMesh = new THREE.Mesh(quad, horBlurMaterial);
     let verBlurMesh = new THREE.Mesh(quad, verBlurMaterial);
-
     let horBlurScene = new THREE.Scene(); horBlurScene.add(horBlurMesh);
     let verBlurScene = new THREE.Scene(); verBlurScene.add(verBlurMesh);
-    let shadowScene = new THREE.Scene(); shadowScene.add(shadowMapMesh);
 
     this.dispose = () => {
       scene.disposeObject(depthMapTarget);
-      scene.disposeObject(positionMapTarget);
-      scene.disposeObject(normalMapTarget);
       scene.disposeObject(horBlurTarget);
       scene.disposeObject(verBlurTarget);
 
       shadowPassUniforms.depthMap.value = undefined;
-      shadowPassUniforms.positionMap.value = undefined;
-      shadowPassUniforms.normalMap.value = undefined;
       hBlurUniforms.depthMap.value = undefined;
       vBlurUniforms.depthMap.value = undefined;
 
-      shadowScene.remove(shadowMapMesh); scene.disposeObject(shadowMapMesh);
       horBlurScene.remove(horBlurMesh); scene.disposeObject(horBlurMesh);
       verBlurScene.remove(verBlurMesh); scene.disposeObject(verBlurMesh);
 
@@ -285,10 +256,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
-      // shadowScene.background = inBuffer.texture.clone();
       MLJ.core.Scene.resizeWebGLRenderTarget(depthMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
-      MLJ.core.Scene.resizeWebGLRenderTarget(positionMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
-      MLJ.core.Scene.resizeWebGLRenderTarget(normalMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
       MLJ.core.Scene.resizeWebGLRenderTarget(horBlurTarget, shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2);
       MLJ.core.Scene.resizeWebGLRenderTarget(verBlurTarget, shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2);
 
@@ -334,8 +302,6 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
         dBuf = depthMapTarget;
       }
       /*************************************/
-
-
       /* Hide decorators  (that should not be shadowed) */
       let decos = scene.getDecoratorsGroup();
       let layers = scene.getLayersGroup();
@@ -363,7 +329,7 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
           let overlay = overlaysIterator.next();
           if (overlay.name == 'Points' || overlay.name == 'Filled') {
             overlay.__mlj_smplugin_material = overlay.material;
-            overlay.material = prepareDepthMaterial(pointSz);
+            overlay.material = prepareDepthMaterial(pointSz, shadowPassUniforms.blurFlag.value);
             overlay.__mlj_smplugin_pointSize = pointSz;
             materialChanged.push(overlay);
           } else if (overlay.visible && overlay.geometry) {
@@ -379,30 +345,9 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       renderer.render(sceneGraph, lightCamera, dBuf, true);
       renderer.setClearColor(c, a);
 
-      /******************PREPARE POSITION MAP********************/
-      /* Selectively attach position map material */
-      materialChanged.forEach(function(mesh) {
-        mesh.material = preparePositionMaterial(mesh.__mlj_smplugin_pointSize);     
-      });
-      /*render position map*/
-      renderer.render(sceneGraph, sceneCam, positionMapTarget, true);
-
-      // materialChanged.forEach(function(mesh) {
-      //   mesh.material = prepareNormalMaterial(mesh.__mlj_smplugin_pointSize, mesh.geometry.attributes);     
-      // });
-      // /*render normal map*/
-      // renderer.render(sceneGraph, sceneCam, normalMapTarget, true);
-
-      /* Make hidden layers visible again  &  restore geometry materials */
-      hidden.forEach(function(mesh) {
+      hidden.forEach(function (mesh) {
         mesh.visible = true;
       });
-      materialChanged.forEach(function(mesh) {
-        mesh.material = mesh.__mlj_smplugin_material;
-        delete mesh.__mlj_smplugin_material;
-        delete mesh.__mlj_smplugin_pointSize;
-      });
-
       /*****************PREPARE BLUR MAPS**********************/
       if (shadowPassUniforms.blurFlag.value) {
         hBlurUniforms.texSize.value = shadowPassOptions.bufferWidth;
@@ -412,20 +357,33 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
         renderer.render(verBlurScene, sceneCam, bBuf, true);
       }
       /*******************FINAL RENDER PASS********************/
+
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
 
       shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
       shadowPassUniforms.colorMap.value = inBuffer;
-      shadowPassUniforms.lightDir.value = lightD;
-
+      shadowPassUniforms.lightDir.value = lightCamera.getWorldDirection();
+      shadowPassUniforms.bufWidth.value = outBuffer.width;
+      shadowPassUniforms.bufHeight.value = outBuffer.height;
       if (shadowPassUniforms.blurFlag.value)
         shadowPassUniforms.blurMap.value = verBlurTarget;
 
+      /* Selectively attach shadow material */
+      materialChanged.forEach(function (mesh) { 
+        mesh.material = prepareShadowMaterial(mesh.__mlj_smplugin_pointSize, shadowPassUniforms.blurFlag.value);
+      });
+
       if (!shadowPassOptions.debug)
-        renderer.render(shadowScene, sceneCam, outBuffer, true);   
-      
+        renderer.render(sceneGraph, sceneCam, outBuffer, true);
+
       shadowPassUniforms.blurMap.value = null;
+
+      materialChanged.forEach(function (mesh) {
+        mesh.material = mesh.__mlj_smplugin_material;
+        delete mesh.__mlj_smplugin_material;
+        delete mesh.__mlj_smplugin_pointSize;
+      });
     };
   }
 
@@ -440,7 +398,5 @@ DECORATORI E NON ATTACCATI DIRETTI ALLA SCEN
       context = null;
     }
   };
-
   plugin.Manager.install(plug);
-
 })(MLJ.core.plugin, MLJ.core, MLJ.core.Scene);

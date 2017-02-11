@@ -1,6 +1,10 @@
 #extension GL_OES_standard_derivatives : enable
 precision highp float;
 
+uniform float bufWidth;
+uniform float bufHeight;
+uniform float pointSize;
+
 uniform mat4 lightViewProjection;
 uniform mat4 modelViewMatrix;
 
@@ -18,6 +22,8 @@ uniform float bleedBias;
 uniform int blurFlag;
 
 varying vec2 vUv;
+varying vec3 vNormal;
+varying vec4 vPosition;
 
 /* implementing bleed containment as described in GPU Gems */
 
@@ -47,63 +53,43 @@ float shadowContribution(vec2 moments, float t) {
 
 float shadowCalc(vec4 position){
 
+  vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
+  if(dot(normalize(n), normalize(-lightDir)) <= -0.2) return 0.0;
+
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
-  //lightSpacePosition.xyz /=  lightSpacePosition.w;
+  lightSpacePosition.xyz /=  lightSpacePosition.w;
 
   //linearize in [0..1]
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
   //sample texture
-  vec2 moments;
-  if (blurFlag == 1)
-    moments = texture2D(blurMap, lightSpacePosition.xy).xy;
-  else
-    moments = texture2D(depthMap, lightSpacePosition.xy).xy;
-
+  vec2 moments = (blurFlag == 1) ? texture2D(blurMap, lightSpacePosition.xy).xy :
+                                      texture2D(depthMap, lightSpacePosition.xy).xy;
 
   float fragDepth = lightSpacePosition.z;
-
-
-  //Per face normals make way too blocky shadows obviuosly
-  // vec3 v1 = dFdx(position.xyz);
-  // vec3 v2 = dFdy(position.xyz);
-  // vec3 vn = normalize(cross(v1, v2));
-  // float p = (dot(vn, -lightDir));
-  // if (p < -0.55) return 0.0;
-
-  // vec4 normSample = texture2D(normalMap, vUv);
-  // // normSample = (normSample / 255.0); //[0..1]
-  // // normSample = (normSample - 0.5) * 2.0; // [-1..1]
-  // if(dot(normSample.xyz,-lightDir) < -0.2) 
-  //  return 0.2;
 
   return shadowContribution(moments, fragDepth);
   // return 1.0;
 }
 
 void main(){
-  vec4 color = texture2D(colorMap, vUv);
-
-  //anticipating position sampling, in order to fast discard
-  vec4 posSample = texture2D(positionMap, vUv);
-  // posSample = (posSample / 255.0); //[0..1]
-  // posSample = (posSample - 0.5) * 2.0; // [-1..1]
-  if(posSample.a == 0.0){ gl_FragColor = color; return; }
-
-  float chebishev = shadowCalc(posSample);
-
-  // if (chebishev > 0.4)
-  //   gl_FragColor = vec4(color.rgb, color.a);
-  // else
-  // // gl_FragColor = vec4(vec3(0.0), 0.5 - shadow);
-  //   gl_FragColor = vec4(vec3(0.0), (intensity-chebishev)*color.a);
-
-  if (chebishev > 0.5)
-    gl_FragColor = vec4(color.rgb, color.a);
-  else {
-    float shadowing = (intensity <= 0.5) ? mix(0.0, (chebishev), 2.0*intensity) : mix(chebishev, 1.0, 2.0*intensity-1.0);
-    gl_FragColor = vec4(shadowing*color.rgb, color.a);
+  if (pointSize != 0.0) {
+    float u = 2.0*gl_PointCoord.x-1.0;
+    float v = 2.0*gl_PointCoord.y-1.0;
+    float w = u*u+v*v;
+    if (w > 1.0) discard;
   }
+  vec2 sample = vec2(gl_FragCoord.x / bufWidth, gl_FragCoord.y / bufHeight);
+  
+  vec4 color = texture2D(colorMap, sample);
+  if(color.a == 0.0) discard;
+
+  float chebishev = shadowCalc(vPosition);
+
+  vec3 col = mix(color.rgb*chebishev, color.rgb, intensity);
+  gl_FragColor = vec4(col, color.a);
+
+
 }
