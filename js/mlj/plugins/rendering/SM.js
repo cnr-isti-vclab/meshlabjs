@@ -14,6 +14,7 @@
     lightDir: { type: 'v3', value: null },
     blurFlag: { type: 'i', value: 1 },
     bleedBias: { type: "f", value: 0.5 },
+    offBias: { type: "f", value: 0.0 },
     bufWidth: { type: "f", value: null },
     bufHeight: { type: "f", value: null },
     texSize: { type: "f", value: 1024 },
@@ -46,7 +47,7 @@
     ]
   });
 
-  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice;
+  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice, offBias;
   plug._init = (guiBuilder) => {
 
     kindChoice = guiBuilder.Choice({
@@ -69,7 +70,10 @@
           shadowPassOptions.depthTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value, shadowPassUniforms.texSize.value, renderTargetParams);
           shadowPassOptions.hBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
           shadowPassOptions.vBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
+          shadowPassUniforms.offBias.value = (vsm) ? 0.0 : 0.05;
+          offBias.setValue(shadowPassUniforms.offBias.value);
         };
+
         callback.toString = function () { return "MLJ_SM_Algorithm"; };
         return callback;
       }())
@@ -79,26 +83,38 @@
       label: "Shadow Transparency",
       tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval: 0.5,
+      defval: 0.0,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.intensity.value = value;
-          scene.render();
         };
         bindToFun.toString = function () { return 'MLJ_SM_Intensity'; }
         return bindToFun;
       }())
     });
 
+    offBias = guiBuilder.RangedFloat({
+      label: "Offset bias",
+      tooltip: "Controls the bias applied while sampling the shadow map",
+      min: 0.0, max: 0.05, step: 0.00001,
+      defval: 0.0,
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          shadowPassUniforms.offBias.value = value;
+        };
+        bindToFun.toString = function () { return 'MLJ_SM_BleedBias'; }
+        return bindToFun;
+      }())
+    });
+
     bleedRng = guiBuilder.RangedFloat({
-      label: "Bleed containment bias",
-      tooltip: "Manages the bias applied in VSM to contain bleed effects",
+      label: "Bleed containment bias (VSM)",
+      tooltip: "Controls the bias applied in VSM to contain bleed effects",
       min: 0.0, max: 0.5, step: 0.0001,
       defval: 0.5,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.bleedBias.value = value;
-          scene.render();
         };
         bindToFun.toString = function () { return 'MLJ_SM_BleedBias'; }
         return bindToFun;
@@ -387,7 +403,7 @@
       shadowPassUniforms.bufHeight.value = outBuffer.height;
       if (shadowPassUniforms.blurFlag.value && shadowPassOptions.vsm)
         shadowPassUniforms.blurMap.value = shadowPassOptions.vBlurTarget;
- 
+
       /* Selectively attach shadow material only to filled and point meshes*/
       materialChanged.forEach(function (mesh) {
         mesh.material = prepareShadowMaterial(mesh.__mlj_smplugin_pointSize, shadowPassOptions.vsm);

@@ -19,6 +19,7 @@ uniform sampler2D depthMap;
 
 uniform float intensity;
 uniform float bleedBias;
+uniform float offBias;
 uniform int blurFlag;
 
 varying vec2 vUv;
@@ -36,7 +37,7 @@ float PCF(vec3 depthPosition) {
 
   for(int i=0; i<10; ++i) {
     float closest = texture2D(depthMap, depthPosition.xy + array[i]*texelSize).r;
-    shadow = (depthPosition.z - 0.05 > closest) ? shadow + 1.0 : shadow;
+    shadow = (depthPosition.z - offBias > closest) ? shadow + 1.0 : shadow;
   }
   return shadow / 9.0;
 }
@@ -48,7 +49,7 @@ float shadowCalc(vec4 position){
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 
-  lightSpacePosition.xyz /=  lightSpacePosition.w;
+  //lightSpacePosition.xyz /=  lightSpacePosition.w;
 
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
@@ -58,7 +59,7 @@ float shadowCalc(vec4 position){
   float closest = texture2D(depthMap, lightSpacePosition.xy).r;
   float current = lightSpacePosition.z;
   
-  float shadow = current - 0.05 > closest ? 1.0 : 0.0;
+  float shadow = current - offBias > closest ? 1.0 : 0.0;
   return shadow;
 }
 

@@ -18,6 +18,7 @@ uniform sampler2D blurMap;
 
 uniform float intensity;
 uniform float bleedBias;
+uniform float offBias;
 uniform int blurFlag;
 
 varying vec2 vUv;
@@ -58,7 +59,7 @@ float shadowCalc(vec4 position){
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
-  lightSpacePosition.xyz /=  lightSpacePosition.w;
+ // lightSpacePosition.xyz /=  lightSpacePosition.w;
 
   //linearize in [0..1]
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
@@ -67,7 +68,7 @@ float shadowCalc(vec4 position){
   vec2 moments = (blurFlag == 1) ? texture2D(blurMap, lightSpacePosition.xy).xy :
                                       texture2D(depthMap, lightSpacePosition.xy).xy;
 
-  float fragDepth = lightSpacePosition.z;
+  float fragDepth = lightSpacePosition.z - offBias;
 
   return shadowContribution(moments, fragDepth);
   // return 1.0;
