@@ -29,6 +29,7 @@ float PCF(vec3 depthPosition) {
   vec2 array[9];
   array[0] = vec2(-1.0,-1.0); array[1] = vec2(-1.0,0.0); array[2] = vec2(-1.0,1.0);
   array[3] = vec2(0.0,-1.0); array[4] = vec2(0.0,0.0); array[5] = vec2(0.0,1.0);
+  array[6] = vec2(1.0,-1.0); array[7] = vec2(1.0,0.0); array[8] = vec2(1.0,1.0);
 
   float texelSize = 1.0 / texSize;
   float shadow = 0.0;
@@ -37,6 +38,7 @@ float PCF(vec3 depthPosition) {
     float closest = texture2D(depthMap, depthPosition.xy + array[i]*texelSize).r;
     shadow = (depthPosition.z - 0.05 > closest) ? shadow + 1.0 : shadow;
   }
+  return shadow / 9.0;
 }
 
 float shadowCalc(vec4 position){
