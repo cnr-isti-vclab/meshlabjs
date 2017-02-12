@@ -3,6 +3,7 @@ precision highp float;
 
 uniform float bufWidth;
 uniform float bufHeight;
+uniform float texSize;
 uniform float pointSize;
 
 uniform mat4 lightViewProjection;
@@ -12,8 +13,6 @@ uniform vec3 lightDir;
 uniform vec3 cameraPosition;
 
 uniform sampler2D colorMap;
-uniform sampler2D positionMap;
-uniform sampler2D normalMap;
 uniform sampler2D depthMap;
 uniform sampler2D blurMap;
 

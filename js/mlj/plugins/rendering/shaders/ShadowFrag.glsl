@@ -3,6 +3,7 @@ precision highp float;
 
 uniform float bufWidth;
 uniform float bufHeight;
+uniform float texSize;
 uniform float pointSize;
 
 uniform mat4 lightViewProjection;
@@ -14,18 +15,29 @@ uniform vec3 lightDir;
 uniform vec3 cameraPosition;
 
 uniform sampler2D colorMap;
-uniform sampler2D positionMap;
-uniform sampler2D normalMap;
 uniform sampler2D depthMap;
 
 uniform float intensity;
 uniform float bleedBias;
 uniform int blurFlag;
 
- 
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec4 vPosition;
+
+float PCF(vec3 depthPosition) {
+  vec2 array[9];
+  array[0] = vec2(-1.0,-1.0); array[1] = vec2(-1.0,0.0); array[2] = vec2(-1.0,1.0);
+  array[3] = vec2(0.0,-1.0); array[4] = vec2(0.0,0.0); array[5] = vec2(0.0,1.0);
+
+  float texelSize = 1.0 / texSize;
+  float shadow = 0.0;
+
+  for(int i=0; i<10; ++i) {
+    float closest = texture2D(depthMap, depthPosition.xy + array[i]*texelSize).r;
+    shadow = (depthPosition.z - 0.05 > closest) ? shadow + 1.0 : shadow;
+  }
+}
 
 float shadowCalc(vec4 position){
 
@@ -38,6 +50,9 @@ float shadowCalc(vec4 position){
 
   lightSpacePosition.xyz = lightSpacePosition.xyz * vec3(0.5) + vec3(0.5);
 
+  if(blurFlag == 1)
+    return PCF(lightSpacePosition.xyz);
+  
   float closest = texture2D(depthMap, lightSpacePosition.xy).r;
   float current = lightSpacePosition.z;
   
@@ -58,6 +73,8 @@ void main(){
   vec4 color = texture2D(colorMap, sample);
   if(color.a == 0.0) discard;
 
-  float lighting = (shadowCalc(vPosition) > 0.0) ? intensity : 1.0;
-  gl_FragColor = vec4(color.rgb*(lighting), color.a);
+  float shadow = shadowCalc(vPosition);
+  vec3 col = mix((1.0-shadow) * color.rgb, color.rgb, intensity); 
+
+  gl_FragColor = vec4(col, color.a);
 }

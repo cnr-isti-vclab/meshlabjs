@@ -8,8 +8,6 @@
   let shadowPassUniforms = {
     blurMap: { type: "t", value: null },
     depthMap: { type: "t", value: null },
-    positionMap: { type: "t", value: null },
-    normalMap: { type: "t", value: null },
     colorMap: { type: "t", value: null },
     lightViewProjection: { type: "m4", value: null },
     intensity: { type: "f", value: 0.5 },
@@ -18,20 +16,22 @@
     bleedBias: { type: "f", value: 0.5 },
     bufWidth: { type: "f", value: null },
     bufHeight: { type: "f", value: null },
-    pointSize: {type: "f", value: null }
+    texSize: { type: "f", value: 1024 },
+    pointSize: { type: "f", value: null }
   };
 
   let shadowPassOptions = {
-    minFilter: null,
-    magFilter: null,
+    depthTarget: null,
+    hBlurTarget: null,
+    vBlurTarget: null,
     SMVert: null,
     SMFrag: null,
     ShadowFrag: null,
     ShadowVert: null,
     VShadowFrag: null,
     ShadowFrag: null,
-    bufferWidth: 1024,
-    debug: false
+    debug: false,
+    vsm: true
   }
 
   let plug = new plugin.GlobalRendering({
@@ -45,11 +45,36 @@
       "ShadowVertex.glsl", "ShadowFrag.glsl", "horBlurFrag.glsl", "verBlurFrag.glsl", "blurVertex.glsl"
     ]
   });
-  //
-  //  let varianceFlag;
-  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag;
 
+  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice;
   plug._init = (guiBuilder) => {
+
+    kindChoice = guiBuilder.Choice({
+      label: `Shadow Mapping Technique`,
+      tooltip: `Chooses the Shadow Mapping algorithm: <br>
+        VSM -> Variance Shadow Mapping (supports MipMapping and Blurring) <br>
+        Standard -> Usual plain Shadow Mapping algorithm (supports PCF for soft shadows)`,
+      options: [
+        { content: "VSM", value: true, selected: true },
+        { content: "Standard", value: false }
+      ],
+      bindTo: (function () {
+        var callback = function (vsm) {
+          shadowPassOptions.vsm = vsm;
+          let renderTargetParams = {
+            type: THREE.FloatType,
+            minFilter: (vsm) ? THREE.LinearMipMapNearestFilter : THREE.NearestFilter,
+            magFilter: (vsm) ? THREE.LinearMipMapNearestFilter : THREE.NearestFilter
+          };
+          shadowPassOptions.depthTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value, shadowPassUniforms.texSize.value, renderTargetParams);
+          shadowPassOptions.hBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
+          shadowPassOptions.vBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
+        };
+        callback.toString = function () { return "MLJ_SM_Algorithm"; };
+        return callback;
+      }())
+    });
+
     intensityRng = guiBuilder.RangedFloat({
       label: "Shadow Transparency",
       tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
@@ -94,7 +119,7 @@
       ],
       bindTo: (function () {
         var callback = function (bufferWidth) {
-          shadowPassOptions.bufferWidth = bufferWidth;
+          shadowPassUniforms.texSize.value = bufferWidth;
         };
         callback.toString = function () { return "MLJ_SM_BufferWidth"; };
         return callback;
@@ -102,19 +127,13 @@
     });
 
     blurFlag = guiBuilder.Bool({
-      label: "Blur",
-      tooltip: "If checked, the shadow map gets filtered to smooth shadow borders and shadow aliasing is contained",
+      label: "Soft Shadows",
+      tooltip: "If the VSM algorithm is in use this will toggle a blur pass on the shadow map, if the Standard " +
+      " is in use it will toggle PCF during the shadowmap sampling.",
       defval: true,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.blurFlag.value ^= 1;
-          if (value) {
-            shadowPassOptions.minFilter = THREE.LinearMipMapNearestFilter;
-            shadowPassOptions.magFilter = THREE.LinearMipMapNearestFilter;
-          } else {
-            shadowPassOptions.minFilter = THREE.NearestFilter;
-            shadowPassOptions.magFilter = THREE.NearestFilter;
-          }
         };
         bindToFun.toString = function () { return "MLJ_SM_BlurFlag"; };
         return bindToFun;
@@ -164,27 +183,25 @@
 
     let renderTargetParams = {
       type: THREE.FloatType,
-      minFilter: shadowPassOptions.minFilter,
-      magFilter: THREE.LinearMipMapNearestFilter
+      minFilter: (shadowPassOptions.vsm) ? THREE.LinearMipMapNearestFilter : THREE.NearestFilter,
+      magFilter: (shadowPassOptions.vsm) ? THREE.LinearMipMapNearestFilter : THREE.NearestFilter
     };
 
-    let depthMapTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth, renderTargetParams);
-    let horBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
-    let verBlurTarget = new THREE.WebGLRenderTarget(shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2, renderTargetParams);
-
-    shadowPassUniforms.depthMap.value = depthMapTarget;
+    shadowPassOptions.depthTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value, shadowPassUniforms.texSize.value, renderTargetParams);
+    shadowPassOptions.hBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
+    shadowPassOptions.vBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
 
     let hBlurUniforms = {
-      depthMap: { type: "t", value: depthMapTarget },
+      depthMap: { type: "t", value: shadowPassOptions.depthTarget },
       gWeights: { type: "1fv", value: shadowPassOptions.gaussWeights },
       gOffsets: { type: "1fv", value: shadowPassOptions.gaussOffsets },
-      texSize: { type: "f", value: shadowPassOptions.bufferWidth }
+      texSize: { type: "f", value: shadowPassUniforms.texSize.value }
     };
     let vBlurUniforms = {
-      depthMap: { type: "t", value: horBlurTarget },
+      depthMap: { type: "t", value: shadowPassOptions.hBlurTarget },
       gWeights: { type: "1fv", value: shadowPassOptions.gaussWeights },
       gOffsets: { type: "1fv", value: shadowPassOptions.gaussOffsets },
-      texSize: { type: "f", value: shadowPassOptions.bufferWidth }
+      texSize: { type: "f", value: shadowPassUniforms.texSize.value }
     };
 
     /*
@@ -237,9 +254,9 @@
     let verBlurScene = new THREE.Scene(); verBlurScene.add(verBlurMesh);
 
     this.dispose = () => {
-      scene.disposeObject(depthMapTarget);
-      scene.disposeObject(horBlurTarget);
-      scene.disposeObject(verBlurTarget);
+      scene.disposeObject(shadowPassOptions.depthTarget);
+      scene.disposeObject(shadowPassOptions.hBlurTarget);
+      scene.disposeObject(shadowPassOptions.vBlurTarget);
 
       shadowPassUniforms.depthMap.value = undefined;
       hBlurUniforms.depthMap.value = undefined;
@@ -256,9 +273,9 @@
     be used as a texture for the last pass of the deferred rendering pipe.
     */
     this.pass = (inBuffer, outBuffer) => {
-      MLJ.core.Scene.resizeWebGLRenderTarget(depthMapTarget, shadowPassOptions.bufferWidth, shadowPassOptions.bufferWidth);
-      MLJ.core.Scene.resizeWebGLRenderTarget(horBlurTarget, shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2);
-      MLJ.core.Scene.resizeWebGLRenderTarget(verBlurTarget, shadowPassOptions.bufferWidth / 2, shadowPassOptions.bufferWidth / 2);
+      MLJ.core.Scene.resizeWebGLRenderTarget(shadowPassOptions.depthTarget, shadowPassUniforms.texSize.value, shadowPassUniforms.texSize.value);
+      MLJ.core.Scene.resizeWebGLRenderTarget(shadowPassOptions.hBlurTarget, shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2);
+      MLJ.core.Scene.resizeWebGLRenderTarget(shadowPassOptions.vBlurTarget, shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2);
 
       let sceneGraph = scene.getScene();
       let sceneCam = scene.getCamera();
@@ -296,13 +313,13 @@
       let dBuf, bBuf;
       if (shadowPassOptions.debug) {
         bBuf = outBuffer;
-        dBuf = (shadowPassUniforms.blurFlag.value) ? depthMapTarget : outBuffer;
+        dBuf = (shadowPassUniforms.blurFlag.value && shadowPassOptions.vsm) ? shadowPassOptions.depthTarget : outBuffer;
       } else {
-        bBuf = verBlurTarget;
-        dBuf = depthMapTarget;
+        bBuf = shadowPassOptions.vBlurTarget;
+        dBuf = shadowPassOptions.depthTarget;
       }
       /*************************************/
-      /* Hide decorators  (that should not be shadowed) */
+      /* Hide decorators (that should not be shadowed) */
       let decos = scene.getDecoratorsGroup();
       let layers = scene.getLayersGroup();
       let hidden = [];
@@ -315,7 +332,7 @@
         }
       });
       /********************PREPARE DEPTH MAP*******************/
-      /* Selectively attach depth map material, to every mesh layer in the scene  */
+      /* Selectively attach depth map material to every mesh layer in the scene  */
       /* Filled layers and point layers will have different shader materials      */
       let layersIterator = scene.getLayers().iterator();
       while (layersIterator.hasNext()) {
@@ -329,7 +346,7 @@
           let overlay = overlaysIterator.next();
           if (overlay.name == 'Points' || overlay.name == 'Filled') {
             overlay.__mlj_smplugin_material = overlay.material;
-            overlay.material = prepareDepthMaterial(pointSz, shadowPassUniforms.blurFlag.value);
+            overlay.material = prepareDepthMaterial(pointSz, shadowPassOptions.vsm);
             overlay.__mlj_smplugin_pointSize = pointSz;
             materialChanged.push(overlay);
           } else if (overlay.visible && overlay.geometry) {
@@ -338,40 +355,42 @@
           }
         }
       }
-      /* render depth map */
+      /* render depth map (the clear color is set to white in order to avoid artifacts during blurring*/
       let c = renderer.getClearColor();
       let a = renderer.getClearAlpha();
       renderer.setClearColor(0xffffff, 1);
       renderer.render(sceneGraph, lightCamera, dBuf, true);
       renderer.setClearColor(c, a);
-
+      //make decorators visible again...we need to draw em in the last render pass
       hidden.forEach(function (mesh) {
         mesh.visible = true;
       });
       /*****************PREPARE BLUR MAPS**********************/
-      if (shadowPassUniforms.blurFlag.value) {
-        hBlurUniforms.texSize.value = shadowPassOptions.bufferWidth;
-        vBlurUniforms.texSize.value = shadowPassOptions.bufferWidth;
+      if (shadowPassUniforms.blurFlag.value && shadowPassOptions.vsm) {
+        hBlurUniforms.depthMap.value = shadowPassOptions.depthTarget;
+        vBlurUniforms.depthMap.value = shadowPassOptions.hBlurTarget;
+        hBlurUniforms.texSize.value = shadowPassUniforms.texSize.value;
+        vBlurUniforms.texSize.value = shadowPassUniforms.texSize.value;
 
-        renderer.render(horBlurScene, sceneCam, horBlurTarget, true);
+        renderer.render(horBlurScene, sceneCam, shadowPassOptions.hBlurTarget, true);
         renderer.render(verBlurScene, sceneCam, bBuf, true);
       }
       /*******************FINAL RENDER PASS********************/
-
       let projScreenMatrix = new THREE.Matrix4();
       projScreenMatrix.multiplyMatrices(lightCamera.projectionMatrix, lightCamera.matrixWorldInverse);
-
+      //set render pass bound uniforms
       shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
       shadowPassUniforms.colorMap.value = inBuffer;
+      shadowPassUniforms.depthMap.value = shadowPassOptions.depthTarget;
       shadowPassUniforms.lightDir.value = lightCamera.getWorldDirection();
       shadowPassUniforms.bufWidth.value = outBuffer.width;
       shadowPassUniforms.bufHeight.value = outBuffer.height;
-      if (shadowPassUniforms.blurFlag.value)
-        shadowPassUniforms.blurMap.value = verBlurTarget;
-
-      /* Selectively attach shadow material */
-      materialChanged.forEach(function (mesh) { 
-        mesh.material = prepareShadowMaterial(mesh.__mlj_smplugin_pointSize, shadowPassUniforms.blurFlag.value);
+      if (shadowPassUniforms.blurFlag.value && shadowPassOptions.vsm)
+        shadowPassUniforms.blurMap.value = shadowPassOptions.vBlurTarget;
+ 
+      /* Selectively attach shadow material only to filled and point meshes*/
+      materialChanged.forEach(function (mesh) {
+        mesh.material = prepareShadowMaterial(mesh.__mlj_smplugin_pointSize, shadowPassOptions.vsm);
       });
 
       if (!shadowPassOptions.debug)
@@ -379,6 +398,7 @@
 
       shadowPassUniforms.blurMap.value = null;
 
+      // Restore all the previous materials
       materialChanged.forEach(function (mesh) {
         mesh.material = mesh.__mlj_smplugin_material;
         delete mesh.__mlj_smplugin_material;
