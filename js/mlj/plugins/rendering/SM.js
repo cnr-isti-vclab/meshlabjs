@@ -13,6 +13,7 @@
     intensity: { type: "f", value: 0.5 },
     lightDir: { type: 'v3', value: null },
     blurFlag: { type: 'i', value: 1 },
+    normalFlag: { type: 'i', value: 1 },
     bleedBias: { type: "f", value: 0.5 },
     offBias: { type: "f", value: 0.0 },
     bufWidth: { type: "f", value: null },
@@ -47,7 +48,7 @@
     ]
   });
 
-  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice, offBias;
+  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice, offBias, normalFlag;
   plug._init = (guiBuilder) => {
 
     kindChoice = guiBuilder.Choice({
@@ -152,6 +153,20 @@
           shadowPassUniforms.blurFlag.value ^= 1;
         };
         bindToFun.toString = function () { return "MLJ_SM_BlurFlag"; };
+        return bindToFun;
+      })()
+    });
+
+    normalFlag = guiBuilder.Bool({
+      label: "Normal Check",
+      tooltip: "If checked a normal check will be applied during the execution of the shadowmapping, darkening " +
+      "faces whose noramls face away from the light source",
+      defval: true,
+      bindTo: (function () {
+        var bindToFun = function (value) {
+          shadowPassUniforms.normalFlag.value ^= 1;
+        };
+        bindToFun.toString = function () { return "MLJ_SM_NormalFlag"; };
         return bindToFun;
       })()
     });

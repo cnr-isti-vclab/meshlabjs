@@ -21,31 +21,29 @@ uniform float intensity;
 uniform float bleedBias;
 uniform float offBias;
 uniform int blurFlag;
+uniform int normalFlag;
 
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec4 vPosition;
 
 float PCF(vec3 depthPosition) {
-  vec2 array[9];
-  array[0] = vec2(-1.0,-1.0); array[1] = vec2(-1.0,0.0); array[2] = vec2(-1.0,1.0);
-  array[3] = vec2(0.0,-1.0); array[4] = vec2(0.0,0.0); array[5] = vec2(0.0,1.0);
-  array[6] = vec2(1.0,-1.0); array[7] = vec2(1.0,0.0); array[8] = vec2(1.0,1.0);
-
   float texelSize = 1.0 / texSize;
   float shadow = 0.0;
 
-  for(int i=0; i<10; ++i) {
-    float closest = texture2D(depthMap, depthPosition.xy + array[i]*texelSize).r;
-    shadow = (depthPosition.z - offBias > closest) ? shadow + 1.0 : shadow;
-  }
+  for(int i=-1; i<2; ++i)
+    for(int j=-1; j<2; ++j) {
+      float closest = texture2D(depthMap, depthPosition.xy + vec2(i,j)*texelSize).r;
+      shadow = (depthPosition.z - offBias > closest) ? shadow + 1.0 : shadow;
+    }
+
   return shadow / 9.0;
 }
 
 float shadowCalc(vec4 position){
 
   vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
-  if(dot(normalize(n), normalize(-lightDir)) <= -0.2) return 1.0;
+  if(normalFlag == 1 && dot(normalize(n), normalize(-lightDir)) <= -0.2) return 1.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 

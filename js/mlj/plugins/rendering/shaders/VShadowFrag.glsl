@@ -20,6 +20,7 @@ uniform float intensity;
 uniform float bleedBias;
 uniform float offBias;
 uniform int blurFlag;
+uniform int normalFlag;
 
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -54,7 +55,7 @@ float shadowContribution(vec2 moments, float t) {
 float shadowCalc(vec4 position){
 
   vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
-  if(dot(normalize(n), normalize(-lightDir)) <= -0.2) return 0.0;
+  if(normalFlag == 1 && dot(normalize(n), normalize(-lightDir)) <= -0.2) return 0.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 
