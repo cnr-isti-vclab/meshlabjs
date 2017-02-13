@@ -16,6 +16,8 @@
     normalFlag: { type: 'i', value: 1 },
     bleedBias: { type: "f", value: 0.5 },
     offBias: { type: "f", value: 0.0 },
+    pcfSize: { type: "f", value: 1.0 },
+    pcfTot: { type: "f", value: 9.0 },
     bufWidth: { type: "f", value: null },
     bufHeight: { type: "f", value: null },
     texSize: { type: "f", value: 1024 },
@@ -48,7 +50,7 @@
     ]
   });
 
-  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice, offBias, normalFlag;
+  let intensityRng, bleedRng, bufferWidth, debugChoice, blurFlag, kindChoice, offBias, normalFlag, pcfSize;
   plug._init = (guiBuilder) => {
 
     kindChoice = guiBuilder.Choice({
@@ -156,6 +158,27 @@
         return bindToFun;
       })()
     });
+
+    pcfSize = guiBuilder.Choice({
+      label: `PCF Sampling box`,
+      tooltip: `Controls dimension of the PCF sampling box`,
+      options: [
+        { content: "2x2", value: 0.5 },
+        { content: "3x3", value: 1.0, selected: true  },
+        { content: "4x4", value: 1.5 },
+        { content: "5x5", value: 2.0 },
+        { content: "6x6", value: 2.5 }
+      ],
+      bindTo: (function () {
+        var callback = function (pcf) {
+          shadowPassUniforms.pcfSize.value = pcf;
+          shadowPassUniforms.pcfTot.value = ((pcf*2.0) + 1) * ((pcf*2.0) + 1);
+        };
+        callback.toString = function () { return "MLJ_SM_PCFSize"; };
+        return callback;
+      }())
+    });
+
 
     normalFlag = guiBuilder.Bool({
       label: "Normal Check",
