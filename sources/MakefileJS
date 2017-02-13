@@ -19,19 +19,24 @@ CFLAGS=-I.  -I ../../vcglib/ -I muparser-2.2.5/include  -I ../../vcglib/eigenlib
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Selection.bc Quality.bc \
       FuncParser.bc \
-      ../../vcglib/wrap/ply/plylib.bc
+	  PoissonFilter.bc plyLib.bc
 
-LIBS = lib/muparserLib.bc
+LIBS = lib/muparserLib.bc lib/plyLib.bc
 
 
 %.bc: %.cpp
 	$(CC) -o $@ $< $(CFLAGS)
 
 MeshLabCppCore.js: $(OBJ)
-	$(CC) -o ../js/generated/$@ $^ $(LIBS) $(CFLAGS)
+	$(CC) -o ../js/generated/$@ $^ $(LIBS) $(CFLAGS) -s ASSERTIONS=1
 
 FuncParser.bc : FuncParser.cpp
-	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include
+	$(CC) -o $@ $< $(CFLAGS) -I muparser-2.2.5/include 
+
+PoissonFilter.bc : filter_screened_poisson_ml/filter_screened_poisson.cpp
+	$(CC) -o $@ $< $(CFLAGS) -v
+
+
 
 
 clean:

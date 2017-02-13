@@ -15,3 +15,7 @@ doc/html/
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
 build-*/
+*.pdb
+sources/x64/Debug/Refine.obj
+*.obj
+*.tlog
