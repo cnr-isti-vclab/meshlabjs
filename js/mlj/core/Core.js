@@ -54,13 +54,13 @@ var Module = {
 
 MLJ.core = {
     defaults: {},
-    setDefaults: function(name, parameters) {
-        if(MLJ.core.defaults[name] !== undefined) {
-            console.warn("The default properties of "+name+" was overridden.");
+    setDefaults: function (name, parameters) {
+        if (MLJ.core.defaults[name] !== undefined) {
+            console.warn("The default properties of " + name + " was overridden.");
         }
         MLJ.core.defaults[name] = parameters;
     },
-    getDefaults: function(name) {
+    getDefaults: function (name) {
         return MLJ.core.defaults[name];
     }
 };
@@ -132,7 +132,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
 
     var _on = true;
 
-    var _light = new THREE.DirectionalLight("#ffffff",0.5);
+    var _light = new THREE.DirectionalLight("#ffffff", 0.5);
 
 
     /**
@@ -151,9 +151,9 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     // _light.add(cube2);
     /************************* */
 
-    _lightMesh.position.set(0, 0 ,0);
+    _lightMesh.position.set(0, 0, 0);
     _lightMesh.add(_light);
-    
+
     /**
      * Sets this headlight on/off
      * @param {Boolean} on If <code>true</code>, this headlight is enabled;
@@ -163,8 +163,10 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     this.setOn = function (on) {
         if (on) {
             scene.add(_lightMesh);
+            // camera.add(_light);
         } else {
             scene.remove(_lightMesh);
+            // camera.remove(_light);
         }
         renderer.render(scene, camera);
     };
@@ -172,6 +174,10 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
     //Init
     this.setOn(_on);
 
+    this.updateLight = function () {
+        _lightMesh.up = camera.up;
+        _lightMesh.lookAt(camera.getWorldPosition());
+    }
     /**
      * Sets the position of this headlight (relative to the origiMesh)
      * @param {THREE.Vector3}
@@ -179,7 +185,7 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      * @author Thomas Alderighi
      */
     this.setPosition = function (pos) {
-      _light.position.set(pos.x+1, pos.y-1, pos.z);
+        _light.position.set(pos.x+1, pos.y-2, pos.z);
     }
 
     /**
@@ -189,16 +195,16 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      */
     this.getWorldPosition = function () {
         _lightMesh.updateMatrixWorld(true);
-        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z).applyMatrix4(_lightMesh.matrixWorld);
+        return _light.getWorldPosition().clone();
     }
 
-     /**
-     * Gets the local position of this headlight (relative to the originMesh)
-     * 
-     * @author Thomas Alderighi
-     */
+    /**
+    * Gets the local position of this headlight (relative to the originMesh)
+    * 
+    * @author Thomas Alderighi
+    */
     this.getLocalPosition = function () {
-        return new THREE.Vector3(_light.position.x, _light.position.y, _light.position.z);
+        return _light.position.clone()
     }
 
     /**
@@ -212,11 +218,11 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
         return _lightMesh;
     }
 
-     /**
-     * Gets a reference to this headlight,
-     * 
-     * @author Thomas Alderighi
-     */   
+    /**
+    * Gets a reference to this headlight,
+    * 
+    * @author Thomas Alderighi
+    */
     this.getLight = function () {
         return _light;
     }

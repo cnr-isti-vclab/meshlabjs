@@ -388,9 +388,9 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
             var dir = new THREE.Vector3(0, 0, 1);
             var origins = [];
-            origins.push(new THREE.Vector3(0,-2, 0));
-            origins.push(new THREE.Vector3(0,-1, 0));
-            origins.push(new THREE.Vector3(0, 0, 0)); 
+            origins.push(new THREE.Vector3(0, -2, 0));
+            origins.push(new THREE.Vector3(0, -1, 0));
+            origins.push(new THREE.Vector3(0, 0, 0));
             origins.push(new THREE.Vector3(0, 1, 0));
             origins.push(new THREE.Vector3(0, 2, 0));
             var length = 9;
@@ -401,24 +401,23 @@ MLJ.core.Scene.layerSetHistory = new Array();
             _decoratorsGroup.worldToLocal(p);
             _help.position.set(p.x, p.y, p.z);
             _help.scale.set(scaleFac, scaleFac, scaleFac);
-
-            origins.forEach(function(origin) {
+            // creates a column of yellow 'guidelines'
+            origins.forEach(function (origin) {
                 _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
             });
             dir.negate();
-            origins.forEach(function(origin) {
+            origins.forEach(function (origin) {
                 _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
             });
-
-            for(var i=-2; i<3; ++i)
-            {
+            // this creates 5 columns of yellow guidelines, using the one previously built and translating them
+            for (var i = -2; i < 3; ++i) {
                 var h = _help2.clone();
                 h.translateX(i);
                 _help1.add(h);
             }
 
             _help.add(_help1);
-            
+
             _help1.lookAt(_this.lights.Headlight.getWorldPosition());
             _this.addSceneDecorator("lightHelper", _help);
         }
@@ -432,6 +431,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
                     _controls.noZoom = false;
                     _controls.noPan = false;
                     _controls.object = _camera;
+                    _controls.update();
                     _this.render();
                 }
             }
@@ -443,14 +443,11 @@ MLJ.core.Scene.layerSetHistory = new Array();
             if (event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
                 event.preventDefault();
                 _customLight = false;
-                // reset transformations applied on light 
-                _this.lights.Headlight.getMesh().position.set(0, 0, 0);
-                _this.lights.Headlight.getMesh().scale.set(1, 1, 1);
-                _this.lights.Headlight.getMesh().quaternion.set(0, 0, 0, 1);
-                _this.lights.Headlight.getMesh().updateMatrix();
-                _this.lights.Headlight.getMesh().updateMatrixWorld(true);
-                // center light back in camera position (with small offset)
-                _this.lights.Headlight.setPosition(_camera.position);
+                _this.lights.Headlight.updateLight();
+                var p = new THREE.Vector3();
+                _camera.localToWorld(p);
+                _this.lights.Headlight.getMesh().worldToLocal(p);
+                _this.lights.Headlight.setPosition(p);
                 // draw scene
                 _this.render();
                 return;
@@ -508,9 +505,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
             every time the camera move, if the light is not locked up by user
         */
         _controls.addEventListener('change', function () {
-            if (!_customLight)
-                _this.lights.Headlight.setPosition(_camera.position);
-            else
+            _this.lights.Headlight.updateLight();
+            if (_customLight)
                 _help1.lookAt(_this.lights.Headlight.getWorldPosition());
 
             MLJ.core.Scene.render();
@@ -570,8 +566,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
-    function _computeGlobalBBbox()
-    {
+    function _computeGlobalBBbox() {
         //console.time("Time to update bbox: ");
         _group.scale.set(1, 1, 1);
         _group.position.set(0, 0, 0);
