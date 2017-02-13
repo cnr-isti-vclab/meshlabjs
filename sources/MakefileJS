@@ -37,6 +37,7 @@ lib/muparserLib.bc:
 	cd ./muparser-2.2.5/src/ && $(MAKE) -f MakefileJS
 
 lib/poissonLib.bc:
+	cd ./filter_screened_poisson_ml/Src/ && $(MAKE) -f MakefileJS
 
 clean:
 	rm -f *.bc MeshlabGenJs.js ../../vcglib/wrap/ply/plylib.bc lib/muparserLib.bc muparser-2.2.5/src/*.bc
