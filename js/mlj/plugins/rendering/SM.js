@@ -81,9 +81,9 @@
 
     intensityRng = guiBuilder.RangedFloat({
       label: "Shadow Transparency",
-      tooltip: "Manages shadow intensity: 0 is black shadows, 1 is soft shadows",
+      tooltip: "Controls shadow intensity: 0 is black shadows, 1 is transparent shadows",
       min: 0.0, max: 1.0, step: 0.001,
-      defval: 0.0,
+      defval: 0.5,
       bindTo: (function () {
         var bindToFun = function (value) {
           shadowPassUniforms.intensity.value = value;
@@ -123,7 +123,7 @@
 
     bufferWidth = guiBuilder.Choice({
       label: `Shadow Buffer Width`,
-      tooltip: `Manages the shadow buffer width, it allows only powers of 2
+      tooltip: `Controls the shadow buffer width, it allows only powers of 2
       to guarantee the creation of mipmaps`,
       options: [
         { content: "128", value: 128 },
