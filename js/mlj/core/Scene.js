@@ -459,7 +459,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
      */
     function _computeGlobalBBbox()
     {
-        console.time("Time to update bbox: ");
+        //console.time("Time to update bbox: ");
         _group.scale.set(1, 1, 1);
         _group.position.set(0, 0, 0);
         _group.updateMatrixWorld();

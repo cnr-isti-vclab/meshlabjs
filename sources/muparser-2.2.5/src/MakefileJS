@@ -20,7 +20,7 @@ OBJ = muParser.bc muParserBase.bc muParserBytecode.bc muParserCallback.bc \
 
 muParserLib.bc: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
-	cp muParserLib.bc ../../lib
+	mv muParserLib.bc ../../lib
 
 
 clean:
