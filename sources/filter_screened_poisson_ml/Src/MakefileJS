@@ -11,15 +11,11 @@ CC=emcc
 CFLAGS=-I.  -I ../include/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
 //CFLAGS=-I.  -I ../../vcglib/  -s ALLOW_MEMORY_GROWTH=1 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 -O3  --bind
 
-OBJ = plyLib.bc
+OBJ = poissonLib.bc
 
-%.bc: %.cpp
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-plyLib.bc: $(OBJ)
+poissonLib.bc:
 	$(CC) -o $@ PlyFile.cpp Factor.cpp Geometry.cpp MarchingCubes.cpp $(CFLAGS)
-	cp plyLib.bc ../../lib
-
+	mv poissonLib.bc ../../lib
 
 clean:
 	rm -f *.bc 

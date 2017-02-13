@@ -20,9 +20,9 @@ OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Selection.bc Quality.bc \
       ../../vcglib/wrap/ply/plylib.bc \
       FuncParser.bc \
-	  PoissonFilter.bc plyLib.bc
+	  PoissonFilter.bc
 
-LIBS = lib/muparserLib.bc lib/plyLib.bc
+LIBS = lib/muparserLib.bc lib/poissonLib.bc
 
 %.bc: %.cpp
 	$(CC) -c -o $@ $< $(CFLAGS) -s LINKABLE=1 -Os
@@ -35,6 +35,8 @@ PoissonFilter.bc : filter_screened_poisson_ml/filter_screened_poisson.cpp
 
 lib/muparserLib.bc: 
 	cd ./muparser-2.2.5/src/ && $(MAKE) -f MakefileJS
+
+lib/poissonLib.bc:
 
 clean:
 	rm -f *.bc MeshlabGenJs.js ../../vcglib/wrap/ply/plylib.bc lib/muparserLib.bc muparser-2.2.5/src/*.bc
