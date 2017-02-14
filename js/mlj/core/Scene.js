@@ -370,9 +370,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
         /*
             This functions defines the helper decorator that help visualizing the direction of
-            the HeadLight (the directional light of the scene) while the user uses the TransformControls
+            the HeadLight (the directional light of the scene) while the user uses the TrackballControls
             to move it around the center of the scene.
-            It also defines the TransformControls used to handle the light moving.
         */
         var _help, _help1, _help2;
 
@@ -419,9 +418,12 @@ MLJ.core.Scene.layerSetHistory = new Array();
             _help.add(_help1);
 
             _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+            //add as decorator to make thing cleaner for postprocessing rendering algorithms
             _this.addSceneDecorator("lightHelper", _help);
         }
 
+        //LightMove Keyup: 
+        // We need to remove the lightHelper decorator, and restore the camera movement
         $(document).keyup(function (event) {
             if (event.ctrlKey || event.shiftKey || event.altKey) {
                 event.preventDefault();
@@ -439,7 +441,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
 
         $(document).keydown(function (event) {
-            /* CTRL+ALT+SHIFT+H => reset */
+            /* CTRL+ALT+SHIFT+H => reset the light position, centering it on camera */
             if (event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
                 event.preventDefault();
                 _customLight = false;
@@ -452,7 +454,11 @@ MLJ.core.Scene.layerSetHistory = new Array();
                 _this.render();
                 return;
             }
-            /* CTRL+ALT+SHIFT (keep pressed) => light moving */
+            /* CTRL+ALT+SHIFT (keep pressed) => Start the light moving:
+                We need to prepare the lightHelper decorator and attach the light to 
+                the TrackballControls in order to ajust its relative position w.r.t 
+                the origin of the Camera-Origin-Light rigid system.
+             */
             if (event.ctrlKey && event.shiftKey && event.altKey) {
                 // if already moving don't do everything again
                 event.preventDefault();
@@ -462,9 +468,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
                 _customLight = true;
                 _controls.noZoom = true;
                 _controls.noPan = true;
-                // _controls.enabled = false;
                 prepareLightControls();
-                // _lightControls.update();
                 _controls.object = _this.lights.Headlight.getLight();
                 _controls.update();
                 _this.render();
@@ -501,11 +505,12 @@ MLJ.core.Scene.layerSetHistory = new Array();
         $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false); // firefox
 
         /* 
-            Light is now bound to the scene (not the camera) so I have to update its location
-            every time the camera move, if the light is not locked up by user
+            Light is now bound to the scene (not the camera) so I have to update the Camera-Origin-Light
+            rigid system every time the camera moves.
         */
         _controls.addEventListener('change', function () {
             _this.lights.Headlight.updateLight();
+            //If we are moving the light also update the helpers to point at it accordingly
             if (_customLight)
                 _help1.lookAt(_this.lights.Headlight.getWorldPosition());
 

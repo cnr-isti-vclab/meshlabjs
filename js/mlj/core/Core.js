@@ -140,6 +140,12 @@ MLJ.core.Headlight = function (scene, camera, renderer) {
      * light is anchored, all the trasformations used to rotate
      * the light are applyed to this mesh, the headlight is a child of
      * this mesh.
+     * This is used to create a Camera-Origin-Light rigid system in which every
+     * movement of the camera causes a call of this.updateLight(), forcing
+     * the origin mesh to always face the camera and thus moving the
+     * light according to camera movement.
+     * The light will also be moveable by means of the TrackBallControls
+     * around its origin _lightMesh.
      * 
      * @type THREE.Object3D
      * @memberOf MLJ.core.Headlight
