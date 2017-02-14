@@ -464,11 +464,16 @@ bool HasGoodNormal(MyMesh &m)
 	return true;
 }
 
-bool PoissonSurfaceRecontruction(uintptr_t _baseM, uintptr_t p)
+bool PoissonSurfaceRecontruction(uintptr_t _baseM, uintptr_t p, int octDepth, int solverDivide, float samplesPerNode)
 {
 	MyMesh &m = *((MyMesh*)_baseM);
 	MyMesh &pmm = *((MyMesh*)p);
 	PoissonParam<float> pp;
+
+	pp.MaxDepthVal = octDepth;
+	pp.ItersVal = solverDivide;
+	pp.SamplesPerNodeVal = samplesPerNode;
+
 	/*
 	pp.MaxDepthVal = env.evalInt("depth");
 	pp.FullDepthVal = env.evalInt("fullDepth");

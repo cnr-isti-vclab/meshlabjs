@@ -279,14 +279,14 @@
     var octDepthWidget, solverDivideWidget, samplesPerNodeWidget, offsetWidget;
     PoissonSurfaceReconstruction._init = function (builder) {
         octDepthWidget = builder.Integer({
-            max: 15, min: 2, step: 1, defval: "6",
+            max: 10, min: 2, step: 1, defval: "6",
             label: "Octree Depth",
             tooltip: "Set the depth of the Octree used for extracting the final surface. " +
                      " Higher numbers mean higher precision in the reconstruction but also higher processing times. Be patient."
         });
 
         solverDivideWidget = builder.Integer({
-            max: 12, min: 0, step: 1, defval: "6",
+            max: 12, min: 1, step: 1, defval: "6",
             label: "Solver Divide",
             tooltip: "This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. " +
                     "Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. " +
@@ -295,14 +295,14 @@
 
           
         samplesPerNodeWidget = builder.RangedFloat({
-            max: 30.0, min: 1.0, step: 0.5, defval: 1.0,
+            max: 30.0, min: 1.0, step: 0.5, defval: 1.5,
             label: "Samples per Node",
             tooltip: "This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree" +
                      "construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used. " +
                      "For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.\n"
         });
        
-     
+        /*
         offsetWidget = builder.RangedFloat({
             max: 3.0, min: 0.1, step: 0.1, defval: 1.0,
             label: "Surface offsetting",
@@ -310,15 +310,15 @@
                      "Values < 1 means internal offsetting, >1 external offsetting, == 1 no offsetting. " +
                      "Good values are in the range 0.5 .. 2. "
         });
-   
+        */
 
     };
 
     PoissonSurfaceReconstruction._applyTo = function (basemeshFile) {
 
         var mf = MLJ.core.Scene.createLayer("Poisson Reconstructed");
-        Module.PoissonSurfaceRecontruction(basemeshFile.ptrMesh(), mf.ptrMesh());
-        scene.addLayer(mf);
+        if(Module.PoissonSurfaceRecontruction(basemeshFile.ptrMesh(), mf.ptrMesh(), octDepthWidget.getValue(),solverDivideWidget.getValue(), samplesPerNodeWidget.getValue()))
+            scene.addLayer(mf);
 };
 
 
