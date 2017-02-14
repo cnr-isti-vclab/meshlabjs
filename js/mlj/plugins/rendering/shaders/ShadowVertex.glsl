@@ -17,7 +17,6 @@ uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 
-varying vec2 vUv;
 varying vec3 vNormal;
 varying vec4 vPosition;
 
@@ -28,6 +27,4 @@ void main(){
 
   gl_Position = projectionMatrix * mvP;
   gl_PointSize = pointSize;
-
-  vUv = uv;
 }

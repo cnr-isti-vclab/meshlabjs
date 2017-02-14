@@ -25,7 +25,6 @@ uniform float offBias;
 uniform int blurFlag;
 uniform int normalFlag;
 
-varying vec2 vUv;
 varying vec3 vNormal;
 varying vec4 vPosition;
 
