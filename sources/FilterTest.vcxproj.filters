@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
@@ -19,9 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="filter_screened_poisson_ml\Src\CmdLineParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -118,9 +115,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="filter_screened_poisson_ml\Src\BinaryNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="filter_screened_poisson_ml\Src\CmdLineParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ColorHistogram.h">

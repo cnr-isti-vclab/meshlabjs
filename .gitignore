@@ -19,3 +19,11 @@ build-*/
 sources/x64/Debug/Refine.obj
 *.obj
 *.tlog
+sources/.vs
+.vscode
+sources/debug
+sources/FilterTest/*.vcxproj
+*.vcxproj
+sources/FilterTest.vcxproj
+sources/filter_screened_poisson_ml/Src/poissonLib.bc
+sources/FilterTest.VC.db
