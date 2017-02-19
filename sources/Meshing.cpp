@@ -279,7 +279,7 @@ void ProjectToParametricFilter(uintptr_t _baseM, uintptr_t _newM, std::string fu
 }
 
 bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
-                              bool split, bool collapse, bool swap, float crease, float collapseThr, float splitThr, float absoluteThr)
+                              bool split, bool collapse, bool swap, float creaseDeg, float collapseThr, float splitThr, float absoluteThr)
 {
     MyMesh &original = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &toProject = *((MyMesh*) _projM);
 
@@ -294,7 +294,10 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     m.UpdateBoxAndNormals();
     collapseThr *= (m.bbox.Diag()/100);
     splitThr    *= (m.bbox.Diag()/100);
-
+    absoluteThr *= (m.bbox.Diag()/100);
+    printf("Collapse Thr: %8.3f on %5.3f\n",collapseThr,m.bbox.Diag());
+    printf("Split    Thr: %8.3f on %5.3f\n",splitThr,m.bbox.Diag());
+    printf("Absolute Thr: %8.3f on %5.3f\n",absoluteThr,m.bbox.Diag());
     //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
     toProject.UpdateBoxAndNormals();
     MyGrid t;
@@ -317,7 +320,7 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     isoremesh::computeQuality(m);
     tri::UpdateQuality<MyMesh>::VertexSaturate(m);
 
-    isoremesh::Params params(adapt, collapseThr, splitThr, absoluteThr, crease);
+    isoremesh::Params params(adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
 
     for(int i=0; i < iter; ++i)
     {

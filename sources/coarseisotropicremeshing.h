@@ -47,10 +47,10 @@ inline float fastAngle(Point3f n0, Point3f n1)
     return math::Clamp(n0*n1, -1.f, 1.f);
 }
 // compare the value of the scalar prod with the cos of the crease threshold
-inline bool testCreaseEdge(MyPos &p, float creaseThr)
+inline bool testCreaseEdge(MyPos &p, float creaseCosineThr)
 {
     float angle = fastAngle(NormalizedTriangleNormal(*(p.F())), NormalizedTriangleNormal(*(p.FFlip())));
-    return (angle <= creaseThr && angle >= -creaseThr);
+    return (angle <= creaseCosineThr && angle >= -creaseCosineThr);
 }
 inline void computeVQualityDistrMinMax(MyMesh &m, float &minQ, float &maxQ)
 {
@@ -306,6 +306,7 @@ void SplitLongEdges(MyMesh &m, Params &params)
     ep.lengthThr = params.lengthThr;
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
+    printf("Adapt %c length %f  lengthThr %f",ep.adapt?'Y':'N',ep.length,ep.lengthThr);
     printf("Split done: splitted %d edges\n",ep.count);
 }
 
@@ -430,8 +431,7 @@ void CollapseShortEdges(MyMesh &m, Params &params)
                 }
             }
         }
-    printf("Collapse candidate edges: %d\n", candidates);
-    printf("Collapsed edges: %d\n", count);
+    printf("Collapses (cadidate/done): %d %d \n", candidates, count);
     //compact vectors, since we killed vertices
     if(count > 0)
         Allocator<MyMesh>::CompactEveryVector(m);
