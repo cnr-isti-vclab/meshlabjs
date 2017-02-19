@@ -28,18 +28,20 @@
 #include "../mesh_def.h"
 #include <vcg/math/matrix44.h>
 
-#include "Src/MyTime.h"
-#include "Src/MemoryUsage.h"
-#include "Src/MarchingCubes.h"
-#include "Src/Octree.h"
-#include "Src/SparseMatrix.h"
-#include "Src/PPolynomial.h"
-#include "Src/Ply.h"
-
+namespace pf 
+{
+	#include "Src/MyTime.h"
+	#include "Src/MemoryUsage.h"
+	#include "Src/MarchingCubes.h"
+	#include "Src/Octree.h"
+	#include "Src/SparseMatrix.h"
+	#include "Src/PPolynomial.h"
+	#include "Src/Ply.h"
+	#include "Src/PointStream.h"
+	#include "Src/MultiGridOctreeData.h"
+}
 #include <stdlib.h>
 
-#include "Src/PointStream.h"
-#include "Src/MultiGridOctreeData.h"
 
 
 #ifdef TESTING
@@ -47,6 +49,7 @@
 #include <wrap/io_trimesh/export.h>
 #endif
 
+using namespace pf;
 typedef vcg::Box3<float>     Box3m;
 
 /*
