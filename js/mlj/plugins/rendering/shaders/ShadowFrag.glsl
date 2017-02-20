@@ -19,8 +19,8 @@ uniform sampler2D depthMap;
 
 uniform float intensity;
 uniform float bleedBias;
-uniform float pcfSize;
-uniform float pcfTot;
+uniform int pcfSize;
+uniform int pcfTot;
 uniform float offBias;
 uniform int blurFlag;
 uniform int normalFlag;
@@ -28,23 +28,23 @@ uniform int normalFlag;
 varying vec3 vNormal;
 varying vec4 vPosition;
 
-const float max_pcf = 2.5;
+const int max_pcf = 3;
 
 float PCF(vec3 depthPosition) {
   float texelSize = 1.0 / texSize;
   float shadow = 0.0;
 
 
-  for(float i=-max_pcf; i<=max_pcf; i+=1.0)
+  for(int i=-max_pcf; i<=max_pcf; i+=1)
     if ( i >= -pcfSize && i <= pcfSize)
-      for(float j=-max_pcf; j<=max_pcf; j+=1.0) 
+      for(int j=-max_pcf; j<=max_pcf; j+=1) 
         if ( j >= -pcfSize && j <= pcfSize )
         {
           float closest = texture2D(depthMap, depthPosition.xy + vec2(i,j)*texelSize).r;
           shadow = (depthPosition.z - offBias > closest) ? shadow + 1.0 : shadow;
         }
 
-  return shadow / pcfTot;
+  return shadow / float(pcfTot);
 }
 
 float shadowCalc(vec4 position){
