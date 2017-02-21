@@ -52,6 +52,8 @@ inline bool testCreaseEdge(MyPos &p, float creaseCosineThr)
     float angle = fastAngle(NormalizedTriangleNormal(*(p.F())), NormalizedTriangleNormal(*(p.FFlip())));
     return (angle <= creaseCosineThr && angle >= -creaseCosineThr);
 }
+// this stores in minQ the value of the 10th percentile of the VertQuality distribution and in
+// maxQ the value of the 90th percentile.
 inline void computeVQualityDistrMinMax(MyMesh &m, float &minQ, float &maxQ)
 {
     Distribution<float> distr;
@@ -76,7 +78,8 @@ inline void forEachFacePos(MyMesh &m, std::function<void (MyFace &, MyPos &, int
         }
 }
 
-//riscrivi con vfiterator e iterando solo sui vertici
+//Computes PerVertexQuality as a function of the 'deviation' of the normals taken from
+//the faces incident to each vertex
 void computeQuality(MyMesh &m)
 {
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
@@ -288,7 +291,8 @@ public:
             return false;
     }
 };
-
+//Split pass: This pass uses the tri::RefineE from the vcglib to implement
+//the refinement step, using EdgeSplitPred as a predicate to decide whether to split or not
 void SplitLongEdges(MyMesh &m, Params &params)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m);
@@ -306,7 +310,7 @@ void SplitLongEdges(MyMesh &m, Params &params)
     ep.lengthThr = params.lengthThr;
     //RefineE updates FF topology after doing the refine (not needed in collapse then)
     tri::RefineE(m,midFunctor,ep);
-    printf("Adapt %c length %f  lengthThr %f",ep.adapt?'Y':'N',ep.length,ep.lengthThr);
+    printf("Adapt %c length %f  lengthThr %f\n",ep.adapt?'Y':'N',ep.length,ep.lengthThr);
     printf("Split done: splitted %d edges\n",ep.count);
 }
 
@@ -362,7 +366,8 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float targetLength, float maxLe
     return true;
 }
 
-// Collapse test: Usual collapse test plus borders and adaptivity management
+// Collapse test: Usual collapse test (check on target length) plus borders and crease handling
+// and adaptivity.
 bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 {
     float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
@@ -383,7 +388,8 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
     }
     return false;
 }
-//Feature preserving collapse step
+//The actual collapse step: foreach edge it is collapse iff TestCollapse returns true AND
+// the linkConditions are preserved
 void CollapseShortEdges(MyMesh &m, Params &params)
 {
     float minQ, maxQ;
@@ -502,7 +508,8 @@ MyPair chooseBestCrossCollapse(MyPos &p, vector<MyFace*> &ff)
     else
         return MyPair(p.V(), v0);
 }
-
+//Cross Collapse pass: This pass cleans the mesh from cross vertices, keeping in mind the link conditions
+//and feature preservations tests.
 void CollapseCrosses(MyMesh &m , Params &params)
 {
     tri::UpdateTopology<MyMesh>::ClearFaceFace(m);
