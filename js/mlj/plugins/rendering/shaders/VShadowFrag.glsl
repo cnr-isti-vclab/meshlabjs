@@ -67,8 +67,6 @@ float shadowContribution(vec2 moments, float t) {
 }
 
 float shadowCalc(vec4 position){
-
-
   // vec4 lightD = viewMatrix * vec4(lightDir,1.0);
   // vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
   vec3 fdx = dFdx( vViewPosition );
@@ -78,7 +76,7 @@ float shadowCalc(vec4 position){
   // #if MAX_DIR_LIGHTS > 0   
     // if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
   // #endif
-  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.2;
+  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.3;
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
@@ -110,8 +108,6 @@ void main(){
     float w = u*u+v*v;
     if (w > 1.0) discard;
   }
-
-
 
   float chebishev = shadowCalc(vPosition);
 
