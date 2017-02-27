@@ -1,6 +1,13 @@
 #extension GL_OES_standard_derivatives : enable
 precision highp float;
 
+#define MAX_DIR_LIGHTS 1
+
+#if MAX_DIR_LIGHTS > 0
+    uniform vec3 directionalLightColor[ MAX_DIR_LIGHTS ];
+    uniform vec3 directionalLightDirection[ MAX_DIR_LIGHTS ];
+#endif
+
 uniform float bufWidth;
 uniform float bufHeight;
 uniform float texSize;
@@ -29,8 +36,12 @@ varying vec4 vPosition;
 varying vec3 vViewPosition;
 
 
-/* implementing bleed containment as described in GPU Gems */
 
+vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
+	return normalize( ( matrix * vec4( normal, 0.0 ) ).xyz );
+}
+
+/* implementing bleed containment as described in GPU Gems */
 float linearStep(float min, float max, float v) {
   return clamp((v-min)/(max-min), 0.0, 1.0);
 }
@@ -57,14 +68,17 @@ float shadowContribution(vec2 moments, float t) {
 
 float shadowCalc(vec4 position){
 
-  vec4 lightD = viewMatrix * vec4(lightDir,1.0);
+
+  // vec4 lightD = viewMatrix * vec4(lightDir,1.0);
   // vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
   vec3 fdx = dFdx( vViewPosition );
 	vec3 fdy = dFdy( vViewPosition );
   vec3 n = normalize( cross( fdx, fdy ) );
-
-  if(normalFlag == 1 && dot(n, normalize(lightD.xyz)) <= -0.02) return 0.0;
-
+  // normalcheck with light direction
+  #if MAX_DIR_LIGHTS > 0   
+    if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
+  #endif
+  
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
@@ -96,6 +110,8 @@ void main(){
     float w = u*u+v*v;
     if (w > 1.0) discard;
   }
+
+
 
   float chebishev = shadowCalc(vPosition);
 
