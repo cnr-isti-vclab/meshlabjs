@@ -1,4 +1,16 @@
 
+/**
+* Shadow mapping renering plugin.
+* This plugin implements shadow mapping by means of two different algorithms,
+* both configurable for soft or hard margin shadows.
+* Variance Shadow Mapping (VSM) is implemented using mipmapping filtering 
+* on the shadow texture and an optional gaussian blurring step for softer 
+* margin shadows.
+* "Classic" Shadow Mapping uses nearest filtering and optionally implements
+* soft margins by means of Percentage Closer Filtering technique.
+* 
+* @author Thomas Alderighi
+*/
 (function (plugin, core, scene) {
   /*
     SOON Multiple render targets might be added to THREE.js:
@@ -170,7 +182,7 @@
       bindTo: (function () {
         var callback = function (pcf) {
           shadowPassUniforms.pcfSize.value = pcf;
-          shadowPassUniforms.pcfTot.value = ((pcf*2.0) + 1) * ((pcf*2.0) + 1);
+          shadowPassUniforms.pcfTot.value = ((pcf * 2.0) + 1) * ((pcf * 2.0) + 1);
         };
         callback.toString = function () { return "MLJ_SM_PCFSize"; };
         return callback;

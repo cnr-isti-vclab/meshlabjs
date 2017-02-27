@@ -75,16 +75,18 @@ float shadowCalc(vec4 position){
 }
 
 void main(){
+  //early discard fragments.
+  // sample is the fragment x,y position in [0..1] space (needed for texture sampling)
+  vec2 sample = vec2(gl_FragCoord.x / bufWidth, gl_FragCoord.y / bufHeight);
+  vec4 color = texture2D(colorMap, sample);
+  if(color.a == 0.0) discard;
+
   if (pointSize != 0.0) {
     float u = 2.0*gl_PointCoord.x-1.0;
     float v = 2.0*gl_PointCoord.y-1.0;
     float w = u*u+v*v;
     if (w > 1.0) discard;
   }
-  vec2 sample = vec2(gl_FragCoord.x / bufWidth, gl_FragCoord.y / bufHeight);
-  
-  vec4 color = texture2D(colorMap, sample);
-  if(color.a == 0.0) discard;
 
   float chebishev = shadowCalc(vPosition);
 

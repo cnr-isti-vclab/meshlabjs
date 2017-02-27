@@ -1,10 +1,7 @@
 precision highp float;
 
-//seguo l'implementazione suggerita qui:
+// Following gaussian blur implementations described here:
 // http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
-// molto interessante la cosa di fare due filtri lineari separati, e il sampling
-// che sfrutta la gpu per ottenere un sample già filtrata
-
 uniform sampler2D depthMap;
 
 #define stepCount 9

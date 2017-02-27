@@ -105,9 +105,22 @@ MLJ.core.Scene.layerSetHistory = new Array();
      */
     var _group;
 
+    /**
+     * The layers group and decorator groups define a logical
+     * partition of the meshes in the scene:
+     * the layersGroup contains the displayed meshes and their
+     * active overlays, while the decoratorsGroup contains all 
+     * the active decorators, that should usually be ignored by
+     * post-processing rendering passes such as SM and RS or SSAO.
+     * @author Thomas Alderighi
+     */
     var _layersGroup;
     var _decoratorsGroup;
 
+    /**
+     * Variables to implement light controls
+     * @author Thomas Alderighi
+     */
     var _lightControls;
     var _customLight;
     var _lightPressed;
@@ -372,6 +385,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
             This functions defines the helper decorator that help visualizing the direction of
             the HeadLight (the directional light of the scene) while the user uses the TrackballControls
             to move it around the center of the scene.
+            @author Thomas Alderighi
         */
         var _help, _help1, _help2;
 
