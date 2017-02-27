@@ -75,10 +75,10 @@ float shadowCalc(vec4 position){
 	vec3 fdy = dFdy( vViewPosition );
   vec3 n = normalize( cross( fdx, fdy ) );
   // normalcheck with light direction
-  #if MAX_DIR_LIGHTS > 0   
-    if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
-  #endif
-  
+  // #if MAX_DIR_LIGHTS > 0   
+    // if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
+  // #endif
+  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.0;
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide
@@ -94,7 +94,7 @@ float shadowCalc(vec4 position){
   float fragDepth = lightSpacePosition.z - offBias;
 
   return shadowContribution(moments, fragDepth);
-  // return 1.0;
+  //  return 1.0;
 }
 
 void main(){

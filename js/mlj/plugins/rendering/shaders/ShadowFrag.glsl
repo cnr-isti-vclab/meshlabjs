@@ -50,14 +50,16 @@ float PCF(vec3 depthPosition) {
 }
 
 float shadowCalc(vec4 position){
-  vec4 lightD = viewMatrix * vec4(-lightDir,1.0);
-  
+  // vec4 lightD = viewMatrix * vec4(-lightDir,1.0);
+
   vec3 fdx = dFdx( vViewPosition );
 	vec3 fdy = dFdy( vViewPosition );
   vec3 n = normalize( cross( fdx, fdy ) );
-
-  // vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
-  if(normalFlag == 1 && dot(n, normalize(lightD.xyz)) <= -0.02) return 1.0;
+  // normalcheck with light direction
+  // #if MAX_DIR_LIGHTS > 0   
+    // if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
+  // #endif
+  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 
