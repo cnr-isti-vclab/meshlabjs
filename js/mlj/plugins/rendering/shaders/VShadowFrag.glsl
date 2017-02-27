@@ -78,7 +78,7 @@ float shadowCalc(vec4 position){
   // #if MAX_DIR_LIGHTS > 0   
     // if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
   // #endif
-  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.0;
+  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.2;
   vec4 lightSpacePosition =  lightViewProjection * position;
 
   //perspective devide

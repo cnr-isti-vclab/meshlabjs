@@ -32,6 +32,11 @@ varying vec3 vViewPosition;
 
 const int max_pcf = 3;
 
+vec3 transformDirection( in vec3 normal, in mat4 matrix ) {
+	return normalize( ( matrix * vec4( normal, 0.0 ) ).xyz );
+}
+
+
 float PCF(vec3 depthPosition) {
   float texelSize = 1.0 / texSize;
   float shadow = 0.0;
@@ -59,7 +64,7 @@ float shadowCalc(vec4 position){
   // #if MAX_DIR_LIGHTS > 0   
     // if(normalFlag == 1 && dot(n, transformDirection(directionalLightDirection[ 0 ], viewMatrix)) <= -0.02) return 0.0;
   // #endif
-  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 0.0;
+  if(normalFlag == 1 && dot(n, transformDirection(lightDir, viewMatrix)) <= -0.02) return 1.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 
