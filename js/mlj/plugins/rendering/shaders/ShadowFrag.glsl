@@ -10,6 +10,7 @@ uniform mat4 lightViewProjection;
 uniform mat4 modelViewMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform mat4 lightModelView;
 
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
@@ -27,6 +28,7 @@ uniform int normalFlag;
 
 varying vec3 vNormal;
 varying vec4 vPosition;
+varying vec3 vViewPosition;
 
 const int max_pcf = 3;
 
@@ -48,9 +50,14 @@ float PCF(vec3 depthPosition) {
 }
 
 float shadowCalc(vec4 position){
+  vec4 lightD = viewMatrix * vec4(-lightDir,1.0);
+  
+  vec3 fdx = dFdx( vViewPosition );
+	vec3 fdy = dFdy( vViewPosition );
+  vec3 n = normalize( cross( fdx, fdy ) );
 
-  vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
-  if(normalFlag == 1 && dot(normalize(n), normalize(-lightDir)) <= -0.2) return 1.0;
+  // vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
+  if(normalFlag == 1 && dot(n, normalize(lightD.xyz)) <= -0.02) return 1.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 

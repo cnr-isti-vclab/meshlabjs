@@ -22,6 +22,7 @@
     depthMap: { type: "t", value: null },
     colorMap: { type: "t", value: null },
     lightViewProjection: { type: "m4", value: null },
+    lightModelView: { type: "m4", value: null },
     intensity: { type: "f", value: 0.5 },
     lightDir: { type: 'v3', value: null },
     blurFlag: { type: 'i', value: 1 },
@@ -446,7 +447,8 @@
       shadowPassUniforms.lightViewProjection.value = projScreenMatrix;
       shadowPassUniforms.colorMap.value = inBuffer;
       shadowPassUniforms.depthMap.value = shadowPassOptions.depthTarget;
-      shadowPassUniforms.lightDir.value = lightCamera.getWorldDirection();
+      shadowPassUniforms.lightDir.value = scene.lights.Headlight.getWorldPosition();
+      shadowPassUniforms.lightModelView.value = sceneCam.matrixWorldInverse;
       shadowPassUniforms.bufWidth.value = outBuffer.width;
       shadowPassUniforms.bufHeight.value = outBuffer.height;
       if (shadowPassUniforms.blurFlag.value && shadowPassOptions.vsm)

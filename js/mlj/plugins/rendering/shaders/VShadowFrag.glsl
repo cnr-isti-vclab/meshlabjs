@@ -8,6 +8,8 @@ uniform float pointSize;
 
 uniform mat4 lightViewProjection;
 uniform mat4 modelViewMatrix;
+uniform mat4 lightModelView;
+uniform mat4 viewMatrix;
 
 uniform vec3 lightDir;
 uniform vec3 cameraPosition;
@@ -24,6 +26,8 @@ uniform int normalFlag;
 
 varying vec3 vNormal;
 varying vec4 vPosition;
+varying vec3 vViewPosition;
+
 
 /* implementing bleed containment as described in GPU Gems */
 
@@ -53,8 +57,13 @@ float shadowContribution(vec2 moments, float t) {
 
 float shadowCalc(vec4 position){
 
-  vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
-  if(normalFlag == 1 && dot(normalize(n), normalize(-lightDir)) <= -0.2) return 0.0;
+  vec4 lightD = viewMatrix * vec4(lightDir,1.0);
+  // vec3 n = (gl_FrontFacing) ? vNormal : -vNormal;
+  vec3 fdx = dFdx( vViewPosition );
+	vec3 fdy = dFdy( vViewPosition );
+  vec3 n = normalize( cross( fdx, fdy ) );
+
+  if(normalFlag == 1 && dot(n, normalize(lightD.xyz)) <= -0.02) return 0.0;
 
   vec4 lightSpacePosition =  lightViewProjection * position;
 

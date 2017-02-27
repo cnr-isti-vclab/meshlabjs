@@ -19,12 +19,15 @@ uniform sampler2D colorMap;
 
 varying vec3 vNormal;
 varying vec4 vPosition;
+varying vec3 vViewPosition;
 
 void main(){
   vec4 mvP = modelViewMatrix * vec4(position,1.0);
+
   vNormal = normal;
   vPosition = modelMatrix * vec4(position,1.0);
-
+  vViewPosition = -mvP.xyz;
+  
   gl_Position = projectionMatrix * mvP;
   gl_PointSize = pointSize;
 }
