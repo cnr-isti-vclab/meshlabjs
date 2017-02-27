@@ -86,7 +86,8 @@
           shadowPassOptions.depthTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value, shadowPassUniforms.texSize.value, renderTargetParams);
           shadowPassOptions.hBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
           shadowPassOptions.vBlurTarget = new THREE.WebGLRenderTarget(shadowPassUniforms.texSize.value / 2, shadowPassUniforms.texSize.value / 2, renderTargetParams);
-          shadowPassUniforms.offBias.value = (vsm) ? 0.0 : 0.05;
+          shadowPassUniforms.offBias.value = (vsm) ? 0.0 : 0.02;
+
           offBias.setValue(shadowPassUniforms.offBias.value);
         };
 
