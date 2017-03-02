@@ -64,7 +64,8 @@ inline void computeVQualityDistrMinMax(MyMesh &m, float &minQ, float &maxQ)
 }
 
 //could become: forEachFacePos(MyMesh, std::function<bool (MyPos *)> actionGuard, ... action, std::function<void (MyFace*)> faceFlags)
-inline void forEachFacePos(MyMesh &m, std::function<void (MyFace &, MyPos &, int)> action)
+
+inline void forEachFacePos(MyMesh &m, std::function<void (MyPos &)> action)
 {
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
         if(!(*fi).IsD())
@@ -72,9 +73,17 @@ inline void forEachFacePos(MyMesh &m, std::function<void (MyFace &, MyPos &, int
             for(int i=0;i<3;++i)
             {
                 MyPos pi(&*fi,i);
-                action(*fi, pi, i);
+                action(pi);
             }
-            fi->SetV();
+        }
+}
+
+inline void forEachFace(MyMesh &m, std::function<void (MyFace &)> action)
+{
+    for(auto fi=m.face.begin();fi!=m.face.end();++fi)
+        if(!(*fi).IsD())
+        {
+          action(*fi);         
         }
 }
 
@@ -149,33 +158,20 @@ float computeMeanValence(MyMesh &m)
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
     int total = 0, count = 0, totalOff = 0;
 
-    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-    //        if(!p.V()->IsV())
-    //        {
-    //            total += p.NumberOfIncidentVertices();
-    //            totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
-    //            p.V()->SetV();
-    //            ++count;
-    //        }
-    //    });
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-            for(int i=0; i<3; ++i)
+        forEachFacePos(m, [&](MyPos &p){
+            if(!p.V()->IsV())
             {
-                MyPos p(&*fi, i);
-                if(!p.V()->IsV())
-                {
-                    total += p.NumberOfIncidentVertices();
-                    totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
-                    p.V()->SetV();
-                    ++count;
-                }
-            }
-        }
+                total += p.NumberOfIncidentVertices();
+                totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
+                p.V()->SetV();
+                ++count;
+            }         
+        });
+        
     printf("MEAN IDEAL VALENCE OFFSET: %.15f\n", ((float)totalOff/(float)count));
     return (float) total / (float) count;
 }
+
 /*
     Edge Swap Step:
     This method optimizes the valence of each vertex.
@@ -237,37 +233,20 @@ bool testSwap(MyPos p, float creaseThr)
 void ImproveValence(MyMesh &m, Params params)
 {
     tri::UpdateTopology<MyMesh>::FaceFace(m); //collapser does not update FF
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
 
     int swapCnt=0;
 
-    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-    //        if(!p.FFlip()->IsV())
-    //            if(testSwap(p, params.creaseThr) &&
-    //                    face::CheckFlipEdgeNormal(f, i, math::ToRad(10.f)) &&
-    //                    face::CheckFlipEdge(f,i) )
-    //            {
-    //                face::FlipEdge(f,i);
-    //                swapCnt++;
-    //            }
-    //    });
-    for(auto fi=m.face.begin();fi!=m.face.end();++fi)
-        if(!(*fi).IsD())
+    forEachFacePos(m, [&](MyPos &p){
+      if(p.FFlip() > p.F())
+        if(testSwap(p, params.creaseThr) &&
+           face::CheckFlipEdgeNormal(*p.F(), p.E(), math::ToRad(10.f)) &&
+           face::CheckFlipEdge(*p.F(), p.E()) )
         {
-            for(int i=0;i<3;++i)
-            {
-                MyPos pi(&*fi,i);
-                if(!pi.FFlip()->IsV())
-                    if(testSwap(pi, params.creaseThr) &&
-                            face::CheckFlipEdgeNormal(*fi, i, math::ToRad(10.f)) &&
-                            face::CheckFlipEdge(*fi,i) )
-                    {
-                        face::FlipEdge(*fi,i);
-                        swapCnt++;
-                    }
-            }
-            fi->SetV();
+          face::FlipEdge(*p.F(), p.E());
+          swapCnt++;
         }
+    });
+    
     printf("Performed %i swaps\n",swapCnt);
 }
 
@@ -401,21 +380,6 @@ void CollapseShortEdges(MyMesh &m, Params &params)
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     tri::UpdateFlags<MyMesh>::VertexBorderFromNone(m);
 
-    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-    //        if(!p.V()->IsB() && !p.VFlip()->IsB())
-    //        {
-    //            ++candidates;
-    //            MyPair bp(p.V(), p.VFlip());
-    //            Point3f mp = (bp.V(1)->P()+bp.V(0)->P())/2.f;
-
-    //            if(testCollapse(p, mp, minQ, maxQ, params) && MyCollapser::LinkConditions(bp))
-    //            {
-    //                MyCollapser::Do(m, bp, mp);
-    //                ++count;
-    //                break;
-    //            }
-    //        }
-    //    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -437,7 +401,7 @@ void CollapseShortEdges(MyMesh &m, Params &params)
                 }
             }
         }
-    printf("Collapses (cadidate/done): %d %d \n", candidates, count);
+    printf("Collapses (candidate/done): %d %d \n", candidates, count);
     //compact vectors, since we killed vertices
     if(count > 0)
         Allocator<MyMesh>::CompactEveryVector(m);
@@ -573,33 +537,17 @@ void CollapseCrosses(MyMesh &m , Params &params)
 // This function sets the selection bit on vertices that lie on creases
 int selectVertexFromCrease(MyMesh &m, float creaseThr)
 {
-    tri::UpdateFlags<MyMesh>::FaceClearV(m);
     int count = 0;
 
-//        forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-//            if(!(p.FFlip()->IsV()) && testCreaseEdge(p, creaseThr))
-//            {
-//                p.V()->SetS();
-//                p.VFlip()->SetS();
-//                ++count;
-//            }
-//        });
-    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-        if(!(*fi).IsD())
-        {
-            for(int i=0; i<3; ++i)
-            {
-                MyPos p(&*fi, i);
-                //if edge is not already visited and is of crease
-                if(!(p.FFlip()->IsV()) && testCreaseEdge(p, creaseThr))
-                {
-                    p.V()->SetS();
-                    p.VFlip()->SetS();
-                    ++count;
-                }
-            }
-            (*fi).SetV();
-        }
+    forEachFacePos(m, [&](MyPos &p){
+      if((p.FFlip() > p.F()) && testCreaseEdge(p, creaseThr))
+      {
+        p.V()->SetS();
+        p.VFlip()->SetS();
+        ++count;
+      }
+    });
+    
     return count;
 }
 
