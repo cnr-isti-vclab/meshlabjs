@@ -1,3 +1,0 @@
-[submodule "sources/external/PoissonRecon"]
-	path = sources/external/PoissonRecon
-	url = https://github.com/cignoni/PoissonRecon.git
