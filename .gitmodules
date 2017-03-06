@@ -1,0 +1,3 @@
+[submodule "sources/PoissonRecon"]
+	path = sources/PoissonRecon
+	url = https://github.com/cignoni/PoissonRecon.git
