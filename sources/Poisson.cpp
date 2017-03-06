@@ -30,15 +30,15 @@
 
 namespace pf 
 {
-	#include "external/PoissonRecon/Src/MyTime.h"
-	#include "external/PoissonRecon/Src/MemoryUsage.h"
-	#include "external/PoissonRecon/Src/MarchingCubes.h"
-	#include "external/PoissonRecon/Src/Octree.h"
-	#include "external/PoissonRecon/Src/SparseMatrix.h"
-	#include "external/PoissonRecon/Src/PPolynomial.h"
-	#include "external/PoissonRecon/Src/Ply.h"
-	#include "external/PoissonRecon/Src/PointStream.h"
-	#include "external/PoissonRecon/Src/MultiGridOctreeData.h"
+	#include "MyTime.h"
+	#include "MemoryUsage.h"
+	#include "MarchingCubes.h"
+	#include "Octree.h"
+	#include "SparseMatrix.h"
+	#include "PPolynomial.h"
+	#include "Ply.h"
+	#include "PointStream.h"
+	#include "MultiGridOctreeData.h"
 }
 #include <stdlib.h>
 
