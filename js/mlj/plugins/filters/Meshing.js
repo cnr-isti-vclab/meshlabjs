@@ -284,7 +284,9 @@
         absoluteThrWidget = builder.RangedFloat({
             min: 0.1, max: 5, step: 0.1, defval: 2,
             label: "Minimum Threshold",
-            tooltip: "This is the minimum length threshold for the edges" +
+            tooltip: "This is the minimum length threshold for the edges: this will override the " +
+            "adaptivity multiplier specifying an absolute minimum length in order to avoid degenerate behaviour on " +
+            "high curvature areas" +
             " (expressed in percentage of the BBOX diagonal length)."
         });
         projMeshWidget = builder.LayerSelection({

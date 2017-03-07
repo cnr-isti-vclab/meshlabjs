@@ -83,7 +83,7 @@ inline void forEachFace(MyMesh &m, std::function<void (MyFace &)> action)
     for(auto fi=m.face.begin();fi!=m.face.end();++fi)
         if(!(*fi).IsD())
         {
-          action(*fi);         
+            action(*fi);
         }
 }
 
@@ -111,29 +111,6 @@ void computeQuality(MyMesh &m)
             vi->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
             vi->SetV();
         }
-//    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
-//        if(!(*fi).IsD())
-//        {
-//            Point3f fNormal = NormalizedTriangleNormal(*fi);
-//            for(auto i=0; i<3; ++i)
-//                if(!(*fi).V(i)->IsV())
-//                {
-//                    MyVertex *v = (*fi).V(i);
-//                    vector<MyFace*> ff;
-//                    vector<int> vi;
-
-//                    face::VFStarVF<MyFace>(v, ff, vi);
-
-//                    float tot = 0;
-//                    for(MyFace *f: ff)
-//                        if(f != &*fi)
-//                        {
-//                            tot+= 1-math::Abs(fastAngle(fNormal, NormalizedTriangleNormal(*f)));
-//                        }
-//                    v->Q() = tot / (float)(std::max(1, ((int)ff.size()-1)));
-//                    v->SetV();
-//                }
-//        }
 }
 
 /*
@@ -158,16 +135,16 @@ float computeMeanValence(MyMesh &m)
     tri::UpdateFlags<MyMesh>::VertexClearV(m);
     int total = 0, count = 0, totalOff = 0;
 
-        forEachFacePos(m, [&](MyPos &p){
-            if(!p.V()->IsV())
-            {
-                total += p.NumberOfIncidentVertices();
-                totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
-                p.V()->SetV();
-                ++count;
-            }         
-        });
-        
+    forEachFacePos(m, [&](MyPos &p){
+        if(!p.V()->IsV())
+        {
+            total += p.NumberOfIncidentVertices();
+            totalOff += abs(idealValence(p)-p.NumberOfIncidentVertices());
+            p.V()->SetV();
+            ++count;
+        }
+    });
+
     printf("MEAN IDEAL VALENCE OFFSET: %.15f\n", ((float)totalOff/(float)count));
     return (float) total / (float) count;
 }
@@ -237,14 +214,14 @@ void ImproveValence(MyMesh &m, Params params)
     int swapCnt=0;
 
     forEachFacePos(m, [&](MyPos &p){
-      if(p.FFlip() > p.F())
-        if(testSwap(p, params.creaseThr) &&
-           face::CheckFlipEdgeNormal(*p.F(), p.E(), math::ToRad(10.f)) &&
-           face::CheckFlipEdge(*p.F(), p.E()) )
-        {
-          face::FlipEdge(*p.F(), p.E());
-          swapCnt++;
-        }
+        if(p.FFlip() > p.F())
+            if(testSwap(p, params.creaseThr) &&
+                    face::CheckFlipEdgeNormal(*p.F(), p.E(), math::ToRad(10.f)) &&
+                    face::CheckFlipEdge(*p.F(), p.E()) )
+            {
+                face::FlipEdge(*p.F(), p.E());
+                swapCnt++;
+            }
     });
     
     printf("Performed %i swaps\n",swapCnt);
@@ -371,7 +348,7 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
 // the linkConditions are preserved
 void CollapseShortEdges(MyMesh &m, Params &params)
 {
-    float minQ, maxQ;
+    float minQ, maxQ, cornerRad = math::ToRad(180.f);
     int count = 0, candidates = 0;
 
     if(params.adapt)
@@ -386,11 +363,24 @@ void CollapseShortEdges(MyMesh &m, Params &params)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.V()->IsB() && !pi.VFlip()->IsB())
+                //                if(!pi.V()->IsB() && !pi.VFlip()->IsB())
+                //                if(pi.V()->IsB() == pi.VFlip()->IsB())
+                //the problem probably lies in the fact that i always use the midpoint
+                //tried to do on one of the two vert but gives bad behaviour..
+                // try to think a more robust geom check so that you capture that  behaviour
+                // (that happens especially on planar meshses imo)
+                // a good fix might be marking all corner vertices (corner = 3 borders || 2 borders with
+                // steep angle) and during collapse choose corner vertex as collapse point;
+                // it would be good to drop this guard at all...so that you can collapse on borders from
+                // internal and on corners from border or from internal..
+                // TRIED usign selectvertexcornerborder, but didn't fix on triangulated.obj
+                // think it is because the corners there aren't considered corner by selectvertexcornerborder
                 {
                     ++candidates;
-                    MyPair bp(pi.V(), pi.VFlip());
-                    Point3f mp = (bp.V(1)->P()+bp.V(0)->P())/2.f;
+                    MyPair bp = (pi.V()->IsB()) ? MyPair(pi.VFlip(), pi.V()) : MyPair(pi.V(), pi.VFlip());
+                    Point3f mid = (bp.V(1)->P()+bp.V(0)->P())/2.f;
+                    Point3f mp = (bp.V(0)->IsB()) ? bp.V(0)->P() : mid;
+                    mp = (bp.V(1)->IsB()) ? bp.V(1)->P() : mid;
 
                     if(testCollapse(pi, mp, minQ, maxQ, params) && MyCollapser::LinkConditions(bp))
                     {
@@ -401,6 +391,7 @@ void CollapseShortEdges(MyMesh &m, Params &params)
                 }
             }
         }
+    tri::UpdateSelection<MyMesh>::Clear(m);
     printf("Collapses (candidate/done): %d %d \n", candidates, count);
     //compact vectors, since we killed vertices
     if(count > 0)
@@ -480,27 +471,27 @@ void CollapseCrosses(MyMesh &m , Params &params)
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     int count = 0;
 
-//    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-//        if(!p.V()->IsB() && !f.V1(p.VInd())->IsB() && !f.V2(p.VInd())->IsB())
-//        {
-//            vector<MyFace*> ff;
-//            vector<int> vi;
-//            face::VFStarVF<MyFace>(p.V(), ff, vi);
+    //    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
+    //        if(!p.V()->IsB() && !f.V1(p.VInd())->IsB() && !f.V2(p.VInd())->IsB())
+    //        {
+    //            vector<MyFace*> ff;
+    //            vector<int> vi;
+    //            face::VFStarVF<MyFace>(p.V(), ff, vi);
 
-//            //removing crosses only
-//            if(ff.size() == 4)
-//            {
-//                MyPair bp  = chooseBestCrossCollapse(p, ff);
-//                Point3f mp = bp.V(1)->P();
-//                if(testCrossCollapse(p, mp) && MyCollapser::LinkConditions(bp))
-//                {
-//                    MyCollapser::Do(m, bp, mp);
-//                    ++count;
-//                    break;
-//                }
-//            }
-//        }
-//    });
+    //            //removing crosses only
+    //            if(ff.size() == 4)
+    //            {
+    //                MyPair bp  = chooseBestCrossCollapse(p, ff);
+    //                Point3f mp = bp.V(1)->P();
+    //                if(testCrossCollapse(p, mp) && MyCollapser::LinkConditions(bp))
+    //                {
+    //                    MyCollapser::Do(m, bp, mp);
+    //                    ++count;
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
@@ -531,7 +522,8 @@ void CollapseCrosses(MyMesh &m , Params &params)
         }
     printf("Collapsed crosses: %d\n", count);
     //compact vectors, since we killed vertices
-    Allocator<MyMesh>::CompactEveryVector(m);
+    if (count > 0)
+        Allocator<MyMesh>::CompactEveryVector(m);
 }
 
 // This function sets the selection bit on vertices that lie on creases
@@ -540,12 +532,12 @@ int selectVertexFromCrease(MyMesh &m, float creaseThr)
     int count = 0;
 
     forEachFacePos(m, [&](MyPos &p){
-      if((p.FFlip() > p.F()) && testCreaseEdge(p, creaseThr))
-      {
-        p.V()->SetS();
-        p.VFlip()->SetS();
-        ++count;
-      }
+        if((p.FFlip() > p.F()) && testCreaseEdge(p, creaseThr))
+        {
+            p.V()->SetS();
+            p.VFlip()->SetS();
+            ++count;
+        }
     });
     
     return count;
