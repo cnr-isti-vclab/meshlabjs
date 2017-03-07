@@ -14,32 +14,40 @@ CC=emcc
 # -s TOTAL_MEMORY=1073741824 
  
 
-CFLAGS=-I.  -I ../../vcglib/ -I external/muparser-2.2.5/include -I external/PoissonRecon/Src  -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -std=c++11 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind 
+CFLAGS=-I.  -I ../../vcglib/   -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -std=c++11 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind  -s ASSERTIONS=1  -s LINKABLE=1 -Os
 
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
-      Create.bc Refine.bc Transform.bc Selection.bc Quality.bc PoissonFilter.bc\
+      Create.bc Refine.bc Transform.bc Selection.bc Quality.bc Poisson.bc \
       ../../vcglib/wrap/ply/plylib.bc \
-      FuncParser.bc \
+      FuncParser.bc 
 
-LIBS = lib/muparserLib.bc
+LIBS = lib/muparserLib.bc lib/poissonLib.bc
 
 %.bc: %.cpp
-	$(CC) -c -o $@ $< $(CFLAGS) -s LINKABLE=1 -Os
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 MeshLabCppCore.js: $(OBJ) $(LIBS)
 	$(CC) -o ../js/generated/$@ $^ $(CFLAGS)	-O3
+
+FuncParser.bc : FuncParser.cpp 
+	$(CC) -o $@ $< $(CFLAGS) -I external/muparser-2.2.5/include 
+
+Poisson.bc : Poisson.cpp 
+	$(CC) -o $@ $< $(CFLAGS) -I external/PoissonRecon/Src 
 
 lib/muparserLib.bc: 
 	cd ./external/muparser-2.2.5/src/ && $(MAKE) -f MakefileJS
 
 lib/poissonLib.bc:
 	cd ./external/PoissonRecon/Src/ && $(MAKE) -f MakefileJS
-	
-PoissonFilter.bc : Poisson.cpp lib/poissonLib.bc
-	$(CC) -o $@ $< lib/poissonLib.bc $(CFLAGS) -s LINKABLE=1
 
 clean:
-	rm -f *.bc MeshlabGenJs.js ../../vcglib/wrap/ply/plylib.bc lib/muparserLib.bc muparser-2.2.5/src/*.bc
+	rm -f *.bc MeshlabGenJs.js ../../vcglib/wrap/ply/plylib.bc 
+
+cleanlib:
+	rm -f lib/*.bc
+	cd ./external/muparser-2.2.5/src/ && $(MAKE) -f MakefileJS clean
+	cd ./external/PoissonRecon/Src/ && $(MAKE) -f MakefileJS clean
 
 install:
 	mv MeshLabCppCore.js MeshLabCppCore.js.mem ../js/generated

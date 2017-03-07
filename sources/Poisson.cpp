@@ -25,11 +25,9 @@
 #include <windows.h>
 #endif
 
-#include "mesh_def.h"
-#include <vcg/math/matrix44.h>
-
-namespace pf 
-{
+//namespace pf 
+//{
+#include <cstdio>
 	#include "MyTime.h"
 	#include "MemoryUsage.h"
 	#include "MarchingCubes.h"
@@ -39,9 +37,8 @@ namespace pf
 	#include "Ply.h"
 	#include "PointStream.h"
 	#include "MultiGridOctreeData.h"
-}
-#include <stdlib.h>
-
+//}
+#include "mesh_def.h"
 
 
 #ifdef TESTING
@@ -49,7 +46,7 @@ namespace pf
 #include <wrap/io_trimesh/export.h>
 #endif
 
-using namespace pf;
+//using namespace pf;
 typedef vcg::Box3<float>     Box3m;
 
 /*
