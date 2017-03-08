@@ -292,7 +292,94 @@ void SplitLongEdges(MyMesh &m, Params &params)
     printf("Adapt %c length %f  lengthThr %f\n",ep.adapt?'Y':'N',ep.length,ep.lengthThr);
     printf("Split done: splitted %d edges\n",ep.count);
 }
+inline bool checkFace(MyPos &p, MyPos &pi, Point3f &mp, float targetLength, float maxLength=0, bool relaxed=false)
+{
+    MyVertex *v0 = pi.V();
+    MyVertex *v1 = pi.F()->V1(pi.VInd());
+    MyVertex *v2 = pi.F()->V2(pi.VInd());
 
+    if(v1 == p.VFlip() || v2 == p.VFlip()) //i'm the other deleted face
+//        continue;
+        return true;
+
+    float area = DoubleArea(*(pi.F()))/2.f;
+
+    //quality and normal divergence checks
+    float newQ = Quality(mp, v1->P(), v2->P());
+    float oldQ = Quality(v0->P(), v1->P(), v2->P());
+
+    if(newQ <= 0.5*oldQ && area >= targetLength/100.f)
+        return false;
+
+    Point3f oldN = NormalizedTriangleNormal(*(pi.F()));
+    Point3f newN = Normal(mp, v1->P(), v2->P()).Normalize();
+    float div = fastAngle(oldN, newN);
+    float thr = math::Cos(math::ToRad(2.5f));
+
+    if(div <= thr && div >= -thr && area >= targetLength/100.f)
+        return false;
+
+    //here if the vertex is a cross vert we skip the check on length, to ease the collapsing of crosses
+    if(!relaxed)
+        if((Distance(mp, v1->P()) > maxLength || Distance(mp, v2->P()) > maxLength) && area >= targetLength/100.f)
+            return false;
+   return true;
+}
+
+bool geometricCheckCollapse(MyPos &p, Point3f &mp, float targetLength, float maxLength=0, bool relaxed=false)
+{//recall p is the pos on mp
+    Point3f collapsedEdgeNV = (p.V()->P() - p.VFlip()->P()).Normalize();
+    Point3f NV0, NV1, NE0;
+    targetLength *= targetLength;
+
+    vector<MyFace*> ff;
+    vector<int> vi;
+
+    face::VFStarVF<MyFace>(p.V(), ff, vi);
+
+    for(MyFace *f: ff)
+        if(!(*f).IsD() && f != p.F()) //i'm not a deleted face
+        {
+            MyPos pi(f, p.V()); //same vertex
+            if(pi.VFlip()->IsB())
+                NV1 = pi.VFlip()->P();
+
+            if(!checkFace(p, pi, mp, targetLength, maxLength, relaxed))
+                return false;
+        }
+
+    p.FlipV();
+    face::VFStarVF<MyFace>(p.V(), ff, vi);
+
+    for(MyFace *f: ff)
+        if(!(*f).IsD() && f != p.F()) //i'm not a deleted face
+        {
+            MyPos pi(f, p.V()); //same vertex on incident face
+            if(pi.V()->IsB() && pi.VFlip()->IsB())
+            {
+                NV0 = pi.VFlip()->P();
+                NE0 = (pi.V()->P() - pi.VFlip()->P()).normalized();
+            }
+
+            if(!checkFace(p, pi, mp, targetLength, maxLength, relaxed))
+                return false;
+        }
+
+    if(p.V()->IsB() && p.VFlip()->IsB()) //check border geometry preservation
+    {
+//        float oldAngle = AngleN(collapsedEdgeNV, (NV1 - mp).Normalize());
+//        float newAngle = AngleN((NV0 - mp).Normalize(), (NV1 - mp).Normalize());
+//        if(fabs(oldAngle - newAngle) >= math::ToRad(2.f))
+//            return false;
+//        else
+//            printf("passed border check\n");
+        float cosine = math::Cos(math::ToRad(5.5f));
+        float angle  = AngleN(collapsedEdgeNV, (NV0-mp).normalized());
+        return fabs(fastAngle(collapsedEdgeNV, (NV0-mp).normalized())) >= cosine;
+        return math::ToDeg(fabs(angle)) <= 2.5f;
+    }
+    return true;
+}
 //Geometric check on feasibility of the collapse.
 //The check fails if:
 //  -new face has too bad quality.
@@ -347,7 +434,7 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float targetLength, float maxLe
 
 // Collapse test: Usual collapse test (check on target length) plus borders and crease handling
 // and adaptivity.
-bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
+bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params, bool relaxed = false)
 {
     float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
@@ -355,17 +442,47 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params)
     float area = DoubleArea(*(p.F()))/2.f;
     if(dist < thr || area < params.minLength*params.minLength/100.f)//if to collapse
     {
-        if(!checkFacesAroundVert(p, mp, params.minLength ,mult*params.maxLength))
+//        return geometricCheckCollapse(p, mp, params.minLength, mult*params.maxLength);
+        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength, relaxed))
             return false;
 
         p.FlipV();
 
-        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength))
+        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength, relaxed))
             return false;
 
         return true;
     }
     return false;
+}
+bool chooseBoundaryCollapse(MyPos &p, MyPair &pair)
+{
+    Point3f collapseNV, NV0, NV1;
+    collapseNV = (p.V()->P() - p.VFlip()->P()).normalized();
+
+    vector<MyVertex*> vv;
+    face::VVStarVF<MyFace>(p.V(), vv);
+
+    for(MyVertex *v: vv)
+        if(!(*v).IsD() && (*v).IsB()) //ignore non border
+            NV0 = ((*v).P() - p.V()->P()).normalized();
+
+    face::VVStarVF<MyFace>(p.VFlip(), vv);
+
+    for(MyVertex *v: vv)
+        if(!(*v).IsD() && (*v).IsB()) //ignore non border
+            NV1 = ((*v).P() - p.VFlip()->P()).normalized();
+
+    float cosine = math::Cos(math::ToRad(.5f));
+    float angle0 = fabs(fastAngle(collapseNV, NV0));
+    float angle1 = fabs(fastAngle(collapseNV, NV1));
+
+    if(angle0 < cosine && angle1 < cosine)
+        return false;
+
+    pair = (angle0 >= cosine) ? MyPair(p.V(), p.VFlip()) : MyPair(p.VFlip(), p.V());
+    return true;
+
 }
 //The actual collapse step: foreach edge it is collapse iff TestCollapse returns true AND
 // the linkConditions are preserved
@@ -386,19 +503,32 @@ void CollapseShortEdges(MyMesh &m, Params &params)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.V()->IsB() && !pi.VFlip()->IsB())
-                {
-                    ++candidates;
-                    MyPair bp(pi.V(), pi.VFlip());
-                    Point3f mp = (bp.V(1)->P()+bp.V(0)->P())/2.f;
 
-                    if(testCollapse(pi, mp, minQ, maxQ, params) && MyCollapser::LinkConditions(bp))
-                    {
-                        MyCollapser::Do(m, bp, mp);
-                        ++count;
-                        break;
-                    }
+                ++candidates;
+                Point3f mp;
+                MyPair bp;
+                bool boundary = false;
+
+                if(pi.V()->IsB() == pi.VFlip()->IsB())
+                {
+                    if(pi.V()->IsB() && !(boundary = chooseBoundaryCollapse(pi, bp)))
+                        continue;
+                    if(!pi.V()->IsB())
+                        bp = MyPair(pi.V(), pi.VFlip());
+
+                    mp = (pi.V()->IsB()) ? bp.V(1)->P() : (pi.V()->P()+pi.VFlip()->P())/2.f;
+                } else {
+                    bp = (pi.V()->IsB()) ? MyPair(pi.VFlip(), pi.V()) : MyPair(pi.V(), pi.VFlip());
+                    mp = (pi.V()->IsB()) ? pi.V()->P() : pi.VFlip()->P();
                 }
+
+                if(testCollapse(pi, mp, minQ, maxQ, params, boundary) && MyCollapser::LinkConditions(bp))
+                {
+                    MyCollapser::Do(m, bp, mp);
+                    ++count;
+                    break;
+                }
+
             }
         }
     printf("Collapses (candidate/done): %d %d \n", candidates, count);
