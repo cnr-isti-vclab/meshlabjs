@@ -332,21 +332,22 @@ bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params,
     float area = DoubleArea(*(p.F()))/2.f;
     if(dist < thr || area < params.minLength*params.minLength/100.f)//if to collapse
     {
-        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength, relaxed))
+        MyPos pp = p; p.FlipV();
+        //check all faces around p() and p.vflip()
+        if(!checkFacesAroundVert(pp, mp, params.minLength, mult*params.maxLength, relaxed) ||
+                !checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength, relaxed))
             return false;
-
-        p.FlipV();
-
-        if(!checkFacesAroundVert(p, mp, params.minLength, mult*params.maxLength, relaxed))
-            return false;
-
-        return true;
+        else
+            return true;
     }
     return false;
 }
+
+//This function is especially useful to enforce feature preservation during collapses
+//of boundary edges in planar or near planar section of the mesh
 bool chooseBoundaryCollapse(MyPos &p, MyPair &pair)
 {
-    Point3f collapseNV, collapsedNV0, collapsedNV1, NV0, NV1;
+    Point3f collapseNV, collapsedNV0, collapsedNV1;
     collapseNV = (p.V()->P() - p.VFlip()->P()).normalized();
 
     vector<MyVertex*> vv;
@@ -354,27 +355,21 @@ bool chooseBoundaryCollapse(MyPos &p, MyPair &pair)
 
     for(MyVertex *v: vv)
         if(!(*v).IsD() && (*v).IsB()) //ignore non border
-        {
-            collapsedNV0 = ((*v).P() - p.VFlip()->P()).normalized();
-            NV0 = ((*v).P() - p.V()->P()).normalized();
-        }
+            collapsedNV0 = ((*v).P() - p.VFlip()->P()).normalized(); //edge vector after collapse
 
     face::VVStarVF<MyFace>(p.VFlip(), vv);
 
     for(MyVertex *v: vv)
         if(!(*v).IsD() && (*v).IsB()) //ignore non border
-        {
-            collapsedNV1 = ((*v).P() - p.V()->P()).normalized(); //vettore edge after
-            NV1 = ((*v).P() - p.VFlip()->P()).normalized(); //vettore edge attuale
-        }
+            collapsedNV1 = ((*v).P() - p.V()->P()).normalized(); //edge vector after collapse
 
-    float cosine = cos(math::ToRad(2.5f));
+    float cosine = cos(math::ToRad(1.5f));
     float angle0 = fabs(fastAngle(collapseNV, collapsedNV0));
     float angle1 = fabs(fastAngle(collapseNV, collapsedNV1));
-
+    //if on both sides we deviate too much after collapse => don't collapse
     if(angle0 <= cosine && angle1 <= cosine)
         return false;
-    //if edge from nv0 is more parallel than edge from nv1..
+    //choose the best collapse (the more parallel one to the previous edge..)
     pair = (angle0 >= angle1) ? MyPair(p.V(), p.VFlip()) : MyPair(p.VFlip(), p.V());
     return true;
 
@@ -502,27 +497,6 @@ void CollapseCrosses(MyMesh &m , Params &params)
     tri::UpdateTopology<MyMesh>::VertexFace(m);
     int count = 0;
 
-//    forEachFacePos(m, [&](MyFace &f, MyPos &p, int i){
-//        if(!p.V()->IsB() && !f.V1(p.VInd())->IsB() && !f.V2(p.VInd())->IsB())
-//        {
-//            vector<MyFace*> ff;
-//            vector<int> vi;
-//            face::VFStarVF<MyFace>(p.V(), ff, vi);
-
-//            //removing crosses only
-//            if(ff.size() == 4)
-//            {
-//                MyPair bp  = chooseBestCrossCollapse(p, ff);
-//                Point3f mp = bp.V(1)->P();
-//                if(testCrossCollapse(p, mp) && MyCollapser::LinkConditions(bp))
-//                {
-//                    MyCollapser::Do(m, bp, mp);
-//                    ++count;
-//                    break;
-//                }
-//            }
-//        }
-//    });
     for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
         if(!(*fi).IsD())
         {
