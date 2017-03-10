@@ -86,7 +86,6 @@ struct MemoryInfo
 {
 	static size_t Usage( void )
 	{
-    printf("AAAAAA");
 		return 0;
 	}
 };
