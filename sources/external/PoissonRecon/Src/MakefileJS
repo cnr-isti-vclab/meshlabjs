@@ -8,13 +8,12 @@ CC=emcc
 # -s DEMANGLE_SUPPORT=1 More consistent naming of the cpp functions is preserved 
 #           in asm.js. Useful for cpp stacktrace inside the browser. 
 
-CFLAGS=-I.  -I ../../include/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind -O3 -s ASSERTIONS=1 
+CFLAGS=-I.  -I ../../include/  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind -O3
 
 OBJ = poissonLib.bc
 
 poissonLib.bc: PlyFile.cpp Factor.cpp Geometry.cpp MarchingCubes.cpp
 	$(CC) -o ../../../lib/$@  $^ $(CFLAGS)  -s LINKABLE=1
-	
 
 clean:
 	rm -f *.bc 
