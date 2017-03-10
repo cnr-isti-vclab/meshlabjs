@@ -29,10 +29,10 @@ LIBS = lib/muparserLib.bc lib/poissonLib.bc
 MeshLabCppCore.js: $(OBJ) $(LIBS)
 	$(CC) -o ../js/generated/$@ $^ $(CFLAGS)	-O3
 
-FuncParser.bc : FuncParser.cpp 
+FuncParser.bc : FuncParser.cpp lib/muparserLib.bc
 	$(CC) -o $@ $< $(CFLAGS) -I external/muparser-2.2.5/include 
 
-Poisson.bc : Poisson.cpp 
+Poisson.bc : Poisson.cpp lib/poissonLib.bc
 	$(CC) -o $@ $< $(CFLAGS) -I external/PoissonRecon/Src 
 
 lib/muparserLib.bc: 

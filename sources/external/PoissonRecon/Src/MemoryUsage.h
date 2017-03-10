@@ -42,9 +42,56 @@ struct MemoryInfo
 	}
 };
 
-#else // !_WIN32 && !_WIN64
+#elif defined(__APPLE__)               // Linux variants
+// Thanks to David O'Gwynn for providing this fix.
+// This comes from a post by Michael Knight:
+//
+// http://miknight.blogspot.com/2005/11/resident-set-size-in-mac-os-x.html
 
-#ifndef __APPLE__               // Linux variants
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <mach/task.h>
+#include <mach/mach_init.h>
+
+void getres(task_t task, unsigned long *rss, unsigned long *vs)
+{
+    struct task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+    task_info(task, TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count);
+    *rss = t_info.resident_size;
+    *vs = t_info.virtual_size;
+}
+
+class MemoryInfo
+{
+ public:
+  static size_t Usage(void)
+  {
+    unsigned long rss, vs, psize;
+    task_t task = MACH_PORT_NULL;
+
+    if (task_for_pid(current_task(), getpid(), &task) != KERN_SUCCESS)
+        abort();
+    getres(task, &rss, &vs);
+    return rss;
+  }
+
+};
+#elif defined(__EMSCRIPTEN__) 
+struct MemoryInfo
+{
+	static size_t Usage( void )
+	{
+    printf("AAAAAA");
+		return 0;
+	}
+};
+
+#else // All Failed so it could be some linux variant
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -117,49 +164,5 @@ policy %lu (since kernel 2.5.19)
 	}
 
 };
-#else // __APPLE__: has no "/proc" pseudo-file system
-
-// Thanks to David O'Gwynn for providing this fix.
-// This comes from a post by Michael Knight:
-//
-// http://miknight.blogspot.com/2005/11/resident-set-size-in-mac-os-x.html
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#include <mach/task.h>
-#include <mach/mach_init.h>
-
-void getres(task_t task, unsigned long *rss, unsigned long *vs)
-{
-    struct task_basic_info t_info;
-    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-
-    task_info(task, TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count);
-    *rss = t_info.resident_size;
-    *vs = t_info.virtual_size;
-}
-
-class MemoryInfo
-{
- public:
-  static size_t Usage(void)
-  {
-    unsigned long rss, vs, psize;
-    task_t task = MACH_PORT_NULL;
-
-    if (task_for_pid(current_task(), getpid(), &task) != KERN_SUCCESS)
-        abort();
-    getres(task, &rss, &vs);
-    return rss;
-  }
-
-};
-
-#endif // !__APPLE__  
-
-#endif // _WIN32 || _WIN64
-
+#endif 
 #endif // MEMORY_USAGE_INCLUDE
