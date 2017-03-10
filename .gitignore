@@ -1,7 +1,7 @@
 
-sources/*.o
-sources/*.bc
-sources/muparser-2.2.5/src/*.bc
+/sources/*.o
+/sources/*.bc
+!/sources/lib/*.bc
 
 sources/FilterTest.pro.user
 sources/.qmake.stash
@@ -14,16 +14,12 @@ doc/html/
 
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
+
 build-*/
 *.pdb
-sources/x64/Debug/Refine.obj
-*.obj
 *.tlog
-sources/.vs
-.vscode
-sources/debug
-sources/FilterTest/*.vcxproj
+/sources/.vs
+/sources/debug
+/sources/*.obj
+*.vscode
 *.vcxproj
-sources/FilterTest.vcxproj
-sources/filter_screened_poisson_ml/Src/poissonLib.bc
-sources/FilterTest.VC.db
