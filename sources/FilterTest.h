@@ -9,6 +9,6 @@ void SamplingPluginTEST();
 void SelectionPluginTEST();
 void TransformPluginTEST();
 void PoissonPluginTEST();
-
+void FuncParserPluginTEST();
 #endif // FILTERTEST_H
 

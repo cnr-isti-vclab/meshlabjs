@@ -507,37 +507,13 @@ bool PoissonSurfaceRecontruction(uintptr_t _baseM, uintptr_t p, int octDepth, in
 }
 
 
-#ifdef TESTING
 void PoissonPluginTEST()
 {
-
-	MyMesh m;
-	int loadmask = 0;
-	m.tr.SetIdentity();
-	string fileName = "E:/xampp/htdocs/Repo/test/in.ply";
-	m.meshName = fileName;
-
-	//printf("Starting POISSON PLUGIN TEST on %s", fileName);
-
-	int ret = vcg::tri::io::Importer<MyMesh>::Open(m, fileName.c_str(), loadmask);
-
-
-	if (ret != 0)
-	{
-		printf("Error opening file\n");
-		return;
-	}
-
-	MyMesh out;
-	PoissonSurfaceRecontruction(uintptr_t(&m), uintptr_t(&out));
-	string outFileName = "E:/xampp/htdocs/Repo/test/out.ply";
-	//out.tr.SetIdentity();
-	ret = vcg::tri::io::Exporter<MyMesh>::Save(out, outFileName.c_str(), loadmask);
-	if (ret != 0) { printf("Error in saving file\n"); }
-
-	printf("END\n");
+  MyMesh m;
+  Torus(m,3,1,60,30);
+  MyMesh out;
+  PoissonSurfaceRecontruction(uintptr_t(&m), uintptr_t(&out),6,6,1.5);
 }
-#endif
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(PoissonFilterPlugin) {
