@@ -1,6 +1,6 @@
 /****************************************************************************
 * MeshLab                                                           o o     *
-* A versatile mesh processing toolbox                             o     o   *
+* A versatile mesh processing toolbox				  o     o   *
 *                                                                _   O  _   *
 * Copyright(C) 2005                                                \/)\/    *
 * Visual Computing Lab                                            /\/|      *
@@ -8,7 +8,7 @@
 *                                                                    \      *
 * All rights reserved.                                                      *
 *                                                                           *
-* This program is free software; you can redistribute it and/or modify      *
+* This program is free software; you can redistribute it and/or modify 	    *
 * it under the terms of the GNU General Public License as published by      *
 * the Free Software Foundation; either version 2 of the License, or         *
 * (at your option) any later version.                                       *
@@ -25,21 +25,18 @@
 #include <windows.h>
 #endif
 
-//namespace pf 
-//{
 #include <cstdio>
+	
 	#include "MyTime.h"
 	#include "MemoryUsage.h"
 	#include "MarchingCubes.h"
 	#include "Octree.h"
 	#include "SparseMatrix.h"
 	#include "PPolynomial.h"
-	#include "Ply.h"
 	#include "PointStream.h"
 	#include "MultiGridOctreeData.h"
-//}
-#include "mesh_def.h"
 
+#include "mesh_def.h"
 
 #ifdef TESTING
 #include <wrap/io_trimesh/import.h>
