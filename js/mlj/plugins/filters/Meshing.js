@@ -284,7 +284,8 @@
         absoluteThrWidget = builder.RangedFloat({
             min: 0.1, max: 5, step: 0.1, defval: 2,
             label: "Minimum Threshold",
-            tooltip: "This is the minimum length threshold for the edges" +
+            tooltip: "This defines the hard limit for the edge length after a split." +
+            " It is useful during adaptive remeshing to avoid the generation of too small edges in high curvature regions" +
             " (expressed in percentage of the BBOX diagonal length)."
         });
         projMeshWidget = builder.LayerSelection({

@@ -21,7 +21,6 @@ typedef  MyMesh::PerVertexAttributeHandle<int> CornerMap;
 
 namespace isoremesh
 {
-
 struct Params {
     float maxLength;
     float minLength;
@@ -393,10 +392,10 @@ void CollapseShortEdges(MyMesh &m, Params &params)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-
+                //TODO: REFACTOR ME ...CODE IS UGLY...
                 ++candidates;
-                Point3f mp;
-                MyPair bp = MyPair(pi.V(), pi.VFlip());
+                MyPair  bp = MyPair(pi.V(), pi.VFlip());
+                Point3f mp = (pi.V()->P()+pi.VFlip()->P())/2.f;;
                 bool boundary = false;
 
                 if(pi.V()->IsB() == pi.VFlip()->IsB())
@@ -546,7 +545,6 @@ int selectVertexFromCrease(MyMesh &m, float creaseThr)
     
     return count;
 }
-
 /*
     Simple Laplacian Smoothing step - Border and crease vertices are ignored.
 */
@@ -581,5 +579,4 @@ void ProjectToSurface(MyMesh &m, MyGrid t, FaceTmark<MyMesh> mark)
         }
     printf("projected %d\n", cnt);
 }
-
 }
