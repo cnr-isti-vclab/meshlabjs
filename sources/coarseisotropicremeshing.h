@@ -502,7 +502,7 @@ void CollapseCrosses(MyMesh &m , Params &params)
             for(auto i=0; i<3; ++i)
             {
                 MyPos pi(&*fi, i);
-                if(!pi.V()->IsB() && !pi.F()->V1(pi.VInd())->IsB() && !pi.F()->V2(pi.VInd())->IsB())
+                if(!pi.V()->IsB())
                 {
                     vector<MyFace*> ff;
                     vector<int> vi;
