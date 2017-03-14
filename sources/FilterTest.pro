@@ -37,6 +37,7 @@ SOURCES += FilterTest.cpp \
 
 HEADERS += mesh_def.h \
     FilterTest.h \
+    coarseisotropicremeshing.h \
     filter_screened_poisson_ml/Src/Allocator.h \
     filter_screened_poisson_ml/Src/Array.h \
     filter_screened_poisson_ml/Src/BinaryNode.h \
@@ -74,5 +75,5 @@ HEADERS += mesh_def.h \
     muparser-2.2.5/include/muParserToken.h \
     muparser-2.2.5/include/muParserTokenReader.h \
     ColorHistogram.h
-    coarseisotropicremeshing.h
+
 
