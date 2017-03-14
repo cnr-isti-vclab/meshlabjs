@@ -9,8 +9,6 @@
 #include<vcg/complex/algorithms/hole.h>
 #include<vcg/complex/algorithms/pointcloud_normal.h>
 
-#include <muParser.h>
-
 #include<CoarseIsotropicRemeshing.h>
 
 using namespace vcg;
