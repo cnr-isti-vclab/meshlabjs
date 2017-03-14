@@ -1,4 +1,4 @@
-
+*.bc
 /sources/*.o
 /sources/*.bc
 !/sources/lib/*.bc
