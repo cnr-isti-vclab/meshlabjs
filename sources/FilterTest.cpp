@@ -16,6 +16,7 @@ bool IsWaterTight(MyMesh &m)
 
 int main(int /*argc*/, char*/*argv*/[])
 {
+  PoissonPluginTEST();
   CreatePluginTEST();
   MeshingPluginTEST();
   MeasurePluginTEST();

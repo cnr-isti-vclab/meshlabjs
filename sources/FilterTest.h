@@ -8,6 +8,7 @@ void RefinePluginTEST();
 void SamplingPluginTEST();
 void SelectionPluginTEST();
 void TransformPluginTEST();
+void PoissonPluginTEST();
 
 #endif // FILTERTEST_H
 
