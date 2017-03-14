@@ -10,6 +10,7 @@
 #include<vcg/complex/algorithms/pointcloud_normal.h>
 
 #include<CoarseIsotropicRemeshing.h>
+#include<muParser.h>
 
 using namespace vcg;
 using namespace std;
