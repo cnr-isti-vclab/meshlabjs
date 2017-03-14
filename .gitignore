@@ -1,7 +1,7 @@
 
-sources/*.o
-sources/*.bc
-sources/muparser-2.2.5/src/*.bc
+/sources/*.o
+/sources/*.bc
+!/sources/lib/*.bc
 
 sources/FilterTest.pro.user
 sources/.qmake.stash
@@ -14,4 +14,12 @@ doc/html/
 
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
+
 build-*/
+*.pdb
+*.tlog
+/sources/.vs
+/sources/debug
+/sources/*.obj
+*.vscode
+*.vcxproj
