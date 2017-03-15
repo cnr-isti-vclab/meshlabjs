@@ -289,6 +289,9 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     tri::Clean<MyMesh>::RemoveUnreferencedVertex(m);
     Allocator<MyMesh>::CompactEveryVector(m);
 
+    m.UpdateBoxAndNormals();
+    toProject.UpdateBoxAndNormals();
+
     //Updating box before constructing the grid, otherwise we get weird results
     collapseThr *= (m.bbox.Diag()/100);
     splitThr    *= (m.bbox.Diag()/100);
@@ -296,9 +299,6 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     printf("Collapse Thr: %8.3f on %5.3f\n",collapseThr,m.bbox.Diag());
     printf("Split    Thr: %8.3f on %5.3f\n",splitThr,m.bbox.Diag());
     printf("Absolute Thr: %8.3f on %5.3f\n",absoluteThr,m.bbox.Diag());
-    //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
-    m.UpdateBoxAndNormals();
-    toProject.UpdateBoxAndNormals();
 
     IsotropicRemesher<MyMesh>::Params params(iter, split, collapse, swap, adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
     IsotropicRemesher<MyMesh>::Do(m, toProject, params);
