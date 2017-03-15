@@ -241,7 +241,7 @@ void ProjectToSurfaceFilter(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM,
     maxDist *= diag;
 
     projMesh.UpdateBoxAndNormals();
-    MyGrid t;
+    GridStaticPtr<MyFace, MyFace::VertexType::ScalarType> t;
     t.Set(projMesh.face.begin(), projMesh.face.end());
     tri::FaceTmark<MyMesh> mark;
     mark.SetMesh(&projMesh);
@@ -290,7 +290,6 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     Allocator<MyMesh>::CompactEveryVector(m);
 
     //Updating box before constructing the grid, otherwise we get weird results
-    m.UpdateBoxAndNormals();
     collapseThr *= (m.bbox.Diag()/100);
     splitThr    *= (m.bbox.Diag()/100);
     absoluteThr *= (m.bbox.Diag()/100);
@@ -298,43 +297,11 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     printf("Split    Thr: %8.3f on %5.3f\n",splitThr,m.bbox.Diag());
     printf("Absolute Thr: %8.3f on %5.3f\n",absoluteThr,m.bbox.Diag());
     //Build a uniform grid with the orignal mesh. Needed to apply the reprojection step.
+    m.UpdateBoxAndNormals();
     toProject.UpdateBoxAndNormals();
-    MyGrid t;
-    t.Set(toProject.face.begin(), toProject.face.end());
-    tri::FaceTmark<MyMesh> mark;
-    mark.SetMesh(&toProject);
 
-    tri::UpdateTopology<MyMesh>::FaceFace(m);
-    tri::UpdateFlags<MyMesh>::VertexBorderFromFaceAdj(m);
-
-    /* Manifold(ness) check*/
-    if(tri::Clean<MyMesh>::CountNonManifoldEdgeFF(m) != 0 ||
-            tri::Clean<MyMesh>::CountNonManifoldVertexFF(m) != 0)
-    {
-        printf("Input mesh is non-manifold, manifoldness is required!\nInterrupting filter");
-        return false;
-    }
-
-    tri::UpdateTopology<MyMesh>::VertexFace(m);
-    isoremesh::computeQuality(m);
-    tri::UpdateQuality<MyMesh>::VertexSaturate(m);
-
-    isoremesh::Params params(adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
-
-    for(int i=0; i < iter; ++i)
-    {
-        printf("iter %d \n", i+1);
-        if(split)
-            isoremesh::SplitLongEdges(m, params);
-        if(collapse)
-            isoremesh::CollapseShortEdges(m, params);
-        if(swap)
-            isoremesh::ImproveValence(m, params);
-
-        isoremesh::CollapseCrosses(m, params);
-        isoremesh::ImproveByLaplacian(m, params);
-        isoremesh::ProjectToSurface(m, t, mark);
-    }
+    IsotropicRemesher<MyMesh>::Params params(iter, split, collapse, swap, adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
+    IsotropicRemesher<MyMesh>::Do(m, toProject, params);
 
     m.UpdateBoxAndNormals();
     return true;
