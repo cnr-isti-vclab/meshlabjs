@@ -34,12 +34,6 @@ struct Params {
     {}
 };
 
-// My lerp (vcg does not implement lerp on scalars as of 30-01-2017)
-inline float lerp (float a, float b, float lambda)
-{
-    math::Clamp(lambda, 0.f, 1.f);
-    return a * lambda + (1-lambda) * b;
-}
 // this returns the value of cos(a) where a is the angle between n0 and n1. (scalar prod is cos(a))
 inline float fastAngle(Point3f n0, Point3f n1)
 {
@@ -126,6 +120,19 @@ inline int idealValence(MyVertex &v)
 {
     if(v.IsB()) return 4;
     return 6;
+}
+
+inline int idealValenceSlow(MyPos &p)
+{
+  std::vector<MyPos> posVec;
+  VFOrderedStarFF(p,posVec);
+  float angleSumRad =0;
+  for(MyPos &ip : posVec)
+  {
+    angleSumRad += ip.AngleRad();
+  }
+  
+  return (int)(std::ceil(angleSumRad / (M_PI/3.0f))); 
 }
 
 float computeMeanValence(MyMesh &m)
@@ -235,7 +242,7 @@ public:
     bool adapt;
     bool operator()(MyPos &ep)
     {
-        float mult = (adapt)? lerp(0.5f, 1.5f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
+        float mult = (adapt)? math::ClampedLerp(0.5f, 1.5f, (((math::Abs(ep.V()->Q())+math::Abs(ep.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
         float dist = Distance(ep.V()->P(), ep.VFlip()->P());
         if(dist > std::max(mult*length,lengthThr*2))
         {
@@ -325,7 +332,7 @@ bool checkFacesAroundVert(MyPos &p, Point3f &mp, float targetLength, float maxLe
 // and adaptivity.
 bool testCollapse(MyPos &p, Point3f &mp, float minQ, float maxQ, Params &params, bool relaxed = false)
 {
-    float mult = (params.adapt) ? lerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
+    float mult = (params.adapt) ? math::ClampedLerp(0.5f, 1.5f, (((math::Abs(p.V()->Q())+math::Abs(p.VFlip()->Q()))/2.f)/(maxQ-minQ))) : 1.f;
     float dist = Distance(p.V()->P(), p.VFlip()->P());
     float thr = mult*params.minLength;
     float area = DoubleArea(*(p.F()))/2.f;
