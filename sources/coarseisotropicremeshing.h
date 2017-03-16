@@ -527,10 +527,10 @@ private:
                         vector<int> vi;
                         face::VFStarVF<FaceType>(pi.V(), ff, vi);
 
-                        //removing crosses only
-                        if(ff.size() == 4)
+                        //removing crosses and tricuspidis only
+                        if(ff.size() == 4 || ff.size() == 3)
                         {
-                            VertexPair bp  = chooseBestCrossCollapse(pi, ff);
+                            VertexPair bp  = (ff.size() == 4) ? chooseBestCrossCollapse(pi, ff) : VertexPair(pi.V(), pi.VFlip());
                             Point3<ScalarType> mp = bp.V(1)->P();
                             //todo: think about if you should try doing the other collapse if test or link fails for this one
                             if(testCrossCollapse(pi, mp, params) && Collapser::LinkConditions(bp))
