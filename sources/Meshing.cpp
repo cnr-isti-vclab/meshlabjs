@@ -8,8 +8,8 @@
 #include<vcg/complex/algorithms/curve_on_manifold.h>
 #include<vcg/complex/algorithms/hole.h>
 #include<vcg/complex/algorithms/pointcloud_normal.h>
+#include<vcg/complex/algorithms/isotropic_remeshing.h>
 
-#include<CoarseIsotropicRemeshing.h>
 #include<muParser.h>
 
 using namespace vcg;
@@ -300,8 +300,13 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     printf("Split    Thr: %8.3f on %5.3f\n",splitThr,m.bbox.Diag());
     printf("Absolute Thr: %8.3f on %5.3f\n",absoluteThr,m.bbox.Diag());
 
-    IsotropicRemesher<MyMesh>::Params params(iter, split, collapse, swap, adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
-    IsotropicRemesher<MyMesh>::Do(m, toProject, params);
+    //tri::IsotropicRemeshing<MyMesh>::Params params(iter, split, collapse, swap, adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
+    tri::IsotropicRemeshing<MyMesh>::Params params;
+    params.minLength = collapseThr;
+    params.maxLength = splitThr;
+    params.lengthThr = absoluteThr;
+    params.iter = iter;
+    tri::IsotropicRemeshing<MyMesh>::Do(m, toProject, params);
 
     m.UpdateBoxAndNormals();
     return true;

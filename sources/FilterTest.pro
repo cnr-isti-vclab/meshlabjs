@@ -3,7 +3,7 @@ INCLUDEPATH += . ../../vcglib ../../vcglib/eigenlib
 CONFIG += console stl c++11
 
 #CONFIG += POISSON 
-#CONFIG += MUPARSER
+CONFIG += MUPARSER
 
 TEMPLATE = app
 # Mac specific Config required to avoid to make application bundles
