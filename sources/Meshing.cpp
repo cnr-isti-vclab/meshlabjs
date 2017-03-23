@@ -258,27 +258,8 @@ void ProjectToSurfaceFilter(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM,
     m.UpdateBoxAndNormals();
 }
 
-void ProjectToParametricFilter(uintptr_t _baseM, uintptr_t _newM, std::string funcStr)
-{
-    MyMesh &mesh = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM);
-    vcg::tri::Append<MyMesh,MyMesh>::MeshCopy(m,mesh);
-
-    double x,y;
-    mu::Parser pz; pz.DefineVar("x", &x); pz.DefineVar("y", &y);
-    pz.SetExpr(funcStr);
-
-    for(auto vi=m.vert.begin();vi!=m.vert.end();++vi)
-        if(!(*vi).IsD())
-        {
-            Point3f vp = vi->P();
-            x = vp.X(); y = vp.Y();
-            vi->P() = Point3f(x, y, pz.Eval());
-        }
-    m.UpdateBoxAndNormals();
-}
-
 bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _projM, int iter, bool adapt,
-                              bool split, bool collapse, bool swap, float creaseDeg, float collapseThr, float splitThr, float absoluteThr)
+                             /* bool split, bool collapse, bool swap, */float creaseDeg, float collapseThr, float splitThr, float absoluteThr)
 {
     MyMesh &original = *((MyMesh*) _baseM), &m = *((MyMesh*) _newM), &toProject = *((MyMesh*) _projM);
 
@@ -305,6 +286,8 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     params.minLength = collapseThr;
     params.maxLength = splitThr;
     params.lengthThr = absoluteThr;
+    params.adapt = adapt;
+    params.SetFeatureAngleDeg(creaseDeg);
     params.iter = iter;
     tri::IsotropicRemeshing<MyMesh>::Do(m, toProject, params);
 
@@ -381,7 +364,7 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("HoleFilling",                &HoleFilling);
     emscripten::function("CoarseIsotropicRemeshing",   &CoarseIsotropicRemeshing);
     emscripten::function("ProjectToSurfaceFilter",     &ProjectToSurfaceFilter);
-    emscripten::function("ProjectToParametricFilter",  &ProjectToParametricFilter);
+//    emscripten::function("ProjectToParametricFilter",  &ProjectToParametricFilter);
     emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif

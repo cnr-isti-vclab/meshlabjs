@@ -249,21 +249,21 @@
             label: "Adaptive",
             tooltip: "Toggles adaptive isotropic remeshing"
         });
-        splitWidget = builder.Bool({
-            defval: true,
-            label: "DEBUG: spli",
-            tooltip: "Toggles laplacian smooth"
-        });
-        collapseWidget = builder.Bool({
-            defval: true,
-            label: "DEBUG: col",
-            tooltip: "Toggles projection step"
-        });
-        swapWidget = builder.Bool({
-            defval: true,
-            label: "Edge Swap step",
-            tooltip: "Toggles the edge swapping step in the remeshing loop"
-        });
+        // splitWidget = builder.Bool({
+        //     defval: true,
+        //     label: "DEBUG: spli",
+        //     tooltip: "Toggles laplacian smooth"
+        // });
+        // collapseWidget = builder.Bool({
+        //     defval: true,
+        //     label: "DEBUG: col",
+        //     tooltip: "Toggles projection step"
+        // });
+        // swapWidget = builder.Bool({
+        //     defval: true,
+        //     label: "Edge Swap step",
+        //     tooltip: "Toggles the edge swapping step in the remeshing loop"
+        // });
         creaseThrWidget = builder.RangedFloat({
             min: 1, max: 90, step: 0.1, defval: 30,
             label: "Crease Threshold",
@@ -305,9 +305,9 @@
             projMeshWidget.getSelectedPtrMesh(),
             iterNumWidget.getValue(),
             adaptiveWidget.getValue(),
-            splitWidget.getValue(),
-            collapseWidget.getValue(),
-            swapWidget.getValue(),
+            // splitWidget.getValue(),
+            // collapseWidget.getValue(),
+            // swapWidget.getValue(),
             creaseThrWidget.getValue(),
             collapseThrWidget.getValue(),
             splitThrWidget.getValue(),
@@ -349,31 +349,6 @@
             projMeshWidget.getSelectedPtrMesh(),
             minDistWidget.getValue(),
             maxDistWidget.getValue()
-        );
-        scene.addLayer(newmeshFile);
-    };
-    /******************************************************************************/
-    var ProjectToParametric = new plugin.Filter({
-        name: "Project to parametric surface",
-        tooltip: "Project the current mesh vertices on the parametric surface",
-        arity: 1
-    });
-    var funcWidget;
-    ProjectToParametric._init = function (builder) {
-        funcWidget = builder.String({
-            label: "",
-            tooltip: "This expression is evaluated on all the vertices to find the z-value",
-            defval: "cos(x)*cos(x) + sin(y)*sin(y)"
-        });
-    };
-
-    ProjectToParametric._applyTo = function (basemeshFile) {
-        var name = basemeshFile.name.replace("Projection of ", "");
-        var newmeshFile = MLJ.core.Scene.createLayer("Projection of " + name);
-        Module.ProjectToParametricFilter(
-            basemeshFile.ptrMesh(),
-            newmeshFile.ptrMesh(),
-            funcWidget.getValue()
         );
         scene.addLayer(newmeshFile);
     };
@@ -484,7 +459,6 @@
     plugin.Manager.install(HoleFilling);
     plugin.Manager.install(CoarseIsotropicRemeshing);
     plugin.Manager.install(ProjectToSurface);
-    plugin.Manager.install(ProjectToParametric);
     plugin.Manager.install(PointCloudNormal);
     plugin.Manager.install(PoissonSurfaceReconstruction);
 })(MLJ.core.plugin, MLJ.core.Scene);
