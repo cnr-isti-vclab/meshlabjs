@@ -295,8 +295,13 @@
                 vector.project(camera);
 
                 // map to 2D screen space
-                vector.x = Math.round( (   vector.x + 1 ) * myCanvas.attr('width')  / 2 );
-                vector.y = Math.round( ( - vector.y + 1 ) * myCanvas.attr('height') / 2 );
+                var hWidth = myCanvas[0].clientWidth / 2; //myCanvas.attr('width')  / 2;
+                var hHeight = myCanvas[0].clientHeight / 2;//myCanvas.attr('height') / 2;
+                vector.x = vector.x * hWidth + hWidth;
+                vector.y = -vector.y * hHeight + hHeight;
+                
+                //vector.x = Math.round( (   vector.x + 1 ) * myCanvas.attr('width')  / 2 );
+                //vector.y = Math.round( ( - vector.y + 1 ) * myCanvas.attr('height') / 2 );
                 vector.z = 0;
                                                 
                 return { 
