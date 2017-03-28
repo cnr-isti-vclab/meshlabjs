@@ -2,7 +2,7 @@
 #include "mesh_def.h"
 #include <wrap/io_trimesh/import.h>
 #include <wrap/io_trimesh/export.h>
-#include "miniz/miniz.c"
+#include "external/miniz/miniz.c"
 
 using namespace vcg;
 using namespace std;
