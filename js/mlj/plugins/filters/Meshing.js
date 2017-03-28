@@ -386,8 +386,6 @@
         Module.ComputePointCloudNormal(basemeshFile.ptrMesh(), nNumWidget.getValue(), smoothIterWidget.getValue(), flipFlagWidget.getValue());
     };
 
-    /******************************************************************************/
-
 /******************************************************************************/      
     
     var PoissonSurfaceReconstruction = new plugin.Filter({

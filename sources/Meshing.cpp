@@ -281,7 +281,6 @@ bool CoarseIsotropicRemeshing(uintptr_t _baseM, uintptr_t _newM, uintptr_t _proj
     printf("Split    Thr: %8.3f on %5.3f\n",splitThr,m.bbox.Diag());
     printf("Absolute Thr: %8.3f on %5.3f\n",absoluteThr,m.bbox.Diag());
 
-    //tri::IsotropicRemeshing<MyMesh>::Params params(iter, split, collapse, swap, adapt, collapseThr, splitThr, absoluteThr, creaseDeg);
     tri::IsotropicRemeshing<MyMesh>::Params params;
     params.minLength = collapseThr;
     params.maxLength = splitThr;
@@ -364,7 +363,6 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("HoleFilling",                &HoleFilling);
     emscripten::function("CoarseIsotropicRemeshing",   &CoarseIsotropicRemeshing);
     emscripten::function("ProjectToSurfaceFilter",     &ProjectToSurfaceFilter);
-//    emscripten::function("ProjectToParametricFilter",  &ProjectToParametricFilter);
     emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif
