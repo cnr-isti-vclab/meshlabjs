@@ -9,6 +9,8 @@
 using namespace vcg;
 using namespace std;
 
+typedef face::Pos<MyFace> MyPos;
+
 void ComputeGeometricMeasures(uintptr_t meshPtr)
 {
     MyMesh &m = *((MyMesh*) meshPtr);
@@ -189,6 +191,56 @@ bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uin
   return true;  
 }  
 
+inline int idealValence(MyPos p)
+{
+    if(p.IsBorder()) return 4;
+    return 6;
+}
+//here we could use the tri::clean<>::computevalence ... talk about this with cignoni, as in coarseisotropicremeshing
+// here should be surely more efficient, but as before needs a bigger memory footprint!
+void ComputeMeanValence(uintptr_t meshPtr)
+{
+    MyMesh &m = *((MyMesh*) meshPtr);
+
+    tri::UpdateTopology<MyMesh>::FaceFace(m);
+    tri::UpdateFlags<MyMesh>::VertexClearV(m);
+
+    int total = 0, count = 0, totalOff = 0;
+    int regVert = 0, minVal = INT_MAX, maxVal = INT_MIN;
+
+    for(auto fi=m.face.begin(); fi!=m.face.end(); ++fi)
+        if(!(*fi).IsD())
+        {
+            for(int i=0; i<3; ++i)
+            {
+                MyPos p(&*fi, i);
+                if(!p.V()->IsV())
+                {
+                    int val = p.NumberOfIncidentVertices();
+                    int off = abs(idealValence(p)-val);
+
+                    total       += val;
+                    totalOff    += off;
+                    regVert     += (off == 0) ? 1 : 0;
+                    maxVal       = (val > maxVal) ? val : maxVal;
+                    minVal       = (val < minVal) ? val : minVal;
+
+                    p.V()->SetV();
+                    p.V()->Q() = val;
+                    ++count;
+                }
+            }
+        }
+
+    printf("Total vertices: %d\n", count);
+    printf("Regular vertices: %d (%.2f%%)\n", regVert, ((float)regVert/(float)count)*100.f);
+    printf("Non regular vertices: %d (%.2f%%)\n", count-regVert, ((float)(count-regVert)/(float)count)*100.f);
+    printf("Minimum valence: %d\n", minVal);
+    printf("Maximum valence: %d\n", maxVal);
+    printf("Mean offset from ideal valence: %.15f\n", ((float)totalOff/(float)count));
+    printf("Mean valence: %.15f\n", (float) total / (float) count);
+}
+
 void MeasurePluginTEST()
 {
   MyMesh m0,m1;
@@ -210,5 +262,6 @@ EMSCRIPTEN_BINDINGS(MLMeasurePlugin) {
     emscripten::function("ComputeHausdorffDistance",   &ComputeHausdorffDistance);
     emscripten::function("ComputeQualityFromCurvature",   &ComputeQualityFromCurvature);
     emscripten::function("ComputeThickness",   &ComputeThickness);
+    emscripten::function("ComputeMeanValence",   &ComputeMeanValence);
 }
 #endif

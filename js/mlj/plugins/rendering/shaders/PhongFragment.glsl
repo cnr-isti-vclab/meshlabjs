@@ -50,21 +50,21 @@ void main() {
     }
 
     float specularStrength = 1.0;
-    
+
     vec3 normal;
     if(shading == SMOOTH) {
         normal = normalize( vNormal );
-    
+
         #ifdef DOUBLE_SIDED
-            normal = normal * ( -1.0 + 2.0 * float( gl_FrontFacing ) );
+          //  normal = normal * ( -1.0 + 2.0 * float( gl_FrontFacing ) );
         #endif
-    } else {    
+    } else {
         vec3 fdx = dFdx( vViewPosition );
 	    vec3 fdy = dFdy( vViewPosition );
 	    normal = normalize( cross( fdx, fdy ) );
-    }    
+    }
 
-    vec3 viewPosition = normalize( vViewPosition );  
+    vec3 viewPosition = normalize( vViewPosition );
 
     vec3 totalDiffuseLight = vec3( 0.0 );
     vec3 totalSpecularLight = vec3( 0.0 );
@@ -76,7 +76,7 @@ void main() {
 
             // diffuse
             float dotProduct = dot( normal, dirVector );
-            
+
             float dirDiffuseWeight = max( dotProduct, 0.0 );
 
             totalDiffuseLight += directionalLightColor[ i ] * dirDiffuseWeight;
@@ -113,7 +113,7 @@ void main() {
     #endif
 
     outgoingLight += diffuseColor.rgb * ( totalDiffuseLight + ambientLightColor ) + totalSpecularLight + emissive;
-    
+
     if(lights == 0)
         gl_FragColor = diffuseColor;
     else

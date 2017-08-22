@@ -12,8 +12,9 @@ varying vec2 vUv;
 void main()
 {
     vec4 color = texture2D(cmap, vUv);
+    vec4 px = texture2D(aomap, vUv);
 
-    if (color.a == 0.0) discard;
+    if (px == vec4(0.0)) { gl_FragColor = color; return;}
 
     if (blurFlag == 1) {
 
@@ -36,7 +37,7 @@ void main()
         //sum += texture2D(aomap, vUv + vec2( 1.5,  1.5)*screenStep).ra;
         //sum += texture2D(aomap, vUv).ra;
 
-        vec4 px = texture2D(aomap, vUv);
+
         sum += vec2(1.0*px.r, 1.0);
         float i = -1.5, j = -1.5;
         for (int k = 0; k < 16; ++k) {

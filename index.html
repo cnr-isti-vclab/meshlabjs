@@ -1,21 +1,21 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <meta name="description" content="MeshLabJS: the javascript mesh processing tool. Built using vcg library, emscripten and webgl. Developed by the Visual Computing Lab of ISTI - CNR and by the students of the FGT course.">
         <title>MeshLabJS 16.04</title>
-        <link rel="icon" href="img/favicon.png" type="image/x-icon"/>             
+        <link rel="icon" href="img/favicon.png" type="image/x-icon"/>
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.min.css">
         <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
-        <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">       
+        <link rel="stylesheet" href="js/include/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">
         <link rel="stylesheet" href="css/style.css">
-        <!--https://github.com/dobarkod/cookie-banner -->            
-        <script type="text/javascript" id="cookiebanner" src="js/include/cookiebanner.js" 
-                data-height="20px" data-position="top" data-mask="true" 
+        <!--https://github.com/dobarkod/cookie-banner -->
+        <script type="text/javascript" id="cookiebanner" src="js/include/cookiebanner.js"
+                data-height="20px" data-position="top" data-mask="true"
                 data-message="We use cookies to improve MeshLabJS experience. In short we reserve the right of tracking your usage of MeshLabJS for collecting statistical information in aggregate way. Your 3D models will always stay only on your client and no 3D data is ever transmitted. Click anywhere to consent to them and start using MeshLabJS. "
-                data-moreinfo="cookie.html" ></script>        
-        <script src="js/include/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>        
+                data-moreinfo="cookie.html" ></script>
+        <script src="js/include/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>
         <script src="js/include/jquery-ui-1.11.4.custom/jquery-ui.js"></script>
 
         <script src="js/include/colpick/js/colpick.js"></script>
@@ -23,20 +23,21 @@
 
         <script src="js/include/three.min.js"></script>
         <script src="js/include/stats.js"></script>
-        <script src="js/include/TrackballControls.js"></script>
-        
+        <script src="js/include/threejs/controls/TrackballControls.js"></script>
+        <script src="js/include/threejs/controls/TransformControls.js"></script>
+
         <script src="js/include/FileSaver/FileSaver.min.js"></script>
         <script src="js/include/canvas-toBlob/canvas-toBlob.js"></script>
 
         <script src="js/mlj/MLJ.js"></script>
-        
+
         <script src="js/mlj/util/Util.js"></script>
-        
+
         <script src="js/mlj/core/Core.js"></script>
         <script src="js/mlj/core/Layer.js"></script>
         <script src="js/mlj/core/Scene.js"></script>
         <script src="js/mlj/core/File.js"></script>
-        
+
         <script src="js/mlj/gui/Gui.js"></script>
         <script src="js/mlj/gui/Param.js"></script>
         <script src="js/mlj/gui/Component.js"></script>
@@ -46,8 +47,8 @@
         <script src="js/mlj/gui/LayersPane.js"></script>
         <script src="js/mlj/gui/TabbedPane.js"></script>
         <script src="js/mlj/gui/Log.js"></script>
-        <script src="js/mlj/gui/Logo.js"></script>        
-        <script src="js/mlj/gui/Info.js"></script>                    
+        <script src="js/mlj/gui/Logo.js"></script>
+        <script src="js/mlj/gui/Info.js"></script>
 
         <script src="js/mlj/core/plugin/Plugin.js"></script>
         <script src="js/mlj/core/plugin/Filter.js"></script>
@@ -55,8 +56,8 @@
         <script src="js/mlj/core/plugin/GlobalRendering.js"></script>
         <script src="js/mlj/core/plugin/Rendering.js"></script>
         <script src="js/mlj/core/plugin/Manager.js"></script>
-        
-        <script src="js/mlj/plugins/filters/Transform.js"></script> 
+
+        <script src="js/mlj/plugins/filters/Transform.js"></script>
         <script src="js/mlj/plugins/filters/Refine.js"></script>
         <script src="js/mlj/plugins/filters/Selection.js"></script>
         <script src="js/mlj/plugins/filters/Create.js"></script>
@@ -66,21 +67,21 @@
         <script src="js/mlj/plugins/filters/Measure.js"></script>
         <script src="js/mlj/plugins/filters/Color.js"></script>
         <script src="js/mlj/plugins/filters/Quality.js"></script>
-        
-        <script src="js/mlj/plugins/rendering/Axes.js"></script> 
-        <script src="js/mlj/plugins/rendering/BackgroundGrid.js"></script> 
-        <script src="js/mlj/plugins/rendering/Global.js"></script> 
-        <script src="js/mlj/plugins/rendering/ColorWheel.js"></script> 
-        <script src="js/mlj/plugins/rendering/Box.js"></script> 
-        <script src="js/mlj/plugins/rendering/Points.js"></script> 
-        <script src="js/mlj/plugins/rendering/Wire.js"></script> 
-        <script src="js/mlj/plugins/rendering/Filled.js"></script>      
-        <script src="js/mlj/plugins/rendering/Selected.js"></script> 
+        <script src="js/mlj/plugins/rendering/Axes.js"></script>
+        <script src="js/mlj/plugins/rendering/BackgroundGrid.js"></script>
+        <script src="js/mlj/plugins/rendering/Global.js"></script>
+        <script src="js/mlj/plugins/rendering/ColorWheel.js"></script>
+        <script src="js/mlj/plugins/rendering/Box.js"></script>
+        <script src="js/mlj/plugins/rendering/Points.js"></script>
+        <script src="js/mlj/plugins/rendering/Wire.js"></script>
+        <script src="js/mlj/plugins/rendering/Filled.js"></script>
+        <script src="js/mlj/plugins/rendering/Selected.js"></script>
         <script src="js/mlj/plugins/rendering/Normals.js"></script> 
         <script src="js/mlj/plugins/rendering/BoundaryEdges.js"></script>
         <script src="js/mlj/plugins/rendering/Histogram.js"></script>
         <script src="js/mlj/plugins/rendering/RadianceScaling.js"></script>
         <script src="js/mlj/plugins/rendering/ScreenSpaceAmbientOcclusion.js"></script>
+        <script src="js/mlj/plugins/rendering/SM.js"></script>
 
 
         <script async src="js/generated/MeshLabCppCore.js"></script>
@@ -96,12 +97,12 @@
   ga('send', 'pageview');
 
 </script>
-        
+
     </head>
-    <body>        
+    <body>
         <script>
             MLJ.core.plugin.Manager.run();
-            MLJ.gui.makeGUI("MeshLabJS");     
+            MLJ.gui.makeGUI("MeshLabJS");
             Module['onRuntimeInitialized'] = function() {
                 filterName = MLJ.util.getURLParam("filterName");
                 if(filterName)

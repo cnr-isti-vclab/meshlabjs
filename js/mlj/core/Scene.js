@@ -1,37 +1,37 @@
 /**
  * MLJLib
  * MeshLabJS Library
- * 
+ *
  * Copyright(C) 2015
- * Paolo Cignoni 
+ * Paolo Cignoni
  * Visual Computing Lab
  * ISTI - CNR
- * 
+ *
  * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License
  * (http://www.gnu.org/licenses/gpl.txt) for more details.
- * 
+ *
  */
 
 /**
- * @file 
+ * @file
  *
  * @author Stefano Gabriele
  */
 
 /**
- * The MLJ.core.Scene namespace defines the functions to manage the scene, 
+ * The MLJ.core.Scene namespace defines the functions to manage the scene,
  * i.e. the set of mesh layers that constitute the ''document'' of the MeshLabJS system.
- * This namespace also actually stores the set of meshes, the reference to current mesh, 
- * the threejs container for the scene, the threejs camera and the threejs renderer 
+ * This namespace also actually stores the set of meshes, the reference to current mesh,
+ * the threejs container for the scene, the threejs camera and the threejs renderer
  * (e.g. the webgl context where the scene is rendered).
  *
  * @namespace MLJ.core.Scene
@@ -58,14 +58,14 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
 (function () {
     /**
-     * Associative Array that contains all the meshes in the scene 
+     * Associative Array that contains all the meshes in the scene
      * @type MLJ.util.AssociativeArray
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      */
     var _layers = new MLJ.util.AssociativeArray();
-    
+
     /**
-     * Associative array that contains all the scene level "background" 
+     * Associative array that contains all the scene level "background"
      * decorators (axes, background grid etc..)
      * @type MLJ.util.AssociativeArray
      * @memberOf MLJ.core.Scene
@@ -81,43 +81,57 @@ MLJ.core.Scene.layerSetHistory = new Array();
     var _postProcessPasses = new MLJ.util.AssociativeArray();
 
     /**
-     * Reference to current layer 
+     * Reference to current layer
      * @type MLJ.core.Layer
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      */
     var _selectedLayer;
 
     /**
-     * It contains the ThreeJs Representation of the current set of layers. 
+     * It contains the ThreeJs Representation of the current set of layers.
      * Each Layer is associated to a ThreeJS mesh whose contained in the MLJ.core.MeshFile object.
      * @type THREE.Scene
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      */
     var _scene;
 
     /**
-     * The ThreeJs group that contains all the layers. 
-     * It also store the global transformation (scale + translation) 
+     * The ThreeJs group that contains all the layers.
+     * It also store the global transformation (scale + translation)
      * that brings the global bbox of the scene
-     * in the origin of the camera reference system. 
+     * in the origin of the camera reference system.
      * @type THREE.Object
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      */
     var _group;
 
+    /**
+     * The layers group and decorator groups define a logical
+     * partition of the meshes in the scene:
+     * the layersGroup contains the displayed meshes and their
+     * active overlays, while the decoratorsGroup contains all 
+     * the active decorators, that should usually be ignored by
+     * post-processing rendering passes such as SM and RS or SSAO.
+     * @author Thomas Alderighi
+     */
+    var _layersGroup;
+    var _decoratorsGroup;
+
+    /**
+     * Variables to implement light controls
+     * @author Thomas Alderighi
+     */
+    var _lightControls;
+    var _customLight;
+    var _lightPressed;
+
     var _camera;
-
     var _cameraPosition;
-
-    var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
-
-    var _cameraPosition;
-
     var _cameraPositionCopy; // Used as copy when Shift + C is pressed, so that it stays different from the camera position set in the "Camera Position" dialog
 
     /**
      * This scene contains 2D overlays that are drawn on top of everything else
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      */
     var _scene2D;
 
@@ -132,71 +146,64 @@ MLJ.core.Scene.layerSetHistory = new Array();
     /// @type {Object}
     var _renderer;
     var _this = this;
-    
-     /**
-     * Function that add a current state of the set of layers to the history 
-     * so that it can be undo-ed. It is called by the apply and by the open file
-     * 
-     */
-    this.addStateToHistory=function()
-    {
-                    //if the scene was empty, we add an empty layerset to the history of the scene to make it possible to go back at the initial state
-            if(MLJ.core.Scene.layerSetHistory.length==0)
-                MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++]=new MLJ.util.AssociativeArray();
-            //push of the actual state at the current time, duplicating the current layer list
-            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp]=new Array(MLJ.core.Scene.getLayers().duplicate(),MLJ.core.Scene.getSelectedLayer());
-            layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1][0].iterator(); //we iterate on all the actual layers
-            //and push the state of all the modified layers
-            while (layersIt.hasNext())
-            {
-                var layerTmp = layersIt.next();
-                if (layerTmp.getCalledPtrMesh())
-                    layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
-            }
-            MLJ.core.Scene.timeStamp++;
+
+    /**
+    * Function that add a current state of the set of layers to the history 
+    * so that it can be undo-ed. It is called by the apply and by the open file
+    * 
+    */
+    this.addStateToHistory = function () {
+        //if the scene was empty, we add an empty layerset to the history of the scene to make it possible to go back at the initial state
+        if (MLJ.core.Scene.layerSetHistory.length == 0)
+            MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp++] = new MLJ.util.AssociativeArray();
+        //push of the actual state at the current time, duplicating the current layer list
+        MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.timeStamp] = new Array(MLJ.core.Scene.getLayers().duplicate(), MLJ.core.Scene.getSelectedLayer());
+        layersIt = MLJ.core.Scene.layerSetHistory[MLJ.core.Scene.layerSetHistory.length - 1][0].iterator(); //we iterate on all the actual layers
+        //and push the state of all the modified layers
+        while (layersIt.hasNext()) {
+            var layerTmp = layersIt.next();
+            if (layerTmp.getCalledPtrMesh())
+                layerTmp.cppMesh.pushState(MLJ.core.Scene.timeStamp);
+        }
+        MLJ.core.Scene.timeStamp++;
     }
-    
+
     /**
      * Function that updates the list of layers in the scene
      * using a set of layers stored in a history    
      * to undo/redo changes in the scene.
      * It is called only by the undo/redo 
      */
-    this.updateLayerList=function()
-    {
+    this.updateLayerList = function () {
         //we get a set of the layer list at a selected timestamp with its state
         var layerSet = _this.layerSetHistory[_this.timeStamp];
-        var newLayers ;
-        if(layerSet.length!=undefined) //if the state collected is not the empty scene
-            newLayers= layerSet[0]; //we unpack the set of layers, which is stored in the index 0 of the cell in the layerSetHistory array
-        else newLayers=new MLJ.util.AssociativeArray();
+        var newLayers;
+        if (layerSet.length != undefined) //if the state collected is not the empty scene
+            newLayers = layerSet[0]; //we unpack the set of layers, which is stored in the index 0 of the cell in the layerSetHistory array
+        else newLayers = new MLJ.util.AssociativeArray();
         //current set of layers
         var actualLayers = _this.getLayers();
         var iterator;
         var layersToCheck;
         //if the actual set of layers is bigger than the new one....
-        if (newLayers.size() < actualLayers.size())
-        {
+        if (newLayers.size() < actualLayers.size()) {
             //it means that a layer or more were deleted
             iterator = actualLayers.iterator();//we go throught the elements of the larger one
             layersToCheck = newLayers;//and we confront them with the elements of the shorter one
             var layersToRemove = new Array();
-            while (iterator.hasNext())
-            {
+            while (iterator.hasNext()) {
                 var layer = iterator.next();
                 if (layersToCheck.getByKey(layer.name) == undefined) //if we find a missing layer in the list
                     layersToRemove.push(layer); //we put it in a list of layers to remove
             }
             while (layersToRemove.length > 0) //and then remove them all
                 _this.removeLayerByName(layersToRemove.pop().name);
-        } else
-        {
+        } else {
             //if the new set of layer has more layers than the actual one instead...
             //it means there's been added a layer or more
             iterator = newLayers.iterator();  //we iterate on the larger one
             layersToCheck = actualLayers; //confront with the shorter
-            while (iterator.hasNext())
-            {
+            while (iterator.hasNext()) {
                 var layer = iterator.next();
                 if (layersToCheck.getByKey(layer.name) == undefined) ///if we find a missing layer in the shorter
                     _this.addLayer(layer); //we simply add it to the list of actual layer in the scene
@@ -207,9 +214,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
         if (currentLayer != undefined) //if we unpacked a state which had a selected layer beforce, we set it as selected in the restored state
             _this.selectLayerByName(currentLayer.name);
     }
-    
-    this.Undo = function ()
-    {
+
+    this.Undo = function () {
 
         if (_this.timeStamp > 0) { //if there is some state in the history
             //we check if the goodness of the index. There cannot be a state on a negative timestamp
@@ -219,31 +225,28 @@ MLJ.core.Scene.layerSetHistory = new Array();
                 _this.timeStamp -= 2;
             //we update the list of layers with the new one at the new timestamp
             _this.updateLayerList();
-            
+
             //and then proceed to undo the modification
             _this.timeStamp++; //we increment the timestamp
             var layersIt = this.getLayers().iterator(); //iterate on all the layers
             //and restore the meshHistory of them all
-            while (layersIt.hasNext())
-            {
+            while (layersIt.hasNext()) {
                 var layerTmp = layersIt.next();
                 layerTmp.cppMesh.restoreState(_this.timeStamp);
                 _this.updateLayer(layerTmp);
             }
-            
+
         }
         //trigger of event for the buttons to be displayed on and off properly
         //  @event MLJ.core.Gui#Undo
-        $(document).trigger("Undo", _this.timeStamp-1);
+        $(document).trigger("Undo", _this.timeStamp - 1);
         //  @event MLJ.core.Gui#Redo
-        $(document).trigger("Redo", _this.timeStamp-1);
+        $(document).trigger("Redo", _this.timeStamp - 1);
     }
 
-    this.ReDo = function ()
-    {
+    this.ReDo = function () {
         //if we have some state that can be redone
-        if (_this.timeStamp < _this.layerSetHistory.length)
-        {
+        if (_this.timeStamp < _this.layerSetHistory.length) {
             //we update the list of layers in the scene with the ones on the state to be redone
             _this.updateLayerList();
             //increment the timestamp
@@ -251,8 +254,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
             //and we proceed to redo the changes
             var layersIt = this.getLayers().iterator(); //we iterate on all the layers
             //and restore the meshHistory of them all
-            while (layersIt.hasNext())
-            {
+            while (layersIt.hasNext()) {
                 var layerTmp = layersIt.next();
                 layerTmp.cppMesh.restoreState(_this.timeStamp);
                 _this.updateLayer(layerTmp);
@@ -263,7 +265,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         $(document).trigger("Redo", _this.timeStamp);
         //  @event MLJ.core.Gui#Undo
         $(document).trigger("Undo", _this.timeStamp);
-        
+
     }
     function get3DSize() {
         var _3D = $('#_3D');
@@ -314,16 +316,23 @@ MLJ.core.Scene.layerSetHistory = new Array();
         return stats;
     }
 
-//SCENE INITIALIZATION  ________________________________________________________
+    //SCENE INITIALIZATION  ________________________________________________________
 
     function initScene() {
         var _3DSize = get3DSize();
 
         _scene = new THREE.Scene();
         _camera = new THREE.PerspectiveCamera(45, _3DSize.width / _3DSize.height, 0.1, 1800);
+
         _camera.position.z = 15;
+
         _group = new THREE.Object3D();
         _scene.add(_group);
+
+        _layersGroup = new THREE.Object3D();
+        _group.add(_layersGroup);
+        _decoratorsGroup = new THREE.Object3D();
+        _group.add(_decoratorsGroup);
 
         _scene2D = new THREE.Scene();
         _camera2D = new THREE.OrthographicCamera(0, _3DSize.width / _3DSize.height, 1, 0, -1, 1);
@@ -332,12 +341,12 @@ MLJ.core.Scene.layerSetHistory = new Array();
         _renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            preserveDrawingBuffer: true});
+            preserveDrawingBuffer: true
+        });
+
         //_renderer.shadowMapEnabled = true;
         //_renderer.context.getSupportedExtensions();
         _renderer.context.getExtension("EXT_frag_depth");
-
-
         _renderer.setPixelRatio(window.devicePixelRatio);
         _renderer.setSize(_3DSize.width, _3DSize.height);
         $('#_3D').append(_renderer.domElement);
@@ -345,10 +354,20 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
         _stats = initStats();
         /*
-         requestAnimationFrame(function updateStats() {
-         _stats.update();
-         requestAnimationFrame(updateStats); });
-         */
+        requestAnimationFrame(function updateStats() {
+                                _stats.update();
+                                requestAnimationFrame(updateStats); });
+        */
+        //INIT LIGHTS
+        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
+        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
+
+        // REMEMBER: HeadLight is now attached to scene, not anymore to the camera!
+        _this.lights.Headlight.setPosition(_camera.position);
+
+        _lightPressed = false;
+        _customLight = false;
+
 
         //INIT CONTROLS
         var container = document.getElementsByTagName('canvas')[0];
@@ -362,8 +381,113 @@ MLJ.core.Scene.layerSetHistory = new Array();
         _controls.dynamicDampingFactor = 0.3;
         _controls.keys = [65, 83, 68];
 
+        /*
+            This functions defines the helper decorator that help visualizing the direction of
+            the HeadLight (the directional light of the scene) while the user uses the TrackballControls
+            to move it around the center of the scene.
+            @author Thomas Alderighi
+        */
+        var _help, _help1, _help2;
+
+        let prepareLightControls = () => {
+
+            var bbox = _this.getBBox();
+            var distance = bbox.min.distanceTo(bbox.max);
+            var scaleFac = distance / 15.0;
+
+            _help = new THREE.Group();
+            _help1 = new THREE.Group();
+            _help2 = new THREE.Group();
+
+            var dir = new THREE.Vector3(0, 0, 1);
+            var origins = [];
+            origins.push(new THREE.Vector3(0, -2, 0));
+            origins.push(new THREE.Vector3(0, -1, 0));
+            origins.push(new THREE.Vector3(0, 0, 0));
+            origins.push(new THREE.Vector3(0, 1, 0));
+            origins.push(new THREE.Vector3(0, 2, 0));
+            var length = 9;
+            var hex = 0xffff00;
+
+            var p = new THREE.Vector3(0, 0, -15);
+            _camera.localToWorld(p);
+            _decoratorsGroup.worldToLocal(p);
+            _help.position.set(p.x, p.y, p.z);
+            _help.scale.set(scaleFac, scaleFac, scaleFac);
+            // creates a column of yellow 'guidelines'
+            origins.forEach(function (origin) {
+                _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
+            });
+            dir.negate();
+            origins.forEach(function (origin) {
+                _help2.add(new THREE.ArrowHelper(dir, origin, length, hex, 0.001 * length));
+            });
+            // this creates 5 columns of yellow guidelines, using the one previously built and translating them
+            for (var i = -2; i < 3; ++i) {
+                var h = _help2.clone();
+                h.translateX(i);
+                _help1.add(h);
+            }
+
+            _help.add(_help1);
+
+            _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+            //add as decorator to make thing cleaner for postprocessing rendering algorithms
+            _this.addSceneDecorator("lightHelper", _help);
+        }
+
+        //LightMove Keyup: 
+        // We need to remove the lightHelper decorator, and restore the camera movement
+        $(document).keyup(function (event) {
+            if (event.ctrlKey || event.shiftKey || event.altKey) {
+                event.preventDefault();
+                if (_lightPressed) {
+                    _this.removeSceneDecorator("lightHelper");
+                    _lightPressed = false;
+                    _controls.noZoom = false;
+                    _controls.noPan = false;
+                    _controls.object = _camera;
+                    _controls.update();
+                    _this.render();
+                }
+            }
+        });
+
 
         $(document).keydown(function (event) {
+            /* CTRL+ALT+SHIFT+H => reset the light position, centering it on camera */
+            if (event.ctrlKey && event.shiftKey && event.altKey && event.which === 72) {
+                event.preventDefault();
+                _customLight = false;
+                _this.lights.Headlight.updateLight();
+                var p = new THREE.Vector3();
+                _camera.localToWorld(p);
+                _this.lights.Headlight.getMesh().worldToLocal(p);
+                _this.lights.Headlight.setPosition(p);
+                // draw scene
+                _this.render();
+                return;
+            }
+            /* CTRL+ALT+SHIFT (keep pressed) => Start the light moving:
+                We need to prepare the lightHelper decorator and attach the light to 
+                the TrackballControls in order to ajust its relative position w.r.t 
+                the origin of the Camera-Origin-Light rigid system.
+             */
+            if (event.ctrlKey && event.shiftKey && event.altKey) {
+                // if already moving don't do everything again
+                event.preventDefault();
+                if (_lightPressed) return;
+
+                _lightPressed = true;
+                _customLight = true;
+                _controls.noZoom = true;
+                _controls.noPan = true;
+                prepareLightControls();
+                _controls.object = _this.lights.Headlight.getLight();
+                _controls.update();
+                _this.render();
+            }
+
             if ((event.ctrlKey || (event.metaKey && event.shiftKey)) && event.which === 72) {
                 event.preventDefault();
                 _controls.reset();
@@ -379,18 +503,13 @@ MLJ.core.Scene.layerSetHistory = new Array();
             // Shift + V -> sets camera position
             if ((event.shiftKey || (event.metaKey && event.shiftKey)) && event.which === 86) {
                 event.preventDefault();
-
-                if (_cameraPositionCopy)
-                {
+                if (_cameraPositionCopy) {
                     _this.setCameraPositionJSON(JSON.stringify(_cameraPositionCopy, null, 4));
                     console.log("Viewpoint pasted");
                 }
             }
         });
 
-        //INIT LIGHTS 
-        _this.lights.AmbientLight = new MLJ.core.AmbientLight(_scene, _camera, _renderer);
-        _this.lights.Headlight = new MLJ.core.Headlight(_scene, _camera, _renderer);
 
         //EVENT HANDLERS
         var $canvas = $('canvas')[0];
@@ -399,7 +518,16 @@ MLJ.core.Scene.layerSetHistory = new Array();
         $canvas.addEventListener('mousewheel', _controls.update.bind(_controls), false);
         $canvas.addEventListener('DOMMouseScroll', _controls.update.bind(_controls), false); // firefox
 
+        /* 
+            Light is now bound to the scene (not the camera) so I have to update the Camera-Origin-Light
+            rigid system every time the camera moves.
+        */
         _controls.addEventListener('change', function () {
+            _this.lights.Headlight.updateLight();
+            //If we are moving the light also update the helpers to point at it accordingly
+            if (_customLight)
+                _help1.lookAt(_this.lights.Headlight.getWorldPosition());
+
             MLJ.core.Scene.render();
             $($canvas).trigger('onControlsChange');
         });
@@ -422,43 +550,42 @@ MLJ.core.Scene.layerSetHistory = new Array();
         });
 
         $(document).on("MeshFileOpened",
-                function (event, layer) {
-                    MLJ.core.Scene.addLayer(layer);
-                });
+            function (event, layer) {
+                MLJ.core.Scene.addLayer(layer);
+            });
 
         $(document).on("MeshFileReloaded",
-                function (event, layer) {
+            function (event, layer) {
 
-                    // Restore three geometry to reflect the new state of the vcg mesh
-                    layer.updateThreeMesh();
+                // Restore three geometry to reflect the new state of the vcg mesh
+                layer.updateThreeMesh();
 
-                    /**
-                     *  Triggered when a layer is reloaded
-                     *  @event MLJ.core.Scene#SceneLayerReloaded
-                     *  @type {Object}
-                     *  @property {MLJ.core.Layer} layer The reloaded mesh file
-                     *  @example
-                     *  <caption>Event Interception:</caption>
-                     *  $(document).on("SceneLayerReloaded",
-                     *      function (event, layer) {
-                     *          //do something
-                     *      }
-                     *  );
-                     */
-                    $(document).trigger("SceneLayerReloaded", [layer]);
-                });
+                /**
+                 *  Triggered when a layer is reloaded
+                 *  @event MLJ.core.Scene#SceneLayerReloaded
+                 *  @type {Object}
+                 *  @property {MLJ.core.Layer} layer The reloaded mesh file
+                 *  @example
+                 *  <caption>Event Interception:</caption>
+                 *  $(document).on("SceneLayerReloaded",
+                 *      function (event, layer) {
+                 *          //do something
+                 *      }
+                 *  );
+                 */
+                $(document).trigger("SceneLayerReloaded", [layer]);
+            });
     }
-
 
     /* Compute global bounding box and translate and scale every object in proportion 
      * of global bounding box. First translate every object into original position, 
      * then scale all by reciprocal value of scale factor (note that scale factor 
      * and original position are stored into mesh object). Then it computes 
+
      * global bbox, scale every object, recalculate global bbox and finally
      * translate every object in a right position.
      */
-    function _computeGlobalBBbox()
-    {
+    function _computeGlobalBBbox() {
         //console.time("Time to update bbox: ");
         _group.scale.set(1, 1, 1);
         _group.position.set(0, 0, 0);
@@ -502,6 +629,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         Headlight: null
     };
 
+
     this.getCamera = function () {
         return _camera;
     };
@@ -514,10 +642,18 @@ MLJ.core.Scene.layerSetHistory = new Array();
         return _group;
     }
 
+    this.getLayersGroup = function () {
+        return _layersGroup;
+    }
+
+    this.getDecoratorsGroup = function () {
+        return _decoratorsGroup;
+    }
+
     /**
      * Selects the layer with the name <code>layerName</code>
      * @param {String} layerName The name of the layer
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      */
 
@@ -544,7 +680,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * @param {String} layerName The name of the layer
      * @param {Boolean} visible <code>true</code> if the layers must be visible,
      * <code>false</code> otherwise
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      */
     this.setLayerVisible = function (layerName, visible) {
@@ -556,13 +692,17 @@ MLJ.core.Scene.layerSetHistory = new Array();
         while (iter.hasNext()) {
             iter.next().visible = visible;
         }
+
+        while (iter.hasNext()) {
+            iter.next().visible = visible;
+        }
         MLJ.core.Scene.render();
     };
 
     /**
      * Adds a new layer in the scene
      * @param {MLJ.core.Layer} layer The mesh file to add
-     * @memberOf MLJ.core.Scene     
+     * @memberOf MLJ.core.Scene
      * @author Stefano Gabriele
      */
     this.addLayer = function (layer) {
@@ -573,9 +713,10 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
         // Initialize the THREE geometry used by overlays and rendering params
         layer.initializeRenderingAttributes();
-        _group.add(layer.getThreeMesh());
+        _layersGroup.add(layer.getThreeMesh());
 
-        //Add new mesh to associative array _layers            
+        //Add new mesh to associative array _layers
+
         _layers.set(layer.name, layer);
         _selectedLayer = layer;
 
@@ -607,19 +748,20 @@ MLJ.core.Scene.layerSetHistory = new Array();
         }
 
         layer.overlays.set(name, mesh);
+        mesh.name = name;
 
         mesh.visible = layer.getThreeMesh().visible;
         if (overlay2D) {
             _scene2D.add(mesh);
         } else {
-//            _group.add(mesh);
+            //            _group.add(mesh);
             layer.getThreeMesh().add(mesh);
         }
 
         _this.render();
     };
 
-    function disposeObject(obj) {
+    this.disposeObject = function disposeObject(obj) {
         if (obj.geometry)
             obj.geometry.dispose();
         if (obj.material)
@@ -627,6 +769,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         if (obj.texture)
             obj.texture.dispose();
     }
+
 
     this.removeOverlayLayer = function (layer, name, overlay2D) {
         var mesh = layer.overlays.getByKey(name);
@@ -637,11 +780,11 @@ MLJ.core.Scene.layerSetHistory = new Array();
                 _scene2D.remove(mesh);
             } else {
                 layer.getThreeMesh().remove(mesh);
-//                _group.remove(mesh);                        
+                //                _group.remove(mesh);
             }
 
-            mesh.traverse(disposeObject);
-            disposeObject(mesh);
+            mesh.traverse(this.disposeObject);
+            this.disposeObject(mesh);
 
             _this.render();
         }
@@ -693,10 +836,10 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
     /**
      * Returns the layer corresponding to the given name
-     * @param {String} name The name of the layer     
+     * @param {String} name The name of the layer
      * @memberOf MLJ.core.Scene
      * @return {MLJ.core.Layer} The layer corresponding to the given name
-     * @author Stefano Gabriele     
+     * @author Stefano Gabriele
      */
     this.getLayerByName = function (name) {
         return _layers.getByKey(name);
@@ -750,18 +893,20 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
     /**
      * Removes the layer corresponding to the given name
-     * @param {String} name The name of the layer which must be removed  
-     * @memberOf MLJ.core.Scene     
-     * @author Stefano Gabriele     
+     * @param {String} name The name of the layer which must be removed
+     * @memberOf MLJ.core.Scene
+     * @author Stefano Gabriele
      */
     this.removeLayerByName = function (name) {
         var layer = this.getLayerByName(name);
 
         if (layer !== undefined) {
             //remove layer from list
-            _group.remove(layer.getThreeMesh());
-            _layers.remove(layer.name);
+            _layers.remove(name);
+            _layersGroup.remove(layer.getThreeMesh());
             $(document).trigger("SceneLayerRemoved", [layer, _layers.size()]);
+
+            layer.dispose();
 
             if (_layers.size() > 0) {
                 _this.selectLayerByName(_layers.getFirst().name);
@@ -789,7 +934,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         }
 
         _decorators.set(name, decorator)
-        _group.add(decorator);
+        _decoratorsGroup.add(decorator);
 
         _this.render();
     };
@@ -804,9 +949,10 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
         if (decorator !== undefined) {
             var mesh = _decorators.remove(name);
-            _group.remove(decorator);
-            mesh.traverse(disposeObject);
-            disposeObject(mesh);
+            _decoratorsGroup.remove(decorator);
+
+            mesh.traverse(this.disposeObject);
+            this.disposeObject(mesh);
         } else {
             console.warn("Warning: " + name + " decorator not in the scene");
         }
@@ -816,10 +962,10 @@ MLJ.core.Scene.layerSetHistory = new Array();
     };
 
     /**
-     * Returns the currently selected layer     
+     * Returns the currently selected layer
      * @returns {MLJ.core.Layer} The currently selected layer
      * @memberOf MLJ.core.Scene
-     * @author Stefano Gabriele     
+     * @author Stefano Gabriele
      */
     this.getSelectedLayer = function () {
 
@@ -830,11 +976,15 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * Returns the layers list
      * @returns {MLJ.util.AssociativeArray} The layers list
      * @memberOf MLJ.core.Scene
-     * @author Stefano Gabriele     
+     * @author Stefano Gabriele
      */
     this.getLayers = function () {
         return _layers;
     };
+
+    this.getDecorators = function () {
+        return _decorators;
+    }
 
     this.get3DSize = function () {
         return get3DSize();
@@ -867,7 +1017,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
     /**
      * Adds a post process pass to the rendering chain. As of now the interface
      * to post process effects is minimal: an effect is simply a callable object
-     * that must accept two render buffers as parameters. The first buffer 
+     * that must accept two render buffers as parameters. The first buffer
      * contains the color generated by the rendering chain of MeshLabJS up to
      * the effect invocation, (this includes the basic scene rendering plus the
      * result of any post process effect that was applied before the current
@@ -876,7 +1026,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
      * the canvas if no other effects are active. Both buffers have the same
      * size as the page canvas. Any other information that may be needed by an
      * effect must be passed with closure variables or queried directly to
-     * {@link MLJ.core.Scene}. 
+     * {@link MLJ.core.Scene}.
      *
      * @param {String} name - The name of the pass
      * @param {Object} pass - The callable (function) object that will applypu the pass
@@ -915,38 +1065,38 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
     var plane = new THREE.PlaneBufferGeometry(2, 2);
     var quadMesh = new THREE.Mesh(
-            plane
-            );
+        plane
+    );
 
     var quadScene = new THREE.Scene();
     quadScene.add(quadMesh);
 
     quadMesh.material = new THREE.ShaderMaterial({
         vertexShader:
-                "varying vec2 vUv; \
+        "varying vec2 vUv; \
              void main(void) \
              { \
                  vUv = uv; \
                  gl_Position = vec4(position.xyz, 1.0); \
              }",
         fragmentShader:
-                "uniform sampler2D offscreen; \
+        "uniform sampler2D offscreen; \
              varying vec2 vUv; \
              void main(void) { gl_FragColor = texture2D(offscreen, vUv.xy); }"
     });
     quadMesh.material.uniforms = {
-        offscreen: {type: "t", value: null}
+        offscreen: { type: "t", value: null }
     };
 
 
     /**
-     * Renders the scene. If there are no post process effects enabled, the 
+     * Renders the scene. If there are no post process effects enabled, the
      * THREE.js scene that contains all the scene decorators and the overlay
-     * layers is rendered straight to the canvas. Otherwise, the basic scene is 
+     * layers is rendered straight to the canvas. Otherwise, the basic scene is
      * rendered to an off screen render target, and post process effects are
      * applied one after the other (according to the user's activation order)
      * before displaying the result.
-     * @memberOf MLJ.core.Scene  
+     * @memberOf MLJ.core.Scene
      */
     this.render = function (fromReqAnimFrame) {
 
@@ -982,7 +1132,6 @@ MLJ.core.Scene.layerSetHistory = new Array();
     };
 
 
-
     this.takeSnapshot = function () {
         var canvas = _renderer.context.canvas;
         // draw to canvas...
@@ -990,7 +1139,6 @@ MLJ.core.Scene.layerSetHistory = new Array();
             saveAs(blob, "snapshot.png");
         });
     };
-
 
     this.takeCameraPositionJSON = function () {
         // The JSON is a simple javascript object that will get "stringified" with the JSON object function
@@ -1031,7 +1179,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
         _controls.object.lookAt(_controls.target);
 
         // Event taken from the TrackballControls class
-        var changeEvent = {type: 'change'}
+        var changeEvent = { type: 'change' }
 
         // Notifying the controls object of the event and updating 
         _controls.dispatchEvent(changeEvent);
@@ -1046,9 +1194,8 @@ MLJ.core.Scene.layerSetHistory = new Array();
 
             // If any of the properties of the parsed JSON object is undefined (that is, it wasn't found), there is an error in the JSON syntax
             if (parsedJSON.camera.x === undefined || parsedJSON.camera.y === undefined || parsedJSON.camera.z === undefined ||
-                    parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
-                    parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined)
-            {
+                parsedJSON.up.x === undefined || parsedJSON.up.y === undefined || parsedJSON.up.z === undefined ||
+                parsedJSON.target.x === undefined || parsedJSON.target.y === undefined || parsedJSON.target.z === undefined || parsedJSON.fov === undefined) {
                 success = false;
             }
             // If the "up" vector is the zero vector, it's not valid
@@ -1058,8 +1205,7 @@ MLJ.core.Scene.layerSetHistory = new Array();
             else if (parsedJSON.fov < 1)
                 success = false;
             // Otherwise, we're good to go
-            else
-            {
+            else {
                 // If the parameters taken for the camera position are all 0, it would break the camera; it's not worth to throw an error, so we
                 // just set the z value to be a little more than 0
                 if (!parsedJSON.camera.x && !parsedJSON.camera.y && !parsedJSON.camera.z)

@@ -192,7 +192,7 @@
             vertexShader: plug.shaders.getByKey("SSAOVertex.glsl"),
             fragmentShader: plug.shaders.getByKey("SSAOBlurFragment.glsl")
         }));
-        
+
         var AOPassScene = new THREE.Scene();
         AOPassScene.add(AOPassMesh);
 
@@ -216,11 +216,29 @@
             var renderer = scene.getRenderer();
             var threeScene = scene.getScene();
 
+            threeScene.traverse(function (obj) {
+                if (obj.visible && obj.geometry) {
+                    if (!(obj instanceof THREE.Mesh) ||
+                                (obj.geometry.type === "BufferGeometry" &&
+                                        obj.geometry.getAttribute('normal') === undefined)) {
+                        obj.visible = false;
+                        obj.__mlj_ssaoplugin_sweep_flag = true;
+                    }
+                }
+            });
             // normals and depth pass
             threeScene.overrideMaterial = distanceMapMaterial;
             MLJ.core.Scene.resizeWebGLRenderTarget(distanceMapTarget, inputBuffer.width, inputBuffer.height);
             renderer.render(threeScene, scene.getCamera(), distanceMapTarget, true);
             threeScene.overrideMaterial = null;
+
+            /* Make hidden layers visible again */
+            threeScene.traverse(function (obj) {
+                if (obj.__mlj_ssaoplugin_sweep_flag === true) {
+                    obj.visible = true;
+                    delete obj.__mlj_ssaoplugin_sweep_flag;
+                }
+            });
 
             // ambient occlusion pass
             MLJ.core.Scene.resizeWebGLRenderTarget(ambientOcclusionMapTarget, inputBuffer.width, inputBuffer.height);

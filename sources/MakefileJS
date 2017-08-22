@@ -16,6 +16,8 @@ CC=emcc
 
 CFLAGS=-I.  -I ../../vcglib/   -I ../../vcglib/eigenlib -s TOTAL_MEMORY=536870912  -std=c++11 -s PRECISE_F32=1 -s DEMANGLE_SUPPORT=1 --bind  -s LINKABLE=1 -Os
 
+
+
 OBJ = Color.bc Measure.bc Decorator.bc CppMesh.bc Meshing.bc Sampling.bc \
       Create.bc Refine.bc Transform.bc Selection.bc Quality.bc Poisson.bc \
       ../../vcglib/wrap/ply/plylib.bc \

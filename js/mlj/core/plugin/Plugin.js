@@ -1,24 +1,24 @@
 /**
  * MLJLib
  * MeshLabJS Library
- * 
+ *
  * Copyright(C) 2015
- * Paolo Cignoni 
+ * Paolo Cignoni
  * Visual Computing Lab
  * ISTI - CNR
- * 
+ *
  * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. See theGNU General Public License 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See theGNU General Public License
  * (http://www.gnu.org/licenses/gpl.txt) for more details.
- * 
+ *
  */
 
 /**
@@ -36,13 +36,13 @@
 MLJ.core.plugin = {
 };
 
-/**         
+/**
  * @class Defines a generic plugin
  * @param {Integer} type The type of plugin, i.e. <code>MLJ.core.plugin.type.FILTER</code>
  * or <code>MLJ.core.plugin.type.RENDERING</code>
  * @param {String} name The name of plugin
  * @memberOf MLJ.core.plugin
- * @author Stefano Gabriele 
+ * @author Stefano Gabriele
  */
 ;
 MLJ.core.plugin.Plugin = function (name, parameters) {
@@ -55,7 +55,7 @@ MLJ.core.plugin.Plugin = function (name, parameters) {
 
 MLJ.core.plugin.Plugin.prototype = {
     /**
-     * Returns the name of plugin               
+     * Returns the name of plugin
      * @returns {String} The name of plugin
      * @author Stefano Gabriele
      */
@@ -65,18 +65,18 @@ MLJ.core.plugin.Plugin.prototype = {
     /**
      * Returns the parameter of plugins or <code>undefined</code> if plugin has no
      * parameters
-     * @returns {Object} The parameters of plugin or <code>undefined</code> if plugin 
-     * has no parameters    
+     * @returns {Object} The parameters of plugin or <code>undefined</code> if plugin
+     * has no parameters
      * @author Stefano Gabriele
      */
     getParameters: function () {
-        return this.paramters;
+        return this.parameters;
     },
     /**
      * This function should be overridden to define the plugin GUI and its initialization stuff
-     * @param {MLJ.core.plugin.GUIBuilder} guiBuilder The object that provides 
+     * @param {MLJ.core.plugin.GUIBuilder} guiBuilder The object that provides
      * useful function to build the GUI quickly
-     * @abstract     
+     * @abstract
      * @author Stefano Gabriele
      */
     _init: function (guiBuilder) {
@@ -86,27 +86,27 @@ MLJ.core.plugin.Plugin.prototype = {
      * be executed after that apply or apply to all visible buttons was clicked
      * @param {MLJ.core.Layer} layer The mesh file that should be affected
      * by the code defined in this function
-     * @abstract       
+     * @abstract
      * @author Stefano Gabriele
      */
     _applyTo: function (layer) {
     },
     /**
      * This function represents the main entry point for the plugin execution
-     * @abstract      
+     * @abstract
      * @author Stefano Gabriele
      */
     _main: function () {
     }
 };
 
-/**         
+/**
  * @class Creates a new GUI builder object, this is the base class used to build
  * GUIs for filters and rendering features
- * @param {MLJ.gui.component.Component} component The base GUI component where 
- * append the MeshLabJs widgets 
+ * @param {MLJ.gui.component.Component} component The base GUI component where
+ * append the MeshLabJs widgets
  * @memberOf MLJ.core.plugin
- * @author Stefano Gabriele 
+ * @author Stefano Gabriele
  */
 MLJ.core.plugin.GUIBuilder = function (component) {
     var widgets=new Array();
@@ -210,19 +210,23 @@ MLJ.core.plugin.GUIBuilder = function (component) {
         var rangedfloat = new MLJ.gui.Param.RangedFloat(flags);
         component.appendContent(rangedfloat._make());
         _this.params.set(flags.bindTo, rangedfloat);
+
         widgets.addValue(rangedfloat,flags.defval);  
         rangedfloat.onChange(function (val) {            
             _onChange(flags.bindTo, val);
             widgets.addValue(rangedfloat,val);           
+
         });
-        
+
         return rangedfloat;
     };
     this.LayerSelection = function(flags) {
         var layerSelection = new MLJ.gui.Param.LayerSelection(flags);
         component.appendContent(layerSelection._make());
         _this.params.set(flags.bindTo, layerSelection);
+
         widgets.addValue(layerSelection,undefined);         
+
         return layerSelection;
     };
 
