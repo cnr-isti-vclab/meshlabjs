@@ -57,7 +57,7 @@ MLJ.core.File = {
 
     function isExtensionValid(extension) {
 
-        switch (extension) {
+        switch (extension.toLowerCase()) {
             case ".off":
             case ".obj":
             case ".ply":
