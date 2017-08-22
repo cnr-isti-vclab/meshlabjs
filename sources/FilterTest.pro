@@ -3,7 +3,7 @@ INCLUDEPATH += . ../../vcglib ../../vcglib/eigenlib
 CONFIG += console stl c++11
 
 #CONFIG += POISSON 
-#CONFIG += MUPARSER
+CONFIG += MUPARSER
 
 TEMPLATE = app
 # Mac specific Config required to avoid to make application bundles
@@ -18,7 +18,7 @@ MUPARSERSRC = $$MUPARSERDIR/src/muParser.cpp $$MUPARSERDIR/src/muParserBase.cpp 
 POISSONDIR = ./external/PoissonRecon/Src
 POISSONSRC = $$POISSONDIR/PlyFile.cpp $$POISSONDIR/Factor.cpp $$POISSONDIR/Geometry.cpp $$POISSONDIR/MarchingCubes.cpp
 
-INCLUDEPATH += $$MUPARSERDIR/include $$POISSONDIR
+INCLUDEPATH += $$MUPARSERDIR/include $$POISSONDI
 
 #TARGET = filtertest
 SOURCES += FilterTest.cpp \
@@ -54,4 +54,7 @@ message("Not Including MUPARSER")
 
 HEADERS += mesh_def.h \
     FilterTest.h \
+    coarseisotropicremeshing.h \
     ColorHistogram.h
+
+
