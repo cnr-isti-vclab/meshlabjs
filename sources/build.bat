@@ -1,0 +1,1 @@
+emcc --bind -s DEMANGLE_SUPPORT=1 -I ../../vcglib/ Color.cpp Measure.cpp Decorator.cpp CppMesh.cpp Meshing.cpp Sampling.cpp Create.cpp Refine.cpp Transform.cpp Selection.cpp ../../vcglib/wrap/ply/plylib.cpp  -s TOTAL_MEMORY=536870912 -s PRECISE_F32=1 -O3 -o ../js/generated/MeshLabCppCore.js

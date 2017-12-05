@@ -89,7 +89,7 @@ void FlipRelaxOptimize(uintptr_t _m, int iterNum, float CoplanarAngleThresholdDe
     optimiz.Init<QRadiiEFlip>();
     optimiz.SetTargetMetric(limit);
     optimiz.DoOptimization();
-    printf("Completed optimization; performed ops %i\n",optimiz.nPerformedOps);
+    printf("Completed optimization; performed ops %i\n",optimiz.nPerfmormedOps);
     optimiz.h.clear();
     tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
     tri::Smooth<MyMesh>::VertexCoordLaplacianBlend(m, 1, 0.3f,false);  

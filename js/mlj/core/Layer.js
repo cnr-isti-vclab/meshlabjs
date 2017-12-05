@@ -88,12 +88,7 @@ MLJ.core.Layer = function (id, name, cppMesh) {
         // The node itself will never been rendered (material has the visibile flag == false).
         //  
         _this.threeMesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({visible: false}));
-<<<<<<< HEAD
         _this.updateMeshBufferData();
-=======
-        _this.updateMeshGeometryData(useIndex);
-        _this.updateMeshColorData(cw.colorMode);
->>>>>>> refs/remotes/origin/master
 
         console.timeEnd("Time to create mesh: ");
 
@@ -111,27 +106,20 @@ MLJ.core.Layer = function (id, name, cppMesh) {
     // For point clouds we obviously keep everything per vertex.
 
     this.updateMeshBufferData = function () {
-
         _this.VN = cppMesh.VN();
         _this.FN = cppMesh.FN();
 
         var geometry = _this.threeMesh.geometry;
         var bufferptr, bufferData;
 
-        var positionAttrib = null, normalAttrib = null, colorAttrib = null, uvsAttrib = null;
+        var positionAttrib = null, normalAttrib = null, colorAttrib = null, uvsAttrib = null, indexAttrib = null;
 
-<<<<<<< HEAD
         if (_this.FN === 0) { // Point Cloud
             bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
-=======
-        if (indexed) {
-            bufferptr = cppMesh.getVertexVector(true);
->>>>>>> refs/remotes/origin/master
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
             positionAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
 
-<<<<<<< HEAD
             bufferptr = cppMesh.getVertexNormalVector(true);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3);
@@ -147,68 +135,21 @@ MLJ.core.Layer = function (id, name, cppMesh) {
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
             positionAttrib = new THREE.BufferAttribute(bufferData, 3);
             Module._free(bufferptr);
+            
+           /*bufferptr = cppMesh.getFaceIndex();
+            bufferData = new Uint32Array(new Uint32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 3));
+            indexAttrib = new THREE.BufferAttribute(bufferData, 3);
+            Module._free(bufferptr);*/
 
             bufferptr = cppMesh.getVertexNormalVector(false);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
             normalAttrib = new THREE.BufferAttribute(bufferData, 3)
-=======
-            if (_this.FN > 0) { // if the mesh has faces, load per vertex normals and the index
-                bufferptr = cppMesh.getVertexNormalVector(true);
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
-                normalAttrib = new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr);
-
-                bufferptr = cppMesh.getFaceIndex();
-                bufferData = new Uint32Array(new Uint32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 3));
-                indexAttrib = new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr);
-            }
-        } else { // load disconnected triangles
-            if (_this.FN === 0) {
-                bufferptr = cppMesh.getVertexVector(true); // if there are no faces load unique vertices
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.VN * 3));
-                positionAttrib = new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr);
-            } else {
-                bufferptr = cppMesh.getVertexVector(false);
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
-                positionAttrib = new THREE.BufferAttribute(bufferData, 3);
-                Module._free(bufferptr);
-
-                bufferptr = cppMesh.getVertexNormalVector(false);
-                bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 9));
-                normalAttrib = new THREE.BufferAttribute(bufferData, 3)
-                Module._free(bufferptr);
-            }
-        }
-
-        if (geometry.getAttribute('position') !== undefined) {
-            delete geometry.attributes.position;
-        }
-        if (positionAttrib !== null)
-            geometry.addAttribute('position', positionAttrib);
-
-        if (geometry.getAttribute('normal') !== undefined) {
-            delete geometry.attributes.normal;
-        }
-        if (normalAttrib !== null)
-            geometry.addAttribute('normal', normalAttrib);
-
-        if (geometry.getAttribute('index') !== undefined) {
-            delete geometry.attributes.index;
-        }
-        if (indexAttrib !== null)
-            geometry.addAttribute('index', indexAttrib);
-        geometry.computeBoundingBox(); //update the boundingbox
-    };
->>>>>>> refs/remotes/origin/master
 
             bufferptr = cppMesh.getWedgeTextureCoordinates(0);
             bufferData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, bufferptr, _this.FN * 6));
             uvsAttrib = new THREE.BufferAttribute(bufferData, 2)
             Module._free(bufferptr);
 
-<<<<<<< HEAD
             var colorMode = _this.overlaysParams.getByKey("ColorWheel").colorMode;
             if (colorMode === MLJ.ColorMode.Face) {
                 bufferptr = cppMesh.getFaceColors();
@@ -222,20 +163,6 @@ MLJ.core.Layer = function (id, name, cppMesh) {
                 colorAttrib = new THREE.BufferAttribute(bufferData, 3);
                 Module._free(bufferptr);
             }
-=======
-        if (colorMode === MLJ.ColorMode.Face) {
-            if (_this.usingIndexedGeometry()) { // rebuild geometry as disconnected triangles
-                _this.updateMeshGeometryData(false);
-            }
-            colorptr = cppMesh.getFaceColors();
-            colorData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, colorptr, _this.FN * 9));
-        } else {
-            if (!_this.usingIndexedGeometry()) { // rebuild geometry with index
-                _this.updateMeshGeometryData(true);
-            }
-            colorptr = cppMesh.getVertexColors();
-            colorData = new Float32Array(new Float32Array(Module.HEAPU8.buffer, colorptr, _this.VN * 3));
->>>>>>> refs/remotes/origin/master
         }
 
         if (positionAttrib !== null)
@@ -243,12 +170,14 @@ MLJ.core.Layer = function (id, name, cppMesh) {
         if (normalAttrib !== null)
             geometry.addAttribute('normal', normalAttrib);
         if (uvsAttrib !== null)
-            geometry.addAttribute('uv', uvsAttrib);
+            geometry.addAttribute('uv', uvsAttrib);        
+        //if (indexAttrib !== null)
+            //geometry.addAttribute('index', indexAttrib);
+
         geometry.addAttribute('VCGColor', colorAttrib);
 
         geometry.computeBoundingBox();
-    };
-
+    };  
 
     this.usingIndexedGeometry = function () {
         return (_this.threeMesh.geometry.getAttribute('index') !== undefined);

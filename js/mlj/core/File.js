@@ -40,14 +40,10 @@ MLJ.core.File = {
         OFF: ".off",
         OBJ: ".obj",
         PLY: ".ply",
-<<<<<<< HEAD
         STL: ".stl",
         ZIP: ".zip"
     }, 
-=======
-        STL: ".stl"
-    },
->>>>>>> refs/remotes/origin/master
+
     SupportedSketchfabExtensions: {
         OBJ: ".obj",
         PLY: ".ply",
@@ -87,20 +83,11 @@ MLJ.core.File = {
             //  Emscripten need a Arrayview so from the returned arraybuffer we must create a view of it as 8bit chars
             var int8buf = new Int8Array(fileLoadedEvent.target.result);
             FS.createDataFile("/", file.name, int8buf, true, true);
-<<<<<<< HEAD
-            
-            console.time("Parsing Mesh Time");  
-            var resOpen = -1;
-            if(file.name.split('.').pop() === "zip"){
-                resOpen = mf.cppMesh.openMeshZip(file.name, mf.name); //extract data to a layer folder
-            }
-=======
             console.time("Parsing Mesh Time");
 //            console.log("File extension: " +file.name.split('.').pop());
             var resOpen = -1;
             if (file.name.split('.').pop() === "zip")
-                resOpen = mf.cppMesh.openMeshZip(file.name);
->>>>>>> refs/remotes/origin/master
+                resOpen = mf.cppMesh.openMeshZip(file.name, mf.name); //extract data to a layer folder
             else
                 resOpen = mf.cppMesh.openMesh(file.name);
 

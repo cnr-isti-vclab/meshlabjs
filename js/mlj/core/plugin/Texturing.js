@@ -94,12 +94,13 @@ MLJ.core.plugin.Texturing = function (parameters, defaults) {
 
     function update() {
         var selected = MLJ.core.Scene.getSelectedLayer();
+        console.log(selected.texture);
         var params = selected.texture[selected.selectedTexture].texPanelParam;
         var paramWidget;
         for (var pname in params) {
             paramWidget = _this.getParam(pname);
             if (paramWidget !== undefined) {
-                paramWidget._changeValue(params[pname]);
+                paramWidget.setValue(params[pname]);
             }
         }
     }
