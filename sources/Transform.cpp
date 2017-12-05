@@ -1,7 +1,7 @@
 #include "mesh_def.h"
 #include <vcg/complex/algorithms/smooth.h>
 #include <vcg/complex/algorithms/update/position.h>
-#include <vcg/space/box3.h>
+#include <vcg/complex/algorithms/local_optimization/tri_edge_flip.h>
 
 using namespace vcg;
 using namespace std;
@@ -65,6 +65,38 @@ void Translate(uintptr_t _m,float x,float y, float z, bool centerToOriginFlag)
   m.UpdateBoxAndNormals();
 }
 
+class QRadiiEFlip :
+public vcg::tri::PlanarEdgeFlip<MyMesh, QRadiiEFlip, QualityRadii>
+{
+public:
+  QRadiiEFlip(PosType pos, int mark,BaseParameterClass *pp) :
+    vcg::tri::PlanarEdgeFlip<MyMesh, QRadiiEFlip, QualityRadii>(pos, mark,pp) {}
+};
+
+
+void FlipRelaxOptimize(uintptr_t _m, int iterNum, float CoplanarAngleThresholdDeg)
+{
+  MyMesh &m = *((MyMesh*) _m);
+  tri::Allocator<MyMesh>::CompactEveryVector(m);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
+  tri::PlanarEdgeFlipParameter pp;
+  pp.CoplanarAngleThresholdDeg = CoplanarAngleThresholdDeg;
+  for(int i=0;i<iterNum;++i)
+  {
+    LocalOptimization<MyMesh> optimiz(m,&pp);
+    float limit = -std::numeric_limits<float>::epsilon();  
+    optimiz.Init<QRadiiEFlip>();
+    optimiz.SetTargetMetric(limit);
+    optimiz.DoOptimization();
+    printf("Completed optimization; performed ops %i\n",optimiz.nPerformedOps);
+    optimiz.h.clear();
+    tri::UpdateFlags<MyMesh>::FaceBorderFromFF(m);
+    tri::Smooth<MyMesh>::VertexCoordLaplacianBlend(m, 1, 0.3f,false);  
+  }
+  m.UpdateBoxAndNormals();  
+}
+
 void TransformPluginTEST()
 {
     MyMesh m0,m1,m2,m3,m4,m5;
@@ -89,5 +121,6 @@ EMSCRIPTEN_BINDINGS(MLSmoothPlugin) {
     emscripten::function("RandomDisplacement", &RandomDisplacement);
     emscripten::function("Scale", &Scale);
     emscripten::function("Translate", &Translate);
+    emscripten::function("FlipRelaxOptimize", &FlipRelaxOptimize);
 }
 #endif

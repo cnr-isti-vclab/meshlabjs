@@ -89,7 +89,9 @@
  *
  * })(MLJ.core.plugin, MLJ.core.Scene);
  */
+
 MLJ.core.plugin.Filter = function (parameters) {
+
     MLJ.core.plugin.Plugin.call(this, parameters.name, parameters);
     var _this = this;
 
@@ -108,12 +110,12 @@ MLJ.core.plugin.Filter = function (parameters) {
         var found = false;
         var tooltipMatch, nameMatch;
         for (var i = 0, m = select.length; i < m; i++) {
-            
-            tooltipMatch = parameters.tooltip 
-                ? parameters.tooltip.indexOf(select[i]) != -1 : false;
-            
+
+            tooltipMatch = parameters.tooltip
+                    ? parameters.tooltip.indexOf(select[i]) != -1 : false;
+
             nameMatch = parameters.name.indexOf(select[i]) != -1;
-            
+
             if (nameMatch || tooltipMatch) {
                 entry.show();
                 found = true;
@@ -138,20 +140,39 @@ MLJ.core.plugin.Filter = function (parameters) {
         });
 
         entry.addHeaderButton(apply);
-
         apply.onClick(function () {
-            var t0 = performance.now();
-            // Creation filters and filters that works on all layers ignore the current layer
-            // so we do not pass it
-            if( (_this.parameters.arity === 0) || (_this.parameters.arity===3) ) {
-                _this._applyTo();               
+            //reset of all the boolean CalledPtrMesh and clear of the mesh history after the current time
+            var layersIt = MLJ.core.Scene.getLayers().iterator();
+            while (layersIt.hasNext())
+            {
+                var layerTmp = layersIt.next();
+                layerTmp.resetCalledPtrMesh();
+                layerTmp.cppMesh.Clear(MLJ.core.Scene.timeStamp);
             }
-            else {
-                var layer = MLJ.core.Scene.getSelectedLayer();
-                _this._applyTo(layer);
-                if (_this.parameters.arity !== -1) MLJ.core.Scene.updateLayer(layer);
+            //clear of the history of changes after current time
+            for (var i = MLJ.core.Scene.timeStamp+1; i < MLJ.core.Scene.layerSetHistory.length; i++)
+                MLJ.core.Scene.layerSetHistory.pop();
+            var t0 = performance.now();
+            switch (_this.parameters.arity)
+            {
+                case 0:  // Creation Filters (they do not rely on a "current layer"
+                case 3:  // Filter that apply to ALL layer (flatten) 
+                    _this._applyTo();
+                    break;
+                case -1:  // DeleteFilter
+                case 1:  // Standard filters that apply to a single mesh
+                case 2:  // 
+                    _this._applyTo(MLJ.core.Scene.getSelectedLayer());
+                    break;
+                default:
+                    alert("Error filter");
             }
             var t1 = performance.now();
+            MLJ.core.Scene.updateLayer(MLJ.core.Scene.getSelectedLayer());
+            MLJ.core.Scene.addStateToHistory()
+            //trigger button events
+            $(document).trigger("Redo", MLJ.core.Scene.timeStamp);
+            $(document).trigger("Undo", MLJ.core.Scene.timeStamp-1);
             MLJ.widget.Log.append(_this.name + " execution time " + Math.round(t1 - t0) + " ms");
         });
 
@@ -159,32 +180,9 @@ MLJ.core.plugin.Filter = function (parameters) {
             MLJ.gui.disabledOnSceneEmpty(apply);
         }
 
-        if (parameters.arity === 1) {
-            var applyAll = new MLJ.gui.component.Button({
-                tooltip: "Apply to all visible layers",
-                icon: "img/icons/apply_all.png",
-            });
-            entry.addHeaderButton(applyAll);
-
-            MLJ.gui.disabledOnSceneEmpty(applyAll);
-
-            applyAll.onClick(function () {
-                var ptr = MLJ.core.Scene.getLayers().iterator();
-                var layer;
-                var t0 = performance.now();
-                while (ptr.hasNext()) {
-                    layer = ptr.next();
-                    if (layer.getThreeMesh().visible) {
-                        _this._applyTo(layer);
-                        MLJ.core.Scene.updateLayer(layer);
-                    }
-                }
-                var t1 = performance.now();
-                MLJ.widget.Log.append(name + " execution time " + Math.round(t1 - t0) + " ms");
-            });
-        }
 
         _this._init(filterBuilder);
+
     };
 };
 

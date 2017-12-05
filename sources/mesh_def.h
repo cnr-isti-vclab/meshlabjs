@@ -4,9 +4,11 @@
 #include <emscripten/bind.h>
 #endif
 #include <vcg/complex/complex.h>
+#include <vcg/complex/algorithms/update/flag.h>
 #include <vcg/complex/algorithms/update/topology.h>
 #include <vcg/complex/algorithms/update/normal.h>
 #include <vcg/complex/algorithms/update/quality.h>
+#include <vcg/complex/algorithms/update/color.h>
 #include <vcg/complex/algorithms/update/curvature.h>
 #include <vcg/complex/algorithms/clean.h>
 #include <vcg/complex/algorithms/create/platonic.h>

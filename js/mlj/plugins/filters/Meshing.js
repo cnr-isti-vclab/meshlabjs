@@ -171,6 +171,18 @@
         Module.InvertFaceOrientation(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var ReorientFaceCoherently = new plugin.Filter({
+        name: "Reorient Face coherently",
+        tooltip: "Reorient all the faces of a mesh in a coherent way. Require that the mesh is two-manifold and orientable",
+        arity: 1
+    });
+
+    ReorientFaceCoherently._init = function (builder) {};
+
+    ReorientFaceCoherently._applyTo = function (basemeshFile) {
+        Module.ReorientFaceCoherently(basemeshFile.ptrMesh());
+    };
+/******************************************************************************/  
     var CutAlongCrease = new plugin.Filter({
         name: "Cut Along Crease",
         tooltip: "Cut the current mesh along the crease edges, e.g. the edges where the two adjacent faces have normals that differs more than a given angle. .",
@@ -200,6 +212,118 @@
         Module.CutTopologicalFilter(basemeshFile.ptrMesh());
     };
 /******************************************************************************/  
+    var HoleFilling = new plugin.Filter({
+        name: "Hole Filling",
+        tooltip: "Fill all the holes of the mesh within a given size (expressed as boundary edge number)  ",
+        arity: 1
+    });
+    var maxHoleEdgeNumWidget
+    HoleFilling._init = function (builder) {
+                maxHoleEdgeNumWidget = builder.Integer({
+            min: 0, step: 10, defval: 30,
+            label: "Max Hole Size",
+            tooltip: "The maximum number of edges of the boundary of the holes to be filled."
+        });
+    };
+
+    HoleFilling._applyTo = function (basemeshFile) {
+        Module.HoleFilling(basemeshFile.ptrMesh(),maxHoleEdgeNumWidget.getValue());
+    };
+
+/******************************************************************************/  
+
+    var PointCloudNormal = new plugin.Filter({
+        name: "Point Cloud Normal Extrapolation",
+        tooltip: "Compute the normals of the vertices of a mesh without exploiting the triangle connectivity, useful for dataset with no faces",
+        arity: 1
+    });
+    var nNumWidget, smoothIterWidget, flipFlagWidget, viewPosWidget;
+    PointCloudNormal._init = function (builder) {
+        nNumWidget = builder.Integer({
+            max: 100, min: 0, step: 1, defval: "10",
+            label: "Neighbour num",
+            tooltip: "The number of neighbors used to estimate normals."
+        });
+
+        smoothIterWidget = builder.Integer({
+            max: 10, min: 0, step: 1, defval: "0",
+            label: "Smooth Iteration",
+            tooltip: "The number of smoothing iteration done on the p used to estimate and propagate normals."
+        });
+
+         flipFlagWidget = builder.Bool({
+            defval: false,
+            label: "Flip normals w.r.t. viewpoint",
+            tooltip: "If the 'viewpoint' (i.e. scanner position) is known, it can be used to disambiguate normals orientation, so that all the normals will be oriented in the same direction."
+        });
+    };
+
+    PointCloudNormal._applyTo = function (basemeshFile) {
+        if(!basemeshFile.cppMesh.hasPerVertexNormal())
+            basemeshFile.cppMesh.addPerVertexNormal();
+
+        Module.ComputePointCloudNormal(basemeshFile.ptrMesh(), nNumWidget.getValue(), smoothIterWidget.getValue(), flipFlagWidget.getValue());
+    };
+
+/******************************************************************************/  
+
+/******************************************************************************/      
+    
+    var PoissonSurfaceReconstruction = new plugin.Filter({
+        name: "Surface Reconstruction: Poisson",
+        tooltip: "Use the points and normal to build a surface using the Poisson Surface reconstruction approach.",
+        arity: 1
+    });
+
+    //TODO: check all min/max values
+    var octDepthWidget, solverDivideWidget, samplesPerNodeWidget, offsetWidget;
+    PoissonSurfaceReconstruction._init = function (builder) {
+        octDepthWidget = builder.Integer({
+            max: 10, min: 2, step: 1, defval: "6",
+            label: "Octree Depth",
+            tooltip: "Set the depth of the Octree used for extracting the final surface. " +
+                     " Higher numbers mean higher precision in the reconstruction but also higher processing times. Be patient."
+        });
+
+        solverDivideWidget = builder.Integer({
+            max: 12, min: 1, step: 1, defval: "6",
+            label: "Solver Divide",
+            tooltip: "This integer argument specifies the depth at which a block Gauss-Seidel solver is used to solve the Laplacian equation. " +
+                    "Using this parameter helps reduce the memory overhead at the cost of a small increase in reconstruction time. " +
+                    "In practice, the authors have found that for reconstructions of depth 9 or higher a subdivide depth of 7 or 8 can reduce the memory usage. "
+        });
+
+          
+        samplesPerNodeWidget = builder.RangedFloat({
+            max: 30.0, min: 1.0, step: 0.5, defval: 1.5,
+            label: "Samples per Node",
+            tooltip: "This floating point value specifies the minimum number of sample points that should fall within an octree node as the octree" +
+                     "construction is adapted to sampling density. For noise-free samples, small values in the range [1.0 - 5.0] can be used. " +
+                     "For more noisy samples, larger values in the range [15.0 - 20.0] may be needed to provide a smoother, noise-reduced, reconstruction.\n"
+        });
+       
+        /*
+        offsetWidget = builder.RangedFloat({
+            max: 3.0, min: 0.1, step: 0.1, defval: 1.0,
+            label: "Surface offsetting",
+            tooltip: "This floating point value specifies a correction value for the isosurface threshold that is chosen. " + 
+                     "Values < 1 means internal offsetting, >1 external offsetting, == 1 no offsetting. " +
+                     "Good values are in the range 0.5 .. 2. "
+        });
+        */
+
+    };
+
+    PoissonSurfaceReconstruction._applyTo = function (basemeshFile) {
+
+        var mf = MLJ.core.Scene.createLayer("Poisson Reconstructed");
+        if(Module.PoissonSurfaceRecontruction(basemeshFile.ptrMesh(), mf.ptrMesh(), octDepthWidget.getValue(),solverDivideWidget.getValue(), samplesPerNodeWidget.getValue()))
+            scene.addLayer(mf);
+};
+
+
+/******************************************************************************/  
+
 
     plugin.Manager.install(QuadricSimpFilter);
     plugin.Manager.install(ClusteringFilter);
@@ -208,7 +332,11 @@
     plugin.Manager.install(RemoveUnrefVert);
     plugin.Manager.install(RemoveDupVert);
     plugin.Manager.install(InvertFaceOrientation);
+    plugin.Manager.install(ReorientFaceCoherently);
     plugin.Manager.install(CutAlongCrease);
     plugin.Manager.install(CutTopological);
+    plugin.Manager.install(HoleFilling);
+    plugin.Manager.install(PointCloudNormal);
+    plugin.Manager.install(PoissonSurfaceReconstruction);
     
 })(MLJ.core.plugin, MLJ.core.Scene);

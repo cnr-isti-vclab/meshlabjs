@@ -3,6 +3,7 @@
 #include <vcg/complex/algorithms/stat.h>
 #include <vcg/complex/algorithms/point_sampling.h>
 #include<vcg/complex/algorithms/voronoi_volume_sampling.h>
+#include<vcg/complex/algorithms/skeleton.h>
 
 
 using namespace vcg;
@@ -166,9 +167,10 @@ bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uin
   int t0=clock();
   vvs.Init(poissonRadiusSurface);  
   int t1=clock();
-  vvs.BuildMontecarloSampling(montecarloSampleNum);
+  vvs.BuildMontecarloVolumeSampling(montecarloSampleNum);
   int t2=clock();
-  vvs.ThicknessEvaluator(distThr,16,3,skelM);
+  tri::SampledSkeleton<MyMesh> ssk(vvs);
+  ssk.ThicknessEvaluator(distThr,16,3,skelM);
   int t3=clock();
   printf("Surface Sampling %5.2f sec\n",float(t1-t0)/CLOCKS_PER_SEC);
   printf("Volume  Sampling %5.2f sec\n",float(t2-t1)/CLOCKS_PER_SEC);
@@ -176,7 +178,7 @@ bool ComputeThickness(uintptr_t meshPtr, uintptr_t trgPtr, uintptr_t volPtr, uin
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(baseM);
   if(surfSamp) 
   {
-    tri::Append<MyMesh,MyMesh>::MeshCopy(*surfSamp, vvs.poissonSurfaceMesh);
+//    tri::Append<MyMesh,MyMesh>::MeshCopy(*surfSamp, vvs.poissonSurfaceMesh);
     tri::UpdateColor<MyMesh>::PerVertexQualityRamp(*surfSamp);
   }
   if(volSamp)

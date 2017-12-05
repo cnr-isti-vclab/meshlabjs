@@ -16,6 +16,13 @@ bool IsWaterTight(MyMesh &m)
 
 int main(int /*argc*/, char*/*argv*/[])
 {
+#ifdef _POISSON_TEST_   
+  PoissonPluginTEST();
+#endif
+  
+#ifdef _MUPARSER_TEST_   
+  FuncParserPluginTEST();
+#endif
   CreatePluginTEST();
   MeshingPluginTEST();
   MeasurePluginTEST();

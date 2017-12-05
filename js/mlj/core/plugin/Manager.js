@@ -142,10 +142,11 @@ MLJ.core.plugin.Manager = {
         if(filterHandle === undefined )
         {
             console.log("Filter is not defined: "+filterName+"\n");
+            
         }
         else
         {
-            console.log("Executing filter "+filterName+" on layer " + currentLayer.name + "\n");  
+            console.log("Executing filter "+filterName+" x on layer " + currentLayer.name + "\n");  
             filterHandle._applyTo(currentLayer);
         }
     };

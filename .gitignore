@@ -1,7 +1,7 @@
-
-*.o
 *.bc
-*.db
+/sources/*.o
+/sources/*.bc
+!/sources/lib/*.bc
 
 sources/FilterTest.pro.user
 sources/.qmake.stash
@@ -12,7 +12,14 @@ nbproject/
 
 doc/html/
 
-js/generated/MeshlabJs.js.mem
-js/generated/MeshlabJs.js
 js/generated/MeshLabCppCore.js.mem
 js/generated/MeshLabCppCore.js
+
+build-*/
+*.pdb
+*.tlog
+/sources/.vs
+/sources/debug
+/sources/*.obj
+*.vscode
+*.vcxproj
