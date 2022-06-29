@@ -172,7 +172,7 @@
                 }
             });
 
-            gradientMap.setSize(inputBuffer.width, inputBuffer.height);
+            MLJ.core.Scene.resizeWebGLRenderTarget(gradientMap, inputBuffer.width, inputBuffer.height);
             renderer.render(threeScene, scene.getCamera(), gradientMap, true);
 
             threeScene.traverse(function (obj) {

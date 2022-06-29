@@ -4,6 +4,10 @@
 #include <vcg/complex/algorithms/convex_hull.h>
 #include<vcg/complex/algorithms/point_sampling.h>
 #include<vcg/complex/algorithms/voronoi_processing.h>
+#include<vcg/complex/algorithms/crease_cut.h>
+#include<vcg/complex/algorithms/curve_on_manifold.h>
+#include<vcg/complex/algorithms/hole.h>
+#include<vcg/complex/algorithms/pointcloud_normal.h>
 
 
 using namespace vcg;
@@ -120,7 +124,7 @@ void ConvexHullFilter(uintptr_t _baseM, uintptr_t _newM)
   tri::ConvexHull<MyMesh,MyMesh>::ComputeConvexHull(m,ch);
   ch.UpdateBoxAndNormals();
 } 
-
+ 
 void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio, int iterNum, int relaxType, int postRelaxStep, int postRefineStep, bool colorizeMeshFlag)
 {
   MyMesh &origMesh = *((MyMesh*) _baseM);
@@ -172,8 +176,87 @@ void VoronoiClustering(uintptr_t _baseM, uintptr_t _newM, float clusteringRatio,
   clusteredMesh.UpdateBoxAndNormals();
 }
 
+
+void CutAlongCreaseFilter(uintptr_t _baseM, float angleDeg)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  printf("Crease angle %f\n",angleDeg);
+  tri::CreaseCut<MyMesh>(m, math::ToRad(angleDeg));
+   
+  m.UpdateBoxAndNormals(); 
+}
+
+void CutTopologicalFilter(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  MyMesh poly;
+  tri::CoM<MyMesh> cc(m);
+  cc.BuildVisitTree(poly);
+  while(cc.OptimizeTree(poly));
+  cc.MarkFauxEdgeWithPolyLine(m,poly);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::CutMeshAlongNonFauxEdges<MyMesh>(m);
+  m.UpdateBoxAndNormals(); 
+}
+
+void ReorientFaceCoherently(uintptr_t _baseM)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  bool _isOriented,_isOrientable;
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::Clean<MyMesh>::OrientCoherentlyMesh(m,_isOriented,_isOrientable);  
+}
+
+void HoleFilling(uintptr_t _baseM, int maxHoleEdgeNum)
+{
+  MyMesh &m = *((MyMesh*) _baseM);
+  tri::UpdateTopology<MyMesh>::FaceFace(m);
+  tri::Hole<MyMesh>::EarCuttingFill< tri::TrivialEar<MyMesh> > (m, maxHoleEdgeNum);  
+}
+
+void ComputePointCloudNormal(uintptr_t _baseM, int kNearestNum, int smoothIter, bool flipFlag)
+{
+   MyMesh &mesh = *((MyMesh*) _baseM);
+   
+   tri::PointCloudNormal<MyMesh>::Param p;
+   p.fittingAdjNum = kNearestNum;
+   p.smoothingIterNum = smoothIter;
+   p.useViewPoint = flipFlag;
+   
+   tri::PointCloudNormal<MyMesh>::Compute(mesh, p);
+}
+
+
 void MeshingPluginTEST()
 {
+  printf("Meshing Plugin Test\n");
+    MyMesh platonic; 
+    Dodecahedron(platonic);
+    CutAlongCreaseFilter(uintptr_t(&platonic),40);
+    assert(platonic.vn==72 && platonic.fn==60);
+
+    Hexahedron(platonic);
+    CutAlongCreaseFilter(uintptr_t(&platonic),40);
+    assert(platonic.vn==24 && platonic.fn==12);
+    
+    Torus(platonic,3,1);
+    CutTopologicalFilter(uintptr_t(&platonic));
+    
+    Torus(platonic,3,1);
+    tri::UpdateTopology<MyMesh>::FaceFace(platonic);
+    for(int i=0;i<5;++i)
+    {
+      int index = rand()%platonic.FN();
+      face::SwapEdge(platonic.face[index],rand()%3);
+    }    
+    
+    ReorientFaceCoherently(uintptr_t(&platonic));
+    
+    tri::SphericalCap(platonic, 120, 1);    
+    HoleFilling(uintptr_t(&platonic),30);
+    
+      
   for(int i=1;i<5;++i)
   {
     MyMesh mq,mc,mv,ch;
@@ -194,7 +277,7 @@ void MeshingPluginTEST()
     printf("Voronoi Clustering %i %i -> %i %i  in  %6.3f sec\n",mc.vn,mc.fn,ch.vn,ch.fn,float(t4-t3)/CLOCKS_PER_SEC);
   }
 }
- 
+  
 
 #ifdef __EMSCRIPTEN__
 //Binding code
@@ -205,7 +288,12 @@ EMSCRIPTEN_BINDINGS(MLMeshingPlugin) {
     emscripten::function("RemoveUnreferencedVertices", &RemoveUnreferencedVertices);
     emscripten::function("RemoveDuplicatedVertices",   &RemoveDuplicatedVertices);
     emscripten::function("InvertFaceOrientation",      &InvertFaceOrientation);
+    emscripten::function("ReorientFaceCoherently",     &ReorientFaceCoherently);
     emscripten::function("VoronoiClustering",          &VoronoiClustering);
+    emscripten::function("CutAlongCreaseFilter",       &CutAlongCreaseFilter);
+    emscripten::function("CutTopologicalFilter",       &CutTopologicalFilter);
+    emscripten::function("HoleFilling",                &HoleFilling);
+    emscripten::function("ComputePointCloudNormal",    &ComputePointCloudNormal);
 }
 #endif
 

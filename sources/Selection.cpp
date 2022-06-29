@@ -154,7 +154,7 @@ void SelectionByConnectedComponentSize(uintptr_t _baseM, float sizeThreshold)
      if(CCV[i].first < maxSize  * sizeThreshold)
        CCV[i].second->SetS();        
    }   
-   int res =    tri::UpdateSelection<MyMesh>::FaceConnectedFF(m,true);
+   int res =    tri::UpdateSelection<MyMesh>::FaceConnectedFF(m);
    printf("Max Size = %i = %f * %i : Selected %i faces on %i\n",int(maxSize  * sizeThreshold),sizeThreshold,maxSize , res,m.fn);
 }
 

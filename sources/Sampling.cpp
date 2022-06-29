@@ -2,6 +2,7 @@
 #include <vcg/complex/algorithms/point_sampling.h>
 #include <vcg/complex/algorithms/smooth.h>
 #include <vcg/complex/algorithms/voronoi_volume_sampling.h>
+#include<wrap/io_trimesh/export_off.h>
 
 using namespace vcg;
 using namespace std;
@@ -60,19 +61,43 @@ bool VolumePoissonSampling(uintptr_t _baseM, uintptr_t _newM, float poissonRadiu
   MyMesh &baseM = *((MyMesh*) _baseM);
   MyMesh &pVm = *((MyMesh*) _newM);
   
-  if(!tri::Clean<MyMesh>::IsWaterTight(baseM))
-  {
+  if(!tri::Clean<MyMesh>::IsWaterTight(baseM)) {
     printf("\nVolume Sampling Require Watertight Mesh. Nothing Done\n\n");
     return false;
   }
+  
   float poissonRadius = baseM.bbox.Diag()*poissonRadiusPerc;
   float poissonSphereVol = M_PI*(4.0/3.0)*pow(poissonRadius,3.0);
   float meshVol = tri::Stat<MyMesh>::ComputeMeshVolume(baseM);
   float expectedSampleNum = meshVol / poissonSphereVol;
-  printf("Expected sample num %5.2f\n ",expectedSampleNum);
+  printf("Expected sample num %5.2f\n",expectedSampleNum);
+  
+  
+  // -- Build a sampling with just the corners (Poisson filtered)
+  tri::TrivialSampler<MyMesh> mps;
+  tri::UpdateTopology<MyMesh>::FaceFace(baseM);
+  tri::UpdateFlags<MyMesh>::FaceFauxCrease(baseM,math::ToRad(45.f));
+  tri::SurfaceSampling<MyMesh,tri::TrivialSampler<MyMesh> >::VertexCrease(baseM,mps);
+  MyMesh poissonCornerMesh; 
+  tri::BuildMeshFromCoordVector(poissonCornerMesh, mps.SampleVec());
+  printf("Corners found %i\n",poissonCornerMesh.VN());
+  
+  mps.reset();
+  tri::SurfaceSampling<MyMesh,tri::TrivialSampler<MyMesh> >::PoissonDiskParam pp;
+  if(poissonCornerMesh.VN()>0)
+    tri::SurfaceSampling<MyMesh,tri::TrivialSampler<MyMesh> >::PoissonDiskPruning(mps, poissonCornerMesh, poissonRadius, pp);
+  
+  printf("Corners found %i\n",mps.SampleVec().size());
+  // Now mark these Vertex as Fixed Seeds for later...
+  std::vector<MyVertex *> fixedSeedVec;
+  tri::VoronoiProcessing<MyMesh>::SeedToVertexConversion(baseM,mps.SampleVec(),fixedSeedVec);
+  tri::VoronoiProcessing<MyMesh>::MarkVertexVectorAsFixed(baseM,fixedSeedVec);
+  tri::VoronoiProcessingParameter vpp;
+  vpp.preserveFixedSeed=true;
+  
   tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
   vvs.Init();  
-  vvs.BuildVolumeSampling(expectedSampleNum*10,0,poissonRadius,0);
+  vvs.BuildVolumeSampling(expectedSampleNum*10,poissonRadius,0);
   tri::Append<MyMesh,MyMesh>::MeshCopy(pVm,vvs.seedMesh);
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(pVm); 
   tri::Allocator<MyMesh>::CompactEveryVector(pVm);
@@ -93,7 +118,7 @@ bool VolumeMontecarloSampling(uintptr_t _baseM, uintptr_t _newM, int montecarloS
  
   tri::VoronoiVolumeSampling<MyMesh> vvs(baseM);
   vvs.Init();  
-  vvs.BuildMontecarloSampling(montecarloSampleNum);
+  vvs.BuildMontecarloVolumeSampling(montecarloSampleNum);
   tri::Append<MyMesh,MyMesh>::MeshCopy(mcVm,vvs.montecarloVolumeMesh);
   tri::UpdateColor<MyMesh>::PerVertexQualityRamp(mcVm);
   mcVm.UpdateBoxAndNormals();
@@ -126,7 +151,7 @@ bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM,
   vvs.rng.initialize(randSeed);
   float surfaceSamplingRadius = baseM.bbox.Diag()/100.0;
   vvs.Init(surfaceSamplingRadius);  
-  vvs.BuildVolumeSampling(expectedSampleNum*30,0, poissonRadius,randSeed);  
+  vvs.BuildVolumeSampling(expectedSampleNum*30, poissonRadius,randSeed);  
   printf("VS: Montecarlo %i Seeds %i\n",vvs.montecarloVolumeMesh.vn, vvs.seedMesh.vn);
   vvs.BarycentricRelaxVoronoiSamples(relaxStep);
   tri::VoronoiVolumeSampling<MyMesh>::Param pp;
@@ -142,6 +167,13 @@ bool CreateVoronoiScaffolding(uintptr_t _baseM, uintptr_t _newM,
 
 void SamplingPluginTEST()
 {
+  MyMesh m,p;
+  Hexahedron(m);
+  tri::UpdateBounding<MyMesh>::Box(m);
+  VolumePoissonSampling(uintptr_t(&m),uintptr_t(&p),0.1);
+  printf("created a volume sampled %i");
+//  tri::io::ExporterOFF<MyMesh>::Save(p,"pointcloud.off");  
+//  exit(-1);
   for(int i=0;i<5;++i)
   { 
     MyMesh m,p,s;
